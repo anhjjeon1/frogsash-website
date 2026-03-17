@@ -1,0 +1,2230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>청개구리샤시 | 전문 창호하자 수리 업체</title>
+    <meta name="description" content="청개구리샤시 - 창틀흔들림, 창틀파손, 외풍, 불탄창틀 등 모든 창호하자 전문 수리. 특허기술 보유. 전국 출장 서비스.">
+    <meta name="keywords" content="창호수리, 창틀흔들림, 외풍수리, 결로, 창틀파손, 샤시수리, 청개구리샤시, 입주전점검, 창호하자, 특허">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="청개구리샤시 | 전문 창호하자 수리 업체">
+    <meta property="og:description" content="특허 기술 보유 전문 창호하자 수리. 창틀흔들림, 외풍, 결로, 파손 등 모든 창호 문제 해결. 전국 출장 서비스.">
+    <meta property="og:image" content="images/logo.jpg">
+    <link rel="canonical" href="https://frogsash.co.kr">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1B6B28;
+            --primary-light: #43A047;
+            --primary-dark: #0A4A14;
+            --accent: #FF6B35;
+            --accent-light: #FF8F5E;
+            --dark: #111827;
+            --gray: #6B7280;
+            --light-gray: #F8FAFB;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-xl: 0 24px 60px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.06);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--dark);
+            line-height: 1.7;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            background: linear-gradient(90deg, var(--primary-dark), #0D3D1A);
+            color: var(--white);
+            padding: 10px 0;
+            font-size: 13px;
+            letter-spacing: 0.3px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .top-bar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .top-bar a {
+            color: var(--white);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .top-bar a:hover {
+            color: var(--accent-light);
+        }
+        .top-bar .phone-number {
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .top-bar .phone-number i {
+            color: var(--accent-light);
+            animation: pulse-subtle 2s infinite;
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.4s var(--ease-out);
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+        }
+        header.scrolled {
+            background: rgba(255,255,255,0.95);
+            box-shadow: var(--shadow-md);
+        }
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: transform 0.3s var(--ease-out);
+        }
+        .logo:hover {
+            transform: scale(1.02);
+        }
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 24px;
+            font-weight: 900;
+            position: relative;
+        }
+        .logo-icon::after {
+            display: none;
+        }
+        .logo-text h1 {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--primary-dark);
+            line-height: 1.2;
+            letter-spacing: -0.3px;
+        }
+        .logo-text span {
+            font-size: 11px;
+            color: var(--gray);
+            font-weight: 500;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 4px;
+        }
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            padding: 10px 18px;
+            border-radius: var(--radius-sm);
+            transition: all 0.3s var(--ease-out);
+            font-size: 15px;
+            position: relative;
+        }
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 2px;
+            transition: all 0.3s var(--ease-out);
+            transform: translateX(-50%);
+        }
+        nav a:hover::after, nav a.active::after {
+            width: 60%;
+        }
+        nav a:hover {
+            color: var(--primary);
+            background: rgba(27,107,40,0.06);
+        }
+        nav a.active {
+            color: var(--white);
+            background: var(--primary);
+        }
+        nav a.active::after {
+            background: rgba(255,255,255,0.5);
+        }
+
+        .mobile-menu {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--dark);
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            transition: all 0.3s;
+        }
+        .mobile-menu:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            position: relative;
+            min-height: 640px;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(160deg, #041A09 0%, var(--primary-dark) 30%, var(--primary) 60%, #2E7D32 100%);
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.6;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: -200px;
+            right: -200px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,107,53,0.12) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 650px;
+            padding: 70px 40px 150px;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 10px 22px;
+            border-radius: 50px;
+            color: var(--white);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 28px;
+            letter-spacing: 0.3px;
+        }
+        .hero-badge i {
+            color: var(--accent-light);
+            font-size: 16px;
+        }
+        .hero h2 {
+            font-size: 50px;
+            font-weight: 900;
+            color: var(--white);
+            line-height: 1.25;
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
+        }
+        .hero h2 .highlight {
+            color: var(--accent-light);
+            position: relative;
+        }
+        .hero p {
+            font-size: 18px;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 40px;
+            line-height: 1.85;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 34px;
+            border-radius: var(--radius-xl);
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.35s var(--ease-out);
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #E55A00);
+            color: var(--white);
+            box-shadow: 0 6px 24px rgba(255,107,53,0.4);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--accent-light), var(--accent));
+            transform: translateY(-3px);
+            box-shadow: 0 10px 36px rgba(255,107,53,0.5);
+        }
+        .btn-outline {
+            background: rgba(255,255,255,0.08);
+            color: var(--white);
+            border: 2px solid rgba(255,255,255,0.35);
+            backdrop-filter: blur(8px);
+        }
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.18);
+            border-color: rgba(255,255,255,0.7);
+            transform: translateY(-3px);
+        }
+
+        .hero-visual {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 45%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hero-image-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            padding: 40px;
+            transform: rotate(-5deg);
+        }
+        .hero-image-grid img {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+            transition: transform 0.5s var(--ease-out);
+        }
+        .hero-image-grid img:hover {
+            transform: scale(1.05);
+        }
+        .hero-image-grid img:nth-child(2) {
+            transform: translateY(30px);
+        }
+        .hero-image-grid img:nth-child(3) {
+            transform: translateY(-30px);
+        }
+
+        .hero-stats {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.25);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .hero-stats .container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 28px 20px;
+            border-right: 1px solid rgba(255,255,255,0.08);
+            transition: background 0.3s;
+        }
+        .stat-item:last-child {
+            border-right: none;
+        }
+        .stat-item:hover {
+            background: rgba(255,255,255,0.04);
+        }
+        .stat-number {
+            font-size: 38px;
+            font-weight: 900;
+            color: var(--accent-light);
+            font-family: 'Outfit', sans-serif;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.65);
+            margin-top: 6px;
+            font-weight: 400;
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ===== SECTION COMMON ===== */
+        .section {
+            padding: 100px 0;
+        }
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(27,107,40,0.08);
+            color: var(--primary);
+            padding: 8px 22px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .section-header h2 {
+            font-size: 38px;
+            font-weight: 900;
+            color: var(--dark);
+            margin-bottom: 18px;
+            letter-spacing: -0.5px;
+            line-height: 1.3;
+        }
+        .section-header p {
+            font-size: 17px;
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        /* ===== SERVICES ===== */
+        .services {
+            background: var(--light-gray);
+            position: relative;
+        }
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .service-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 40px 30px;
+            transition: all 0.45s var(--ease-out);
+            border: 1px solid rgba(0,0,0,0.04);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transform: scaleX(0);
+            transition: transform 0.5s var(--ease-out);
+            transform-origin: left;
+        }
+        .service-card:hover {
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(27,107,40,0.1);
+        }
+        .service-card:hover::before {
+            transform: scaleX(1);
+        }
+        .service-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 26px;
+            margin-bottom: 22px;
+            box-shadow: 0 6px 20px rgba(27,107,40,0.25);
+            transition: transform 0.4s var(--ease-spring);
+        }
+        .service-card:hover .service-icon {
+            transform: scale(1.08);
+        }
+        .service-card:nth-child(2) .service-icon {
+            background: linear-gradient(135deg, #1E88E5, #42A5F5);
+            box-shadow: 0 6px 20px rgba(30,136,229,0.25);
+        }
+        .service-card:nth-child(3) .service-icon {
+            background: linear-gradient(135deg, #E53935, #EF5350);
+            box-shadow: 0 6px 20px rgba(229,57,53,0.25);
+        }
+        .service-card:nth-child(4) .service-icon {
+            background: linear-gradient(135deg, #FB8C00, #FFA726);
+            box-shadow: 0 6px 20px rgba(251,140,0,0.25);
+        }
+        .service-card:nth-child(5) .service-icon {
+            background: linear-gradient(135deg, #8E24AA, #AB47BC);
+            box-shadow: 0 6px 20px rgba(142,36,170,0.25);
+        }
+        .service-card:nth-child(6) .service-icon {
+            background: linear-gradient(135deg, #00897B, #26A69A);
+            box-shadow: 0 6px 20px rgba(0,137,123,0.25);
+        }
+        .service-card h3 {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+        .service-card p {
+            color: var(--gray);
+            font-size: 15px;
+            line-height: 1.75;
+        }
+
+        /* ===== BEFORE/AFTER ===== */
+        .before-after-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 28px;
+        }
+        .ba-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: all 0.4s var(--ease-out);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .ba-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-xl);
+        }
+        .ba-images {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            position: relative;
+        }
+        .ba-images::after {
+            content: '→';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 36px;
+            height: 36px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            font-weight: 900;
+            z-index: 2;
+            box-shadow: 0 4px 12px rgba(255,107,53,0.4);
+        }
+        .ba-img-wrap {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+        }
+        .ba-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s var(--ease-out);
+        }
+        .ba-card:hover .ba-img-wrap img {
+            transform: scale(1.05);
+        }
+        .ba-label {
+            position: absolute;
+            top: 12px;
+            padding: 5px 16px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--white);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            z-index: 1;
+        }
+        .ba-label.before {
+            left: 12px;
+            background: linear-gradient(135deg, #e53935, #ef5350);
+        }
+        .ba-label.after {
+            right: 12px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        }
+        .ba-card-info {
+            padding: 22px 26px;
+        }
+        .ba-card-info h4 {
+            font-size: 17px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+        .ba-card-info p {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* ===== PATENT ===== */
+        .patent {
+            background: linear-gradient(160deg, #041A09 0%, var(--primary-dark) 40%, var(--primary) 100%);
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+        .patent::before {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            left: -100px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,107,53,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .patent .section-tag {
+            background: rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.95);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .patent .section-header h2 {
+            color: var(--white);
+        }
+        .patent .section-header p {
+            color: rgba(255,255,255,0.75);
+        }
+        .patent-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 36px;
+            align-items: start;
+        }
+        .patent-image {
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.35);
+            aspect-ratio: 210 / 148;
+            max-width: 100%;
+            transition: transform 0.5s var(--ease-out);
+        }
+        .patent-image:hover {
+            transform: scale(1.02);
+        }
+        .patent-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top;
+        }
+        .patent-info {
+            aspect-ratio: 210 / 148;
+            max-width: 100%;
+        }
+        .patent-info h3 {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+        .patent-info p {
+            font-size: 16px;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 24px;
+        }
+        .patent-features {
+            list-style: none;
+        }
+        .patent-features li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 15px;
+        }
+        .patent-features li i {
+            color: var(--accent-light);
+            font-size: 18px;
+        }
+
+        /* ===== YOUTUBE ===== */
+        .youtube {
+            background: var(--light-gray);
+        }
+        .youtube-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .youtube-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.4s var(--ease-out);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .youtube-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+        }
+        .youtube-embed {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+        }
+        .youtube-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .youtube-info {
+            padding: 18px 22px;
+        }
+        .youtube-info h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 6px;
+        }
+        .youtube-info p {
+            font-size: 13px;
+            color: var(--gray);
+        }
+        .youtube-channel-btn {
+            text-align: center;
+            margin-top: 48px;
+        }
+        .btn-youtube {
+            background: linear-gradient(135deg, #FF0000, #CC0000);
+            color: var(--white);
+            box-shadow: 0 6px 24px rgba(255,0,0,0.3);
+        }
+        .btn-youtube:hover {
+            background: linear-gradient(135deg, #E60000, #AA0000);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 36px rgba(255,0,0,0.4);
+        }
+
+        /* ===== WHY US ===== */
+        .why-us-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+        .why-card {
+            text-align: center;
+            padding: 44px 24px;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(0,0,0,0.04);
+            transition: all 0.4s var(--ease-out);
+            box-shadow: var(--shadow-sm);
+        }
+        .why-card:hover {
+            border-color: rgba(27,107,40,0.15);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-6px);
+        }
+        .why-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(27,107,40,0.1), rgba(67,160,71,0.06));
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 22px;
+            font-size: 32px;
+            color: var(--primary);
+            transition: all 0.4s var(--ease-spring);
+        }
+        .why-card:hover .why-icon {
+            transform: scale(1.1) rotate(-5deg);
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+        }
+        .why-card h3 {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .why-card p {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.75;
+        }
+
+        /* ===== PROCESS ===== */
+        .process {
+            background: var(--light-gray);
+        }
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            position: relative;
+        }
+        .process-steps::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            left: 10%;
+            right: 10%;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--primary-light), var(--accent));
+            z-index: 0;
+            border-radius: 3px;
+        }
+        .step {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .step-number {
+            width: 80px;
+            height: 80px;
+            background: var(--white);
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 26px;
+            font-weight: 900;
+            color: var(--primary);
+            transition: all 0.4s var(--ease-spring);
+            box-shadow: var(--shadow-sm);
+            font-family: 'Outfit', sans-serif;
+        }
+        .step:hover .step-number {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
+            border-color: var(--primary);
+            transform: scale(1.1);
+            box-shadow: 0 8px 24px rgba(27,107,40,0.3);
+        }
+        .step h4 {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .step p {
+            font-size: 13px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* ===== CTA ===== */
+        .cta {
+            background: linear-gradient(160deg, var(--accent), #E65100, #BF360C);
+            padding: 100px 0;
+            text-align: center;
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="rgba(255,255,255,0.08)"/></pattern></defs><rect width="200" height="200" fill="url(%23dots)"/></svg>');
+        }
+        .cta .container {
+            position: relative;
+            z-index: 1;
+        }
+        .cta h2 {
+            font-size: 38px;
+            font-weight: 900;
+            margin-bottom: 16px;
+            letter-spacing: -0.3px;
+        }
+        .cta p {
+            font-size: 18px;
+            opacity: 0.85;
+            margin-bottom: 36px;
+        }
+        .cta-phone {
+            font-size: 52px;
+            font-weight: 900;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+            letter-spacing: 1px;
+        }
+        .cta-phone a {
+            text-shadow: 0 2px 20px rgba(0,0,0,0.2);
+        }
+        .cta-phone i {
+            animation: ring 1.5s infinite;
+        }
+        @keyframes ring {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(15deg); }
+            50% { transform: rotate(-15deg); }
+            75% { transform: rotate(10deg); }
+        }
+        .btn-white {
+            background: var(--white);
+            color: var(--accent);
+            font-weight: 700;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+        }
+        .btn-white:hover {
+            background: var(--white);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 36px rgba(0,0,0,0.2);
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: linear-gradient(180deg, #0D0D0D 0%, #111 100%);
+            color: rgba(255,255,255,0.65);
+            padding: 72px 0 32px;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 48px;
+            margin-bottom: 48px;
+        }
+        .footer-logo h3 {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--white);
+            margin-bottom: 16px;
+        }
+        .footer-logo p {
+            font-size: 14px;
+            line-height: 1.85;
+        }
+        .footer-section h4 {
+            color: var(--white);
+            font-size: 14px;
+            margin-bottom: 22px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .footer-section ul {
+            list-style: none;
+        }
+        .footer-section ul li {
+            margin-bottom: 12px;
+        }
+        .footer-section ul li a {
+            color: rgba(255,255,255,0.55);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .footer-section ul li a:hover {
+            color: var(--primary-light);
+            padding-left: 4px;
+        }
+        .footer-contact li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+        .footer-contact li i {
+            color: var(--primary-light);
+            width: 16px;
+        }
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding-top: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+        }
+        .social-links {
+            display: flex;
+            gap: 10px;
+        }
+        .social-links a {
+            width: 42px;
+            height: 42px;
+            background: rgba(255,255,255,0.06);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            transition: all 0.35s var(--ease-out);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .social-links a:hover {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .hero h2 { font-size: 36px; }
+            .hero-visual { display: none; }
+            .hero-content { max-width: 100%; }
+            .services-grid { grid-template-columns: repeat(2, 1fr); }
+            .why-us-grid { grid-template-columns: repeat(2, 1fr); }
+            .youtube-grid { grid-template-columns: repeat(2, 1fr); }
+            .process-steps { grid-template-columns: repeat(3, 1fr); }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .patent-content { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .top-bar .container { flex-direction: column; gap: 4px; }
+            nav ul { display: none; }
+            .mobile-menu { display: block; }
+            .hero { min-height: 500px; }
+            .hero h2 { font-size: 28px; }
+            .hero p { font-size: 16px; }
+            .hero-buttons { flex-direction: column; align-items: flex-start; }
+            .hero-buttons .btn { width: 100%; justify-content: center; white-space: nowrap; }
+            .hero-stats .container { grid-template-columns: repeat(2, 1fr); }
+            .services-grid { grid-template-columns: 1fr; }
+            .before-after-grid { grid-template-columns: 1fr; }
+            .why-us-grid { grid-template-columns: 1fr; }
+            .youtube-grid { grid-template-columns: 1fr; }
+            .process-steps { grid-template-columns: 1fr; }
+            .process-steps::before { display: none; }
+            .section-header h2 { font-size: 28px; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .footer-bottom { flex-direction: column; gap: 16px; }
+            .cta-phone { font-size: 32px; }
+        }
+
+        /* ===== ANIMATIONS ===== */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Staggered animations */
+        .fade-in.visible:nth-child(1) { transition-delay: 0ms; }
+        .fade-in.visible:nth-child(2) { transition-delay: 80ms; }
+        .fade-in.visible:nth-child(3) { transition-delay: 160ms; }
+        .fade-in.visible:nth-child(4) { transition-delay: 240ms; }
+        .fade-in.visible:nth-child(5) { transition-delay: 320ms; }
+        .fade-in.visible:nth-child(6) { transition-delay: 400ms; }
+
+        /* Gallery Image Modal */
+        .gallery-section {
+            padding: 100px 0;
+        }
+        .gallery-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 44px;
+            flex-wrap: wrap;
+        }
+        .gallery-tab {
+            padding: 10px 26px;
+            border: 2px solid rgba(0,0,0,0.08);
+            border-radius: 50px;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray);
+            transition: all 0.3s var(--ease-out);
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .gallery-tab.active {
+            border-color: var(--primary);
+            color: var(--white);
+            background: var(--primary);
+        }
+        .gallery-tab:hover:not(.active) {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(27,107,40,0.05);
+        }
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+        .gallery-item {
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            aspect-ratio: 1;
+            box-shadow: var(--shadow-sm);
+        }
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s var(--ease-out);
+        }
+        .gallery-item:hover img {
+            transform: scale(1.08);
+        }
+        .gallery-item::after {
+            content: '\f00e';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.5) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            opacity: 0;
+            transition: opacity 0.35s var(--ease-out);
+        }
+        .gallery-item:hover::after {
+            opacity: 1;
+        }
+        @media (max-width: 768px) {
+            .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+            .app-content { grid-template-columns: 1fr !important; }
+            .app-phone { order: -1; }
+            .app-stats-row { grid-template-columns: 1fr !important; }
+        }
+
+        /* ===== APP SECTION ===== */
+        .app-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 50%, #fff8e1 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .app-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(76,175,80,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .app-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+        .app-info {
+            position: relative;
+            z-index: 1;
+        }
+        .app-badge-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .app-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .badge-donation {
+            background: linear-gradient(135deg, #e91e63, #ff5722);
+            color: white;
+        }
+        .badge-ai {
+            background: linear-gradient(135deg, #7c4dff, #536dfe);
+            color: white;
+        }
+        .badge-free {
+            background: linear-gradient(135deg, #00bcd4, #26c6da);
+            color: white;
+        }
+        .app-info h2 {
+            font-size: 34px;
+            font-weight: 900;
+            color: var(--dark);
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+        .app-info h2 .green {
+            color: var(--primary);
+        }
+        .app-info h2 .orange {
+            color: var(--accent);
+        }
+        .app-info > p {
+            font-size: 17px;
+            color: var(--gray);
+            line-height: 1.8;
+            margin-bottom: 28px;
+        }
+        .donation-highlight {
+            background: white;
+            border-radius: 16px;
+            padding: 24px 28px;
+            border-left: 5px solid #e91e63;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .donation-icon {
+            width: 64px;
+            height: 64px;
+            min-width: 64px;
+            background: linear-gradient(135deg, #e91e63, #ff5722);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+        .donation-text h4 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #c2185b;
+            margin-bottom: 4px;
+        }
+        .donation-text p {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+        .app-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+        .app-feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .app-feature-item i {
+            color: var(--primary);
+            font-size: 18px;
+        }
+        .app-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn-app {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 16px rgba(27,94,32,0.3);
+        }
+        .btn-app:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        .btn-app-outline {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        .btn-app-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Phone mockup */
+        .app-phone {
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+        .phone-mockup {
+            width: 300px;
+            background: #1a1a1a;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.25), 0 0 0 2px #333;
+            position: relative;
+        }
+        .phone-notch {
+            width: 120px;
+            height: 28px;
+            background: #1a1a1a;
+            border-radius: 0 0 16px 16px;
+            margin: 0 auto;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+        }
+        .phone-screen {
+            border-radius: 30px;
+            overflow: hidden;
+            background: white;
+        }
+        .phone-screen img {
+            width: 100%;
+            display: block;
+        }
+        .phone-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(76,175,80,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+        .floating-badge {
+            position: absolute;
+            background: white;
+            border-radius: 14px;
+            padding: 12px 18px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            animation: float 3s ease-in-out infinite;
+            z-index: 2;
+        }
+        .floating-badge.top-left {
+            top: 30px;
+            left: -30px;
+            animation-delay: 0s;
+        }
+        .floating-badge.bottom-right {
+            bottom: 60px;
+            right: -40px;
+            animation-delay: 1.5s;
+        }
+        .floating-badge .badge-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .app-stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 48px;
+        }
+        .app-stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            border: 1px solid rgba(76,175,80,0.1);
+        }
+        .app-stat-card .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 22px;
+        }
+        .app-stat-card h4 {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 4px;
+        }
+        .app-stat-card p {
+            font-size: 13px;
+            color: var(--gray);
+        }
+    </style>
+</head>
+<body>
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="container">
+            <span><i class="fas fa-clock"></i> 평일 08:00 ~ 18:00 | 토요일 08:00 ~ 14:00</span>
+            <a href="tel:010-2322-0949" class="phone-number">
+                <i class="fas fa-phone-volume"></i> 전화 상담: 010-2322-0949
+            </a>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="container">
+            <a href="#" class="logo">
+                <div class="logo-icon" style="background:none; width:50px; height:50px; border-radius:0;">
+                    <img src="images/logo.jpg" alt="청개구리샤시 로고" style="width:50px; height:50px; object-fit:contain; border-radius:10px;">
+                </div>
+                <div class="logo-text">
+                    <h1>청개구리샤시</h1>
+                    <span>FROGSASH SINCE 2011</span>
+                </div>
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="#home" class="active">홈</a></li>
+                    <li><a href="#app">사전점검앱</a></li>
+                    <li><a href="#services">서비스</a></li>
+                    <li><a href="#gallery">시공사례</a></li>
+                    <li><a href="#patent">특허기술</a></li>
+                    <li><a href="#youtube">영상</a></li>
+                    <li><a href="#contact">상담문의</a></li>
+                </ul>
+            </nav>
+            <button class="mobile-menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fas fa-certificate"></i> 특허 보유 전문 창호 수리 기업
+            </div>
+            <h2>
+                창호 하자, <br>
+                <span class="highlight">청개구리샤시</span>가<br>
+                확실하게 해결합니다
+            </h2>
+            <p>
+                창틀 흔들림, 외풍, 결로, 파손 등 모든 창호 하자를<br>
+                특허 기술력과 풍부한 현장 경험으로 완벽 수리합니다.
+            </p>
+            <div class="hero-buttons">
+                <a href="tel:010-2322-0949" class="btn btn-primary">
+                    <i class="fas fa-phone"></i> 무료 상담 전화
+                </a>
+                <a href="#gallery" class="btn btn-outline">
+                    <i class="fas fa-images"></i> 시공 사례 보기
+                </a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-image-grid">
+                <img src="images/hero01.jpg" alt="발코니 창문 수리">
+                <img src="images/hero02.jpg" alt="창호 수리 작업">
+                <img src="images/hero03.jpeg" alt="창틀 씰 점검">
+                <img src="images/hero04.jpeg" alt="창틀 파손 하자">
+            </div>
+        </div>
+        <div class="hero-stats">
+            <div class="container">
+                <div class="stat-item">
+                    <div class="stat-number">20</div>
+                    <div class="stat-label">년 이상 전문 경력</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">12단지</div>
+                    <div class="stat-label">2025년 기준 하자수리</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">10건+</div>
+                    <div class="stat-label">특허 기술 보유</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">1군</div>
+                    <div class="stat-label">건설사 창호 하자 전문</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- APP SECTION - 입주자 사전점검 앱 -->
+    <section class="app-section" id="app">
+        <div class="container">
+            <div class="app-content">
+                <div class="app-info fade-in">
+                    <div class="app-badge-row">
+                        <span class="app-badge badge-donation"><i class="fas fa-heart"></i> 기부형 앱</span>
+                        <span class="app-badge badge-ai"><i class="fas fa-robot"></i> AI 하자분석</span>
+                        <span class="app-badge badge-free"><i class="fas fa-gift"></i> 간편 사용</span>
+                    </div>
+                    <h2>
+                        입주자 사전점검,<br>
+                        <span class="green">AI 앱</span>으로 <span class="orange">스마트</span>하게!
+                    </h2>
+                    <p>
+                        청개구리샤시가 자체 개발한 <strong>입주자 사전점검 앱</strong>으로
+                        신축 아파트의 창호 하자를 AI가 분석하고, 국토부 기준을 AI가 참조하여
+                        체계적으로 점검합니다. 누구나 쉽게 사용할 수 있으며,
+                        수익의 50%는 공익에 기부됩니다.
+                    </p>
+
+                    <div class="donation-highlight">
+                        <div class="donation-icon">💚</div>
+                        <div class="donation-text">
+                            <h4>수익의 50%를 공익에 기부합니다</h4>
+                            <p>청개구리샤시는 사전점검 앱 수익의 절반을 사회에 환원합니다.
+                            내 집 점검도 하고, 좋은 일에도 함께 참여하세요!</p>
+                        </div>
+                    </div>
+
+                    <div class="app-features">
+                        <div class="app-feature-item">
+                            <i class="fas fa-camera"></i> 사진 촬영 점검
+                        </div>
+                        <div class="app-feature-item">
+                            <i class="fas fa-brain"></i> AI 하자 분석
+                        </div>
+                        <div class="app-feature-item">
+                            <i class="fas fa-landmark"></i> 국토부 기준 참조
+                        </div>
+                        <div class="app-feature-item">
+                            <i class="fas fa-map-marker-alt"></i> 위치별 점검 기록
+                        </div>
+                        <div class="app-feature-item">
+                            <i class="fas fa-file-pdf"></i> 점검 리포트 생성
+                        </div>
+                        <div class="app-feature-item">
+                            <i class="fas fa-mobile-alt"></i> 모바일 최적화
+                        </div>
+                    </div>
+
+                    <div class="app-buttons">
+                        <a href="https://anhjjeon1.github.io" target="_blank" class="btn btn-app">
+                            <i class="fas fa-external-link-alt"></i> 앱 바로가기
+                        </a>
+                        <a href="#contact" class="btn btn-app-outline">
+                            <i class="fas fa-phone"></i> 사전점검 하자 문의
+                        </a>
+                    </div>
+                </div>
+
+                <div class="app-phone fade-in">
+                    <div class="phone-mockup">
+                        <div class="phone-notch"></div>
+                        <div class="phone-screen">
+                            <!-- 앱 스크린 시뮬레이션 -->
+                            <div style="background: linear-gradient(135deg, #e8f5e9, #f5f5f5); padding: 40px 20px 20px; min-height: 520px;">
+                                <!-- Status bar -->
+                                <div style="display:flex; justify-content:space-between; font-size:11px; color:#555; margin-bottom:16px; padding:0 4px;">
+                                    <span>U+ 8:32</span>
+                                    <span>📶 82%</span>
+                                </div>
+                                <!-- App header -->
+                                <div style="background: linear-gradient(135deg, #2E7D32, #43A047); border-radius:12px; padding:16px; margin-bottom:12px; color:white;">
+                                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                                        <div style="width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;"><img src="images/logo.jpg" style="width:32px;height:32px;object-fit:contain;border-radius:4px;"></div>
+                                        <div>
+                                            <div style="font-size:14px; font-weight:800;">청개구리 입주자 사전점검</div>
+                                            <div style="font-size:10px; opacity:0.8;">AI 하자분석 · 국토부 기준 참조 · v20.8</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Donation banner -->
+                                <div style="background:linear-gradient(135deg, #7c4dff, #536dfe); border-radius:10px; padding:10px 14px; margin-bottom:12px; color:white; font-size:12px; font-weight:600; text-align:center;">
+                                    💚 수익의 50%는 공익에 기부됩니다 &nbsp;<span style="background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; font-size:10px;">기부형 앱</span>
+                                </div>
+                                <!-- AI Status -->
+                                <div style="background:white; border-radius:10px; padding:12px 14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <span style="width:8px;height:8px;background:#4CAF50;border-radius:50%;display:inline-block;"></span>
+                                        <span style="font-size:12px; font-weight:600;">AI 대기 중</span>
+                                    </div>
+                                    <div style="background:#FF6F00; color:white; padding:6px 14px; border-radius:20px; font-size:11px; font-weight:700;">🔊 음성안내</div>
+                                </div>
+                                <!-- Form area -->
+                                <div style="background:white; border-radius:12px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+                                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                                        <span style="background:#1B5E20; color:white; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">1</span>
+                                        <span style="font-size:13px; font-weight:700;">현장 정보</span>
+                                    </div>
+                                    <div style="font-size:11px; color:#888; margin-bottom:6px;">📍 전체 주소</div>
+                                    <div style="background:#f5f5f5; border-radius:8px; padding:10px 12px; font-size:12px; color:#333; margin-bottom:12px;">서울 송파구 올림픽로 300</div>
+                                    <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:8px;">
+                                        <div>
+                                            <div style="font-size:10px; color:#888; margin-bottom:4px;">아파트명</div>
+                                            <div style="background:#f5f5f5; border-radius:6px; padding:8px; font-size:11px; color:#aaa;">아파트명</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size:10px; color:#888; margin-bottom:4px;">동</div>
+                                            <div style="background:#f5f5f5; border-radius:6px; padding:8px; font-size:11px; color:#aaa; text-align:center;">000</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size:10px; color:#888; margin-bottom:4px;">호</div>
+                                            <div style="background:#f5f5f5; border-radius:6px; padding:8px; font-size:11px; color:#aaa; text-align:center;">0000</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="phone-glow"></div>
+                    <div class="floating-badge top-left">
+                        <div class="badge-icon" style="background:linear-gradient(135deg,#e91e63,#ff5722);">💚</div>
+                        <div>
+                            <div style="color:#c2185b;">50% 기부</div>
+                            <div style="font-size:11px;color:#999;font-weight:400;">공익 환원</div>
+                        </div>
+                    </div>
+                    <div class="floating-badge bottom-right">
+                        <div class="badge-icon" style="background:linear-gradient(135deg,#7c4dff,#536dfe);">🤖</div>
+                        <div>
+                            <div style="color:#5c6bc0;">AI 분석</div>
+                            <div style="font-size:11px;color:#999;font-weight:400;">하자 자동감지</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="app-stats-row fade-in">
+                <div class="app-stat-card">
+                    <div class="stat-icon" style="background:rgba(233,30,99,0.1);color:#e91e63;">
+                        <i class="fas fa-hand-holding-heart"></i>
+                    </div>
+                    <h4 style="color:#c2185b;">50%</h4>
+                    <p>수익금 공익 기부</p>
+                </div>
+                <div class="app-stat-card">
+                    <div class="stat-icon" style="background:rgba(124,77,255,0.1);color:#7c4dff;">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h4 style="color:#5c6bc0;">AI 분석</h4>
+                    <p>국토부 기준 참조 분석</p>
+                </div>
+                <div class="app-stat-card">
+                    <div class="stat-icon" style="background:rgba(76,175,80,0.1);color:var(--primary);">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h4 style="color:var(--primary);">간편</h4>
+                    <p>누구나 쉽게 사용</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section class="section services" id="services">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-tag">SERVICES</div>
+                <h2>전문 창호하자 수리 서비스</h2>
+                <p>20년 현장 경험과 초음파 정밀 장비, AI 진단 기술로 창호 문제를 정확히 해결합니다</p>
+            </div>
+            <div class="services-grid">
+                <div class="service-card fade-in">
+                    <div class="service-icon">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </div>
+                    <h3>창호 시공불량 수리</h3>
+                    <p>창호 설치 시 발생한 시공불량으로 인한 틈새, 흔들림, 뒤틀림 등의 문제를 특허 기술로 정밀 보정하여 완벽하게 해결합니다.</p>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">
+                        <i class="fas fa-wind"></i>
+                    </div>
+                    <h3>외풍 유입(초음파 검사)</h3>
+                    <p>창호 틈새로 외풍 유입되는 정도와 원인을 초음파 음향카메라로 검사하고 수리에 반영합니다.</p>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">
+                        <i class="fas fa-thermometer-half"></i>
+                    </div>
+                    <h3>결로의 발생원인 진단</h3>
+                    <p>결로가 발생하는 정확한 원인을 열화상 진단 등으로 분석하여 근본적인 해결 방안을 제시합니다. 창호 단열 성능과 실내 환경을 종합 진단합니다.</p>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h3>창틀 파손 수리</h3>
+                    <p>충격이나 노후로 인한 창틀 파손, 균열을 전문 수리합니다. 교체 없이 현장에서 신속하게 복원 가능합니다.</p>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">
+                        <i class="fas fa-ruler-combined"></i>
+                    </div>
+                    <h3>창호 제작 불량 수리</h3>
+                    <p>창호 제작 과정에서 발생한 규격 오차, 프레임 불량, 잠금장치 결함 등의 문제를 정밀 측정 후 맞춤 수리합니다.</p>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3>입주 전 하자 점검</h3>
+                    <p>신축 아파트 입주 전 창호 전체를 전문가가 점검하여 숨겨진 하자를 사전에 발견하고 보수합니다.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BEFORE / AFTER -->
+    <section class="section" id="gallery">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-tag">BEFORE & AFTER</div>
+                <h2>시공 전후 비교</h2>
+                <p>청개구리샤시의 수리 기술력을 직접 확인하세요</p>
+            </div>
+            <div class="before-after-grid">
+                <div class="ba-card fade-in">
+                    <div class="ba-images">
+                        <div class="ba-img-wrap">
+                            <img src="images/before-shake.jpg" alt="수리 전">
+                            <span class="ba-label before">BEFORE</span>
+                        </div>
+                        <div class="ba-img-wrap">
+                            <img src="images/after-shake.jpg" alt="수리 후">
+                            <span class="ba-label after">AFTER</span>
+                        </div>
+                    </div>
+                    <div class="ba-card-info">
+                        <h4>창틀 흔들림 수리</h4>
+                        <p>창틀 지지대 설치로 흔들림 완전 해결 (2025.03)</p>
+                    </div>
+                </div>
+                <div class="ba-card fade-in">
+                    <div class="ba-images">
+                        <div class="ba-img-wrap">
+                            <img src="images/thermal-analysis.jpg" alt="열화상 단면 분석">
+                            <span class="ba-label before">분석</span>
+                        </div>
+                        <div class="ba-img-wrap">
+                            <img src="images/flir-inspection.jpeg" alt="초음파음향카메라 현장 점검">
+                            <span class="ba-label after">점검</span>
+                        </div>
+                    </div>
+                    <div class="ba-card-info">
+                        <h4>초음파음향카메라 외풍·결로 원인분석</h4>
+                        <p>초음파음향카메라와 열화상 장비로 외풍 유입 경로와 결로 발생 원인을 정밀 분석합니다</p>
+                    </div>
+                </div>
+                <div class="ba-card fade-in">
+                    <div class="ba-images">
+                        <div class="ba-img-wrap">
+                            <img src="images/01파손.jpg" alt="수리 전">
+                            <span class="ba-label before">BEFORE</span>
+                        </div>
+                        <div class="ba-img-wrap">
+                            <img src="images/02파손.jpg" alt="수리 후">
+                            <span class="ba-label after">AFTER</span>
+                        </div>
+                    </div>
+                    <div class="ba-card-info">
+                        <h4>창호 파손 수리</h4>
+                        <p>충격·노후로 인한 창틀 파손을 교체 없이 현장에서 완벽 복원</p>
+                    </div>
+                </div>
+                <div class="ba-card fade-in">
+                    <div class="ba-images">
+                        <div class="ba-img-wrap">
+                            <img src="images/01창틀하부쳐짐.jpg" alt="수리 전">
+                            <span class="ba-label before">BEFORE</span>
+                        </div>
+                        <div class="ba-img-wrap">
+                            <img src="images/02창틀하부쳐짐.jpg" alt="수리 후">
+                            <span class="ba-label after">AFTER</span>
+                        </div>
+                    </div>
+                    <div class="ba-card-info">
+                        <h4>시공불량(창틀 하부쳐짐편)</h4>
+                        <p>창틀 하부 쳐짐으로 인한 틈새·외풍 발생을 정밀 레벨 보정으로 해결</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PHOTO GALLERY -->
+    <section class="gallery-section" id="photos" style="background: var(--light-gray);">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-tag">GALLERY</div>
+                <h2>현장 시공 사진</h2>
+                <p>다양한 현장의 수리 과정과 결과물을 확인하세요</p>
+            </div>
+            <div class="gallery-tabs">
+                <button class="gallery-tab active">전체</button>
+                <button class="gallery-tab">창틀 수리</button>
+                <button class="gallery-tab">외풍 수리</button>
+                <button class="gallery-tab">입주 점검</button>
+                <button class="gallery-tab">특허 제품</button>
+            </div>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="images/001.jpg" alt="시공사례">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/002.jpg" alt="시공사례">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/003.jpg" alt="시공사례">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/005.jpg" alt="시공사례">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/006.jpg" alt="시공사례">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/007.jpg" alt="시공사례">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/008.jpg" alt="시공사례">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/009.jpg" alt="시공사례">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/010.jpg" alt="시공사례">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/011.jpg" alt="시공사례">
+                </div>
+                <div class="gallery-item">
+                    <img src="images/012.jpg" alt="시공사례">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PATENT -->
+    <section class="section patent" id="patent">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-tag">PATENT TECHNOLOGY</div>
+                <h2>특허 보유 전문 기술력</h2>
+                <p>독자적인 특허 기술로 확실한 창호 수리를 보장합니다</p>
+            </div>
+            <div class="patent-content fade-in">
+                <div class="patent-image">
+                    <img src="images/특허1.jpg" alt="실용신안등록증 - 팝너트가 체결된 높이조절 지지대">
+                </div>
+                <div class="patent-info">
+                    <iframe src="https://www.youtube.com/embed/tf0qILHRoi4" allowfullscreen loading="lazy" style="width:100%; height:100%; border:none; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.3);"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WHY CHOOSE US -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-tag">WHY FROGSASH</div>
+                <h2>청개구리샤시를 선택해야 하는 이유</h2>
+                <p>전문성과 신뢰를 바탕으로 최고의 서비스를 제공합니다</p>
+            </div>
+            <div class="why-us-grid">
+                <div class="why-card fade-in">
+                    <div class="why-icon"><i class="fas fa-award"></i></div>
+                    <h3>특허 기술 보유</h3>
+                    <p>자체 개발 특허 기술로 타사에서 불가능한 수리까지 해결</p>
+                </div>
+                <div class="why-card fade-in">
+                    <div class="why-icon"><i class="fas fa-hard-hat"></i></div>
+                    <h3>20년+ 현장 경력</h3>
+                    <p>수천 건의 현장 경험으로 축적된 노하우와 기술력</p>
+                </div>
+                <div class="why-card fade-in">
+                    <div class="why-icon"><i class="fas fa-truck"></i></div>
+                    <h3>전국 출장 서비스</h3>
+                    <p>서울, 경기를 비롯한 전국 어디든 출장 수리 가능</p>
+                </div>
+                <div class="why-card fade-in">
+                    <div class="why-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>A/S 품질 보증</h3>
+                    <p>수리 후 품질 보증과 함께 사후 관리 서비스 제공</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- YOUTUBE VIDEOS -->
+    <section class="section youtube" id="youtube">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-tag">YOUTUBE</div>
+                <h2>시공 영상으로 확인하세요</h2>
+                <p>실제 수리 과정을 유튜브 영상으로 생생하게 확인하세요</p>
+            </div>
+            <div class="youtube-grid">
+                <div class="youtube-card fade-in">
+                    <div class="youtube-embed">
+                        <iframe src="https://www.youtube.com/embed/nMHvmR4fwKo" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                    <div class="youtube-info">
+                        <a href="https://youtube.com/shorts/nMHvmR4fwKo" target="_blank" style="text-decoration:none; color:inherit;">
+                            <h4>샤시수리(수직수평불량편)</h4>
+                        </a>
+                        <p>특허 지지대를 활용한 수리 영상</p>
+                    </div>
+                </div>
+                <div class="youtube-card fade-in">
+                    <div class="youtube-embed">
+                        <iframe src="https://www.youtube.com/embed/U2RDc1yWzJU" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                    <div class="youtube-info">
+                        <a href="https://youtube.com/shorts/U2RDc1yWzJU" target="_blank" style="text-decoration:none; color:inherit;">
+                            <h4>창틀 떨림 수리방법</h4>
+                        </a>
+                        <p>짧은 영상으로 빠르게 확인하세요</p>
+                    </div>
+                </div>
+                <div class="youtube-card fade-in">
+                    <div class="youtube-embed">
+                        <iframe src="https://www.youtube.com/embed/ORse81880Y0" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                    <div class="youtube-info">
+                        <a href="https://youtube.com/shorts/ORse81880Y0" target="_blank" style="text-decoration:none; color:inherit;">
+                            <h4>창문 결로 외풍 원인</h4>
+                        </a>
+                        <p>모든 수리 영상을 채널에서 확인하세요</p>
+                    </div>
+                </div>
+            </div>
+            <div class="youtube-channel-btn">
+                <a href="https://www.youtube.com/channel/UC-qBxN-2kl4gsJqo4_E8zZg" target="_blank" class="btn btn-youtube">
+                    <i class="fab fa-youtube"></i> 유튜브 채널 바로가기
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROCESS -->
+    <section class="section process">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-tag">PROCESS</div>
+                <h2>수리 진행 절차</h2>
+                <p>체계적인 프로세스로 신뢰할 수 있는 서비스를 제공합니다</p>
+            </div>
+            <div class="process-steps fade-in">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h4>전화 상담</h4>
+                    <p>증상 확인 및<br>견적 안내</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h4>현장 방문</h4>
+                    <p>정밀 진단 및<br>수리 방법 결정</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h4>견적 확정</h4>
+                    <p>합리적인<br>비용 안내</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h4>전문 수리</h4>
+                    <p>특허 기술 활용<br>완벽 시공</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <h4>A/S 보증</h4>
+                    <p>수리 완료 확인<br>품질 보증</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta" id="contact">
+        <div class="container">
+            <h2>창호 하자 때문에 고민이시라면?</h2>
+            <p>전화 한 통이면 전문가가 빠르게 상담해 드립니다</p>
+            <div class="cta-phone">
+                <i class="fas fa-phone-volume"></i>
+                <a href="tel:010-2322-0949" style="color: white; text-decoration: none;">010-2322-0949</a>
+            </div>
+            <a href="tel:010-2322-0949" class="btn btn-white">
+                <i class="fas fa-phone"></i> 지금 바로 상담하기
+            </a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-logo">
+                    <h3><img src="images/logo.jpg" alt="로고" style="width:32px; height:32px; object-fit:contain; border-radius:6px; vertical-align:middle; margin-right:8px;">청개구리샤시</h3>
+                    <p>
+                        특허 기술을 보유한 전문 창호하자 수리 업체입니다.
+                        창틀 흔들림, 외풍, 결로, 파손 등 모든 창호 문제를
+                        확실하게 해결합니다.
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4>서비스</h4>
+                    <ul>
+                        <li><a href="#services">창호 시공불량 수리</a></li>
+                        <li><a href="#services">외풍 유입(초음파 검사)</a></li>
+                        <li><a href="#services">결로의 발생원인 진단</a></li>
+                        <li><a href="#services">창틀 파손 수리</a></li>
+                        <li><a href="#services">입주 전 점검</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>바로가기</h4>
+                    <ul>
+                        <li><a href="#home">홈</a></li>
+                        <li><a href="#gallery">시공사례</a></li>
+                        <li><a href="#patent">특허기술</a></li>
+                        <li><a href="#youtube">영상</a></li>
+                        <li><a href="#contact">상담문의</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>연락처</h4>
+                    <ul class="footer-contact">
+                        <li><i class="fas fa-phone"></i> 010-2322-0949</li>
+                        <li><i class="fas fa-envelope"></i> toi9113@naver.com</li>
+                        <li><i class="fas fa-globe"></i> frogsash.co.kr</li>
+                        <li><i class="fas fa-clock"></i> 평일 08~18시</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; margin-bottom: 20px; text-align: center; font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.8;">
+                <p>상호: 청개구리샤시 | 대표: 전영용 | 통신판매업신고: 제 2011-경기군포-00342호 | 사업자등록번호: 123-36-31426 | 주소: 경기도 군포시 번영로21번길 15, 102동 1501호(당동, 용호마을E-편한) | 대표번호: 1599-7390</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 청개구리샤시. All Rights Reserved.</p>
+                <div class="social-links">
+                    <a href="https://www.youtube.com/channel/UC-qBxN-2kl4gsJqo4_E8zZg" target="_blank"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-blog"></i></a>
+                    <a href="tel:010-2322-0949"><i class="fas fa-phone"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCROLL ANIMATION -->
+    <script>
+        // Fade-in on scroll with staggered delays
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Smooth scroll with offset for sticky header
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const headerH = document.querySelector('header').offsetHeight;
+                    const top = target.getBoundingClientRect().top + window.pageYOffset - headerH - 10;
+                    window.scrollTo({ top, behavior: 'smooth' });
+                }
+                // Close mobile menu on nav click
+                if (window.innerWidth <= 768) {
+                    const navUl = document.querySelector('nav ul');
+                    navUl.style.display = 'none';
+                }
+            });
+        });
+
+        // Mobile menu toggle
+        const mobileMenu = document.querySelector('.mobile-menu');
+        const navUl = document.querySelector('nav ul');
+        if (mobileMenu) {
+            mobileMenu.addEventListener('click', () => {
+                const isOpen = navUl.style.display === 'flex';
+                navUl.style.display = isOpen ? 'none' : 'flex';
+                navUl.style.flexDirection = 'column';
+                navUl.style.position = 'absolute';
+                navUl.style.top = '100%';
+                navUl.style.left = '0';
+                navUl.style.right = '0';
+                navUl.style.background = 'rgba(255,255,255,0.98)';
+                navUl.style.backdropFilter = 'blur(20px)';
+                navUl.style.padding = '16px 20px';
+                navUl.style.boxShadow = '0 16px 48px rgba(0,0,0,0.12)';
+                navUl.style.borderRadius = '0 0 16px 16px';
+                navUl.style.gap = '4px';
+                mobileMenu.innerHTML = isOpen ? '<i class="fas fa-bars"></i>' : '<i class="fas fa-times"></i>';
+            });
+        }
+
+        // Header glassmorphism scroll effect
+        const header = document.querySelector('header');
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            if (scrollY > 60) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+            lastScroll = scrollY;
+        });
+
+        // Count-up animation for stat numbers
+        const countObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+                    const text = el.textContent;
+                    const match = text.match(/^([\d,]+)/);
+                    if (match) {
+                        const target = parseInt(match[1].replace(/,/g, ''));
+                        const suffix = text.replace(match[1], '');
+                        const duration = 1800;
+                        const start = performance.now();
+                        const animate = (now) => {
+                            const progress = Math.min((now - start) / duration, 1);
+                            const eased = 1 - Math.pow(1 - progress, 3);
+                            const current = Math.floor(target * eased);
+                            el.textContent = current.toLocaleString() + suffix;
+                            if (progress < 1) requestAnimationFrame(animate);
+                        };
+                        requestAnimationFrame(animate);
+                    }
+                    countObserver.unobserve(el);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.stat-number').forEach(el => {
+            countObserver.observe(el);
+        });
+
+        // Active nav link on scroll
+        const sections = document.querySelectorAll('section[id]');
+        window.addEventListener('scroll', () => {
+            const scrollPos = window.scrollY + 120;
+            sections.forEach(section => {
+                const top = section.offsetTop;
+                const height = section.offsetHeight;
+                const id = section.getAttribute('id');
+                const link = document.querySelector('nav a[href="#' + id + '"]');
+                if (link) {
+                    if (scrollPos >= top && scrollPos < top + height) {
+                        document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+                        link.classList.add('active');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
