@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아파트 사전점검, 대행업체 믿어도 될까?</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:60px}
+body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f5;color:#333;line-height:1.8}
+.blog-container{max-width:860px;margin:0 auto;background:#fff;box-shadow:0 0 20px rgba(0,0,0,.08)}
+.hero{background:linear-gradient(135deg,#1a237e 0%,#0d47a1 50%,#01579b 100%);padding:60px 40px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,.05) 0%,transparent 60%)}
+.hero-badge{display:inline-block;background:rgba(255,255,255,.15);color:#fff;padding:6px 18px;border-radius:20px;font-size:13px;font-weight:500;letter-spacing:1px;margin-bottom:20px;backdrop-filter:blur(10px)}
+.hero h1{color:#fff;font-size:32px;font-weight:900;line-height:1.4;margin-bottom:16px;text-shadow:0 2px 8px rgba(0,0,0,.2)}
+.hero p{color:rgba(255,255,255,.85);font-size:16px;font-weight:300}
+.content{padding:50px 40px}
+.intro{font-size:17px;color:#444;line-height:2;margin-bottom:50px;padding:30px;background:#fafbfc;border-radius:12px;border-left:4px solid #1a237e}
+.intro strong{color:#d32f2f}
+.section-header{display:flex;align-items:center;margin:60px 0 30px;padding-bottom:15px;border-bottom:3px solid #1a237e}
+.section-number{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;background:#1a237e;color:#fff;font-size:22px;font-weight:900;border-radius:12px;margin-right:16px;flex-shrink:0}
+.section-title{font-size:24px;font-weight:700;color:#1a237e;line-height:1.3}
+.chart-wrap{margin:30px 0;text-align:center}
+.chart-wrap img{width:100%;max-width:100%;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.chart-caption{margin-top:10px;font-size:13px;color:#888}
+.sub-title{font-size:20px;font-weight:700;color:#333;margin:40px 0 16px;padding-left:14px;border-left:4px solid #ff6b6b}
+.highlight-box{background:linear-gradient(135deg,#fff3e0,#fce4ec);border-radius:12px;padding:28px 30px;margin:24px 0;border:1px solid #ffcc80}
+.highlight-box h4{font-size:17px;color:#e65100;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.highlight-box ul,.warning-box ul{list-style:none;padding:0}
+.highlight-box ul li,.warning-box ul li{padding:6px 0 6px 20px;position:relative;font-size:15px;line-height:1.7}
+.highlight-box ul li::before{content:'';position:absolute;left:0;top:14px;width:8px;height:8px;background:#e65100;border-radius:50%}
+.warning-box{background:linear-gradient(135deg,#fce4ec,#ffebee);border:1px solid #ef9a9a;border-radius:12px;padding:28px 30px;margin:24px 0}
+.warning-box h4{font-size:17px;color:#c62828;margin-bottom:12px}
+.warning-box ul li::before{content:'';position:absolute;left:0;top:14px;width:8px;height:8px;background:#c62828;border-radius:50%}
+.info-box{background:linear-gradient(135deg,#e3f2fd,#e8eaf6);border:1px solid #90caf9;border-radius:12px;padding:28px 30px;margin:24px 0}
+.info-box h4{font-size:17px;color:#1565c0;margin-bottom:12px}
+.info-box ol{padding-left:20px}
+.info-box ol li,.info-box ul li{padding:6px 0;font-size:15px;line-height:1.7}
+.info-box ul{list-style:none;padding:0}
+.success-box{background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border:1px solid #a5d6a7;border-radius:12px;padding:28px 30px;margin:24px 0}
+.success-box h4{font-size:17px;color:#2e7d32;margin-bottom:12px}
+.success-box ul{list-style:none;padding:0}
+.success-box ul li{padding:8px 0 8px 28px;position:relative;font-size:15px;line-height:1.7}
+.success-box ul li::before{content:'\2713';position:absolute;left:0;top:8px;color:#2e7d32;font-weight:bold;font-size:16px}
+.compare-table{width:100%;border-collapse:collapse;margin:20px 0;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.compare-table th{background:#1a237e;color:#fff;padding:14px 16px;font-size:14px;font-weight:600;text-align:center}
+.compare-table td{padding:12px 16px;font-size:14px;text-align:center;border-bottom:1px solid #eee}
+.compare-table tr:nth-child(even){background:#f8f9fa}
+.compare-table .red{color:#d32f2f;font-weight:700}
+.compare-table .blue{color:#1565c0;font-weight:700}
+.case-box{background:#fff;border:2px solid #e0e0e0;border-radius:12px;padding:28px 24px;margin:20px 0;position:relative}
+.case-box::before{content:attr(data-label);position:absolute;top:-12px;left:20px;background:#ff6b6b;color:#fff;padding:2px 14px;border-radius:10px;font-size:12px;font-weight:600}
+.case-box p{font-size:15px;line-height:1.8;color:#555}
+.case-box.blue-case{border-color:#90caf9}
+.case-box.blue-case::before{background:#1565c0}
+.case-box.green-case{border-color:#a5d6a7}
+.case-box.green-case::before{background:#2e7d32}
+.app-card{background:linear-gradient(135deg,#4caf50,#2e7d32);border-radius:16px;padding:40px;margin:30px 0;color:#fff;text-align:center}
+.app-card h3{font-size:26px;margin-bottom:12px}
+.app-card p{font-size:16px;opacity:.9;line-height:1.7}
+.benefit-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+.benefit-item{background:#f8f9fa;border-radius:12px;padding:24px;border:1px solid #e0e0e0;transition:transform .2s}
+.benefit-item:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.benefit-icon{font-size:32px;margin-bottom:10px}
+.benefit-item h5{font-size:16px;font-weight:700;color:#1a237e;margin-bottom:8px}
+.benefit-item p{font-size:13px;color:#666;line-height:1.6}
+.recommend-list{list-style:none;padding:0;margin:20px 0}
+.recommend-list li{padding:12px 20px;margin:8px 0;background:linear-gradient(90deg,#e8f5e9,#fff);border-radius:8px;border-left:4px solid #4caf50;font-size:15px;line-height:1.6}
+.closing{background:linear-gradient(135deg,#1a237e,#0d47a1);border-radius:16px;padding:50px 40px;margin:50px 0 30px;text-align:center;color:#fff}
+.closing h3{font-size:28px;margin-bottom:20px;font-weight:900}
+.closing p{font-size:16px;line-height:2;opacity:.9}
+.hashtags{padding:30px 0;text-align:center;border-top:1px solid #eee}
+.hashtags span{display:inline-block;background:#e8eaf6;color:#3949ab;padding:6px 14px;border-radius:20px;font-size:13px;margin:4px;font-weight:500}
+.sources{padding:24px 30px;background:#fafafa;border-top:1px solid #eee;font-size:12px;color:#999;line-height:2}
+.divider{height:1px;background:linear-gradient(90deg,transparent,#ddd,transparent);margin:40px 0}
+.body-text{font-size:16px;line-height:2;color:#444;margin:16px 0}
+.body-text strong{color:#d32f2f}
+.stat-row{display:flex;gap:16px;margin:24px 0;flex-wrap:wrap}
+.stat-card{flex:1;min-width:140px;text-align:center;padding:20px;background:#f8f9fa;border-radius:12px;border:1px solid #e0e0e0}
+.stat-value{font-size:32px;font-weight:900;color:#d32f2f}
+.stat-label{font-size:13px;color:#888;margin-top:4px}
+.law-box{background:#f3e5f5;border:1px solid #ce93d8;border-radius:12px;padding:28px 30px;margin:24px 0}
+.law-box h4{font-size:17px;color:#7b1fa2;margin-bottom:12px}
+.law-box table{width:100%;border-collapse:collapse;margin-top:10px}
+.law-box table th{background:#7b1fa2;color:#fff;padding:10px 14px;font-size:13px;text-align:left}
+.law-box table td{padding:10px 14px;font-size:13px;border-bottom:1px solid #e1bee7;line-height:1.6}
+.law-box table tr:nth-child(even){background:rgba(206,147,216,.1)}
+.timeline{position:relative;padding-left:30px;margin:24px 0}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:3px;background:#1a237e}
+.timeline-item{position:relative;margin:20px 0;padding:20px 24px;background:#f8f9fa;border-radius:10px;border:1px solid #e0e0e0}
+.timeline-item::before{content:'';position:absolute;left:-26px;top:24px;width:14px;height:14px;background:#1a237e;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px #1a237e}
+.timeline-item h5{font-size:15px;font-weight:700;color:#1a237e;margin-bottom:6px}
+.timeline-item p{font-size:14px;color:#666;line-height:1.7}
+.quote-box{background:#fff8e1;border-left:4px solid #ffc107;padding:20px 24px;margin:20px 0;border-radius:0 8px 8px 0;font-style:italic;color:#555;font-size:15px;line-height:1.8}
+.quote-box .source{font-style:normal;font-size:12px;color:#999;margin-top:8px;display:block}
+.future-card{background:linear-gradient(135deg,#e8eaf6,#e3f2fd);border:2px solid #5c6bc0;border-radius:16px;padding:30px;margin:24px 0}
+.future-card h4{font-size:18px;color:#283593;margin-bottom:16px}
+.future-card .arrow{text-align:center;color:#5c6bc0;font-size:24px;margin:8px 0}
+/* 앱 사용법 가이드 */
+.guide-banner{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border:2px solid #4caf50;border-radius:16px;padding:0;margin:30px 0;overflow:hidden}
+.guide-banner-header{background:linear-gradient(135deg,#2e7d32,#388e3c);padding:24px 30px;display:flex;align-items:center;gap:16px}
+.guide-banner-header h3{color:#fff;font-size:22px;font-weight:800}
+.guide-banner-header .badge-price{background:#fff;color:#2e7d32;padding:6px 16px;border-radius:20px;font-size:15px;font-weight:800;white-space:nowrap}
+.guide-body{padding:30px}
+.guide-price-row{display:flex;gap:16px;margin:16px 0 28px;flex-wrap:wrap}
+.price-card{flex:1;min-width:200px;background:#fff;border-radius:12px;padding:24px;text-align:center;border:2px solid #e0e0e0;position:relative}
+.price-card.free{border-color:#4caf50}
+.price-card.paid{border-color:#ff9800}
+.price-card .tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:3px 14px;border-radius:10px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap}
+.price-card.free .tag{background:#4caf50}
+.price-card.paid .tag{background:#ff9800}
+.price-card .price-val{font-size:36px;font-weight:900;margin:12px 0 4px}
+.price-card.free .price-val{color:#2e7d32}
+.price-card.paid .price-val{color:#e65100}
+.price-card .price-desc{font-size:13px;color:#888;line-height:1.5}
+.guide-step{display:flex;align-items:flex-start;gap:20px;margin:18px 0;padding:22px 24px;background:#fff;border-radius:12px;border:1px solid #e0e0e0}
+.guide-step-num{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;background:#4caf50;color:#fff;font-size:18px;font-weight:800;border-radius:50%;flex-shrink:0}
+.guide-step-content h5{font-size:16px;font-weight:700;color:#2e7d32;margin-bottom:6px}
+.guide-step-content p{font-size:14px;color:#555;line-height:1.7}
+.guide-step-content .tip{display:inline-block;background:#fff3e0;color:#e65100;padding:2px 10px;border-radius:6px;font-size:12px;font-weight:600;margin-top:6px}
+.voice-box{background:#fff;border:2px solid #1565c0;border-radius:12px;padding:24px 28px;margin:20px 0}
+.voice-box h5{font-size:17px;color:#1565c0;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.voice-box p{font-size:14px;color:#555;line-height:1.8}
+.voice-features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.voice-feat{background:#e3f2fd;padding:12px 16px;border-radius:8px;font-size:13px;color:#1565c0;font-weight:500;display:flex;align-items:center;gap:6px}
+.donate-banner{background:linear-gradient(135deg,#fff8e1,#fff3e0);border:2px solid #ffb74d;border-radius:12px;padding:20px 28px;margin:20px 0;text-align:center}
+.donate-banner p{font-size:15px;color:#e65100;font-weight:600;line-height:1.7}
+.nav-bar{position:sticky;top:0;z-index:100;background:rgba(26,35,126,.97);backdrop-filter:blur(8px);display:flex;justify-content:center;gap:0;box-shadow:0 2px 12px rgba(0,0,0,.2);overflow-x:auto}
+.nav-item{display:flex;align-items:center;gap:8px;padding:14px 20px;color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:500;white-space:nowrap;transition:all .2s;border-bottom:3px solid transparent;cursor:pointer}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.08);border-bottom-color:#ff6b6b}
+.nav-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:rgba(255,255,255,.15);color:#fff;font-size:12px;font-weight:700;border-radius:6px;flex-shrink:0}
+.nav-item:hover .nav-num{background:#ff6b6b}
+@media(max-width:600px){.content{padding:30px 20px}.hero{padding:40px 20px}.hero h1{font-size:24px}.benefit-grid{grid-template-columns:1fr}.stat-row{flex-direction:column}.nav-item{padding:12px 14px;font-size:12px}}
+</style>
+</head>
+<body>
+<div class="blog-container">
+
+<!-- 히어로 -->
+<div class="hero">
+    <div class="hero-badge">DATA + AI + LAW REPORT 2026</div>
+    <h1>아파트 사전점검,<br>대행업체 믿어도 될까?</h1>
+    <p>10만 건 실제 데이터 + 법적 근거 + AI 앱으로 스마트하게 점검하기</p>
+</div>
+
+<!-- 네비게이션 배너 (히어로 아래) -->
+<nav class="nav-bar">
+    <a class="nav-item" href="#section1"><span class="nav-num">1</span>대행업체 문제점</a>
+    <a class="nav-item" href="#section2"><span class="nav-num">2</span>하자 데이터 분석</a>
+    <a class="nav-item" href="#section3"><span class="nav-num">3</span>분쟁 조정 신청</a>
+    <a class="nav-item" href="#section4"><span class="nav-num">4</span>AI 스마트 점검</a>
+    <a class="nav-item" href="#section5" style="border-left:1px solid rgba(255,255,255,.2)"><span class="nav-num" style="background:#4caf50">5</span>AI앱 사용법</a>
+</nav>
+
+<div class="content">
+
+<!-- 인트로 -->
+<div class="intro">
+    신축 아파트 입주를 앞두고 있다면, <strong>'사전점검'</strong>이라는 단어를 한 번쯤 들어보셨을 겁니다.<br><br>
+    2021년 2월부터 <strong>주택법 제48조의2</strong>에 의해 시행된 입주자 사전방문 제도 덕분에, 입주 전 내 집의 하자를 미리 확인하고 시공사에 보수를 요청할 수 있게 되었는데요.<br><br>
+    그런데 최근 사전점검을 둘러싼 <strong>논란이 끊이지 않고 있습니다.</strong><br>
+    대행업체의 과잉 진단, 무자격 점검원, 건설사와의 갈등, 그리고 <strong>하자 인정 후에도 43%가 보수되지 않는 현실</strong>까지...<br><br>
+    오늘은 <strong>106,376건의 실제 사전점검 데이터</strong>, 언론 보도, 법적 근거를 바탕으로 사전점검의 현실을 낱낱이 분석하고, 분쟁 시 대응 방법, 향후 제도 개선 방향, 그리고 <strong>AI 기반의 새로운 대안</strong>까지 소개해드리겠습니다.
+</div>
+
+<!-- ===== 1부 ===== -->
+<div class="section-header" id="section1">
+    <div class="section-number">1</div>
+    <div class="section-title">사전점검 대행업체, 무엇이 문제인가?</div>
+</div>
+
+<div class="sub-title">법적 근거: 주택법 제48조의2 (사전방문 등)</div>
+
+<div class="law-box">
+    <h4>&#9878; 사전점검의 법적 근거</h4>
+    <table>
+        <tr><th style="width:20%">조항</th><th>내용</th></tr>
+        <tr><td><strong>제1항</strong></td><td>사업주체는 사용검사 전에 입주예정자가 주택을 방문하여 공사 상태를 미리 점검(사전방문)할 수 있게 하여야 한다</td></tr>
+        <tr><td><strong>제2항</strong></td><td>입주예정자는 사전방문 결과 결함이 있으면 사업주체에게 보수공사 등 적절한 조치를 요청할 수 있음</td></tr>
+        <tr><td><strong>제3항</strong></td><td>사업주체는 <strong>중대한 하자는 사용검사 전까지 조치 완료</strong>해야 함</td></tr>
+        <tr><td><strong>실무 요건</strong></td><td>사업주체는 <strong>준공일 45일 전까지 2일 이상</strong> 사전점검행사 실시 의무</td></tr>
+    </table>
+</div>
+
+<p class="body-text">
+    이 법에 따라 모든 입주예정자는 사전점검을 받을 <strong>법적 권리</strong>가 있습니다. 그런데 이 과정에서 전문 대행업체를 이용하는 비율이 급격히 늘면서, 새로운 문제가 대두되고 있습니다.
+</p>
+
+<div class="sub-title">대행 시장의 폭발적 성장과 그 이면</div>
+
+<p class="body-text">
+    주택산업연구원의 '아파트 사전방문 점검대행 실태' 보고서와 뉴시스 보도(2026.03.15)에 따르면, 전국 약 <strong>40개 대행업체</strong>가 영업 중이며, 시장 규모가 급격히 커지고 있습니다.
+</p>
+
+<div class="chart-wrap">
+    <img src="chart4_대행업체현황.png" alt="사전점검 대행업체 현황">
+    <div class="chart-caption">사전점검 대행업체 현황 주요 지표 (주택산업연구원 보고서 기준)</div>
+</div>
+
+<div class="stat-row">
+    <div class="stat-card">
+        <div class="stat-value">81.4%</div>
+        <div class="stat-label">대행업체 인지율 (2025)</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">70.8%</div>
+        <div class="stat-label">대행업체 이용률 (2025)</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:#1565c0">52%</div>
+        <div class="stat-label">전문자격 보유율</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:#e65100">40개</div>
+        <div class="stat-label">전국 영업 업체 수</div>
+    </div>
+</div>
+
+<div class="highlight-box">
+    <h4>&#9888; 대행업체 비용 현황</h4>
+    <ul>
+        <li>평당 가격: <strong>7,000원~15,000원</strong> (평균 10,000~12,000원)</li>
+        <li>59m&sup2;(24평형): 약 <strong>17만~36만원</strong></li>
+        <li>84m&sup2;(34평형): 약 <strong>24만~51만원</strong></li>
+        <li>입주자 카페 입점비, 검색광고비 등 홍보비가 가격에 반영되는 구조</li>
+    </ul>
+</div>
+
+<div class="chart-wrap">
+    <img src="chart7_비용비교.png" alt="비용 비교">
+    <div class="chart-caption">사전점검 비용 비교: 대행업체 vs AI 앱 (한국경제 2026.01 보도 기준)</div>
+</div>
+
+<div class="sub-title">핵심 문제 1: 무자격 인력의 난립</div>
+
+<div class="warning-box">
+    <h4>&#128680; 전문자격 보유율 실태 (16개 업체, 1,099명 조사)</h4>
+    <ul>
+        <li>전체 전문자격 보유율: <strong>52%</strong> (절반만 자격 보유)</li>
+        <li>건축/토목 분야: 70% (상대적으로 양호)</li>
+        <li>시설/설비 분야: <strong>단 5%</strong></li>
+        <li>기타 분야: <strong>단 8%</strong></li>
+        <li>일부 업체는 <strong>수십~수백 건 예약 소화를 위해 단기 아르바이트를 투입</strong>하는 실정</li>
+    </ul>
+</div>
+
+<div class="quote-box">
+    "고가 장비로 하자를 점검해준다"는 말에 대행업체에 의뢰했으나, 정작 최종 하자 판정을 받지 못하는 사례가 잇따르고 있다.
+    <span class="source">- 한국경제 (2026.01.20)</span>
+</div>
+
+<div class="sub-title">핵심 문제 2: 하자 건수 부풀리기</div>
+
+<div class="chart-wrap">
+    <img src="chart10_인정률비교.png" alt="하자 인정률 비교">
+    <div class="chart-caption">LH 사례: 직접점검 vs 대행업체 하자 인정률 비교 - 25%p 차이</div>
+</div>
+
+<div class="warning-box">
+    <h4>&#128200; LH 사례로 본 구체적 수치</h4>
+    <ul>
+        <li>대행업체 지적 하자: <strong>114~144건</strong></li>
+        <li>입주자 직접 점검: <strong>52~86건</strong> (최대 2.7배 차이)</li>
+        <li>대행업체 하자 인정률: <strong>71%</strong></li>
+        <li>직접점검 하자 인정률: <strong>96%</strong> (25%p 높음)</li>
+        <li>주된 원인: 공법 이해 부족, 정상 상태를 하자로 오인</li>
+        <li>미설치 제품(사전 안내된 품목)까지 하자로 지적 &rarr; 건수 <strong>20~30% 부풀려짐</strong></li>
+    </ul>
+</div>
+
+<div class="chart-wrap">
+    <img src="chart3_대행업체비교.png" alt="대행업체 비교">
+    <div class="chart-caption">LH 사례: 대행업체 vs 직접점검 하자 지적 건수 및 실제 하자 인정률</div>
+</div>
+
+<div class="sub-title">핵심 문제 3: 장비 오남용과 마감재 손상</div>
+
+<div class="warning-box">
+    <h4>&#128295; 열화상카메라 오독 사례</h4>
+    <ul>
+        <li>여름철 열화상카메라로 단열 문제를 파악하는 것은 <strong>물리적으로 불가능</strong> (정확한 단열 진단은 겨울철에만 가능)</li>
+        <li>외벽 부분의 온도 차이는 <strong>단열재 위치에 따른 자연스러운 현상</strong>인데, 비전문가가 이를 "하자"로 오독</li>
+        <li>장비를 보유해도 <strong>정확히 해석할 전문 자격 인력이 없으면 오독 위험</strong></li>
+        <li>장비 점검 과정에서 <strong>새 아파트 마감재가 손상</strong>되는 경우도 발생</li>
+    </ul>
+</div>
+
+<div class="quote-box">
+    사전점검의 핵심은 육안상 드러난 하자 중심의 보수 청구이며, 열화상카메라/레이저 레벨기 등으로 발견되는 하자는 상대적으로 보수 청구의 시급성이 크지 않다.
+    <span class="source">- 한국아파트신문 전문가 기고</span>
+</div>
+
+<div class="sub-title">핵심 문제 4: 현장 출입 갈등</div>
+
+<div class="highlight-box">
+    <h4>&#128683; 출입 제한 현황</h4>
+    <ul>
+        <li>대행업체의 <strong>32.4%</strong>가 사전점검 현장에서 출입 제한을 경험</li>
+        <li>일부 사업장에서 '계약자' 또는 '계약자 및 동반자'로 한정하며 업체를 차단</li>
+        <li>현행법상 제3자(대행업체) 동행에 대한 <strong>명확한 법적 근거가 부재</strong></li>
+    </ul>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===== 2부 ===== -->
+<div class="section-header" id="section2">
+    <div class="section-number">2</div>
+    <div class="section-title">데이터로 보는 사전점검 하자 현황</div>
+</div>
+
+<p class="body-text">
+    실제 사전점검에서 어떤 하자가 가장 많이 발견될까요?<br>
+    <strong>동탄60(32,315건)</strong>과 <strong>양주(74,061건)</strong>, 총 <strong>106,376건</strong>의 실제 사전점검 데이터를 분석했습니다.
+</p>
+
+<div class="stat-row">
+    <div class="stat-card">
+        <div class="stat-value" style="font-size:26px">106,376건</div>
+        <div class="stat-label">총 분석 하자 건수</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="font-size:26px;color:#1565c0">56~63종</div>
+        <div class="stat-label">공종 종류</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="font-size:26px;color:#2e7d32">134~155종</div>
+        <div class="stat-label">세부공종 종류</div>
+    </div>
+</div>
+
+<div class="sub-title">공종별 하자 비교</div>
+
+<div class="chart-wrap">
+    <img src="chart1_공종별비교.png" alt="공종별 하자 비교">
+    <div class="chart-caption">동탄60 vs 양주 공종별 하자 TOP 10</div>
+</div>
+
+<table class="compare-table">
+    <tr><th>순위</th><th>동탄60 공종</th><th>비율</th><th>양주 공종</th><th>비율</th></tr>
+    <tr><td>1</td><td class="red">도배공사</td><td class="red">19.8%</td><td class="blue">도배공사</td><td class="blue">13.7%</td></tr>
+    <tr><td>2</td><td>주방가구공사</td><td>9.8%</td><td>타일공사</td><td>11.2%</td></tr>
+    <tr><td>3</td><td>PL창호공사</td><td>9.4%</td><td>일반가구공사</td><td>10.4%</td></tr>
+    <tr><td>4</td><td>타일공사</td><td>8.2%</td><td>PL창호공사</td><td>9.7%</td></tr>
+    <tr><td>5</td><td>목창호공사</td><td>6.7%</td><td>주방가구공사</td><td>8.8%</td></tr>
+</table>
+
+<p class="body-text">
+    두 단지 모두 <strong>도배공사가 압도적 1위</strong>입니다. 도배는 전체 하자의 약 14~20%를 차지하며, 사전점검 시 가장 집중적으로 확인해야 할 공종입니다. 이어서 주방가구, PL창호, 타일 순으로 많은 하자가 발생합니다.
+</p>
+
+<div class="sub-title">하자유형별 비교</div>
+
+<div class="chart-wrap">
+    <img src="chart2_하자유형별비교.png" alt="하자유형별 비교">
+    <div class="chart-caption">동탄60 vs 양주 하자유형 TOP 10</div>
+</div>
+
+<table class="compare-table">
+    <tr><th>순위</th><th>동탄60 유형</th><th>비율</th><th>양주 유형</th><th>비율</th></tr>
+    <tr><td>1</td><td class="red">흠집</td><td class="red">16.1%</td><td class="blue">미시공</td><td class="blue">14.6%</td></tr>
+    <tr><td>2</td><td>들뜸</td><td>12.6%</td><td>흠집/찍힘</td><td>13.8%</td></tr>
+    <tr><td>3</td><td>고정불량</td><td>9.6%</td><td>마감불량</td><td>12.4%</td></tr>
+    <tr><td>4</td><td>틈새</td><td>7.0%</td><td>들뜸</td><td>8.3%</td></tr>
+    <tr><td>5</td><td>미시공</td><td>6.9%</td><td>틈새</td><td>8.0%</td></tr>
+</table>
+
+<div class="info-box">
+    <h4>&#128270; 핵심 포인트: 육안 점검으로 대부분 확인 가능</h4>
+    <ol>
+        <li>흠집, 들뜸, 미시공, 마감불량이 전체 하자의 약 <strong>40~50%</strong>를 차지</li>
+        <li>이 항목들은 <strong>전문 장비 없이도 육안으로 확인 가능</strong></li>
+        <li>열화상카메라 등 고가 장비가 필요한 하자(결로, 누수 등)는 전체의 <strong>1% 미만</strong></li>
+        <li>국토부 표준점검표를 숙지하면 <strong>대행업체 없이도 체계적 점검 가능</strong></li>
+    </ol>
+</div>
+
+<div class="sub-title">국토부 표준점검표 구조</div>
+
+<div class="chart-wrap">
+    <img src="chart5_표준점검표구조.png" alt="국토부 표준점검표 구조">
+    <div class="chart-caption">국토부 입주예정자 사전방문 표준점검표 구조 (주택법 시행규칙 제20조의2 제3항)</div>
+</div>
+
+<p class="body-text">
+    국토교통부 주택건설공급과에서 제공하는 이 표준점검표는 <strong>현관, 거실, 주방, 침실, 욕실, 발코니, 기타 설비</strong> 등 7개 공간별로 점검 항목을 체계적으로 분류하고 있습니다. 사업주체는 해당 주택 여건에 맞게 점검대상과 점검사항을 변경하여 사용할 수 있습니다.
+</p>
+
+<div class="divider"></div>
+
+<!-- ===== 3부 ===== -->
+<div class="section-header" id="section3">
+    <div class="section-number">3</div>
+    <div class="section-title">사전점검 불이행 시, 국토부에 분쟁 조정 신청하세요</div>
+</div>
+
+<p class="body-text">
+    사전점검에서 발견된 하자를 시공사가 제대로 보수하지 않으면 어떻게 해야 할까요?<br>
+    <strong>하자심사분쟁조정위원회</strong>의 실제 통계와 사례를 통해 알아봅니다.
+</p>
+
+<div class="sub-title">하자분쟁 현황: 5년간 22,561건 접수</div>
+
+<div class="chart-wrap">
+    <img src="chart6_분쟁조정통계.png" alt="분쟁조정 통계">
+    <div class="chart-caption">하자심사분쟁조정위원회 연도별 접수건수 및 하자 판정률 추이</div>
+</div>
+
+<div class="stat-row">
+    <div class="stat-card">
+        <div class="stat-value" style="font-size:24px">22,561건</div>
+        <div class="stat-label">5년간 총 접수 (2020~2024)</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="font-size:24px;color:#2e7d32">78.9%</div>
+        <div class="stat-label">2024년 하자 판정률</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="font-size:24px;color:#e65100">43%</div>
+        <div class="stat-label">보수 미이행/지연 비율</div>
+    </div>
+</div>
+
+<div class="chart-wrap">
+    <img src="chart8_보수이행률.png" alt="보수 이행률">
+    <div class="chart-caption">하자 인정 후 건설사 보수 이행률 - 43%가 미이행 또는 지연 (2021~2024.6월)</div>
+</div>
+
+<div class="warning-box">
+    <h4>&#128680; 충격적인 보수 이행 현황</h4>
+    <ul>
+        <li>2021~2024.6월 하자 인정 <strong>6,462건</strong> 중 보수 이행 등록은 <strong>57%(3,450건)</strong>에 불과</li>
+        <li><strong>43%가 건설사 불이행 또는 지연으로 방치</strong></li>
+        <li>현행 제재: <strong>1,000만원 이하 과태료</strong>에 불과해 실효성 논란</li>
+        <li>처리 기간도 문제: 법정 60일이지만 실제 평균 <strong>337일</strong> (2023년 기준)</li>
+    </ul>
+</div>
+
+<div class="sub-title">하자 판정 상위 건설사</div>
+
+<div class="chart-wrap">
+    <img src="chart9_건설사하자.png" alt="건설사 하자">
+    <div class="chart-caption">하자 판정 상위 건설사 (2020.9~2025.8, 5년 누적, 경기신문 보도)</div>
+</div>
+
+<p class="body-text">
+    2023년 9월부터 국토교통부는 <strong>건설사별 하자 현황을 반기별로 공개</strong>하고 있습니다. 대형 건설사도 예외가 아니며, 주요 건설사 대상 하자소송만 <strong>141건, 청구액 합계 5,335억원</strong>에 달합니다.
+</p>
+
+<div class="sub-title">분쟁 조정 신청 방법</div>
+
+<div class="info-box">
+    <h4>&#128221; 하자분쟁조정위원회 활용 절차</h4>
+    <ol>
+        <li><strong>하자관리정보시스템</strong>(www.adc.go.kr) 접속 &rarr; 회원가입</li>
+        <li>하자 신고 및 보수 요청 접수 (사진/증빙 첨부)</li>
+        <li>시공사가 보수를 거부하거나 지연할 경우 &rarr; <strong>하자심사 신청</strong></li>
+        <li>위원회가 하자 여부 심사 (현장 감정 포함 가능)</li>
+        <li>하자 판정 시 시공사에 보수 의무 부과</li>
+        <li>불이행 시 <strong>분쟁 조정 신청</strong> &rarr; 조정위원회의 조정안에 따라 해결</li>
+    </ol>
+</div>
+
+<div class="sub-title">실제 분쟁 조정 사례</div>
+
+<p class="body-text">
+    국토교통부는 2024년 12월 <strong>64건의 대표 사례</strong>를 수록한 '하자심사분쟁조정 사례집'을 발간했습니다. 18개 세부공정별로 분류되어 있으며, 하자관리정보시스템에서 무료 열람이 가능합니다.
+</p>
+
+<div class="case-box" data-label="사례 1: 욕실 타일 탈락">
+    <p>
+        입주 후 욕실 벽면 타일이 반복적으로 탈락 &rarr; 시공사 "접착제 문제" 주장하며 부분 보수만 실시 &rarr; 입주자 하자심사 신청 &rarr; 위원회 현장 감정 결과 <strong>방수층 시공 불량</strong> 확인 &rarr; <strong>욕실 전면 재시공 판정</strong>
+    </p>
+</div>
+
+<div class="case-box blue-case" data-label="사례 2: 급수 수압 부족">
+    <p>
+        고층 세대에서 수압이 현저히 낮아 샤워 및 세탁기 사용 곤란 &rarr; 시공사 "설계 기준 충족" 주장 &rarr; 위원회 실측 결과 <strong>배관 설계 오류</strong> 확인 &rarr; <strong>부스터 펌프 설치 및 배관 개선 판정</strong>
+    </p>
+</div>
+
+<div class="case-box green-case" data-label="사례 3: 계단참 유효폭 부족">
+    <p>
+        공용부 계단참의 유효폭이 건축법 기준(120cm)에 미달 &rarr; 시공사 "구조적 변경 불가" 주장 &rarr; 위원회에서 <strong>안전 기준 위반으로 하자 인정</strong> &rarr; <strong>대체 안전시설 설치 및 손해배상 조정</strong>
+    </p>
+</div>
+
+<div class="case-box" data-label="사례 4: 강원 소재 대형 소송">
+    <p>
+        강원 소재 아파트 입주자대표회의가 DL이앤씨를 상대로 <strong>하자보수 소송 138억원</strong> 청구 &rarr; 균열, 누수, 단열 불량 등 복합 하자 &rarr; 법원 감정 진행 중
+        <br><span style="font-size:12px;color:#999">(파이낸셜뉴스 2024.12 보도)</span>
+    </p>
+</div>
+
+<div class="success-box">
+    <h4>&#128161; 분쟁 조정 시 알아두면 좋은 점</h4>
+    <ul>
+        <li>사전점검 결과를 <strong>사진/동영상</strong>으로 꼼꼼히 기록 &rarr; 분쟁 시 유력한 증거</li>
+        <li>국토교통부 <strong>표준점검표에 기반한 체계적 기록</strong>이 조정에서 유리</li>
+        <li>하자 보수 요청은 <strong>서면(내용증명)</strong>으로 하는 것이 법적 효력이 높음</li>
+        <li>사전점검에서 놓쳤다 하더라도 <strong>하자보수청구권은 상실되지 않음</strong></li>
+        <li>2024년 사례집을 <strong>www.adc.go.kr</strong>에서 무료 열람하여 유사 사례 참고 가능</li>
+    </ul>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===== 4부 ===== -->
+<div class="section-header" id="section4">
+    <div class="section-number">4</div>
+    <div class="section-title">AI 시대, 사전점검도 스마트하게!</div>
+</div>
+
+<p class="body-text">
+    지금까지 살펴본 것처럼, 현재의 사전점검 생태계는 <strong>대행업체의 전문성 부족</strong>, <strong>비용 부담</strong>, <strong>건수 부풀리기</strong>, <strong>건설사의 보수 미이행</strong> 등 구조적 문제를 안고 있습니다.<br><br>
+    이러한 문제를 근본적으로 해결할 수 있는 방향은 무엇일까요?
+</p>
+
+<div class="sub-title">향후 제도 개선 방향</div>
+
+<div class="timeline">
+    <div class="timeline-item">
+        <h5>안태준 의원 발의 '주택법' 일부개정안</h5>
+        <p>사전점검 시 <strong>제3자(대행업체) 출입 법적 허용</strong>, <strong>골조공사 단계에서도 점검 실시</strong>, <strong>점검 결과 공개 의무화</strong> 추진</p>
+    </div>
+    <div class="timeline-item">
+        <h5>국토교통부 가이드라인 발표 (2025.12)</h5>
+        <p><strong>'신축아파트 입주자 사전방문 점검대행 선정 가이드라인'</strong> 배포. 점검대행업체 선정 기준 및 절차에 대한 구체적 지침 포함</p>
+    </div>
+    <div class="timeline-item">
+        <h5>주택산업연구원 제도 개선 제언</h5>
+        <p>점검 대행인 자격 요건 강화 (기사 자격증 또는 3년 실무 경력), 전문 실무 교육 의무화, <strong>인증제/등록제 도입</strong></p>
+    </div>
+    <div class="timeline-item">
+        <h5>경기도 품질점검단 운영 모델</h5>
+        <p>골조공사(1차)~사용검사 전(3차) 단계별 점검. <strong>12개 분야 전문가 130명</strong> 풀 운영</p>
+    </div>
+</div>
+
+<div class="sub-title">대행업체의 한계를 넘어: 청개구리샤시 사전점검 앱</div>
+
+<div class="future-card">
+    <h4>&#128161; 제도 개선 방향과 청개구리샤시 앱의 접점</h4>
+    <table class="compare-table" style="box-shadow:none">
+        <tr><th>제도 개선 방향</th><th>청개구리샤시 앱이 이미 해결하는 것</th></tr>
+        <tr><td>전문자격 인력 확보 어려움</td><td><strong>AI가 하자 판별</strong> &rarr; 전문가 수준의 점검 지원</td></tr>
+        <tr><td>점검 결과 공개 의무화</td><td><strong>자동 보고서 생성</strong> &rarr; 체계적 기록/공유</td></tr>
+        <tr><td>표준점검표 기반 점검</td><td><strong>국토부 표준점검표 내장</strong> &rarr; 빠짐없는 항목 점검</td></tr>
+        <tr><td>대행업체 건수 부풀리기 방지</td><td><strong>AI 객관적 판별</strong> &rarr; 진짜 하자만 기록</td></tr>
+        <tr><td>비용 부담 경감</td><td>대행업체 30~50만원 &rarr; <strong>합리적 비용</strong></td></tr>
+        <tr><td>분쟁 증빙 자료 확보</td><td>사진+위치+유형 <strong>자동 정리</strong> &rarr; 하자심사 증빙 활용</td></tr>
+    </table>
+</div>
+
+<div class="app-card">
+    <h3>청개구리 입주자 사전점검 앱</h3>
+    <p>AI 하자분석 + 국토부 기준 참조 + 음성안내까지<br>입주자가 직접 스마트폰으로 전문가 수준의 사전점검을 수행할 수 있는 기부형 앱입니다.</p>
+</div>
+
+<!-- ========== 앱 사용법 가이드 ========== -->
+<div class="section-header" id="section5" style="border-bottom-color:#4caf50">
+    <div class="section-number" style="background:#4caf50">5</div>
+    <div class="section-title" style="color:#2e7d32">청개구리 AI 앱 사용법 완전 가이드</div>
+</div>
+
+<div class="guide-banner">
+    <div class="guide-banner-header">
+        <h3>&#128241; 청개구리 사전점검 앱 사용법 완전 가이드</h3>
+        <span class="badge-price">1일권 단돈 1만원</span>
+    </div>
+    <div class="guide-body">
+
+        <!-- 가격 안내 -->
+        <div class="sub-title" style="margin-top:0">요금 안내</div>
+
+        <div class="guide-price-row">
+            <div class="price-card free">
+                <span class="tag">처음 오신 분</span>
+                <div class="price-val">무료</div>
+                <div style="font-size:15px;font-weight:700;color:#2e7d32;margin-bottom:8px">무료 체험 3건</div>
+                <div class="price-desc">
+                    앱 설치 후 <strong>별도 결제 없이</strong><br>
+                    AI 하자분석을 <strong>3건까지 무료</strong>로 체험<br>
+                    모든 기능을 동일하게 사용 가능
+                </div>
+            </div>
+            <div class="price-card paid">
+                <span class="tag">본격 점검 시</span>
+                <div class="price-val">1만원</div>
+                <div style="font-size:15px;font-weight:700;color:#e65100;margin-bottom:8px">1일권 (24시간 무제한)</div>
+                <div class="price-desc">
+                    구매 시점부터 <strong>24시간 동안</strong><br>
+                    AI 하자분석 <strong>횟수 제한 없이</strong> 사용<br>
+                    사전점검 당일 아침에 구매하면 OK!<br>
+                    <strong style="color:#e65100">대행업체 대비 최대 98% 절감</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box" style="margin:16px 0">
+            <h4>&#128178; 비용 비교 한눈에 보기</h4>
+            <ul style="list-style:none;padding:0">
+                <li style="padding:4px 0;font-size:14px">&#10060; 대행업체 34평형: <strong>24만~51만원</strong></li>
+                <li style="padding:4px 0;font-size:14px">&#9989; 청개구리 AI 앱 1일권: <strong style="color:#2e7d32">단 1만원</strong> (24시간 무제한)</li>
+                <li style="padding:4px 0;font-size:14px">&#128176; 절감 효과: <strong style="color:#d32f2f">최대 50만원 이상 절약</strong></li>
+            </ul>
+        </div>
+
+        <!-- 사용 단계 -->
+        <div class="sub-title">4단계로 끝나는 초간단 사용법</div>
+
+        <div class="guide-step">
+            <div class="guide-step-num">1</div>
+            <div class="guide-step-content">
+                <h5>현장 정보 입력</h5>
+                <p>
+                    아파트 <strong>주소, 아파트명, 동/호수</strong>를 입력하고, 점검할 <strong>위치(현관, 거실, 주방, 침실, 욕실 등)</strong>를 선택합니다.<br>
+                    국토부 표준점검표 기준의 위치 목록이 제공되어 빠짐없이 모든 공간을 점검할 수 있습니다.
+                </p>
+                <span class="tip">Tip: 평면도를 보면서 순서대로 현관부터 시작하세요!</span>
+            </div>
+        </div>
+
+        <div class="guide-step">
+            <div class="guide-step-num">2</div>
+            <div class="guide-step-content">
+                <h5>사진 촬영 (2장: 멀리 + 가까이)</h5>
+                <p>
+                    <strong>&#128247; 멀리서 찍기</strong> &mdash; 하자가 발견된 <strong>위치를 파악</strong>하기 위한 전체 사진 (어디에서 발견했는지 기록용)<br>
+                    <strong>&#129302; 가까이 찍기</strong> &mdash; 하자 부위를 <strong>클로즈업</strong>하면 <strong>AI가 자동으로 분석을 시작</strong>합니다!<br><br>
+                    카메라 촬영 외에도 <strong>갤러리의 기존 사진</strong>을 선택할 수도 있습니다.
+                </p>
+                <span class="tip">Tip: 가까이 찍기가 핵심! AI가 이 사진으로 하자를 판별합니다</span>
+            </div>
+        </div>
+
+        <div class="guide-step">
+            <div class="guide-step-num">3</div>
+            <div class="guide-step-content">
+                <h5>AI 하자 분석 + 정보 확인</h5>
+                <p>
+                    가까이 찍기 완료 시 <strong>AI가 국토부 기준을 참조하여 자동 분석</strong>합니다.<br>
+                    &bull; <strong>공종</strong>(도배공사, 타일공사 등), <strong>세부 항목</strong>, <strong>하자 유형</strong>(흠집, 들뜸, 미시공 등)이 자동 분류<br>
+                    &bull; 직접 하자 내용을 텍스트로 입력하면 <strong>더 정밀한 분석</strong> 제공 (AI 모드 전환)<br>
+                    &bull; 예시: "창호 우측 내부정착 수직수평불량" / "거실 도배 들뜸" / "욕실 타일 균열" 등<br><br>
+                    <strong>가까이 찍기 후 AI 분석이 완료되면 자동으로 점검 리스트에 저장됩니다.</strong>
+                </p>
+                <span class="tip">Tip: 하자 내용을 직접 입력하면 AI가 더 정밀하게 분석해줍니다</span>
+            </div>
+        </div>
+
+        <div class="guide-step">
+            <div class="guide-step-num">4</div>
+            <div class="guide-step-content">
+                <h5>점검 리스트 확인 &amp; 저장</h5>
+                <p>
+                    모든 점검이 끝나면 <strong>점검 리스트</strong>에서 지금까지 기록된 전체 하자를 한눈에 확인합니다.<br>
+                    &bull; <strong>전체 저장</strong> 버튼으로 점검 결과를 보고서 형태로 저장<br>
+                    &bull; <strong>AI 상담 챗봇</strong>으로 궁금한 점을 추가 질문<br>
+                    &bull; 저장된 보고서는 시공사 보수 요청이나 <strong>하자분쟁조정 신청 시 증빙 자료</strong>로 활용
+                </p>
+                <span class="tip">Tip: 전체삭제 기능도 있으니 실수해도 걱정 마세요!</span>
+            </div>
+        </div>
+
+        <!-- 음성안내 -->
+        <div class="voice-box">
+            <h5>&#128264; 음성안내 기능 &mdash; 혼자서도 걱정 없어요!</h5>
+            <p>
+                사전점검이 처음이라 어떻게 해야 할지 막막하신가요?<br>
+                앱 상단의 <strong style="color:#e65100">"음성안내"</strong> 버튼을 누르면, <strong>각 단계별로 무엇을 해야 하는지 음성으로 친절하게 안내</strong>해줍니다.
+            </p>
+            <div class="voice-features">
+                <div class="voice-feat">&#127911; 현장에서 뭘 봐야 하는지 안내</div>
+                <div class="voice-feat">&#128247; 사진을 어떻게 찍어야 하는지 안내</div>
+                <div class="voice-feat">&#129302; AI 분석 결과를 어떻게 확인하는지 안내</div>
+                <div class="voice-feat">&#128221; 점검 리스트 저장 방법 안내</div>
+            </div>
+            <p style="margin-top:12px;font-size:13px;color:#1565c0">
+                &#9989; 이어폰을 꽂고 음성안내를 들으면서 양손으로 점검하면 더 편리합니다.<br>
+                &#9989; 점검 경험이 전혀 없는 일반인도 <strong>음성만 따라가면 전문가 수준의 점검</strong>이 가능합니다.
+            </p>
+        </div>
+
+        <!-- 기부 안내 -->
+        <div class="donate-banner">
+            <p>
+                &#128154; <strong>청개구리 사전점검 앱은 '기부형 앱'입니다</strong> &#128154;<br>
+                이 앱의 유료 수익 50%는 공익단체에 기부됩니다.<br>
+                당신의 점검이 누군가에게 따뜻한 도움이 됩니다!
+            </p>
+        </div>
+
+        <!-- 필수 확인 -->
+        <div class="highlight-box" style="margin-bottom:0">
+            <h4>&#9888; 앱 이용 시 알아두실 점</h4>
+            <ul>
+                <li><strong>법적 효력 안내:</strong> AI 분석 결과는 추정치이며 전문가 심사가 필요합니다</li>
+                <li><strong>책임 제한:</strong> 분석 오류에 대해 개발사 법적 책임 없음</li>
+                <li>하지만 <strong>국토부 기준을 참조한 AI 분석</strong>이므로, 하자 분쟁 시 <strong>참고 자료로서 충분한 가치</strong>가 있습니다</li>
+                <li>정식 하자 판정은 <strong>하자심사분쟁조정위원회(www.adc.go.kr)</strong>에서 신청하세요</li>
+            </ul>
+        </div>
+
+    </div>
+</div>
+<!-- ========== 앱 사용법 가이드 끝 ========== -->
+
+<div class="sub-title">주요 장점</div>
+
+<div class="benefit-grid">
+    <div class="benefit-item">
+        <div class="benefit-icon">&#128176;</div>
+        <h5>경제적 비용 절감</h5>
+        <p>대행업체 24~51만원 vs AI 앱으로 합리적 비용에 전문적 점검. 34평형 기준 최대 <strong>90% 이상 절감</strong></p>
+    </div>
+    <div class="benefit-item">
+        <div class="benefit-icon">&#128203;</div>
+        <h5>국토부 표준점검표 완벽 내장</h5>
+        <p>주택법 시행규칙 제20조의2에 근거한 표준점검표 기반. 7개 공간, 전 항목 체크리스트 제공</p>
+    </div>
+    <div class="benefit-item">
+        <div class="benefit-icon">&#129302;</div>
+        <h5>AI 하자 판별 지원</h5>
+        <p>스마트폰 카메라로 촬영하면 AI가 도배 들뜸, 타일 균열, 마감 불량 등 자동 감지. <strong>전문가 수준의 객관적 판단</strong></p>
+    </div>
+    <div class="benefit-item">
+        <div class="benefit-icon">&#128196;</div>
+        <h5>자동 보고서 &rarr; 분쟁 증빙</h5>
+        <p>사진, 위치, 하자 유형이 자동 정리. <strong>하자심사분쟁조정 신청 시 강력한 증빙 자료</strong>로 즉시 활용</p>
+    </div>
+    <div class="benefit-item">
+        <div class="benefit-icon">&#9878;</div>
+        <h5>객관적이고 공정한 점검</h5>
+        <p>대행업체의 '건수 부풀리기' 없이 AI 기준에 따른 판별. <strong>하자 인정률 96%에 가까운 정확도</strong> 목표</p>
+    </div>
+    <div class="benefit-item">
+        <div class="benefit-icon">&#128337;</div>
+        <h5>장비 오남용 리스크 제로</h5>
+        <p>열화상카메라 오독, 마감재 손상 위험 없음. 스마트폰만으로 <strong>안전하고 정확한 점검</strong></p>
+    </div>
+</div>
+
+<div class="sub-title">왜 AI 사전점검이 미래인가?</div>
+
+<p class="body-text">
+    앞서 데이터로 확인했듯, 전체 하자의 <strong>40~50%는 흠집/들뜸/미시공/마감불량</strong>으로 육안 확인이 가능한 항목입니다.
+    열화상카메라가 필요한 결로/누수 하자는 <strong>전체의 1% 미만</strong>에 불과합니다.<br><br>
+    즉, <strong>AI 이미지 분석 기술</strong>로 대부분의 하자를 정확하게 판별할 수 있으며, 이는 비전문 인력이 고가 장비를 잘못 사용하는 것보다 <strong>오히려 더 정확하고 객관적</strong>입니다.
+</p>
+
+<div class="success-box">
+    <h4>&#9989; 청개구리샤시 앱이 해결하는 사전점검 생태계의 문제</h4>
+    <ul>
+        <li><strong>비용:</strong> 대행업체 30~51만원 &rarr; 합리적 비용으로 대폭 절감</li>
+        <li><strong>전문성:</strong> 자격 보유율 52% 업체 &rarr; AI 기반 객관적 판별로 대체</li>
+        <li><strong>부풀리기:</strong> 하자 인정률 71% 업체 &rarr; 진짜 하자만 정확히 기록</li>
+        <li><strong>장비 문제:</strong> 열화상 오독/마감재 손상 &rarr; 스마트폰만으로 안전 점검</li>
+        <li><strong>기록:</strong> 수기 메모/사진 &rarr; 자동 보고서로 분쟁 증빙 즉시 활용</li>
+        <li><strong>출입 문제:</strong> 대행업체 출입 거부 &rarr; 입주자 본인이 직접 점검, 출입 이슈 없음</li>
+    </ul>
+</div>
+
+<div class="sub-title">이런 분들에게 추천합니다</div>
+
+<ul class="recommend-list">
+    <li>사전점검 대행업체 <strong>24~51만원 비용이 부담</strong>되시는 분</li>
+    <li>대행업체의 <strong>전문자격 보유율 52%가 걱정</strong>되시는 분</li>
+    <li><strong>하자 건수 부풀리기</strong>로 불필요한 시공사 갈등을 원하지 않으시는 분</li>
+    <li>직접 점검하고 싶지만 <strong>국토부 표준점검표 기준이 복잡</strong>하게 느껴지시는 분</li>
+    <li><strong>하자심사분쟁조정</strong> 신청 시 활용할 체계적인 증빙 자료가 필요하신 분</li>
+    <li>열화상카메라 등 <strong>장비 오남용으로 마감재가 손상</strong>될까 우려되시는 분</li>
+</ul>
+
+<div class="divider"></div>
+
+<!-- 마무리 -->
+<div class="closing">
+    <h3>내 집은 내가 지킨다!</h3>
+    <p>
+        아파트 사전점검은 <strong>주택법 제48조의2</strong>가 보장하는 입주자의 권리입니다.<br><br>
+        106,376건의 데이터가 보여주듯, 전체 하자의 대부분은 육안으로 확인 가능하고,<br>
+        대행업체의 절반 가까이가 전문 자격이 없으며,<br>
+        하자가 인정되어도 43%는 보수되지 않는 것이 현실입니다.<br><br>
+        이제는 AI 기술을 활용해 합리적 비용으로<br>
+        <strong>객관적이고 체계적인 점검</strong>이 가능한 시대입니다.<br><br>
+        <strong style="font-size:20px">국토부 표준점검표 + 청개구리샤시 AI 앱<br>
+        = 전문가 수준의 스마트한 사전점검</strong>
+    </p>
+</div>
+
+<!-- 해시태그 -->
+<div class="hashtags">
+    <span>#사전점검</span><span>#아파트사전점검</span><span>#입주사전점검</span>
+    <span>#하자점검</span><span>#사전점검대행</span><span>#사전점검앱</span>
+    <span>#청개구리샤시</span><span>#AI사전점검</span><span>#신축아파트</span>
+    <span>#아파트입주</span><span>#하자분쟁</span><span>#하자분쟁조정</span>
+    <span>#국토부표준점검표</span><span>#입주자사전방문</span><span>#아파트하자</span>
+    <span>#사전점검비용</span><span>#스마트사전점검</span><span>#하자보수</span>
+    <span>#입주준비</span><span>#아파트꿀팁</span><span>#주택법</span>
+    <span>#하자심사</span><span>#하자관리정보시스템</span>
+</div>
+
+</div>
+
+<!-- 출처 -->
+<div class="sources">
+    <strong>[출처 및 참고자료]</strong><br>
+    - 주택산업연구원, '아파트 사전방문 점검대행 실태' 보고서<br>
+    - 뉴시스 (2026.03.15), "아파트 하자점검 대행 시장 커지자 '무자격/건수 부풀리기' 도마"<br>
+    - 한국경제 (2026.01.20), "평당 1만2000원 사전점검 대행 돈값할까"<br>
+    - 국토교통부 주택건설공급과, '입주예정자 사전방문 표준점검표'<br>
+    - 국토교통부, '하자심사분쟁조정 사례집' (2024.12 발간, 64건 수록)<br>
+    - 국토교통부, '신축아파트 입주자 사전방문 점검대행 선정 가이드라인' (2025.12)<br>
+    - 파이낸셜뉴스 (2024.12.12), 하자심사분쟁조정 통계<br>
+    - 경기신문, 하자 판정 상위 20개 건설사 명단<br>
+    - 한국아파트신문, 효과적인 사전점검 방법 전문가 기고<br>
+    - 주택법 제48조의2, 제48조의3 / 시행령 제53조의2~7 / 시행규칙 제20조의2<br>
+    - 동탄60 / 양주 아파트 사전점검 데이터 분석 자료 (106,376건)
+</div>
+
+</div>
+</body>
+</html>
