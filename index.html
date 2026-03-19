@@ -37,17 +37,14 @@
             --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         html {
             scroll-behavior: smooth;
         }
-
         body {
             font-family: 'Noto Sans KR', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
             color: var(--dark);
@@ -56,7 +53,6 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
-
         /* ===== TOP BAR ===== */
         .top-bar {
             background: linear-gradient(90deg, var(--primary-dark), #0D3D1A);
@@ -95,7 +91,6 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
         }
-
         /* ===== HEADER ===== */
         header {
             background: rgba(255,255,255,0.85);
@@ -158,7 +153,6 @@
             letter-spacing: 2.5px;
             text-transform: uppercase;
         }
-
         nav ul {
             display: flex;
             list-style: none;
@@ -200,7 +194,6 @@
         nav a.active::after {
             background: rgba(255,255,255,0.5);
         }
-
         .mobile-menu {
             display: none;
             background: none;
@@ -215,7 +208,6 @@
         .mobile-menu:hover {
             background: rgba(0,0,0,0.05);
         }
-
         /* ===== HERO ===== */
         .hero {
             position: relative;
@@ -333,7 +325,6 @@
             border-color: rgba(255,255,255,0.7);
             transform: translateY(-3px);
         }
-
         .hero-visual {
             position: absolute;
             right: 0;
@@ -368,7 +359,6 @@
         .hero-image-grid img:nth-child(3) {
             transform: translateY(-30px);
         }
-
         .hero-stats {
             position: absolute;
             bottom: 0;
@@ -408,14 +398,12 @@
             margin-top: 6px;
             font-weight: 400;
         }
-
         /* ===== CONTAINER ===== */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
         }
-
         /* ===== SECTION COMMON ===== */
         .section {
             padding: 100px 0;
@@ -453,7 +441,6 @@
             margin: 0 auto;
             line-height: 1.8;
         }
-
         /* ===== SERVICES ===== */
         .services {
             background: var(--light-gray);
@@ -542,7 +529,6 @@
             font-size: 15px;
             line-height: 1.75;
         }
-
         /* ===== BEFORE/AFTER ===== */
         .before-after-grid {
             display: grid;
@@ -567,7 +553,7 @@
             position: relative;
         }
         .ba-images::after {
-            content: '→';
+            content: '\2192';
             position: absolute;
             left: 50%;
             top: 50%;
@@ -633,7 +619,6 @@
             color: var(--gray);
             line-height: 1.6;
         }
-
         /* ===== PATENT ===== */
         .patent {
             background: linear-gradient(160deg, #041A09 0%, var(--primary-dark) 40%, var(--primary) 100%);
@@ -715,7 +700,6 @@
             color: var(--accent-light);
             font-size: 18px;
         }
-
         /* ===== YOUTUBE ===== */
         .youtube {
             background: var(--light-gray);
@@ -777,7 +761,6 @@
             transform: translateY(-3px);
             box-shadow: 0 10px 36px rgba(255,0,0,0.4);
         }
-
         /* ===== WHY US ===== */
         .why-us-grid {
             display: grid;
@@ -826,7 +809,6 @@
             color: var(--gray);
             line-height: 1.75;
         }
-
         /* ===== PROCESS ===== */
         .process {
             background: var(--light-gray);
@@ -887,7 +869,6 @@
             color: var(--gray);
             line-height: 1.6;
         }
-
         /* ===== CTA ===== */
         .cta {
             background: linear-gradient(160deg, var(--accent), #E65100, #BF360C);
@@ -955,7 +936,6 @@
             transform: translateY(-3px);
             box-shadow: 0 12px 36px rgba(0,0,0,0.2);
         }
-
         /* ===== FOOTER ===== */
         footer {
             background: linear-gradient(180deg, #0D0D0D 0%, #111 100%);
@@ -1044,7 +1024,6 @@
             border-color: var(--primary);
             transform: translateY(-3px);
         }
-
         /* ===== RESPONSIVE ===== */
         @media (max-width: 1024px) {
             .hero h2 { font-size: 36px; }
@@ -1057,7 +1036,6 @@
             .footer-grid { grid-template-columns: 1fr 1fr; }
             .patent-content { grid-template-columns: 1fr; }
         }
-
         @media (max-width: 768px) {
             .top-bar .container { flex-direction: column; gap: 4px; }
             nav ul { display: none; }
@@ -1079,7 +1057,6 @@
             .footer-bottom { flex-direction: column; gap: 16px; }
             .cta-phone { font-size: 32px; }
         }
-
         /* ===== ANIMATIONS ===== */
         .fade-in {
             opacity: 0;
@@ -1090,7 +1067,6 @@
             opacity: 1;
             transform: translateY(0);
         }
-
         /* Staggered animations */
         .fade-in.visible:nth-child(1) { transition-delay: 0ms; }
         .fade-in.visible:nth-child(2) { transition-delay: 80ms; }
@@ -1098,7 +1074,6 @@
         .fade-in.visible:nth-child(4) { transition-delay: 240ms; }
         .fade-in.visible:nth-child(5) { transition-delay: 320ms; }
         .fade-in.visible:nth-child(6) { transition-delay: 400ms; }
-
         /* Gallery Image Modal */
         .gallery-section {
             padding: 100px 0;
@@ -1181,7 +1156,6 @@
             .app-phone { order: -1; }
             .app-stats-row { grid-template-columns: 1fr !important; }
         }
-
         /* ===== APP SECTION ===== */
         .app-section {
             padding: 80px 0;
@@ -1333,7 +1307,6 @@
             background: var(--primary);
             color: white;
         }
-
         /* Phone mockup */
         .app-phone {
             display: flex;
@@ -1418,7 +1391,6 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
-
         .app-stats-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -1464,7 +1436,6 @@
             </a>
         </div>
     </div>
-
     <!-- HEADER -->
     <header>
         <div class="container">
@@ -1493,7 +1464,6 @@
             </button>
         </div>
     </header>
-
     <!-- HERO -->
     <section class="hero" id="home">
         <div class="hero-content">
@@ -1547,7 +1517,6 @@
             </div>
         </div>
     </section>
-
     <!-- APP SECTION - 입주자 사전점검 앱 -->
     <section class="app-section" id="app">
         <div class="container">
@@ -1568,7 +1537,6 @@
                         체계적으로 점검합니다. 누구나 쉽게 사용할 수 있으며,
                         수익의 50%는 공익에 기부됩니다.
                     </p>
-
                     <div class="donation-highlight">
                         <div class="donation-icon">💚</div>
                         <div class="donation-text">
@@ -1577,7 +1545,6 @@
                             내 집 점검도 하고, 좋은 일에도 함께 참여하세요!</p>
                         </div>
                     </div>
-
                     <div class="app-features">
                         <div class="app-feature-item">
                             <i class="fas fa-camera"></i> 사진 촬영 점검
@@ -1598,7 +1565,6 @@
                             <i class="fas fa-mobile-alt"></i> 모바일 최적화
                         </div>
                     </div>
-
                     <div class="app-buttons">
                         <a href="https://anhjjeon1.github.io" target="_blank" class="btn btn-app">
                             <i class="fas fa-external-link-alt"></i> 앱 바로가기
@@ -1608,7 +1574,6 @@
                         </a>
                     </div>
                 </div>
-
                 <div class="app-phone fade-in">
                     <div class="phone-mockup">
                         <div class="phone-notch"></div>
@@ -1685,7 +1650,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="app-stats-row fade-in">
                 <div class="app-stat-card">
                     <div class="stat-icon" style="background:rgba(233,30,99,0.1);color:#e91e63;">
@@ -1711,7 +1675,6 @@
             </div>
         </div>
     </section>
-
     <!-- SERVICES -->
     <section class="section services" id="services">
         <div class="container">
@@ -1766,7 +1729,6 @@
             </div>
         </div>
     </section>
-
     <!-- BEFORE / AFTER -->
     <section class="section" id="gallery">
         <div class="container">
@@ -1843,7 +1805,6 @@
             </div>
         </div>
     </section>
-
     <!-- PHOTO GALLERY -->
     <section class="gallery-section" id="photos" style="background: var(--light-gray);">
         <div class="container">
@@ -1896,7 +1857,6 @@
             </div>
         </div>
     </section>
-
     <!-- PATENT -->
     <section class="section patent" id="patent">
         <div class="container">
@@ -1915,7 +1875,6 @@
             </div>
         </div>
     </section>
-
     <!-- WHY CHOOSE US -->
     <section class="section">
         <div class="container">
@@ -1948,7 +1907,6 @@
             </div>
         </div>
     </section>
-
     <!-- YOUTUBE VIDEOS -->
     <section class="section youtube" id="youtube">
         <div class="container">
@@ -1999,7 +1957,6 @@
             </div>
         </div>
     </section>
-
     <!-- PROCESS -->
     <section class="section process">
         <div class="container">
@@ -2037,7 +1994,6 @@
             </div>
         </div>
     </section>
-
     <!-- CTA -->
     <section class="cta" id="contact">
         <div class="container">
@@ -2052,7 +2008,6 @@
             </a>
         </div>
     </section>
-
     <!-- FOOTER -->
     <footer>
         <div class="container">
@@ -2109,7 +2064,6 @@
             </div>
         </div>
     </footer>
-
     <!-- SCROLL ANIMATION -->
     <script>
         // Fade-in on scroll with staggered delays
@@ -2120,11 +2074,9 @@
                 }
             });
         }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-
         document.querySelectorAll('.fade-in').forEach(el => {
             observer.observe(el);
         });
-
         // Smooth scroll with offset for sticky header
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
@@ -2142,7 +2094,6 @@
                 }
             });
         });
-
         // Mobile menu toggle
         const mobileMenu = document.querySelector('.mobile-menu');
         const navUl = document.querySelector('nav ul');
@@ -2164,7 +2115,6 @@
                 mobileMenu.innerHTML = isOpen ? '<i class="fas fa-bars"></i>' : '<i class="fas fa-times"></i>';
             });
         }
-
         // Header glassmorphism scroll effect
         const header = document.querySelector('header');
         let lastScroll = 0;
@@ -2177,7 +2127,6 @@
             }
             lastScroll = scrollY;
         });
-
         // Count-up animation for stat numbers
         const countObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -2203,11 +2152,9 @@
                 }
             });
         }, { threshold: 0.5 });
-
         document.querySelectorAll('.stat-number').forEach(el => {
             countObserver.observe(el);
         });
-
         // Active nav link on scroll
         const sections = document.querySelectorAll('section[id]');
         window.addEventListener('scroll', () => {
