@@ -124,8 +124,15 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f5;color:#333;line-he
 .voice-box p{font-size:14px;color:#555;line-height:1.8}
 .voice-features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .voice-feat{background:#e3f2fd;padding:12px 16px;border-radius:8px;font-size:13px;color:#1565c0;font-weight:500;display:flex;align-items:center;gap:6px}
-.donate-banner{background:linear-gradient(135deg,#fff8e1,#fff3e0);border:2px solid #ffb74d;border-radius:12px;padding:20px 28px;margin:20px 0;text-align:center}
-.donate-banner p{font-size:15px;color:#e65100;font-weight:600;line-height:1.7}
+.donate-banner{background:#fff;border:2px solid #E53935;border-radius:16px;padding:28px;margin:20px 0;text-align:center}
+.donate-banner p{font-size:15px;color:#333;font-weight:600;line-height:1.7}
+.stc-donate-wrap{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+.stc-donate-logo{width:70px;height:70px;border-radius:50%;border:2px solid #E53935;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stc-donate-logo img{width:45px;height:45px;object-fit:contain}
+.stc-donate-text{text-align:left}
+.stc-donate-text h5{font-size:16px;color:#E53935;margin-bottom:4px;font-weight:800}
+.stc-donate-text p{font-size:14px;color:#555;font-weight:500;line-height:1.6}
+.stc-donate-text span{font-size:12px;color:#E53935;font-weight:700}
 .nav-bar{position:sticky;top:0;z-index:100;background:rgba(26,35,126,.97);backdrop-filter:blur(8px);display:flex;justify-content:center;gap:0;box-shadow:0 2px 12px rgba(0,0,0,.2);overflow-x:auto}
 .nav-item{display:flex;align-items:center;gap:8px;padding:14px 20px;color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:500;white-space:nowrap;transition:all .2s;border-bottom:3px solid transparent;cursor:pointer}
 .nav-item:hover{color:#fff;background:rgba(255,255,255,.08);border-bottom-color:#ff6b6b}
@@ -640,7 +647,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f5;color:#333;line-he
             <div class="guide-step-content">
                 <h5>AI 하자 분석 + 정보 확인</h5>
                 <p>
-                    가까이 찍기 완료 시 <strong>AI가 국토부 기준을 참조하여 자동 분석</strong>합니다.<br>
+                    가까이 찍기 완료 후 하자정보 아래칸 하자내용에 직접 입력하면 <strong>AI가 국토부 기준을 참조하여 자동 분석</strong>합니다.<br>
                     &bull; <strong>공종</strong>(도배공사, 타일공사 등), <strong>세부 항목</strong>, <strong>하자 유형</strong>(흠집, 들뜸, 미시공 등)이 자동 분류<br>
                     &bull; 직접 하자 내용을 텍스트로 입력하면 <strong>더 정밀한 분석</strong> 제공 (AI 모드 전환)<br>
                     &bull; 예시: "창호 우측 내부정착 수직수평불량" / "거실 도배 들뜸" / "욕실 타일 균열" 등<br><br>
@@ -683,13 +690,18 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f5;color:#333;line-he
             </p>
         </div>
 
-        <!-- 기부 안내 -->
+        <!-- 세이브더칠드런 후원 안내 -->
         <div class="donate-banner">
-            <p>
-                &#128154; <strong>청개구리 사전점검 앱은 '기부형 앱'입니다</strong> &#128154;<br>
-                이 앱의 유료 수익 50%는 공익단체에 기부됩니다.<br>
-                당신의 점검이 누군가에게 따뜻한 도움이 됩니다!
-            </p>
+            <div class="stc-donate-wrap">
+                <div class="stc-donate-logo">
+                    <img src="../images/stc-logo.png" alt="세이브더칠드런">
+                </div>
+                <div class="stc-donate-text">
+                    <h5>세이브더칠드런 후원 기업</h5>
+                    <p>청개구리 사전점검 앱 수익의 <strong>50%</strong>는<br>세이브더칠드런을 통해 아동을 후원합니다.</p>
+                    <span>아동을 살리는 기업 '위세이브(wesave)' 선정</span>
+                </div>
+            </div>
         </div>
 
         <!-- 필수 확인 -->
