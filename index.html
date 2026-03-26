@@ -936,6 +936,81 @@
             transform: translateY(-3px);
             box-shadow: 0 12px 36px rgba(0,0,0,0.2);
         }
+        /* ===== SAVE THE CHILDREN ===== */
+        .stc-section {
+            background: #ffffff;
+            padding: 80px 0;
+            text-align: center;
+        }
+        .stc-inner {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .stc-badge {
+            display: inline-block;
+            background: #E53935;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 6px 20px;
+            border-radius: 50px;
+            letter-spacing: 1px;
+            margin-bottom: 28px;
+        }
+        .stc-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--dark);
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+        .stc-title span {
+            color: #E53935;
+        }
+        .stc-subtitle {
+            font-size: 17px;
+            color: var(--gray);
+            margin-bottom: 40px;
+            line-height: 1.7;
+        }
+        .stc-image-wrap {
+            margin-bottom: 36px;
+            position: relative;
+        }
+        .stc-image-wrap img {
+            max-width: 380px;
+            width: 100%;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+        }
+        .stc-logos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 10px;
+        }
+        .stc-logos img {
+            height: 40px;
+            object-fit: contain;
+        }
+        .stc-divider {
+            width: 1px;
+            height: 32px;
+            background: #ddd;
+        }
+        .stc-text-corporate {
+            display: inline-block;
+            font-size: 15px;
+            font-weight: 700;
+            color: #E53935;
+            letter-spacing: 1px;
+        }
+        @media (max-width: 768px) {
+            .stc-title { font-size: 26px; }
+            .stc-image-wrap img { max-width: 280px; }
+            .stc-section { padding: 60px 0; }
+        }
         /* ===== FOOTER ===== */
         footer {
             background: linear-gradient(180deg, #0D0D0D 0%, #111 100%);
@@ -1550,9 +1625,9 @@
                     <div class="donation-highlight">
                         <div class="donation-icon" style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9);width:80px;height:80px;min-width:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;">🤝</div>
                         <div class="donation-text">
-                            <h4>공익단체 기부 <span style="color:#999;font-size:14px;">(협의 중)</span></h4>
-                            <p>청개구리샤시 사전점검 앱 수익의 <strong>50%</strong>는 공익단체를 통해 기부할 예정입니다.<br>
-                            <span style="font-size:12px;color:#999;">현재 세이브더칠드런과 협의 중입니다.</span></p>
+                            <h4>세이브더칠드런 후원</h4>
+                            <p>청개구리샤시 사전점검 앱 수익의 <strong>50%</strong>는 세이브더칠드런을 통해 아동을 후원합니다.<br>
+                            <span style="font-size:12px;color:#E53935;">아동을 살리는 기업 '위세이브(wesave)' 선정</span></p>
                         </div>
                     </div>
                     <div class="app-features">
@@ -2016,6 +2091,27 @@
             <a href="tel:010-2322-0949" class="btn btn-white">
                 <i class="fas fa-phone"></i> 지금 바로 상담하기
             </a>
+        </div>
+    </section>
+    <!-- SAVE THE CHILDREN -->
+    <section class="stc-section">
+        <div class="container">
+            <div class="stc-inner fade-in">
+                <div class="stc-badge">SAVE THE CHILDREN</div>
+                <h2 class="stc-title">우리는 아동을 살리는 <span>'기업'</span>입니다</h2>
+                <p class="stc-subtitle">
+                    청개구리샤시는 세이브더칠드런과 함께<br>
+                    매월 아동을 후원하며, 아동의 꿈을 응원합니다.
+                </p>
+                <div class="stc-image-wrap">
+                    <img src="images/savethechildren.png" alt="세이브더칠드런 아동을 살리는 기업 위세이브">
+                </div>
+                <div class="stc-logos">
+                    <img src="images/stc-logo.png" alt="세이브더칠드런 로고">
+                    <div class="stc-divider"></div>
+                    <span class="stc-text-corporate">we<b style="color:#111;">save</b></span>
+                </div>
+            </div>
         </div>
     </section>
     <!-- FOOTER -->
