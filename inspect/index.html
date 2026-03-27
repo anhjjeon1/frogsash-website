@@ -2567,6 +2567,15 @@ A.edit=id=>{const idx=list.findIndex(i=>i.id===id);if(idx===-1)return;if(!confir
 A.del=id=>{if(!confirm('삭제하시겠습니까?'))return;$(`i-${id}`).remove();list=list.filter(i=>i.id!==id);$('lCnt').textContent=list.length;updateModeLabel();saveList();};
 A.clearAll=()=>{if(!list.length)return;if(!confirm(`${list.length}건 전체 삭제하시겠습니까?`))return;list=[];$('lBox').innerHTML='';$('lCnt').textContent=0;updateModeLabel();saveList();};
 
+/* ── PDF 라이브러리 동적 로딩 ── */
+function loadScript(url){return new Promise((res,rej)=>{if(document.querySelector(`script[src="${url}"]`)){res();return;}const s=document.createElement('script');s.src=url;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function ensurePdfLibs(){
+  if(!window.jspdf)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js');
+  if(!window.html2canvas)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+  if(!window.jspdf)throw new Error('jsPDF 로드 실패');
+  if(!window.html2canvas)throw new Error('html2canvas 로드 실패');
+}
+
 /* ── PDF 저장 (html2canvas + 이미지 사전축소) ── */
 A.pdf=async()=>{
   if(!list.length){alert('저장할 내용이 없습니다.');return;}
@@ -2581,8 +2590,11 @@ A.pdf=async()=>{
   /* 오버레이 */
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;background:#fff;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px';
-  overlay.innerHTML='<div style="font-size:2rem">📄</div><div id="pdfProgress" style="font-size:1rem;font-weight:800;color:#0A6B5C">PDF 준비 중...</div><div style="font-size:.8rem;color:#94A3B8">이미지 최적화 중</div>';
+  overlay.innerHTML='<div style="font-size:2rem">📄</div><div id="pdfProgress" style="font-size:1rem;font-weight:800;color:#0A6B5C">PDF 준비 중...</div><div style="font-size:.8rem;color:#94A3B8">라이브러리 로딩 중</div>';
   document.body.appendChild(overlay);
+
+  /* 라이브러리 동적 로딩 */
+  await ensurePdfLibs();
 
   try{
     /* ── 1단계: 모든 이미지를 200px로 사전 축소 ── */
