@@ -2113,7 +2113,6 @@ input[type="file"]{
 <div class="toast" id="toastMsg"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 /* ============================================================
    ★ 설정값
@@ -2567,8 +2566,157 @@ A.edit=id=>{const idx=list.findIndex(i=>i.id===id);if(idx===-1)return;if(!confir
 A.del=id=>{if(!confirm('삭제하시겠습니까?'))return;$(`i-${id}`).remove();list=list.filter(i=>i.id!==id);$('lCnt').textContent=list.length;updateModeLabel();saveList();};
 A.clearAll=()=>{if(!list.length)return;if(!confirm(`${list.length}건 전체 삭제하시겠습니까?`))return;list=[];$('lBox').innerHTML='';$('lCnt').textContent=0;updateModeLabel();saveList();};
 
-/* ── PDF 저장 ── */
-A.pdf=()=>{if(!list.length){alert('저장할 내용이 없습니다.');return;}const now=new Date();const ymd=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;const addr=$('fAddr').value||'';const shortAddr=addr.replace(/[^가-힣0-9]/g,'').slice(-12)||'현장';const fileName=`사전점검_${shortAddr}_${ymd}.pdf`;const info=addr||'주소미입력';const dateStr=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;const overlay=document.createElement('div');overlay.style.cssText='position:fixed;inset:0;background:#fff;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px';overlay.innerHTML='<div style="font-size:2rem">📄</div><div style="font-size:1rem;font-weight:800;color:#0A6B5C">PDF 생성 중...</div><div style="font-size:.8rem;color:#94A3B8">잠시만 기다려주세요</div>';document.body.appendChild(overlay);const wrap=document.createElement('div');wrap.style.cssText='position:absolute;top:0;left:0;width:800px;padding:28px 24px;font-family:Noto Sans KR,sans-serif;color:#1A2332;background:#fff;z-index:1;line-height:1.5';let h=`<div style="text-align:center;margin-bottom:22px;padding-bottom:16px;border-bottom:3px solid #0A6B5C"><div style="font-size:20px;font-weight:900;color:#0A6B5C;margin-bottom:6px">🐸 청개구리 입주자 사전점검 리포트</div><div style="font-size:13px;font-weight:700;color:#5A6B7F">${info}</div><div style="font-size:10px;color:#94A3B8;margin-top:4px">${dateStr} 작성 | 총 ${list.length}건 | v20.8</div><div style="font-size:9px;color:#16A34A;margin-top:6px;background:#ECFDF5;padding:4px 10px;border-radius:6px;display:inline-block">💚 이 앱 수익의 50%는 세이브더칠드런에 기부됩니다</div></div>`;list.forEach((it,idx)=>{const isSafe=it.type==='허용범위';const tc=isSafe?'#059669':'#E74C3C',tb=isSafe?'#ECFDF5':'#FFF5F5';const mTag=it.mode==='paid'?'<span style="font-size:9px;background:#03C75A;color:#fff;padding:2px 6px;border-radius:3px;margin-left:4px">이용권</span>':it.mode==='pro'?'<span style="font-size:9px;background:#7C3AED;color:#fff;padding:2px 6px;border-radius:3px;margin-left:4px">직원</span>':'<span style="font-size:9px;background:#E6F7F3;color:#0A6B5C;padding:2px 6px;border-radius:3px;margin-left:4px">무료체험</span>';h+=`<div style="border:1px solid #ddd;border-radius:10px;overflow:hidden;margin-bottom:14px"><div style="padding:8px 12px;background:#F4F6F9;border-bottom:1px solid #eee"><span style="display:inline-block;font-size:10px;font-weight:900;background:#0A6B5C;color:#fff;width:20px;height:20px;border-radius:5px;text-align:center;line-height:20px;margin-right:6px;vertical-align:middle">${idx+1}</span><span style="font-size:13px;font-weight:800;vertical-align:middle">${safeRoom}</span><span style="font-size:10px;font-weight:700;color:${tc};background:${tb};padding:2px 6px;border-radius:4px;margin-left:6px;vertical-align:middle">${safeType}</span>${mTag}</div>`;const hasW=it.wImg&&it.wImg.startsWith('data:'),hasC=it.cImg&&it.cImg.startsWith('data:');if(hasW||hasC){if(hasW&&hasC){h+=`<table style="width:100%;border-collapse:collapse;background:#F1F4F8"><tr><td style="width:50%;padding:4px"><img src="${it.wImg}" style="width:100%;height:150px;object-fit:cover;border-radius:6px;display:block"></td><td style="width:50%;padding:4px"><img src="${it.cImg}" style="width:100%;height:150px;object-fit:cover;border-radius:6px;display:block"></td></tr></table>`;}else{const src=hasW?it.wImg:it.cImg;h+=`<div style="padding:4px;background:#F1F4F8"><img src="${src}" style="width:100%;height:180px;object-fit:cover;border-radius:6px;display:block"></div>`;}}const safeRoom=esc(it.room),safeType=esc(it.type),safeWork=esc(it.work),safeSub=esc(it.sub),safeDetail=esc(it.detail);h+=`<div style="padding:10px 12px"><div style="font-size:11px;font-weight:700;color:#0A6B5C;margin-bottom:3px">${safeWork} → ${safeSub}</div><div style="font-size:11px;color:#5A6B7F;line-height:1.6;white-space:pre-wrap">${safeDetail}</div></div></div>`;});h+=`<div style="text-align:center;font-size:8px;color:#94A3B8;margin-top:14px;padding-top:10px;border-top:1px solid #E8ECF1;line-height:1.6">※ 본 리포트는 입주자 사전점검 보조 자료이며 법적 효력이 없습니다.<br>제공: 청개구리샤시 | 대표: 전영웅 | 📞 010-2322-0949 | ⓒ 2026 Cheong-gaeguri Corp. | v20.8</div>`;wrap.innerHTML=h;document.body.appendChild(wrap);const imgs=wrap.querySelectorAll('img');const imgP=Array.from(imgs).map(img=>img.complete&&img.naturalHeight>0?Promise.resolve():new Promise(r=>{img.onload=r;img.onerror=r;}));Promise.all(imgP).then(()=>{requestAnimationFrame(()=>{requestAnimationFrame(()=>{setTimeout(()=>{html2canvas(wrap,{scale:1.5,useCORS:true,allowTaint:true,logging:false,foreignObjectRendering:false,backgroundColor:'#ffffff',width:800,height:wrap.scrollHeight,windowWidth:800}).then(canvas=>{const{jsPDF}=window.jspdf;const pdf=new jsPDF('p','mm','a4');const pageW=210,pageH=297,margin=5,usableW=pageW-margin*2,usableH=pageH-margin*2;const imgW=canvas.width,imgH=canvas.height,ratio=usableW/imgW,pageImgH=usableH/ratio;let remainH=imgH,srcY=0,page=0;while(remainH>0){if(page>0)pdf.addPage();const sliceH=Math.min(pageImgH,remainH);const sliceHmm=sliceH*ratio;const sliceCanvas=document.createElement('canvas');sliceCanvas.width=imgW;sliceCanvas.height=Math.ceil(sliceH);const ctx=sliceCanvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,sliceCanvas.width,sliceCanvas.height);ctx.drawImage(canvas,0,srcY,imgW,sliceH,0,0,imgW,sliceH);const sliceData=sliceCanvas.toDataURL('image/jpeg',0.8);pdf.addImage(sliceData,'JPEG',margin,margin,usableW,sliceHmm);srcY+=sliceH;remainH-=sliceH;page++;}const pdfBlob=pdf.output('blob');const blobUrl=URL.createObjectURL(pdfBlob);const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;if(isIOS){const newTab=window.open(blobUrl,'_blank');wrap.remove();overlay.remove();stat('✅ PDF 생성 완료');if(!newTab){alert(`📄 팝업이 차단됐습니다.\n브라우저 팝업 허용 후 다시 시도해 주세요.\n\n파일명: ${fileName}`);}else{setTimeout(()=>{alert(`📥 화면 상단 공유버튼(□↑) 터치 → "파일에 저장" 선택\n\n파일명: ${fileName}`);},800);}}else{const a=document.createElement('a');a.href=blobUrl;a.download=fileName;a.style.display='none';document.body.appendChild(a);a.click();document.body.removeChild(a);wrap.remove();overlay.remove();stat(`✅ ${fileName} 저장 완료!`);toast(`📥 <b>내 파일 → 다운로드</b> 폴더에서 확인하세요`,false,4000);}setTimeout(()=>URL.revokeObjectURL(blobUrl),8000);}).catch(err=>{console.error(err);wrap.remove();overlay.remove();stat('PDF 생성 실패',true);if(confirm('PDF 저장 실패.\n브라우저 인쇄로 저장할까요?'))window.print();});},800);});});}).catch(()=>{wrap.remove();overlay.remove();stat('이미지 로딩 실패',true);});};
+/* ── PDF 저장 (jsPDF 직접 그리기 - html2canvas 제거) ── */
+A.pdf=()=>{
+  if(!list.length){alert('저장할 내용이 없습니다.');return;}
+  const now=new Date();
+  const ymd=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  const addr=$('fAddr').value||'';
+  const shortAddr=addr.replace(/[^가-힣0-9]/g,'').slice(-12)||'현장';
+  const fileName=`사전점검_${shortAddr}_${ymd}.pdf`;
+  const info=addr||'주소미입력';
+  const dateStr=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+
+  const{jsPDF}=window.jspdf;
+  const pdf=new jsPDF('p','mm','a4');
+  const W=210,H=297,M=10,cW=W-M*2;
+  let y=M;
+
+  function checkPage(need){if(y+need>H-M){pdf.addPage();y=M;}return y;}
+  function line(x1,yy,x2,color,w){pdf.setDrawColor(color||'#E8ECF1');pdf.setLineWidth(w||0.3);pdf.line(x1,yy,x2,yy);}
+
+  /* ── 헤더 ── */
+  pdf.setFontSize(16);pdf.setTextColor('#0A6B5C');
+  pdf.text('청개구리 입주자 사전점검 리포트',W/2,y,{align:'center'});y+=7;
+  pdf.setFontSize(10);pdf.setTextColor('#5A6B7F');
+  pdf.text(info,W/2,y,{align:'center'});y+=5;
+  pdf.setFontSize(8);pdf.setTextColor('#94A3B8');
+  pdf.text(`${dateStr} | 총 ${list.length}건 | v20.8`,W/2,y,{align:'center'});y+=4;
+  pdf.setFontSize(7);pdf.setTextColor('#16A34A');
+  pdf.text('수익의 50%는 세이브더칠드런에 기부됩니다',W/2,y,{align:'center'});y+=4;
+  line(M,y,W-M,'#0A6B5C',0.6);y+=6;
+
+  /* ── 항목별 그리기 ── */
+  const imgPromises=[];
+  list.forEach((it,idx)=>{
+    /* 이미지 미리 로드 */
+    const hasW=it.wImg&&it.wImg.startsWith('data:');
+    const hasC=it.cImg&&it.cImg.startsWith('data:');
+    if(hasW)imgPromises.push({idx,type:'w',src:it.wImg});
+    if(hasC)imgPromises.push({idx,type:'c',src:it.cImg});
+  });
+
+  /* 이미지를 canvas로 리사이즈 (PDF용 400px) */
+  function resizeForPdf(src){
+    return new Promise(r=>{
+      const img=new Image();
+      img.onload=()=>{
+        let w=img.width,h=img.height;
+        const max=400;
+        if(w>max||h>max){const ratio=Math.min(max/w,max/h);w=Math.round(w*ratio);h=Math.round(h*ratio);}
+        const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+        cv.getContext('2d').drawImage(img,0,0,w,h);
+        r(cv.toDataURL('image/jpeg',0.7));
+      };
+      img.onerror=()=>r(null);
+      img.src=src;
+    });
+  }
+
+  /* 모든 이미지 리사이즈 후 PDF 그리기 */
+  Promise.all(imgPromises.map(p=>resizeForPdf(p.src).then(d=>({...p,data:d})))).then(imgResults=>{
+    const imgMap={};
+    imgResults.forEach(r=>{if(r.data){if(!imgMap[r.idx])imgMap[r.idx]={};imgMap[r.idx][r.type]=r.data;}});
+
+    list.forEach((it,idx)=>{
+      const isSafe=it.type==='허용범위';
+      const room=it.room||'위치미지정';
+      const work=it.work||'';
+      const sub=it.sub||'';
+      const type=it.type||'';
+      const detail=it.detail||'';
+      const modeLabel=it.mode==='paid'?'[이용권]':it.mode==='pro'?'[직원]':'[무료]';
+      const imgs=imgMap[idx]||{};
+
+      /* 항목 높이 예측 */
+      const hasImg=imgs.w||imgs.c;
+      const detailLines=pdf.splitTextToSize(detail,cW-4);
+      const needH=8+(hasImg?42:0)+4+(detailLines.length*4)+10;
+      checkPage(needH);
+
+      /* 번호 + 위치 + 유형 헤더 */
+      pdf.setFillColor('#F4F6F9');pdf.rect(M,y,cW,7,'F');
+      pdf.setFontSize(8);pdf.setTextColor('#FFFFFF');
+      pdf.setFillColor('#0A6B5C');pdf.rect(M+2,y+1,5,5,'F');
+      pdf.text(String(idx+1),M+4.5,y+4.6,{align:'center'});
+      pdf.setTextColor('#1A2332');pdf.setFontSize(9);
+      pdf.text(room,M+9,y+4.8);
+      pdf.setFontSize(7);pdf.setTextColor(isSafe?'#059669':'#E74C3C');
+      pdf.text(type,M+9+pdf.getTextWidth(room)+3,y+4.8);
+      pdf.setTextColor('#94A3B8');pdf.setFontSize(6);
+      pdf.text(modeLabel,M+cW-pdf.getTextWidth(modeLabel)-2,y+4.8);
+      y+=8;
+
+      /* 이미지 */
+      if(hasImg){
+        const imgY=y;
+        try{
+          if(imgs.w&&imgs.c){
+            const iw=(cW-3)/2;
+            pdf.addImage(imgs.w,'JPEG',M,imgY,iw,38);
+            pdf.addImage(imgs.c,'JPEG',M+iw+3,imgY,iw,38);
+          }else{
+            const src=imgs.w||imgs.c;
+            pdf.addImage(src,'JPEG',M,imgY,cW/2,38);
+          }
+        }catch(e){console.warn('이미지 추가 실패',e);}
+        y+=40;
+      }
+
+      /* 공종 → 세부 */
+      pdf.setFontSize(7);pdf.setTextColor('#0A6B5C');
+      pdf.text(`${work} > ${sub}`,M+2,y+3);y+=5;
+
+      /* 상세 내용 */
+      pdf.setFontSize(7);pdf.setTextColor('#5A6B7F');
+      detailLines.forEach(ln=>{
+        checkPage(4);
+        pdf.text(ln,M+2,y+3);y+=3.5;
+      });
+      y+=4;
+
+      /* 구분선 */
+      line(M,y,W-M);y+=4;
+    });
+
+    /* ── 푸터 ── */
+    checkPage(12);
+    line(M,y,W-M,'#E8ECF1',0.3);y+=4;
+    pdf.setFontSize(6);pdf.setTextColor('#94A3B8');
+    pdf.text('※ 본 리포트는 입주자 사전점검 보조 자료이며 법적 효력이 없습니다.',W/2,y,{align:'center'});y+=3;
+    pdf.text('청개구리샤시 | 대표: 전영웅 | 010-2322-0949 | (c) 2026 Cheong-gaeguri | v20.8',W/2,y,{align:'center'});
+
+    /* ── 다운로드 ── */
+    const pdfBlob=pdf.output('blob');
+    const blobUrl=URL.createObjectURL(pdfBlob);
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+    if(isIOS){
+      const newTab=window.open(blobUrl,'_blank');
+      stat('✅ PDF 생성 완료');
+      if(!newTab)alert('팝업이 차단됐습니다. 브라우저 팝업 허용 후 다시 시도해 주세요.');
+      else setTimeout(()=>alert(`📥 공유버튼 → "파일에 저장"\n파일명: ${fileName}`),800);
+    }else{
+      const a=document.createElement('a');a.href=blobUrl;a.download=fileName;
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+      stat(`✅ ${fileName} 저장 완료!`);
+      toast(`📥 <b>내 파일 → 다운로드</b> 폴더에서 확인하세요`,false,4000);
+    }
+    setTimeout(()=>URL.revokeObjectURL(blobUrl),8000);
+  }).catch(err=>{
+    console.error(err);stat('PDF 생성 실패',true);
+    if(confirm('PDF 저장 실패.\n브라우저 인쇄로 저장할까요?'))window.print();
+  });
+};
 
 /* ── 모달 ── */
 A.modal=(n,s)=>{let el;if(n==='paid')el=$('moPaid');else if(n==='payGuide')el=$('moPayGuide');else return;el.classList.toggle('show',!!s);};
