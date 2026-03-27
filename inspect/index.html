@@ -2337,15 +2337,15 @@ function stat(m,e){$('sMsg').textContent=m;$('sDot').classList.toggle('err',!!e)
 function toast(msg,warn=false,dur=2800){const el=$('toastMsg');el.innerHTML=msg;el.className='toast'+(warn?' warn':'');clearTimeout(el._t);requestAnimationFrame(()=>{el.classList.add('show');});el._t=setTimeout(()=>{el.classList.remove('show');},dur);}
 
 /* ── 자동 저장 ── */
-function autoSave(){
-  const cs=$('pvC').src;
-  const ws=$('pvW').src;
+function autoSave(savedW,savedC){
+  const cs=savedC||$('pvC').src;
+  const ws=savedW||$('pvW').src;
   const hasClose=cs&&cs.startsWith('data:');
   const hasWide=ws&&ws.startsWith('data:');
-  if(!hasClose&&!hasWide)return;
+  if(!hasClose&&!hasWide){console.warn('[autoSave] 이미지 없음 - 저장 건너뜀');return;}
   if(!$('fAgree').checked){
     if(ls('frog_agreed')==='true'){$('fAgree').checked=true;$('agreeNote').style.display='block';}
-    else{toast('<i class="fa-solid fa-triangle-exclamation"></i> 필수 확인에 동의 후 자동 저장됩니다',true,3500);$('fAgree').closest('.ag').scrollIntoView({behavior:'smooth',block:'center'});$('fAgree').addEventListener('change',function handler(){if($('fAgree').checked){autoSave();$('fAgree').removeEventListener('change',handler);}});return;}
+    else{toast('<i class="fa-solid fa-triangle-exclamation"></i> 필수 확인에 동의 후 자동 저장됩니다',true,3500);$('fAgree').closest('.ag').scrollIntoView({behavior:'smooth',block:'center'});$('fAgree').addEventListener('change',function handler(){if($('fAgree').checked){autoSave(savedW,savedC);$('fAgree').removeEventListener('change',handler);}});return;}
   }
   const addr=$('fAddr').value||'주소미입력';
   const room=$('fRoom').value||'위치미지정';
@@ -2580,7 +2580,9 @@ ${workList}
     const remaining=getRemaining();
     if(hasUserInput){stat(`📝 입력 기반 정밀 분석 완료 (잔여 ${remaining}건)`);}
     else{stat(`✅ 사진 분석 완료 (잔여 ${remaining}건)`);}
-    setTimeout(()=>autoSave(),800);
+    /* 현재 이미지 src를 캡처해두고 autoSave에 전달 */
+    const _wSrc=$('pvW').src, _cSrc=$('pvC').src;
+    setTimeout(()=>autoSave(_wSrc,_cSrc),800);
 
   }catch(err){
     console.error(err);
