@@ -1010,17 +1010,17 @@ textarea.if{
 .ba{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:10px;
+  gap:8px;
   padding:0 6px;
-  margin-top:12px;
+  margin-top:8px;
 }
 .ab{
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:5px;
-  padding:14px 6px;
+  gap:4px;
+  padding:10px 6px;
   border:none;
   border-radius:var(--r);
   cursor:pointer;
@@ -1939,11 +1939,11 @@ input[type="file"]{
   <div class="lh">
     <div class="lh-l">
       <div class="lc" id="lCnt">0</div>
-      <div><div class="lh-t">점검 리스트</div><div class="lh-s" id="lInfo">정보 입력 대기</div></div>
+      <div><div class="lh-t">점검 리스트</div></div>
     </div>
     <div style="display:flex;align-items:center;gap:6px">
       <span id="lMode" style="font-size:.68rem;font-weight:800;padding:3px 8px;border-radius:6px;background:var(--pg);color:var(--p);display:none">무료체험</span>
-      <button style="background:none;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-size:.7rem;font-weight:700;cursor:pointer;color:var(--ts);font-family:inherit;min-height:36px" onclick="A.clearAll()"><i class="fa-solid fa-trash"></i> 전체삭제</button>
+      <button style="background:none;border:1px solid var(--bd);border-radius:8px;padding:7px 14px;font-size:.7rem;font-weight:700;cursor:pointer;color:var(--ts);font-family:inherit;white-space:nowrap" onclick="A.clearAll()"><i class="fa-solid fa-trash"></i> 전체삭제</button>
     </div>
   </div>
   <div id="lBox"></div>
@@ -2348,7 +2348,7 @@ function autoSave(savedW,savedC){
   const addr=$('fAddr').value||'주소미입력';
   const room=$('fRoom').value||'위치미지정';
   const info=addr;
-  $('lInfo').textContent=info;$('ptitle').textContent=info+' 사전점검 리포트';
+  if($('lInfo'))$('lInfo').textContent=info;$('ptitle').textContent=info+' 사전점검 리포트';
   const item={id:Date.now(),room,work:$('fWork').value,sub:$('fSub').value,type:$('fType').value,detail:$('fDetail').value,mode:getActiveMode(),wImg:hasWide?ws:null,cImg:hasClose?cs:(hasWide?ws:null)};
   list.push(item);renderItem(item);updateModeLabel();saveList();
   const roomMissing=!$('fRoom').value;
@@ -2539,7 +2539,7 @@ function _applyAIResult(aiWork,aiSub,aiType){
 
 /* ── 저장(수동 폴백) ── */
 A.togSave=()=>{const ok=$('fAgree').checked;if(ok){ls('frog_agreed','true');$('agreeNote').style.display='block';}const banner=$('autoSaveBanner');if(banner){if(ok){banner.style.borderColor='var(--nv)';banner.style.color='#059669';banner.innerHTML='<i class="fa-solid fa-bolt" style="color:var(--pl)"></i><span>가까이 찍기 후 <b>AI 분석 완료 시 자동 저장</b>됩니다</span>';}else{banner.style.borderColor='var(--wr)';banner.style.color='#C05621';banner.innerHTML='<i class="fa-solid fa-triangle-exclamation" style="color:var(--wr)"></i><span>필수 확인에 동의하면 <b>자동 저장</b>이 활성화됩니다</span>';}}};
-A.save=()=>{if(!$('fAgree').checked)return;if(!validateRoom()){const sv=$('btnSv');sv.style.background='#E74C3C';sv.style.boxShadow='0 0 0 4px rgba(231,76,60,.25)';setTimeout(()=>{sv.style.background='';sv.style.boxShadow='';},1200);return;}const cs=$('pvC').src;if(!cF&&(!cs||!cs.startsWith('data:'))){alert('사진(가까이 찍기)이 필요합니다.');return;}const addr=$('fAddr').value||'주소미입력';const info=addr;$('lInfo').textContent=info;$('ptitle').textContent=info+' 사전점검 리포트';const ws=$('pvW').src;const item={id:Date.now(),room:$('fRoom').value||'위치미지정',work:$('fWork').value,sub:$('fSub').value,type:$('fType').value,detail:$('fDetail').value,mode:getActiveMode(),wImg:(ws&&ws.startsWith('data:'))?ws:null,cImg:cs};list.push(item);renderItem(item);updateModeLabel();saveList();reset();stat('저장 완료! 다음 항목을 촬영하세요.');document.querySelector('.lh').scrollIntoView({behavior:'smooth'});setTimeout(()=>step(1),1500);};
+A.save=()=>{if(!$('fAgree').checked)return;if(!validateRoom()){const sv=$('btnSv');sv.style.background='#E74C3C';sv.style.boxShadow='0 0 0 4px rgba(231,76,60,.25)';setTimeout(()=>{sv.style.background='';sv.style.boxShadow='';},1200);return;}const cs=$('pvC').src;if(!cF&&(!cs||!cs.startsWith('data:'))){alert('사진(가까이 찍기)이 필요합니다.');return;}const addr=$('fAddr').value||'주소미입력';const info=addr;if($('lInfo'))$('lInfo').textContent=info;$('ptitle').textContent=info+' 사전점검 리포트';const ws=$('pvW').src;const item={id:Date.now(),room:$('fRoom').value||'위치미지정',work:$('fWork').value,sub:$('fSub').value,type:$('fType').value,detail:$('fDetail').value,mode:getActiveMode(),wImg:(ws&&ws.startsWith('data:'))?ws:null,cImg:cs};list.push(item);renderItem(item);updateModeLabel();saveList();reset();stat('저장 완료! 다음 항목을 촬영하세요.');document.querySelector('.lh').scrollIntoView({behavior:'smooth'});setTimeout(()=>step(1),1500);};
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function renderItem(it){
