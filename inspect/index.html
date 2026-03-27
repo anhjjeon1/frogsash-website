@@ -2018,8 +2018,8 @@ input[type="file"]{
 <div class="mo" id="moPwd" style="align-items:center">
 <div class="mo-b center" style="max-width:320px;text-align:center">
   <div style="font-size:2.5rem;margin-bottom:10px">🔒</div>
-  <div class="mo-h" style="font-size:1rem;color:var(--p)">직원 전용 모드</div>
-  <p style="font-size:.78rem;color:var(--ts);margin-bottom:14px">직원 비밀번호를 입력해주세요.</p>
+  <div class="mo-h" style="font-size:1rem;color:var(--p)">관리자 인증</div>
+  <p style="font-size:.78rem;color:var(--ts);margin-bottom:14px">관리자 비밀번호를 입력해주세요.</p>
   <input type="password" class="if" id="pwdInput" placeholder="비밀번호 입력" style="text-align:center;font-size:1rem;letter-spacing:4px;font-weight:800;margin-bottom:10px" onkeydown="if(event.key==='Enter')A.checkPwd()">
   <div id="pwdErr" style="font-size:.72rem;color:var(--dn);margin-bottom:8px;display:none">비밀번호가 틀렸습니다.</div>
   <button class="btn-sv ok" style="margin-top:4px" onclick="A.checkPwd()"><i class="fa-solid fa-lock-open"></i> 확인</button>
@@ -2073,7 +2073,7 @@ input[type="file"]{
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const LIMIT_FREE = 3;
 const LIMIT_PAID = 100;
-const LIMIT_PRO  = 50;
+/* 관리자 모드는 서버 인증 기반, 제한 없음 (99999) */
 
 let list=[], wF=null, cF=null, devN=0, devT;
 let mode='free';
@@ -2146,21 +2146,21 @@ async function verifyCodeGAS(code){if(GAS_URL.includes('YOUR_DEPLOYED_GAS_ID')){
 A.openPayModal=()=>{$('codeInput').value='';$('codeMsg').textContent='';$('codeMsg').className='code-msg';$('btnVerify').disabled=false;A.modal('payGuide',1);};
 A.showCodeInput=()=>{};
 A.verifyCode=async()=>{const code=$('codeInput').value.trim().toUpperCase();if(!code||code.length<4){$('codeInput').classList.add('error');$('codeMsg').textContent='코드를 입력해주세요 (4자 이상)';$('codeMsg').className='code-msg err';setTimeout(()=>$('codeInput').classList.remove('error'),500);return;}const p=getPassState();if(p.active&&p.code===code){$('codeMsg').textContent='이미 활성화된 코드입니다 ✓';$('codeMsg').className='code-msg ok';setTimeout(()=>A.modal('payGuide',0),1200);return;}$('btnVerify').disabled=true;$('codeMsg').textContent='확인 중...';$('codeMsg').className='code-msg loading';try{const result=await verifyCodeGAS(code);if(result.valid){$('codeInput').classList.remove('error');$('codeInput').classList.add('success');$('codeMsg').textContent='✓ 인증 성공! 오늘 하루 이용권이 활성화되었습니다';$('codeMsg').className='code-msg ok';activatePass(code,'paid');mode='paid';updatePassUI();updateQuotaUI();stat('🎟️ 1일 이용권 활성화! AI 분석 100회 사용 가능');setTimeout(()=>A.modal('payGuide',0),1800);}else{$('codeInput').classList.add('error');$('codeMsg').textContent=result.message||'유효하지 않은 코드입니다';$('codeMsg').className='code-msg err';setTimeout(()=>$('codeInput').classList.remove('error'),500);$('btnVerify').disabled=false;}}catch(e){$('codeMsg').textContent='검증 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';$('codeMsg').className='code-msg err';$('btnVerify').disabled=false;}};
-function updatePassUI(){const p=getPassState();const statusEl=$('passStatus'),labelEl=$('passLabel'),tagEl=$('passTag'),btnBuy=$('btnBuy');if(ls('is_dev')==='true'){statusEl.className='pass-status pro';labelEl.textContent='🛠️ 개발자 모드';tagEl.textContent='DEV';tagEl.style.background='var(--pu)';btnBuy.style.display='none';
+function updatePassUI(){const p=getPassState();const statusEl=$('passStatus'),labelEl=$('passLabel'),tagEl=$('passTag'),btnBuy=$('btnBuy');if(mode==='admin'&&sessionStorage.getItem('admin_token')){statusEl.className='pass-status pro';labelEl.textContent='🔐 관리자 모드';tagEl.textContent='관리자';tagEl.style.background='var(--pu)';btnBuy.style.display='none';
 $('passCount').textContent='무제한';
 $('passCount').className='pass-count ok';
-return;}if(mode==='pro'){statusEl.className='pass-status pro';labelEl.textContent='직원 전용 모드 활성';tagEl.textContent='직원';tagEl.style.background='var(--pu)';btnBuy.style.display='none';$('passCount').textContent='';$('passCount').className='pass-count';return;}if(p.active&&p.type==='paid'){statusEl.className='pass-status paid';labelEl.textContent='1일 이용권 이용 중';tagEl.textContent='이용권';tagEl.style.background='var(--nv)';btnBuy.innerHTML='<i class="fa-solid fa-check"></i> 이용 중';btnBuy.style.background='linear-gradient(135deg,var(--p),var(--pl))';btnBuy.onclick=()=>A.openPayModal();}else{statusEl.className='pass-status free';labelEl.textContent='무료 체험 3건 가능';tagEl.textContent='기부형 앱';tagEl.style.background='var(--ac)';btnBuy.innerHTML='<i class="fa-brands fa-naver"></i> 1일권 구매';btnBuy.style.background='';btnBuy.onclick=()=>A.openPayModal();}}
+return;}if(p.active&&p.type==='paid'){statusEl.className='pass-status paid';labelEl.textContent='1일 이용권 이용 중';tagEl.textContent='이용권';tagEl.style.background='var(--nv)';btnBuy.innerHTML='<i class="fa-solid fa-check"></i> 이용 중';btnBuy.style.background='linear-gradient(135deg,var(--p),var(--pl))';btnBuy.onclick=()=>A.openPayModal();}else{statusEl.className='pass-status free';labelEl.textContent='무료 체험 3건 가능';tagEl.textContent='기부형 앱';tagEl.style.background='var(--ac)';btnBuy.innerHTML='<i class="fa-brands fa-naver"></i> 1일권 구매';btnBuy.style.background='';btnBuy.onclick=()=>A.openPayModal();}}
 
 /* ============================================================
    🔒 사용량 제한
    ============================================================ */
-function getActiveMode(){if(ls('is_dev')==='true')return'dev';const p=getPassState();if(mode==='pro')return'pro';if(p.active&&p.type==='paid')return'paid';return'free';}
-function getLimit(){const m=getActiveMode();if(m==='dev')return 99999;if(m==='pro')return LIMIT_PRO;if(m==='paid')return LIMIT_PAID;return LIMIT_FREE;}
-function getQuota(){const today=new Date().toDateString(),m=getActiveMode();let key;if(m==='pro')key='frog_use_pro';else if(m==='paid')key='frog_use_paid';else key='frog_use_free';let d=JSON.parse(ls(key)||'{}');if(d.date!==today)d={date:today,count:0};return{data:d,key};}
+function getActiveMode(){if(mode==='admin'&&sessionStorage.getItem('admin_token'))return'admin';const p=getPassState();if(p.active&&p.type==='paid')return'paid';return'free';}
+function getLimit(){const m=getActiveMode();if(m==='admin')return 99999;if(m==='paid')return LIMIT_PAID;return LIMIT_FREE;}
+function getQuota(){const today=new Date().toDateString(),m=getActiveMode();let key;if(m==='admin')key='frog_use_admin';else if(m==='paid')key='frog_use_paid';else key='frog_use_free';let d=JSON.parse(ls(key)||'{}');if(d.date!==today)d={date:today,count:0};return{data:d,key};}
 function getRemaining(){const{data}=getQuota();return Math.max(0,getLimit()-(data.count||0));}
 function useQuota(){const today=new Date().toDateString();const{data,key}=getQuota();if(data.date!==today)data.count=0;data.date=today;data.count=(data.count||0)+1;ls(key,JSON.stringify(data));/* 서버 측 카운팅 (비동기, 실패해도 로컬은 유지) */if(!GAS_URL.includes('YOUR_DEPLOYED_GAS_ID')){fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'use',fp:FP,mode:getActiveMode()})}).catch(()=>{});}}
-async function chkLim(){if(ls('is_dev')==='true')return true;let remaining=getRemaining(),limit=getLimit(),m=getActiveMode();/* 서버 측 사용량 확인 (GAS 배포 시) */if(!GAS_URL.includes('YOUR_DEPLOYED_GAS_ID')&&m==='free'){try{const r=await fetch(`${GAS_URL}?action=usage&fp=${encodeURIComponent(FP)}&mode=${m}`);const d=await r.json();if(d.count!==undefined){remaining=Math.max(0,limit-d.count);/* 로컬 동기화 */const today=new Date().toDateString();ls('frog_use_free',JSON.stringify({date:today,count:d.count}));}}catch(e){/* 서버 실패 시 로컬 값 사용 */}}if(remaining<=0){if(m==='free'){$('upgradeCard').classList.add('show');$('upgradeCard').scrollIntoView({behavior:'smooth',block:'center'});stat('⚡ 무료 체험 3회 완료 — 1일이용권으로 계속하세요',true);return false;}else{alert(`⚠️ 오늘 AI 분석 한도(${limit}건)를 모두 사용했습니다.\n내일 자정 초기화됩니다.\n📞 010-2322-0949`);return false;}}if(remaining<=5&&m!=='free'){const go=confirm(`⚡ AI 분석 잔여 ${remaining}건 남았습니다. 계속하시겠습니까?`);if(!go)return false;}return true;}
-function updateQuotaUI(){const m=getActiveMode(),limit=getLimit(),{data}=getQuota(),used=data.count||0,remaining=Math.max(0,limit-used),pct=(remaining/(limit||1))*100;const numEl=$('qNum'),barEl=$('qBar'),labelEl=$('qLabel');if(m==='dev'){labelEl.textContent='🛠️ 개발자 (무제한)';numEl.textContent=`${used}건 사용`;numEl.className='q-num ok';barEl.style.width='100%';barEl.style.background='var(--pu)';updatePassUI();return;}const modeStr=m==='paid'?'이용권':m==='pro'?'직원':'무료체험';labelEl.textContent=`${modeStr} AI 분석`;if(m==='paid'){numEl.className=remaining<=0?'q-num out':remaining<=10?'q-num low':'q-num nv';barEl.style.background=remaining<=0?'var(--dn)':'var(--nv)';}else if(m==='pro'){numEl.className=remaining<=0?'q-num out':'q-num ok';barEl.style.background=remaining<=0?'var(--dn)':'var(--pu)';}else{numEl.className=remaining<=0?'q-num out':'q-num ok';barEl.style.background=remaining<=0?'var(--dn)':'var(--pl)';}numEl.textContent=`${remaining}/${limit}건`;barEl.style.width=pct+'%';$('passCount').textContent=`잔여 ${remaining}건`;$('passCount').className=`pass-count ${remaining<=0?'out':m==='paid'?'paid-ok':'ok'}`;if(m==='free'&&remaining<=0)$('upgradeCard').classList.add('show');else $('upgradeCard').classList.remove('show');updatePassUI();}
+async function chkLim(){if(mode==='admin'&&sessionStorage.getItem('admin_token'))return true;let remaining=getRemaining(),limit=getLimit(),m=getActiveMode();/* 서버 측 사용량 확인 (GAS 배포 시) */if(!GAS_URL.includes('YOUR_DEPLOYED_GAS_ID')&&m==='free'){try{const r=await fetch(`${GAS_URL}?action=usage&fp=${encodeURIComponent(FP)}&mode=${m}`);const d=await r.json();if(d.count!==undefined){remaining=Math.max(0,limit-d.count);/* 로컬 동기화 */const today=new Date().toDateString();ls('frog_use_free',JSON.stringify({date:today,count:d.count}));}}catch(e){/* 서버 실패 시 로컬 값 사용 */}}if(remaining<=0){if(m==='free'){$('upgradeCard').classList.add('show');$('upgradeCard').scrollIntoView({behavior:'smooth',block:'center'});stat('⚡ 무료 체험 3회 완료 — 1일이용권으로 계속하세요',true);return false;}else{alert(`⚠️ 오늘 AI 분석 한도(${limit}건)를 모두 사용했습니다.\n내일 자정 초기화됩니다.\n📞 010-2322-0949`);return false;}}if(remaining<=5&&m!=='free'){const go=confirm(`⚡ AI 분석 잔여 ${remaining}건 남았습니다. 계속하시겠습니까?`);if(!go)return false;}return true;}
+function updateQuotaUI(){const m=getActiveMode(),limit=getLimit(),{data}=getQuota(),used=data.count||0,remaining=Math.max(0,limit-used),pct=(remaining/(limit||1))*100;const numEl=$('qNum'),barEl=$('qBar'),labelEl=$('qLabel');if(m==='admin'){labelEl.textContent='🔐 관리자 (무제한)';numEl.textContent=`${used}건 사용`;numEl.className='q-num ok';barEl.style.width='100%';barEl.style.background='var(--pu)';updatePassUI();return;}const modeStr=m==='paid'?'이용권':'무료체험';labelEl.textContent=`${modeStr} AI 분석`;if(m==='paid'){numEl.className=remaining<=0?'q-num out':remaining<=10?'q-num low':'q-num nv';barEl.style.background=remaining<=0?'var(--dn)':'var(--nv)';}else{numEl.className=remaining<=0?'q-num out':'q-num ok';barEl.style.background=remaining<=0?'var(--dn)':'var(--pl)';}numEl.textContent=`${remaining}/${limit}건`;barEl.style.width=pct+'%';$('passCount').textContent=`잔여 ${remaining}건`;$('passCount').className=`pass-count ${remaining<=0?'out':m==='paid'?'paid-ok':'ok'}`;if(m==='free'&&remaining<=0)$('upgradeCard').classList.add('show');else $('upgradeCard').classList.remove('show');updatePassUI();}
 
 /* ============================================================
    🔊 음성안내
@@ -2216,10 +2216,10 @@ A.onUserInput=(el)=>{
    🚀 초기화
    ============================================================ */
 window.addEventListener('DOMContentLoaded',()=>{
-  if(ls('is_dev')==='true')$('verTag').classList.add('dev');
+  /* 관리자 모드는 sessionStorage 기반 — 페이지 새로고침 시 유지, 탭 닫으면 해제 */
   const p=getPassState();
   if(p.active&&p.type==='paid')mode='paid';
-  else if(p.active&&p.type==='pro')mode='pro';
+  if(sessionStorage.getItem('admin_token'))mode='admin';
   if(ls('frog_agreed')==='true'){$('fAgree').checked=true;$('agreeNote').style.display='block';A.togSave();}
   initWorkSelect();loadList();loadDraft();initDraftListeners();
   step(1);updateQuotaUI();updatePassUI();
@@ -2318,10 +2318,10 @@ function validateRoom(){if(!$('fRoom').value){showRoomWarn();const btn=$('cdBtn'
 function showRoomWarn(){let warn=$('roomWarnMsg');if(!warn){warn=document.createElement('div');warn.id='roomWarnMsg';warn.style.cssText='background:#FFF5F5;border:1.5px solid var(--dn);border-radius:10px;padding:10px 14px;font-size:.78rem;font-weight:700;color:var(--dn);display:flex;align-items:center;gap:8px;margin-top:8px;animation:shake .4s';warn.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> ① 위 <b style="color:#0A6B5C">점검 위치</b>를 먼저 선택한 후 저장하세요!';const btnSv=$('btnSv');btnSv.parentNode.insertBefore(warn,btnSv);}warn.style.display='flex';clearTimeout(warn._t);warn._t=setTimeout(()=>{if(warn)warn.style.display='none';},4000);}
 
 /* ── 전문가(직원) 모드 ── */
-A.setMode=m=>{if(m==='pro'){$('moPwd').classList.add('show');$('pwdInput').value='';$('pwdErr').style.display='none';setTimeout(()=>$('pwdInput').focus(),200);return;}mode='free';updateQuotaUI();updatePassUI();};
-A.checkPwd=()=>{const pw=$('pwdInput').value;if(pw==='51600'){mode='pro';$('moPwd').classList.remove('show');stat('직원 전용 모드 활성화');updateQuotaUI();updatePassUI();}else{$('pwdErr').style.display='block';$('pwdInput').value='';$('pwdInput').focus();}};
+A.setMode=m=>{if(m==='admin'){$('moPwd').classList.add('show');$('pwdInput').value='';$('pwdErr').style.display='none';setTimeout(()=>$('pwdInput').focus(),200);return;}mode='free';sessionStorage.removeItem('admin_token');updateQuotaUI();updatePassUI();};
+A.checkPwd=async()=>{const pw=$('pwdInput').value;if(!pw){$('pwdErr').style.display='block';return;}$('pwdInput').disabled=true;try{const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'admin_auth',pwd:pw,fp:FP})});const data=await res.json();if(data.success){sessionStorage.setItem('admin_token',data.token);mode='admin';$('moPwd').classList.remove('show');stat('🔐 관리자 모드 활성화 (24시간)');updateQuotaUI();updatePassUI();}else{$('pwdErr').style.display='block';$('pwdInput').value='';$('pwdInput').focus();}}catch(e){alert('서버 연결 실패. 잠시 후 다시 시도해주세요.');console.error(e);}$('pwdInput').disabled=false;};
 A.cancelPwd=()=>{$('moPwd').classList.remove('show');};
-A.devTap=()=>{clearTimeout(devT);devN++;if(devN===5){const d=ls('is_dev')==='true';ls('is_dev',!d);$('verTag').classList.toggle('dev',!d);alert(d?'개발자 모드 해제':'🐸 개발자 모드 활성화!');devN=0;updateQuotaUI();updatePassUI();}devT=setTimeout(()=>devN=0,1000);};
+A.devTap=()=>{}; /* 개발자 모드 제거됨 — 관리자 인증은 서버 측으로 이전 */
 
 async function toPart(f){return new Promise(r=>{const x=new FileReader();x.onloadend=()=>r({inlineData:{data:x.result.split(',')[1],mimeType:f.type}});x.readAsDataURL(f);});}
 
@@ -2342,7 +2342,7 @@ async function toPart(f){return new Promise(r=>{const x=new FileReader();x.onloa
 async function runAI(){
   const det=$('fDetail'), ui=$('fUser').value.trim();
   const activeMode=getActiveMode();
-  const proExtra=(activeMode==='pro')?'\n[전문 모드] 시공 기준서, KS규격, 국토부 하자판정 기준을 상세히 인용하여 전문 보고서 수준으로 작성하세요.':'';
+  const proExtra=(activeMode==='admin')?'\n[전문 모드] 시공 기준서, KS규격, 국토부 하자판정 기준을 상세히 인용하여 전문 보고서 수준으로 작성하세요.':'';
   const workList=Object.keys(WM).map(w=>`${w}(${Object.keys(WM[w]).join(',')})`).join('; ');
   /* ── 이미지를 base64로 준비 (GAS 프록시용) ── */
   const images=[];
@@ -2430,7 +2430,7 @@ STEP 4. [국토부 기준 판단] 해당 하자의 허용범위·중요도·조�
 }`;
 
       /* ── GAS 프록시로 1차 요청 ── */
-      const gasRes=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,prompts:[{prompt:prompt1,images}]})});
+      const gasRes=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt:prompt1,images}]})});
       if(!gasRes.ok)throw new Error('서버 응답 오류: '+gasRes.status);
       const gasData=await gasRes.json();
       if(gasData.error){if(gasData.error==='rate_limit')throw new Error('429');throw new Error(gasData.message||gasData.error);}
@@ -2443,7 +2443,7 @@ STEP 4. [국토부 기준 판단] 해당 하자의 허용범위·중요도·조�
       /* ── 2차 프롬프트에 1차 결과 반영 후 재요청 ── */
       det.value='⏳ 2차 입력-사진 교차 검증 중...';stat('🔄 AI 교차 검증 중...');
       const prompt2=prompt2Tpl.replace('__WORK__',d1.work||'미분류').replace('__SUB__',d1.sub||'미분류').replace('__TYPE__',d1.type||'미분류').replace('__KEYWORD__',d1.user_keyword_extracted||'없음').replace('__DETAIL__',d1.detail||'없음');
-      const gasRes2=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,prompts:[{prompt:prompt2,images}]})});
+      const gasRes2=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt:prompt2,images}]})});
       const gasData2=await gasRes2.json();
       if(gasData2.error)throw new Error(gasData2.message||gasData2.error);
       const txt2=gasData2.results[0]||'';
@@ -2480,7 +2480,7 @@ ${workList}
 {"work":"공종명","sub":"세부공종","type":"하자유형","detail":"1. 현상:...\\n2. 국토부기준 또는 허용범위:...\\n3. 조치권고:..."}`;
 
       /* ── GAS 프록시로 1차 요청 ── */
-      const gasRes1=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,prompts:[{prompt:prompt1,images}]})});
+      const gasRes1=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt:prompt1,images}]})});
       if(!gasRes1.ok)throw new Error('서버 응답 오류: '+gasRes1.status);
       const gasData1=await gasRes1.json();
       if(gasData1.error){if(gasData1.error==='rate_limit')throw new Error('429');throw new Error(gasData1.message||gasData1.error);}
@@ -2504,7 +2504,7 @@ ${workList}
 {"work":"공종명","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","corrected":true/false,"detail":"1. 현상:...\\n2. 국토부기준·허용범위:...\\n3. 심각도:[경미/보통/중대] 이유...\\n4. 조치권고:..."}`;
 
       /* ── GAS 프록시로 2차 요청 ── */
-      const gasRes2=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,prompts:[{prompt:prompt2,images}]})});
+      const gasRes2=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt:prompt2,images}]})});
       const gasData2=await gasRes2.json();
       if(gasData2.error)throw new Error(gasData2.message||gasData2.error);
       const txt2=gasData2.results[0]||'';
@@ -2604,7 +2604,7 @@ A.cbAsk=key=>{const ans=CB_ANS[key];if(!ans)return;cbAddMsg(ans.q,'usr');setTime
 function cbAddMsg(html,type){const msgs=$('cbMsgs');const div=document.createElement('div');div.className=`cb-msg ${type}`;if(type==='bot'){div.innerHTML=`<div class="cb-avatar">🐸</div><div><div class="cb-bubble">${html}</div></div>`;}else{div.innerHTML=`<div class="cb-bubble">${html}</div>`;}msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
 function cbShowTyping(){const msgs=$('cbMsgs');const d=document.createElement('div');d.className='cb-msg bot';d.id='cbTyping';d.innerHTML=`<div class="cb-avatar">🐸</div><div><div class="cb-typing"><span></span><span></span><span></span></div></div>`;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;}
 function cbHideTyping(){const e=$('cbTyping');if(e)e.remove();}
-A.cbSend=async()=>{const input=$('cbInput'),q=input.value.trim();if(!q)return;input.value='';input.style.height='auto';$('cbSendBtn').disabled=true;cbAddMsg(esc(q),'usr');cbShowTyping();try{const prompt=`당신은 "청개구리 입주전" AI 앱의 친절한 상담 도우미입니다.\n[앱 정보]\n- 무료3회/1일이용권₩10,000 100회/수익50%세이브더칠드런기부/전문점검010-2322-0949\n- v20.8 신기능: 하자 내용 직접 입력 시 입력 기반 정밀 분석 제공\n[답변규칙] 4줄 이내, 친절하게, 앱외 질문은 "앱 관련 질문을 해주세요 😊"\n사용자 질문: "${q}"`;const gasRes=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,prompts:[{prompt,images:[]}]})});const gasData=await gasRes.json();if(gasData.error)throw new Error(gasData.message||gasData.error);const txt=gasData.results[0]||'';cbHideTyping();cbAddMsg(txt.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>'),'bot');}catch(e){cbHideTyping();cbAddMsg('일시적 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.<br>📞 <b>010-2322-0949</b>','bot');}$('cbSendBtn').disabled=false;};
+A.cbSend=async()=>{const input=$('cbInput'),q=input.value.trim();if(!q)return;input.value='';input.style.height='auto';$('cbSendBtn').disabled=true;cbAddMsg(esc(q),'usr');cbShowTyping();try{const prompt=`당신은 "청개구리 입주전" AI 앱의 친절한 상담 도우미입니다.\n[앱 정보]\n- 무료3회/1일이용권₩10,000 100회/수익50%세이브더칠드런기부/전문점검010-2322-0949\n- v20.8 신기능: 하자 내용 직접 입력 시 입력 기반 정밀 분석 제공\n[답변규칙] 4줄 이내, 친절하게, 앱외 질문은 "앱 관련 질문을 해주세요 😊"\n사용자 질문: "${q}"`;const gasRes=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt,images:[]}]})});const gasData=await gasRes.json();if(gasData.error)throw new Error(gasData.message||gasData.error);const txt=gasData.results[0]||'';cbHideTyping();cbAddMsg(txt.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>'),'bot');}catch(e){cbHideTyping();cbAddMsg('일시적 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.<br>📞 <b>010-2322-0949</b>','bot');}$('cbSendBtn').disabled=false;};
 A.openChatBot=()=>{$('chatbotMo').classList.add('show');document.body.style.overflow='hidden';const firstTab=document.querySelector('.cb-tab');if(firstTab)A.cbTab(firstTab,'use');};
 A.closeChatBot=()=>{$('chatbotMo').classList.remove('show');document.body.style.overflow='';};
 A.chat=()=>A.openChatBot();
