@@ -1951,7 +1951,7 @@ input[type="file"]{
 
 <div class="ba" data-voice-id="step7">
   <button class="ab pdf" onclick="A.pdf()">
-    <div class="ab-ic"><i class="fa-solid fa-file-pdf"></i></div>
+    <div class="ab-ic"><i class="fa-solid fa-file-arrow-down"></i></div>
     <span class="ab-tx">전체 저장</span>
   </button>
   <button class="ab cs" onclick="A.openChatBot()">
@@ -2112,8 +2112,7 @@ input[type="file"]{
 <div class="cw" id="chatW"></div>
 <div class="toast" id="toastMsg"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- PDF 라이브러리 제거: HTML 파일 저장 방식으로 변경 -->
 <script>
 /* ============================================================
    ★ 설정값
@@ -2567,145 +2566,72 @@ A.edit=id=>{const idx=list.findIndex(i=>i.id===id);if(idx===-1)return;if(!confir
 A.del=id=>{if(!confirm('삭제하시겠습니까?'))return;$(`i-${id}`).remove();list=list.filter(i=>i.id!==id);$('lCnt').textContent=list.length;updateModeLabel();saveList();};
 A.clearAll=()=>{if(!list.length)return;if(!confirm(`${list.length}건 전체 삭제하시겠습니까?`))return;list=[];$('lBox').innerHTML='';$('lCnt').textContent=0;updateModeLabel();saveList();};
 
-/* ── PDF 라이브러리 동적 로딩 ── */
-function loadScript(url){return new Promise((res,rej)=>{if(document.querySelector(`script[src="${url}"]`)){res();return;}const s=document.createElement('script');s.src=url;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
-async function ensurePdfLibs(){
-  if(!window.jspdf)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js');
-  if(!window.html2canvas)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-  if(!window.jspdf)throw new Error('jsPDF 로드 실패');
-  if(!window.html2canvas)throw new Error('html2canvas 로드 실패');
-}
-
-/* ── PDF 저장 (html2canvas + 이미지 사전축소) ── */
-A.pdf=async()=>{
+/* ── 전체 저장 (HTML 파일 다운로드 - 즉시 생성) ── */
+A.pdf=()=>{
   if(!list.length){alert('저장할 내용이 없습니다.');return;}
   const now=new Date();
   const ymd=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
   const addr=$('fAddr').value||'';
   const shortAddr=addr.replace(/[^가-힣0-9]/g,'').slice(-12)||'현장';
-  const fileName=`사전점검_${shortAddr}_${ymd}.pdf`;
-  const info=addr||'주소미입력';
+  const fileName=`사전점검_${shortAddr}_${ymd}.html`;
+  const info=esc(addr||'주소미입력');
   const dateStr=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
 
-  /* 오버레이 */
-  const overlay=document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;background:#fff;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px';
-  overlay.innerHTML='<div style="font-size:2rem">📄</div><div id="pdfProgress" style="font-size:1rem;font-weight:800;color:#0A6B5C">PDF 준비 중...</div><div style="font-size:.8rem;color:#94A3B8">라이브러리 로딩 중</div>';
-  document.body.appendChild(overlay);
-
-  /* 라이브러리 동적 로딩 */
-  await ensurePdfLibs();
-
-  try{
-    /* ── 1단계: 모든 이미지를 200px로 사전 축소 ── */
-    const tinyImgs=await Promise.all(list.map(async(it)=>{
-      const r={w:null,c:null};
-      async function shrink(src){
-        if(!src||!src.startsWith('data:'))return null;
-        return new Promise(res=>{
-          const img=new Image();img.onload=()=>{
-            let w=img.width,h=img.height;const max=200;
-            if(w>max||h>max){const ratio=Math.min(max/w,max/h);w=Math.round(w*ratio);h=Math.round(h*ratio);}
-            const cv=document.createElement('canvas');cv.width=w;cv.height=h;
-            cv.getContext('2d').drawImage(img,0,0,w,h);
-            res(cv.toDataURL('image/jpeg',0.6));
-          };img.onerror=()=>res(null);img.src=src;
-        });
-      }
-      r.w=await shrink(it.wImg);r.c=await shrink(it.cImg);return r;
-    }));
-
-    $('pdfProgress').textContent='PDF 생성 중...';
-
-    /* ── 2단계: HTML 생성 (축소된 이미지 사용) ── */
-    const wrap=document.createElement('div');
-    wrap.style.cssText='position:absolute;top:-9999px;left:0;width:500px;padding:16px;font-family:Noto Sans KR,sans-serif;color:#1A2332;background:#fff;z-index:1;line-height:1.4;font-size:10px';
-
-    let h=`<div style="text-align:center;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #0A6B5C">
-      <div style="font-size:15px;font-weight:900;color:#0A6B5C;margin-bottom:4px">청개구리 입주자 사전점검 리포트</div>
-      <div style="font-size:10px;font-weight:700;color:#5A6B7F">${esc(info)}</div>
-      <div style="font-size:8px;color:#94A3B8;margin-top:3px">${dateStr} | 총 ${list.length}건 | v20.8</div>
-      <div style="font-size:7px;color:#16A34A;margin-top:4px">수익의 50%는 세이브더칠드런에 기부됩니다</div>
-    </div>`;
-
-    list.forEach((it,idx)=>{
-      const ti=tinyImgs[idx];
-      const isSafe=it.type==='허용범위';
-      const tc=isSafe?'#059669':'#E74C3C';
-      const safeRoom=esc(it.room||'위치미지정'),safeType=esc(it.type||''),safeWork=esc(it.work||''),safeSub=esc(it.sub||''),safeDetail=esc(it.detail||'');
-      h+=`<div style="border:1px solid #ddd;border-radius:6px;overflow:hidden;margin-bottom:8px">
-        <div style="padding:4px 8px;background:#F4F6F9;border-bottom:1px solid #eee;font-size:9px">
-          <b style="background:#0A6B5C;color:#fff;padding:1px 4px;border-radius:3px;margin-right:4px">${idx+1}</b>
-          <b>${safeRoom}</b> <span style="color:${tc};margin-left:4px">${safeType}</span>
-        </div>`;
-      if(ti.w||ti.c){
-        h+='<div style="display:flex;gap:2px;padding:2px;background:#F1F4F8">';
-        if(ti.w)h+=`<img src="${ti.w}" style="flex:1;height:80px;object-fit:cover;border-radius:3px">`;
-        if(ti.c)h+=`<img src="${ti.c}" style="flex:1;height:80px;object-fit:cover;border-radius:3px">`;
-        h+='</div>';
-      }
-      h+=`<div style="padding:6px 8px">
-        <div style="font-size:8px;font-weight:700;color:#0A6B5C;margin-bottom:2px">${safeWork} → ${safeSub}</div>
-        <div style="font-size:8px;color:#5A6B7F;white-space:pre-wrap;line-height:1.4">${safeDetail}</div>
-      </div></div>`;
-    });
-
-    h+=`<div style="text-align:center;font-size:6px;color:#94A3B8;margin-top:8px;padding-top:6px;border-top:1px solid #E8ECF1;line-height:1.5">
-      ※ 본 리포트는 입주자 사전점검 보조 자료이며 법적 효력이 없습니다.<br>
-      청개구리샤시 | 대표: 전영웅 | 010-2322-0949 | © 2026 v20.8
-    </div>`;
-    wrap.innerHTML=h;
-    document.body.appendChild(wrap);
-
-    /* 이미지 로드 대기 */
-    const imgs=wrap.querySelectorAll('img');
-    await Promise.all(Array.from(imgs).map(img=>img.complete?Promise.resolve():new Promise(r=>{img.onload=r;img.onerror=r;})));
-
-    /* ── 3단계: html2canvas (500px, scale:1) ── */
-    const canvas=await html2canvas(wrap,{scale:1,useCORS:true,allowTaint:true,logging:false,backgroundColor:'#ffffff',width:500,height:wrap.scrollHeight,windowWidth:500});
-    wrap.remove();
-
-    /* ── 4단계: PDF 생성 ── */
-    const{jsPDF}=window.jspdf;
-    const pdf=new jsPDF('p','mm','a4');
-    const pageW=210,pageH=297,margin=5,usableW=pageW-margin*2,usableH=pageH-margin*2;
-    const imgW=canvas.width,imgH=canvas.height,ratio=usableW/imgW,pageImgH=usableH/ratio;
-    let remainH=imgH,srcY=0,page=0;
-    while(remainH>0){
-      if(page>0)pdf.addPage();
-      const sliceH=Math.min(pageImgH,remainH);
-      const sliceHmm=sliceH*ratio;
-      const sc=document.createElement('canvas');sc.width=imgW;sc.height=Math.ceil(sliceH);
-      const ctx=sc.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,sc.width,sc.height);
-      ctx.drawImage(canvas,0,srcY,imgW,sliceH,0,0,imgW,sliceH);
-      pdf.addImage(sc.toDataURL('image/jpeg',0.75),'JPEG',margin,margin,usableW,sliceHmm);
-      srcY+=sliceH;remainH-=sliceH;page++;
+  let items='';
+  list.forEach((it,idx)=>{
+    const isSafe=it.type==='허용범위';
+    const tc=isSafe?'#059669':'#E74C3C',tb=isSafe?'#ECFDF5':'#FFF5F5';
+    const room=esc(it.room||'위치미지정'),type=esc(it.type||''),work=esc(it.work||''),sub=esc(it.sub||''),detail=esc(it.detail||'');
+    const mTag=it.mode==='paid'?'<span style="font-size:9px;background:#03C75A;color:#fff;padding:2px 6px;border-radius:3px">이용권</span>':it.mode==='pro'?'<span style="font-size:9px;background:#7C3AED;color:#fff;padding:2px 6px;border-radius:3px">직원</span>':'<span style="font-size:9px;background:#E6F7F3;color:#0A6B5C;padding:2px 6px;border-radius:3px">무료</span>';
+    const hasW=it.wImg&&it.wImg.startsWith('data:'),hasC=it.cImg&&it.cImg.startsWith('data:');
+    let imgHtml='';
+    if(hasW||hasC){
+      imgHtml='<div style="display:flex;gap:4px;padding:4px;background:#F1F4F8">';
+      if(hasW)imgHtml+=`<img src="${it.wImg}" style="flex:1;max-height:180px;object-fit:cover;border-radius:6px">`;
+      if(hasC)imgHtml+=`<img src="${it.cImg}" style="flex:1;max-height:180px;object-fit:cover;border-radius:6px">`;
+      imgHtml+='</div>';
     }
+    items+=`<div style="border:1px solid #ddd;border-radius:10px;overflow:hidden;margin-bottom:12px;break-inside:avoid">
+      <div style="padding:8px 12px;background:#F4F6F9;border-bottom:1px solid #eee;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="display:inline-block;font-size:10px;font-weight:900;background:#0A6B5C;color:#fff;width:22px;height:22px;border-radius:5px;text-align:center;line-height:22px">${idx+1}</span>
+        <b style="font-size:13px">${room}</b>
+        <span style="font-size:10px;font-weight:700;color:${tc};background:${tb};padding:2px 8px;border-radius:4px">${type}</span>
+        ${mTag}
+      </div>
+      ${imgHtml}
+      <div style="padding:10px 12px">
+        <div style="font-size:11px;font-weight:700;color:#0A6B5C;margin-bottom:4px">${work} → ${sub}</div>
+        <div style="font-size:11px;color:#5A6B7F;line-height:1.7;white-space:pre-wrap">${detail}</div>
+      </div>
+    </div>`;
+  });
 
-    /* ── 5단계: 다운로드 ── */
-    const pdfBlob=pdf.output('blob');
-    const blobUrl=URL.createObjectURL(pdfBlob);
-    overlay.remove();
-    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
-    if(isIOS){
-      const w=window.open(blobUrl,'_blank');
-      stat('✅ PDF 생성 완료');
-      if(!w)alert('팝업 차단됨. 허용 후 재시도.');
-      else setTimeout(()=>alert(`📥 공유→파일에 저장\n${fileName}`),800);
-    }else{
-      const a=document.createElement('a');a.href=blobUrl;a.download=fileName;
-      document.body.appendChild(a);a.click();a.remove();
-      stat(`✅ ${fileName} 저장 완료!`);
-      toast(`📥 <b>내 파일 → 다운로드</b> 폴더에서 확인`,false,4000);
-    }
-    setTimeout(()=>URL.revokeObjectURL(blobUrl),8000);
-  }catch(err){
-    console.error('PDF 오류:',err);
-    overlay.remove();
-    stat('PDF 생성 실패',true);
-    alert('PDF 생성 실패: '+err.message+'\n브라우저 인쇄로 시도합니다.');
-    window.print();
-  }
+  const html=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>사전점검 리포트 - ${info}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;background:#fff;color:#1A2332;padding:16px;max-width:800px;margin:0 auto;line-height:1.5}
+img{max-width:100%;display:block}
+@media print{body{padding:8px}div{break-inside:avoid}}</style></head>
+<body>
+<div style="text-align:center;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #0A6B5C">
+  <div style="font-size:20px;font-weight:900;color:#0A6B5C;margin-bottom:6px">🐸 청개구리 입주자 사전점검 리포트</div>
+  <div style="font-size:13px;font-weight:700;color:#5A6B7F">${info}</div>
+  <div style="font-size:10px;color:#94A3B8;margin-top:4px">${dateStr} 작성 | 총 ${list.length}건 | v20.8</div>
+  <div style="font-size:9px;color:#16A34A;margin-top:6px;background:#ECFDF5;padding:4px 10px;border-radius:6px;display:inline-block">💚 수익의 50%는 세이브더칠드런에 기부됩니다</div>
+</div>
+${items}
+<div style="text-align:center;font-size:8px;color:#94A3B8;margin-top:14px;padding-top:10px;border-top:1px solid #E8ECF1;line-height:1.6">
+  ※ 본 리포트는 입주자 사전점검 보조 자료이며 법적 효력이 없습니다.<br>
+  청개구리샤시 | 대표: 전영웅 | 📞 010-2322-0949 | © 2026 Cheong-gaeguri | v20.8
+</div>
+</body></html>`;
+
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=fileName;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  stat(`✅ ${fileName} 저장 완료!`);
+  toast(`📥 <b>내 파일 → 다운로드</b> 폴더에서 확인하세요`,false,4000);
 };
 
 /* ── 모달 ── */
