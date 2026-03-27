@@ -2375,31 +2375,18 @@ A.checkPwd=async()=>{const pw=$('pwdInput').value;if(!pw){$('pwdErr').style.disp
 A.cancelPwd=()=>{$('moPwd').classList.remove('show');};
 A.devTap=()=>{}; /* 개발자 모드 제거됨 — 관리자 인증은 서버 측으로 이전 */
 
-async function toPart(f){return new Promise(r=>{const x=new FileReader();x.onloadend=()=>r({inlineData:{data:x.result.split(',')[1],mimeType:f.type}});x.readAsDataURL(f);});}
+/* ── 이미지 리사이즈 (maxPx 이하로 축소, JPEG 80% 압축) ── */
+function resizeImg(file,maxPx=1280){return new Promise(r=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>maxPx||h>maxPx){const ratio=Math.min(maxPx/w,maxPx/h);w=Math.round(w*ratio);h=Math.round(h*ratio);}const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);const dataUrl=cv.toDataURL('image/jpeg',0.8);r({data:dataUrl.split(',')[1],mimeType:'image/jpeg'});};img.src=URL.createObjectURL(file);});}
 
-/* ============================================================
-   ★★★ v20.8 핵심 개선: runAI - 사용자 입력 우선 정밀 분석 ★★★
-   ============================================================
-   MODE A (입력 기반): 사용자가 하자 내용을 직접 입력한 경우
-     → 입력 내용이 진단의 주축 (STEP 1~4 체계적 분석)
-     → 사진은 입력 내용을 "확인·보강"하는 보조 증거로만 활용
-     → 4단계: 키워드 추출 → 공종 결정 → 사진 교차 확인 → 심각도 판정
-
-   MODE B (사진 기반): 사용자 입력이 없는 경우
-     → 기존 사진 분석 우선 로직 유지 (하위 호환)
-     → 심각도 배지 추가
-
-   공통: _applyAIResult() 헬퍼로 공종/세부/유형 셀렉터 적용 통일
-   ============================================================ */
 async function runAI(){
   const det=$('fDetail'), ui=$('fUser').value.trim();
   const activeMode=getActiveMode();
   const proExtra=(activeMode==='admin')?'\n[전문 모드] 시공 기준서, KS규격, 국토부 하자판정 기준을 상세히 인용하여 전문 보고서 수준으로 작성하세요.':'';
   const workList=Object.keys(WM).map(w=>`${w}(${Object.keys(WM[w]).join(',')})`).join('; ');
-  /* ── 이미지를 base64로 준비 (GAS 프록시용) ── */
+  /* ── 이미지 리사이즈 후 base64 준비 ── */
   const images=[];
-  if(wF){const d=await toPart(wF);images.push({data:d.inlineData.data,mimeType:d.inlineData.mimeType});}
-  if(cF){const d=await toPart(cF);images.push({data:d.inlineData.data,mimeType:d.inlineData.mimeType});}
+  if(wF){const d=await resizeImg(wF);images.push(d);}
+  if(cF){const d=await resizeImg(cF);images.push(d);}
 
   const hasUserInput=ui.length>0;
 
