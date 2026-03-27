@@ -1882,7 +1882,7 @@ input[type="file"]{
 
 <!-- ── STEP 3: 하자 정보 ── -->
 <div class="sec" data-voice-id="step3">
-  <div class="sec-t" style="display:flex;align-items:center;gap:6px"><span class="n">3</span> 하자 정보 <span style="color:var(--p);font-size:.6rem;font-weight:900">★ 하자내용 입력 시 정밀분석</span></div>
+  <div class="sec-t" style="display:flex;align-items:center;gap:6px"><span class="n">3</span> 하자 정보 <span style="color:var(--p);font-size:.6rem;font-weight:900">★ 하자내용 입력 시 정밀분석</span><button onclick="if(confirm('현재 입력을 초기화할까요?')){reset();step(1);stat('🔄 초기화 완료');}" style="margin-left:auto;background:#EF4444;color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">🔄 초기화</button></div>
 
   <div class="input-hint-banner" id="inputHintBanner" style="display:none">
     <span id="inputModeBadge"></span>
