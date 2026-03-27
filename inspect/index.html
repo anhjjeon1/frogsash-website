@@ -1755,12 +1755,12 @@ input[type="file"]{
       </div>
       <div class="hd-text">
         <div class="hd-title" style="font-size:.95rem">청개구리 입주자 사전점검</div>
-        <div class="hd-sub">AI 하자분석 · 국토부 기준 참조 · v20.8</div>
+        <div class="hd-sub" data-ver>AI 하자분석 · 국토부 기준 참조 · v20.8</div>
       </div>
     </div>
     <div class="hd-tags">
       <span class="tag tag-free" id="passTag">기부형 앱</span>
-      <span class="tag tag-v" id="verTag" onclick="A.devTap()">v20.8</span>
+      <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()">v20.8</span>
     </div>
   </div>
 </header>
@@ -1966,7 +1966,7 @@ input[type="file"]{
   </div>
   <div class="ft-i" style="font-size:.5rem;margin-top:6px;letter-spacing:-.03em;line-height:1.6;text-align:left;padding:0 6px">
     청개구리샤시 | 대표:전영웅 | 사업자:123-36-31426 | 통신판매:제2011-경기군포-00342호 | 📞010-2322-0949 | 군포시 용호1로21번길15, 102동1501호(당동,용호마을e-편한세상)<br>
-    ✉toi9113@naver.com | <span style="color:var(--nv);font-weight:700">환불:</span>코드 미사용시 전액환불/사용후 환불불가 | <a href="#" onclick="A.modal('moPrivacy',1);return false;" style="color:var(--ac);text-decoration:underline;font-weight:600">개인정보처리방침</a> | 보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | v20.8
+    ✉toi9113@naver.com | <span style="color:var(--nv);font-weight:700">환불:</span>코드 미사용시 전액환불/사용후 환불불가 | <a href="#" onclick="A.modal('moPrivacy',1);return false;" style="color:var(--ac);text-decoration:underline;font-weight:600">개인정보처리방침</a> | 보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v20.8</span>
   </div>
 </div>
 </div><!-- /app -->
@@ -2117,6 +2117,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
+const APP_VER = 'v20.9';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const LIMIT_FREE = 3;
 const LIMIT_PAID = 100;
@@ -2270,6 +2271,9 @@ window.addEventListener('DOMContentLoaded',()=>{
   if(ls('frog_agreed')==='true'){$('fAgree').checked=true;$('agreeNote').style.display='block';A.togSave();}
   initWorkSelect();loadList();loadDraft();initDraftListeners();
   step(1);updateQuotaUI();updatePassUI();
+  /* 버전 자동 반영 */
+  document.querySelectorAll('[data-ver]').forEach(el=>{el.textContent=el.textContent.replace(/v[\d.]+/,APP_VER);});
+  document.title=document.title.replace(/v[\d.]+/,APP_VER);
 
   const inW=$('inW'), inC=$('inC');
   const lblW=$('lblW'), lblC=$('lblC');
@@ -2615,13 +2619,13 @@ img{max-width:100%;display:block}
 <div style="text-align:center;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #0A6B5C">
   <div style="font-size:20px;font-weight:900;color:#0A6B5C;margin-bottom:6px">🐸 청개구리 입주자 사전점검 리포트</div>
   <div style="font-size:13px;font-weight:700;color:#5A6B7F">${info}</div>
-  <div style="font-size:10px;color:#94A3B8;margin-top:4px">${dateStr} 작성 | 총 ${list.length}건 | v20.8</div>
+  <div style="font-size:10px;color:#94A3B8;margin-top:4px">${dateStr} 작성 | 총 ${list.length}건 | ${APP_VER}</div>
   <div style="font-size:9px;color:#16A34A;margin-top:6px;background:#ECFDF5;padding:4px 10px;border-radius:6px;display:inline-block">💚 수익의 50%는 세이브더칠드런에 기부됩니다</div>
 </div>
 ${items}
 <div style="text-align:center;font-size:8px;color:#94A3B8;margin-top:14px;padding-top:10px;border-top:1px solid #E8ECF1;line-height:1.6">
   ※ 본 리포트는 입주자 사전점검 보조 자료이며 법적 효력이 없습니다.<br>
-  청개구리샤시 | 대표: 전영웅 | 📞 010-2322-0949 | © 2026 Cheong-gaeguri | v20.8
+  청개구리샤시 | 대표: 전영웅 | 📞 010-2322-0949 | © 2026 Cheong-gaeguri | ${APP_VER}
 </div>
 </body></html>`;
 
@@ -2647,7 +2651,7 @@ A.cbAsk=key=>{const ans=CB_ANS[key];if(!ans)return;cbAddMsg(ans.q,'usr');setTime
 function cbAddMsg(html,type){const msgs=$('cbMsgs');const div=document.createElement('div');div.className=`cb-msg ${type}`;if(type==='bot'){div.innerHTML=`<div class="cb-avatar">🐸</div><div><div class="cb-bubble">${html}</div></div>`;}else{div.innerHTML=`<div class="cb-bubble">${html}</div>`;}msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
 function cbShowTyping(){const msgs=$('cbMsgs');const d=document.createElement('div');d.className='cb-msg bot';d.id='cbTyping';d.innerHTML=`<div class="cb-avatar">🐸</div><div><div class="cb-typing"><span></span><span></span><span></span></div></div>`;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;}
 function cbHideTyping(){const e=$('cbTyping');if(e)e.remove();}
-A.cbSend=async()=>{const input=$('cbInput'),q=input.value.trim();if(!q)return;input.value='';input.style.height='auto';$('cbSendBtn').disabled=true;cbAddMsg(esc(q),'usr');cbShowTyping();try{const prompt=`당신은 "청개구리 입주전" AI 앱의 친절한 상담 도우미입니다.\n[앱 정보]\n- 무료3회/1일이용권₩10,000 100회/수익50%세이브더칠드런기부/전문점검010-2322-0949\n- v20.8 신기능: 하자 내용 직접 입력 시 입력 기반 정밀 분석 제공\n[답변규칙] 4줄 이내, 친절하게, 앱외 질문은 "앱 관련 질문을 해주세요 😊"\n사용자 질문: "${q}"`;const gasRes=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt,images:[]}]})});const gasData=await gasRes.json();if(gasData.error)throw new Error(gasData.message||gasData.error);const txt=gasData.results[0]||'';cbHideTyping();cbAddMsg(txt.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>'),'bot');}catch(e){cbHideTyping();cbAddMsg('일시적 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.<br>📞 <b>010-2322-0949</b>','bot');}$('cbSendBtn').disabled=false;};
+A.cbSend=async()=>{const input=$('cbInput'),q=input.value.trim();if(!q)return;input.value='';input.style.height='auto';$('cbSendBtn').disabled=true;cbAddMsg(esc(q),'usr');cbShowTyping();try{const prompt=`당신은 "청개구리 입주전" AI 앱의 친절한 상담 도우미입니다.\n[앱 정보]\n- 무료3회/1일이용권₩10,000 100회/수익50%세이브더칠드런기부/전문점검010-2322-0949\n- ${APP_VER} 신기능: 하자 내용 직접 입력 시 입력 기반 정밀 분석 제공\n[답변규칙] 4줄 이내, 친절하게, 앱외 질문은 "앱 관련 질문을 해주세요 😊"\n사용자 질문: "${q}"`;const gasRes=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt,images:[]}]})});const gasData=await gasRes.json();if(gasData.error)throw new Error(gasData.message||gasData.error);const txt=gasData.results[0]||'';cbHideTyping();cbAddMsg(txt.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>'),'bot');}catch(e){cbHideTyping();cbAddMsg('일시적 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.<br>📞 <b>010-2322-0949</b>','bot');}$('cbSendBtn').disabled=false;};
 A.openChatBot=()=>{$('chatbotMo').classList.add('show');document.body.style.overflow='hidden';const firstTab=document.querySelector('.cb-tab');if(firstTab)A.cbTab(firstTab,'use');};
 A.closeChatBot=()=>{$('chatbotMo').classList.remove('show');document.body.style.overflow='';};
 A.chat=()=>A.openChatBot();
