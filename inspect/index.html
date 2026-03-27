@@ -2339,7 +2339,10 @@ function toast(msg,warn=false,dur=2800){const el=$('toastMsg');el.innerHTML=msg;
 /* ── 자동 저장 ── */
 function autoSave(){
   const cs=$('pvC').src;
-  if(!cs||!cs.startsWith('data:'))return;
+  const ws=$('pvW').src;
+  const hasClose=cs&&cs.startsWith('data:');
+  const hasWide=ws&&ws.startsWith('data:');
+  if(!hasClose&&!hasWide)return;
   if(!$('fAgree').checked){
     if(ls('frog_agreed')==='true'){$('fAgree').checked=true;$('agreeNote').style.display='block';}
     else{toast('<i class="fa-solid fa-triangle-exclamation"></i> 필수 확인에 동의 후 자동 저장됩니다',true,3500);$('fAgree').closest('.ag').scrollIntoView({behavior:'smooth',block:'center'});$('fAgree').addEventListener('change',function handler(){if($('fAgree').checked){autoSave();$('fAgree').removeEventListener('change',handler);}});return;}
@@ -2348,8 +2351,7 @@ function autoSave(){
   const room=$('fRoom').value||'위치미지정';
   const info=addr;
   $('lInfo').textContent=info;$('ptitle').textContent=info+' 사전점검 리포트';
-  const ws=$('pvW').src;
-  const item={id:Date.now(),room,work:$('fWork').value,sub:$('fSub').value,type:$('fType').value,detail:$('fDetail').value,mode:getActiveMode(),wImg:(ws&&ws.startsWith('data:'))?ws:null,cImg:cs};
+  const item={id:Date.now(),room,work:$('fWork').value,sub:$('fSub').value,type:$('fType').value,detail:$('fDetail').value,mode:getActiveMode(),wImg:hasWide?ws:null,cImg:hasClose?cs:(hasWide?ws:null)};
   list.push(item);renderItem(item);updateModeLabel();saveList();
   const roomMissing=!$('fRoom').value;
   reset();
