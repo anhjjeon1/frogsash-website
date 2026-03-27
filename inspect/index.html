@@ -250,8 +250,8 @@ body{
   display:flex;
   align-items:center;
   gap:5px;
-  padding:9px 14px;
-  border-radius:10px;
+  padding:8px 14px;
+  border-radius:30px;
   border:none;
   background:linear-gradient(135deg,var(--nv),#02A54E);
   color:#fff;
@@ -1779,7 +1779,7 @@ input[type="file"]{
   </button>
   <div class="pass-status free" id="passStatus">
     <div class="pass-dot"></div>
-    <span class="pass-label" id="passLabel">무료 체험 3건 가능</span>
+    <span class="pass-label" id="passLabel">무료 3건 가능</span>
     <span class="pass-count" id="passCount"></span>
   </div>
 </div>
@@ -1813,7 +1813,7 @@ input[type="file"]{
     <div class="sn" id="s3">3</div><div class="sl" id="l3"></div>
     <div class="sn" id="s4">4</div>
   </div>
-  <div class="sg-badge" id="sgBadge"><i class="fa-solid fa-clipboard-list"></i> <span id="sgTx">저장된 하자 건수 : 0 건</span></div>
+  <div class="sg-badge" id="sgBadge"><i class="fa-solid fa-clipboard-list"></i> <span id="sgTx">저장 총 하자 : 0 건</span></div>
 </div>
 
 <!-- ── STEP 1: 현장 정보 ── -->
@@ -2199,7 +2199,7 @@ A.verifyCode=async()=>{const code=$('codeInput').value.trim().toUpperCase();if(!
 function updatePassUI(){const p=getPassState();const statusEl=$('passStatus'),labelEl=$('passLabel'),tagEl=$('passTag'),btnBuy=$('btnBuy');if(mode==='admin'&&sessionStorage.getItem('admin_token')){statusEl.className='pass-status pro';labelEl.textContent='🔐 관리자 모드';tagEl.textContent='관리자';tagEl.style.background='var(--pu)';btnBuy.style.display='none';
 $('passCount').textContent='무제한';
 $('passCount').className='pass-count ok';
-return;}if(p.active&&p.type==='paid'){statusEl.className='pass-status paid';labelEl.textContent='1일 이용권 이용 중';tagEl.textContent='이용권';tagEl.style.background='var(--nv)';btnBuy.innerHTML='<i class="fa-solid fa-check"></i> 이용 중';btnBuy.style.background='linear-gradient(135deg,var(--p),var(--pl))';btnBuy.onclick=()=>A.openPayModal();}else{statusEl.className='pass-status free';labelEl.textContent='무료 체험 3건 가능';tagEl.textContent='기부형 앱';tagEl.style.background='var(--ac)';btnBuy.innerHTML='<i class="fa-brands fa-naver"></i> 1일권 구매';btnBuy.style.background='';btnBuy.onclick=()=>A.openPayModal();}}
+return;}if(p.active&&p.type==='paid'){statusEl.className='pass-status paid';labelEl.textContent='1일 이용권 이용 중';tagEl.textContent='이용권';tagEl.style.background='var(--nv)';btnBuy.innerHTML='<i class="fa-solid fa-check"></i> 이용 중';btnBuy.style.background='linear-gradient(135deg,var(--p),var(--pl))';btnBuy.onclick=()=>A.openPayModal();}else{statusEl.className='pass-status free';labelEl.textContent='무료 3건 가능';tagEl.textContent='기부형 앱';tagEl.style.background='var(--ac)';btnBuy.innerHTML='<i class="fa-brands fa-naver"></i> 1일권 구매';btnBuy.style.background='';btnBuy.onclick=()=>A.openPayModal();}}
 
 /* ============================================================
    🔒 사용량 제한
@@ -2632,8 +2632,8 @@ function renderItem(it){
 function updateModeLabel(){const el=$('lMode');if(!list.length){el.style.display='none';return;}const hasPaid=list.some(i=>i.mode==='paid'),hasPro=list.some(i=>i.mode==='pro');if(hasPaid){el.textContent='이용권점검';el.style.background='var(--nvb)';el.style.color='#059669';}else if(hasPro){el.textContent='직원점검';el.style.background='var(--pub)';el.style.color='var(--pu)';}else{el.textContent='무료체험';el.style.background='var(--pg)';el.style.color='var(--p)';}el.style.display='inline-block';}
 function reset(){$('inW').value='';$('inC').value='';wF=null;cF=null;['pvW','pvC'].forEach(i=>{$(i).style.display='none';$(i).src='';});['rtW','rtC'].forEach(i=>{$(i).style.display='none';});$('fUser').value='';$('fDetail').value='';$('fWork').value='';A.onWork();$('fRoom').value='';const label=$('cdLabel');label.textContent='위치 선택';label.classList.add('cd-placeholder');label.style.color='';label.style.fontWeight='';$('cdBtn').classList.remove('err-shake');document.querySelectorAll('.cd-item').forEach(i=>i.classList.remove('selected'));// 입력 모드 배너 리셋
 const el=$('fUser');el.classList.remove('has-value');const banner=$('inputHintBanner');if(banner){banner.classList.remove('has-input');const span=banner.querySelector('span:first-of-type');if(span)span.innerHTML='하자 내용을 입력하면 <b>입력 기반 정밀 분석</b>으로 전환됩니다';const badge=$('inputModeBadge');if(badge){badge.className='input-mode-badge photo-mode';badge.innerHTML='📷 사진 모드';}}if(ls('frog_agreed')!=='true'){$('fAgree').checked=false;A.togSave();}clearItemDraft();step(4);}
-function saveList(){try{ls('frog_list',JSON.stringify(list.map(it=>({...it,wImg:null,cImg:null}))));ls('frog_list_full',JSON.stringify(list));$('sgTx').textContent=`저장된 하자 건수 : ${list.length} 건`;}catch(e){console.warn('Storage full');}}
-function loadList(){try{const full=ls('frog_list_full');if(full){list=JSON.parse(full);list.forEach(it=>renderItem(it));updateModeLabel();$('sgTx').textContent=`저장된 하자 건수 : ${list.length} 건`;}else{const d=ls('frog_list');if(d){list=JSON.parse(d);list.forEach(it=>renderItem(it));updateModeLabel();$('sgTx').textContent=`저장된 하자 건수 : ${list.length} 건`;}}}catch(e){list=[];}}
+function saveList(){try{ls('frog_list',JSON.stringify(list.map(it=>({...it,wImg:null,cImg:null}))));ls('frog_list_full',JSON.stringify(list));$('sgTx').textContent=`저장 총 하자 : ${list.length} 건`;}catch(e){console.warn('Storage full');}}
+function loadList(){try{const full=ls('frog_list_full');if(full){list=JSON.parse(full);list.forEach(it=>renderItem(it));updateModeLabel();$('sgTx').textContent=`저장 총 하자 : ${list.length} 건`;}else{const d=ls('frog_list');if(d){list=JSON.parse(d);list.forEach(it=>renderItem(it));updateModeLabel();$('sgTx').textContent=`저장 총 하자 : ${list.length} 건`;}}}catch(e){list=[];}}
 A.edit=id=>{const idx=list.findIndex(i=>i.id===id);if(idx===-1)return;if(!confirm('수정 모드로 불러오시겠습니까?'))return;const it=list[idx];$('fRoom').value=it.room;const label=$('cdLabel');label.textContent=it.room;label.classList.remove('cd-placeholder');label.style.color='var(--tx)';label.style.fontWeight='700';document.querySelectorAll('.cd-item').forEach(i=>i.classList.toggle('selected',i.dataset.val===it.room));$('fWork').value=it.work;$('fDetail').value=it.detail;if(it.wImg)showPreview('pvW',it.wImg);if(it.cImg)showPreview('pvC',it.cImg);$(`i-${id}`).remove();list.splice(idx,1);$('lCnt').textContent=list.length;saveList();window.scrollTo(0,0);};
 A.del=id=>{if(!confirm('삭제하시겠습니까?'))return;$(`i-${id}`).remove();list=list.filter(i=>i.id!==id);$('lCnt').textContent=list.length;updateModeLabel();saveList();};
 A.clearAll=()=>{if(!list.length)return;if(!confirm(`${list.length}건 전체 삭제하시겠습니까?`))return;list=[];$('lBox').innerHTML='';$('lCnt').textContent=0;updateModeLabel();saveList();};
