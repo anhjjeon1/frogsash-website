@@ -1869,12 +1869,12 @@ input[type="file"]{
       <img class="pp" id="pvW" alt="">
       <button type="button" class="rb" id="rtW" onclick="A.retake('w',event)"><i class="fa-solid fa-camera" style="margin-right:3px;font-size:.7rem"></i>다시찍기</button>
     </label>
-    <div class="pc c" id="lblC">
+    <label class="pc c" id="lblC" for="inC">
       <i class="fa-solid fa-crosshairs ic"></i>
       <div class="lb">가까이 찍기<br><span class="hn">탭하여 촬영/갤러리</span></div>
       <img class="pp" id="pvC" alt="">
       <button type="button" class="rb" id="rtC" onclick="A.retake('c',event)"><i class="fa-solid fa-camera" style="margin-right:3px;font-size:.7rem"></i>다시찍기</button>
-    </div>
+    </label>
   </div>
   <div style="display:none">
   </div>
@@ -2319,15 +2319,13 @@ window.addEventListener('DOMContentLoaded',()=>{
 
   lblW.addEventListener('click',(e)=>{if(e.target.classList.contains('rb')||e.target.closest('.rb'))return;inW.value='';});
 
-  lblC.addEventListener('click',async(e)=>{
+  lblC.addEventListener('click',(e)=>{
     if(e.target.classList.contains('rb')||e.target.closest('.rb'))return;
-    if(!await chkLim())return;
     inC.value='';
-    inC.click();
   });
 
   inW.addEventListener('change',(e)=>{const f=e.target.files[0];if(!f)return;processPhoto(f,'w');});
-  inC.addEventListener('change',(e)=>{const f=e.target.files[0];if(!f)return;processPhoto(f,'c');});
+  inC.addEventListener('change',async(e)=>{const f=e.target.files[0];if(!f)return;if(!await chkLim()){inC.value='';return;}processPhoto(f,'c');});
 });
 
 /* ── 미리보기용 리사이즈 (800px, JPEG 75%) ── */
