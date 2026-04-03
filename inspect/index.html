@@ -6,14 +6,16 @@
 <meta name="theme-color" content="#0A6B5C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>청개구리 입주자 사전점검 AI앱 v20.9</title>
+<title>청개구리 입주자 사전점검 AI앱 v21.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* ============================================================
-   청개구리 입주자 사전점검 AI v20.9
-   v20.9 변경사항:
+   청개구리 입주자 사전점검 AI v21.0
+   v21.0 변경사항:
+   - [FIX] 스마트스토어 상품 URL 수정 (상품번호 13332726774)
    - [ADD] 결제 모달에 "코드 사용 후 환불 불가" 안내 문구 추가
+   - [SECURITY] 테스트 인증코드(TEST01/DEMO01/FROG01) 제거
    v20.8 변경사항:
    - [IMPROVE] 하자내용 직접 입력 시 AI 정밀 분석 강화
      · 사용자 입력이 있으면 → 입력 내용이 진단의 주축
@@ -1757,12 +1759,12 @@ input[type="file"]{
       </div>
       <div class="hd-text">
         <div class="hd-title" style="font-size:.95rem">청개구리 입주자 사전점검</div>
-        <div class="hd-sub" data-ver>AI 하자분석 · 국토부 기준 참조 · v20.8</div>
+        <div class="hd-sub" data-ver>AI 하자분석 · 국토부 기준 참조 · v21.0</div>
       </div>
     </div>
     <div class="hd-tags">
       <span class="tag tag-free" id="passTag">기부형 앱</span>
-      <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()">v20.8</span>
+      <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()">v21.0</span>
     </div>
   </div>
 </header>
@@ -1968,7 +1970,7 @@ input[type="file"]{
   </div>
   <div class="ft-i" style="font-size:.5rem;margin-top:6px;letter-spacing:-.03em;line-height:1.6;text-align:left;padding:0 6px">
     청개구리샤시 | 대표:전영웅 | 사업자:123-36-31426 | 통신판매:제2011-경기군포-00342호 | 📞010-2322-0949 | 군포시 용호1로21번길15, 102동1501호(당동,용호마을e-편한세상)<br>
-    ✉toi9113@naver.com | <span style="color:var(--nv);font-weight:700">환불:</span>코드 미사용시 전액환불/사용후 환불불가 | <a href="#" onclick="A.modal('moPrivacy',1);return false;" style="color:var(--ac);text-decoration:underline;font-weight:600">개인정보처리방침</a> | 보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v20.8</span>
+    ✉toi9113@naver.com | <span style="color:var(--nv);font-weight:700">환불:</span>코드 미사용시 전액환불/사용후 환불불가 | <a href="#" onclick="A.modal('moPrivacy',1);return false;" style="color:var(--ac);text-decoration:underline;font-weight:600">개인정보처리방침</a> | 보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v21.0</span>
   </div>
 </div>
 </div><!-- /app -->
@@ -2230,7 +2232,7 @@ const $=id=>document.getElementById(id);
    ============================================================ */
 function getPassState(){const today=new Date().toDateString();const raw=ls('frog_pass')||'{}';const p=JSON.parse(raw);if(p.date!==today)return{active:false,type:'free'};return p;}
 function activatePass(code,type='paid'){const today=new Date().toDateString();ls('frog_pass',JSON.stringify({date:today,active:true,type,code,activatedAt:new Date().toISOString()}));}
-async function verifyCodeGAS(code){if(GAS_URL.includes('YOUR_DEPLOYED_GAS_ID')){const testCodes=['TEST01','DEMO01','FROG01'];if(testCodes.includes(code.toUpperCase()))return{valid:true,message:'인증 성공 (테스트)'};return{valid:false,message:'유효하지 않은 코드입니다'};}const url=`${GAS_URL}?action=verify&code=${encodeURIComponent(code)}&fp=${encodeURIComponent(FP)}`;const res=await fetch(url);if(!res.ok)throw new Error('서버 응답 오류');return await res.json();}
+async function verifyCodeGAS(code){const url=`${GAS_URL}?action=verify&code=${encodeURIComponent(code)}&fp=${encodeURIComponent(FP)}`;const res=await fetch(url);if(!res.ok)throw new Error('서버 응답 오류');return await res.json();}
 A.openPayModal=()=>{$('codeInput').value='';$('codeMsg').textContent='';$('codeMsg').className='code-msg';$('btnVerify').disabled=false;A.modal('payGuide',1);};
 A.showCodeInput=()=>{};
 A.verifyCode=async()=>{const code=$('codeInput').value.trim().toUpperCase();if(!code||code.length<4){$('codeInput').classList.add('error');$('codeMsg').textContent='코드를 입력해주세요 (4자 이상)';$('codeMsg').className='code-msg err';setTimeout(()=>$('codeInput').classList.remove('error'),500);return;}const p=getPassState();if(p.active&&p.code===code){$('codeMsg').textContent='이미 활성화된 코드입니다 ✓';$('codeMsg').className='code-msg ok';setTimeout(()=>A.modal('payGuide',0),1200);return;}$('btnVerify').disabled=true;$('codeMsg').textContent='확인 중...';$('codeMsg').className='code-msg loading';try{const result=await verifyCodeGAS(code);if(result.valid){$('codeInput').classList.remove('error');$('codeInput').classList.add('success');$('codeMsg').textContent='✓ 인증 성공! 오늘 하루 이용권이 활성화되었습니다';$('codeMsg').className='code-msg ok';activatePass(code,'paid');mode='paid';updatePassUI();updateQuotaUI();stat('🎟️ 1일 이용권 활성화! AI 분석 100회 사용 가능');setTimeout(()=>A.modal('payGuide',0),1800);}else{$('codeInput').classList.add('error');$('codeMsg').textContent=result.message||'유효하지 않은 코드입니다';$('codeMsg').className='code-msg err';setTimeout(()=>$('codeInput').classList.remove('error'),500);$('btnVerify').disabled=false;}}catch(e){$('codeMsg').textContent='검증 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';$('codeMsg').className='code-msg err';$('btnVerify').disabled=false;}};
