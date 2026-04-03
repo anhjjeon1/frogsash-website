@@ -6,12 +6,14 @@
 <meta name="theme-color" content="#0A6B5C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>청개구리 입주자 사전점검 AI앱 v20.8</title>
+<title>청개구리 입주자 사전점검 AI앱 v20.9</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* ============================================================
-   청개구리 입주자 사전점검 AI v20.8
+   청개구리 입주자 사전점검 AI v20.9
+   v20.9 변경사항:
+   - [ADD] 결제 모달에 "코드 사용 후 환불 불가" 안내 문구 추가
    v20.8 변경사항:
    - [IMPROVE] 하자내용 직접 입력 시 AI 정밀 분석 강화
      · 사용자 입력이 있으면 → 입력 내용이 진단의 주축
@@ -2043,6 +2045,7 @@ input[type="file"]{
     <div class="code-msg" id="codeMsg"></div>
   </div>
   <div style="font-size:.68rem;color:var(--th);text-align:center;margin-top:10px;line-height:1.6">코드 미수신 시 📞 010-2322-0949 문자 문의<br>인증코드는 1회 사용 후 당일 자정 만료</div>
+  <div style="font-size:.65rem;color:#ef4444;text-align:center;margin-top:6px;line-height:1.5;background:#fef2f2;border-radius:8px;padding:6px 10px"><i class="fa-solid fa-triangle-exclamation"></i> <b>환불 안내:</b> 인증코드 사용 후에는 환불이 불가합니다. 코드 미사용 시 전액 환불 가능.</div>
   <button class="mo-cls" onclick="A.modal('payGuide',0)">닫기</button>
 </div>
 </div>
