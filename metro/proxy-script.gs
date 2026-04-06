@@ -24,7 +24,7 @@ function savePhotoToDrive(base64DataUrl, fileName) {
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     return 'https://drive.google.com/thumbnail?id=' + file.getId() + '&sz=w200';
   } catch(err) {
-    return '';
+    return 'DRIVE_ERR:' + err.message;
   }
 }
 
@@ -184,7 +184,7 @@ function doPost(e) {
       var prefix = (sheetName || '현장') + '_R' + rowNum + '_' + colName;
       if (worker) prefix += '_' + worker;
       var url = savePhotoToDrive(base64, prefix + '.jpg');
-      if (!url) return makeRes({status:'error', message:'Drive 저장 실패'});
+      if (!url || url.indexOf('DRIVE_ERR') === 0) return makeRes({status:'error', message:url || 'Drive 저장 실패 (빈 응답)'});
 
       // 시트에 IMAGE 수식 삽입
       ws.getRange(rowNum, colIdx).setFormula('=IMAGE("' + url + '")');
