@@ -1,4 +1,4 @@
-var CACHE_NAME = 'metro-v14c';
+var CACHE_NAME = 'metro-v14d';
 var URLS_TO_CACHE = [
   '/metro/',
   '/metro/index.html',
@@ -33,10 +33,11 @@ self.addEventListener('activate', function(e) {
 });
 
 self.addEventListener('fetch', function(e) {
+  // POST 등 비-GET 요청은 서비스워커가 개입하지 않음 (GAS 사진 업로드 등)
+  if (e.request.method !== 'GET') return;
   var url = e.request.url;
-  // API 요청은 네트워크 우선 (GAS 호출)
+  // API 요청은 서비스워커가 개입하지 않음 (브라우저가 직접 처리)
   if (url.indexOf('script.google.com') >= 0 || url.indexOf('drive.google.com') >= 0) {
-    e.respondWith(fetch(e.request));
     return;
   }
   // 나머지는 캐시 우선, 실패 시 네트워크
