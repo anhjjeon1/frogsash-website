@@ -320,8 +320,15 @@ var App={
     var w=this.getSetting('WORKER');
     if(w){document.getElementById('workerBadge').textContent=w;document.getElementById('workerBadge').style.display='inline-flex';}
     // 기본값이 있으므로 설정 패널 자동 열기 불필요
-    // PWA 서비스워커 등록
-    if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
+    // PWA 서비스워커 강제 업데이트 후 등록
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.getRegistrations().then(function(regs){
+        var p=regs.map(function(r){return r.unregister();});
+        return Promise.all(p);
+      }).then(function(){
+        return navigator.serviceWorker.register('sw.js');
+      }).catch(function(){});
+    }
   },
 
   toast:function(m,t,d){t=t||'info';d=d||2500;var e=document.getElementById('toast');e.textContent=m;e.className='toast '+t+' show';clearTimeout(e._t);e._t=setTimeout(function(){e.classList.remove('show');},d);},
