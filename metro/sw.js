@@ -1,4 +1,4 @@
-var CACHE_NAME = 'metro-v15a';
+var CACHE_NAME = 'metro-v15b';
 var URLS_TO_CACHE = [
   '/metro/',
   '/metro/index.html',
@@ -14,7 +14,13 @@ var URLS_TO_CACHE = [
 self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(URLS_TO_CACHE);
+      // cache: 'reload' → 브라우저 HTTP 캐시 무시, 항상 서버에서 최신 파일 가져옴
+      var requests = URLS_TO_CACHE.map(function(url) {
+        return fetch(new Request(url, {cache: 'reload'})).then(function(resp) {
+          if (resp.ok) return cache.put(url, resp);
+        }).catch(function() {});
+      });
+      return Promise.all(requests);
     })
   );
   self.skipWaiting();
@@ -40,7 +46,22 @@ self.addEventListener('fetch', function(e) {
   if (url.indexOf('script.google.com') >= 0 || url.indexOf('drive.google.com') >= 0) {
     return;
   }
-  // 나머지는 캐시 우선, 실패 시 네트워크
+  // index.html은 네트워크 우선 (항상 최신 버전 제공)
+  if (url.indexOf('index.html') >= 0 || url.endsWith('/metro/')) {
+    e.respondWith(
+      fetch(e.request).then(function(resp) {
+        if (resp.ok) {
+          var clone = resp.clone();
+          caches.open(CACHE_NAME).then(function(cache) { cache.put(e.request, clone); });
+        }
+        return resp;
+      }).catch(function() {
+        return caches.match(e.request);
+      })
+    );
+    return;
+  }
+  // 나머지 정적 자원은 캐시 우선, 실패 시 네트워크
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       return cached || fetch(e.request).then(function(resp) {
