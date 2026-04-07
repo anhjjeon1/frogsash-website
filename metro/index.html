@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v15.2</title>
+  <title>(주)메트로 R & S AI v16.0</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -200,7 +200,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V15.2</div>
+      <div class="ver">V16.0</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -593,56 +593,51 @@ var App={
     reader.onload=function(e){
       var img=new Image();
       img.onload=function(){
-        var mW=800,sc=img.width>mW?mW/img.width:1;
+        var mW=200,sc=img.width>mW?mW/img.width:1;
         var c=document.createElement('canvas');c.width=img.width*sc;c.height=img.height*sc;
         c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-        var b=c.toDataURL('image/jpeg',0.7);
+        var b=c.toDataURL('image/jpeg',0.4);
         // 로컬에 즉시 표시
         if(!self.rowPhotos[rn]) self.rowPhotos[rn]={};
         self.rowPhotos[rn][type]=b;
         self.renderLog();
         // Drive에 업로드
-        self.uploadPhotoToDrive(rn,type,b);
+        self.uploadPhoto(rn,type,b);
       };img.src=e.target.result;
     };reader.readAsDataURL(file);
   },
 
-  uploadPhotoToDrive:function(rn,type,base64){
+  uploadPhoto:function(rn,type,base64){
     var url=this.getSetting('SCRIPT');
     var sid=this.getSetting('SHEET');
     var sn=this.getSetting('SHEET_NAME');
-    var worker=this.getSetting('WORKER');
     if(!url||!sid){this.toast('설정을 먼저 완료하세요','error');return;}
     var self=this;
-    // 업로드 중 표시
     this.uploadingCells[rn+'_'+type]=true;
     this.renderLog();
-    this.toast('Drive 업로드 중...','info',3000);
-    // XHR 사용 (모바일 CORS/리다이렉트 호환성 최적)
+    this.toast('시트 저장 중...','info',3000);
     var xhr=new XMLHttpRequest();
     xhr.open('POST',url,true);
     xhr.onload=function(){
       delete self.uploadingCells[rn+'_'+type];
       try{
         var d=JSON.parse(xhr.responseText);
-        if(d.status==='ok'&&d.url){
-          self.rowPhotos[rn][type]=d.url;
-          self.toast('Drive 저장 완료','success',1500);
+        if(d.status==='ok'){
+          self.toast('저장 완료','success',1500);
         }else{
-          self.toast('Drive 저장 실패: '+(d.message||''),'error');
+          self.toast('저장 실패: '+(d.message||''),'error');
         }
       }catch(e){
-        // 응답 파싱 실패해도 업로드는 성공했을 수 있음
-        self.toast('업로드 전송 완료 (확인 필요)','info',2000);
+        self.toast('전송 완료 (확인 필요)','info',2000);
       }
       self.renderLog();
     };
     xhr.onerror=function(){
       delete self.uploadingCells[rn+'_'+type];
-      self.toast('업로드 실패: 네트워크 오류','error');
+      self.toast('저장 실패: 네트워크 오류','error');
       self.renderLog();
     };
-    xhr.send(JSON.stringify({action:'savePhoto',sheetId:sid,sheetName:sn,rowNum:rn,photoType:type,base64:base64,worker:worker}));
+    xhr.send(JSON.stringify({action:'savePhoto',sheetId:sid,sheetName:sn,rowNum:rn,photoType:type,base64:base64}));
   },
 
   delRowPhoto:function(rn,type){
