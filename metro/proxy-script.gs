@@ -22,7 +22,7 @@ function savePhotoToDrive(base64DataUrl, fileName) {
 
     var file = folder.createFile(blob);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    return 'https://drive.google.com/thumbnail?id=' + file.getId() + '&sz=w200';
+    return 'https://lh3.googleusercontent.com/d/' + file.getId();
   } catch(err) {
     return 'DRIVE_ERR:' + err.message;
   }
