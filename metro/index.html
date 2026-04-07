@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v16.0</title>
+  <title>(주)메트로 R & S AI v16.1</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -200,7 +200,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V16.0</div>
+      <div class="ver">V16.1</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -794,17 +794,8 @@ var App={
       var fn=(self.sourceSheetName||'하자관리')+'_완료.xlsx';
       return wb.xlsx.writeBuffer().then(function(buf){
         var blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-        var file=new File([blob],fn,{type:blob.type});
-        if(navigator.canShare&&navigator.canShare({files:[file]})){
-          navigator.share({files:[file],title:fn}).then(function(){
-            self.toast('OneDrive에 저장하세요','success',3000);
-          }).catch(function(e){
-            if(e.name!=='AbortError'){self._downloadBlob(blob,fn);self.toast('다운로드 완료','success');}
-          });
-        }else{
-          self._downloadBlob(blob,fn);
-          self.toast('엑셀 다운로드 완료 ('+insertCount+'건 사진 포함)','success',3000);
-        }
+        self._downloadBlob(blob,fn);
+          self.toast('다운로드 완료 ('+insertCount+'건 사진 포함) - 내 파일 > Download 폴더','success',5000);
       });
     }).catch(function(err){
       self.toast('오류: '+err.message,'error');
