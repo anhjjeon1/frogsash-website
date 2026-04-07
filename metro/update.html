@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>메트로앱 업데이트</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#1F2937;color:#fff;text-align:center;padding:20px}
+.box{max-width:360px}
+h2{font-size:1.3rem;margin-bottom:16px}
+#status{font-size:1rem;color:#60A5FA;margin-bottom:20px;min-height:60px}
+.spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.2);border-top-color:#60A5FA;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.done{color:#34D399;font-weight:700;font-size:1.2rem}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>메트로앱 캐시 초기화</h2>
+<div class="spinner" id="spinner"></div>
+<div id="status">초기화 중...</div>
+</div>
+<script>
+var status = document.getElementById('status');
+var steps = [];
+
+function log(msg) {
+  steps.push(msg);
+  status.innerHTML = steps.join('<br>');
+}
+
+async function clearAll() {
+  try {
+    // 1. 서비스워커 전부 해제
+    if ('serviceWorker' in navigator) {
+      var regs = await navigator.serviceWorker.getRegistrations();
+      for (var i = 0; i < regs.length; i++) {
+        await regs[i].unregister();
+      }
+      log('✅ 서비스워커 해제 (' + regs.length + '개)');
+    } else {
+      log('⚪ 서비스워커 없음');
+    }
+
+    // 2. 캐시 스토리지 전부 삭제
+    if (window.caches) {
+      var names = await caches.keys();
+      for (var j = 0; j < names.length; j++) {
+        await caches.delete(names[j]);
+      }
+      log('✅ 캐시 삭제 (' + names.length + '개)');
+    } else {
+      log('⚪ 캐시 없음');
+    }
+
+    // 3. 완료
+    document.getElementById('spinner').style.display = 'none';
+    log('<span class="done">✅ 초기화 완료! 3초 후 이동합니다...</span>');
+
+    // 4. 캐시 우회하여 메인 페이지로 이동
+    setTimeout(function() {
+      window.location.replace('/metro/?v=' + Date.now());
+    }, 3000);
+
+  } catch(err) {
+    log('❌ 오류: ' + err.message);
+    setTimeout(function() {
+      window.location.replace('/metro/?v=' + Date.now());
+    }, 3000);
+  }
+}
+
+clearAll();
+</script>
+</body>
+</html>
