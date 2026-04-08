@@ -1,4 +1,4 @@
-// Metro SW v15.1 — 캐시 전체 삭제 + 네트워크 전용 모드
+// Metro SW v17.0 — 캐시 전체 삭제 + 네트워크 전용 모드
 // 이전 SW 캐시 문제 근본 해결: 캐시를 사용하지 않음
 
 self.addEventListener('install', function(e) {
