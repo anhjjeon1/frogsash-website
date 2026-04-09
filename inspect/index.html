@@ -227,20 +227,20 @@ body{
   padding:6px 12px;
   border-radius:30px;
   border:none;
-  background:linear-gradient(135deg,#FF6B35,#FF8F5E);
+  background:linear-gradient(135deg,#1E3A5F,#2C5282);
   color:#fff;
   font-size:.7rem;
   font-weight:800;
   cursor:pointer;
   font-family:inherit;
   white-space:nowrap;
-  box-shadow:0 2px 8px rgba(255,107,53,.3);
+  box-shadow:0 2px 8px rgba(30,58,95,.25);
   transition:var(--tr);
   flex-shrink:0;
 }
 .btn-voice:active{transform:scale(.95)}
 .btn-voice.playing{background:linear-gradient(135deg,#E74C3C,#FF6B6B);animation:voicePulse 1.5s ease-in-out infinite}
-@keyframes voicePulse{0%,100%{box-shadow:0 2px 8px rgba(231,76,60,.3)}50%{box-shadow:0 2px 16px rgba(231,76,60,.6)}}
+@keyframes voicePulse{0%,100%{box-shadow:0 2px 8px rgba(231,76,60,.3)}50%{box-shadow:0 2px 16px rgba(231,76,60,.5)}}
 .btn-buy{
   display:flex;
   align-items:center;
@@ -249,7 +249,7 @@ body{
   padding:6px 12px;
   border-radius:30px;
   border:none;
-  background:linear-gradient(135deg,var(--nv),#02A54E);
+  background:linear-gradient(135deg,var(--nv),#3DA868);
   color:#fff;
   font-size:.7rem;
   font-weight:800;
@@ -510,8 +510,8 @@ textarea.if{
 .row>*{flex:1}
 
 /* ── 하자입력 강조 스타일 (NEW v20.8) ── */
-#fUser{border-color:var(--p);background:linear-gradient(135deg,#F0FDF4,#fff)}
-#fUser:focus{border-color:var(--pl);box-shadow:0 0 0 4px rgba(18,184,154,.15)}
+#fUser{border-color:#D1D5DB;background:#FAFBFC}
+#fUser:focus{border-color:var(--pl);box-shadow:0 0 0 3px var(--pg)}
 #fUser.has-value{
   border-color:#3B82F6;
   background:linear-gradient(135deg,#EFF6FF,#fff);
@@ -628,17 +628,17 @@ textarea.if{
   z-index:1;
 }
 .pc:active{transform:scale(.98)}
-.pc.w{background:linear-gradient(180deg,#EBF5FF,#DBEAFE);border:2px dashed #93C5FD}
-.pc.c{background:linear-gradient(180deg,#ECFDF5,#D1FAE5);border:2px dashed var(--pl)}
+.pc.w{background:#F4F6F9;border:2px dashed #D1D5DB}
+.pc.c{background:#F4F6F9;border:2px dashed #D1D5DB}
 .pc .ic{font-size:1.8rem;opacity:.6}
-.pc.w .ic{color:#3B82F6}.pc.c .ic{color:var(--pl)}
+.pc.w .ic{color:#9CA3AF}.pc.c .ic{color:#9CA3AF}
 .pc .lb{
   font-size:.75rem;
   font-weight:700;
   text-align:center;
   line-height:1.3;
 }
-.pc.w .lb{color:#3B82F6}.pc.c .lb{color:var(--p)}
+.pc.w .lb{color:#6B7280}.pc.c .lb{color:#6B7280}
 .pc .hn{font-size:.65rem;color:var(--th)}
 .pp{
   position:absolute;
@@ -982,7 +982,7 @@ textarea.if{
   padding:12px;
   border:none;
   border-radius:12px;
-  background:linear-gradient(135deg,var(--nv),#02A54E);
+  background:linear-gradient(135deg,var(--nv),#3DA868);
   color:#fff;
   font-size:.85rem;
   font-weight:800;
@@ -1016,13 +1016,13 @@ textarea.if{
 .ft-donate{
   margin-top:6px;
   padding:6px 10px;
-  background:linear-gradient(135deg,#F0FDF4,#DCFCE7);
-  border:1px solid #BBF7D0;
+  background:#F1F4F8;
+  border:1px solid #E2E8F0;
   border-radius:10px;
 }
 .ft-donate-text{
   font-size:.68rem;
-  color:#166534;
+  color:#6B7B8F;
   font-weight:700;
   text-align:center;
   line-height:1.5;
@@ -1140,7 +1140,7 @@ textarea.if{
   padding:14px;
   border:none;
   border-radius:var(--r);
-  background:linear-gradient(135deg,var(--nv),#02A54E);
+  background:linear-gradient(135deg,var(--nv),#3DA868);
   color:#fff;
   font-size:.9rem;
   font-weight:800;
@@ -1727,13 +1727,13 @@ input[type="file"]{
 
 <!-- ── STEP 3: 하자 정보 ── -->
 <div class="sec">
-  <div class="sec-t" style="display:flex;align-items:center;gap:6px"><span class="n">3</span> 하자 정보 <span style="color:var(--p);font-size:.6rem;font-weight:900">★ 하자내용 입력 시 정밀분석</span><div style="margin-left:auto;display:flex;gap:4px"><button onclick="if(confirm('현재 입력을 초기화할까요?')){reset();step(1);stat('🔄 초기화 완료');}" style="background:#EF4444;color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">🔄 초기화</button><button id="btnNext" onclick="A.nextInput()" style="display:none;background:var(--p);color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">➡️ 다음입력</button></div></div>
+  <div class="sec-t" style="display:flex;align-items:center;gap:6px"><span class="n">3</span> 하자 정보 <span style="color:var(--p);font-size:.6rem;font-weight:900">★ 하자내용 입력 시 정밀분석</span><div style="margin-left:auto;display:flex;gap:24px"><button id="btnNext" onclick="A.nextInput()" style="background:var(--p);color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">➡️ 다음입력</button><button onclick="if(confirm('현재 입력을 초기화할까요?')){reset();step(1);stat('🔄 초기화 완료');}" style="background:#1E3A5F;color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">🔄 초기화</button></div></div>
 
   <div class="input-hint-banner" id="inputHintBanner" style="display:none">
     <span id="inputModeBadge"></span>
   </div>
 
-  <div style="display:grid;grid-template-columns:auto 1fr;gap:6px;margin-bottom:9px">
+  <div style="display:grid;grid-template-columns:1fr 2fr;gap:6px;margin-bottom:9px">
     <div>
       <select class="if" id="fRoom" style="display:none"><option value="">위치 선택</option></select>
       <div class="cd-wrap" id="cdRoom">
@@ -1764,9 +1764,8 @@ input[type="file"]{
     <div style="position:relative">
       <input type="text" class="if" id="fUser"
         placeholder="✏️ 하자내용 (예: 창호 수직수평불량)"
-        style="padding-right:32px"
+        style=""
         oninput="A.onUserInput(this)">
-      <i class="fa-solid fa-wand-magic-sparkles" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--pl);font-size:.95rem"></i>
     </div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:9px">
@@ -1823,10 +1822,10 @@ input[type="file"]{
 </div>
 
 <div class="ba" style="display:grid;grid-template-columns:3fr 1fr;gap:8px">
-  <button class="ab pdf" onclick="A.pdf()" style="border-radius:var(--r);padding:9px;font-size:.82rem;font-weight:800;background:linear-gradient(135deg,#059669,#10B981);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 10px rgba(5,150,105,.3)">
+  <button class="ab pdf" onclick="A.pdf()" style="border-radius:var(--r);padding:9px;font-size:.82rem;font-weight:800;background:var(--p);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 8px rgba(10,107,92,.25)">
     <i class="fa-solid fa-file-arrow-down"></i> 전체 저장 (PDF)
   </button>
-  <button onclick="A.openChatBot()" style="border-radius:var(--r);padding:9px;font-size:.78rem;font-weight:800;background:linear-gradient(135deg,#FF6B35,#FF8F5E);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 10px rgba(255,107,53,.3)">
+  <button onclick="A.openChatBot()" style="border-radius:var(--r);padding:9px;font-size:.78rem;font-weight:800;background:linear-gradient(135deg,#1E3A5F,#2C5282);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(30,58,95,.25)">
     <i class="fa-solid fa-robot"></i> 상담
   </button>
 </div>
@@ -2256,8 +2255,7 @@ function autoSave(savedW,savedC){
   if(roomMissing)toast('<i class="fa-solid fa-circle-check"></i> 자동 저장! ⚠️ 위치는 미지정으로 저장됨',true,3500);
   else toast(`<i class="fa-solid fa-circle-check"></i> <b>${room}</b> 자동 저장 완료!`);
   stat('✅ 자동 저장! 다음 항목을 촬영하세요.');
-  $('btnNext').style.display='inline-block';
-  setTimeout(()=>{document.querySelector('.lh').scrollIntoView({behavior:'smooth'});setTimeout(()=>step(1),800);},600);
+    setTimeout(()=>{document.querySelector('.lh').scrollIntoView({behavior:'smooth'});setTimeout(()=>step(1),800);},600);
 }
 
 /* ── 위치 선택 ── */
@@ -2490,8 +2488,7 @@ A.nextInput=()=>{
   $('fUser').classList.remove('has-value');
   const banner=$('inputHintBanner');if(banner)banner.classList.remove('has-input');
   $('aiTags').style.display='none';
-  $('btnNext').style.display='none';
-  clearItemDraft();
+    clearItemDraft();
   stat('➡️ 다음 하자를 입력하세요');
   toast('<i class="fa-solid fa-arrow-right"></i> 다음 하자 입력 준비 완료');
   document.querySelector('.sec-t .n').scrollIntoView({behavior:'smooth',block:'start'});
