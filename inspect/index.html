@@ -6,12 +6,14 @@
 <meta name="theme-color" content="#0A6B5C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>청개구리 입주자 사전점검 AI앱 v22.3</title>
+<title>청개구리 입주자 사전점검 AI앱 v22.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* ============================================================
-   청개구리 입주자 사전점검 AI v22.3
+   청개구리 입주자 사전점검 AI v22.4
+   v22.4 변경사항:
+   - [UI] 초기화 버튼 연한 붉은색 배경으로 변경
    v22.3 변경사항:
    - [UI] 하자정보 헤더 텍스트 간소화 (한 줄 배치)
    v22.2 변경사항:
@@ -1660,7 +1662,7 @@ input[type="file"]{
 <header class="hd">
   <div class="hd-top" style="justify-content:center;align-items:center;padding:12px 14px 10px">
     <div class="hd-title" style="font-size:1.26rem">청개구리 입주점검 AI앱</div>
-    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v22.3</span>
+    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v22.4</span>
     <span id="passTag" style="display:none">기부형 앱</span>
   </div>
   <div id="logoImg" style="display:none"></div>
@@ -1731,7 +1733,7 @@ input[type="file"]{
 
 <!-- ── STEP 3: 하자 정보 ── -->
 <div class="sec">
-  <div class="sec-t" style="display:flex;align-items:center;gap:6px"><span class="n">3</span> 하자 정보 <span style="color:var(--p);font-size:.6rem;font-weight:900">★ 하자내용(필수입력)</span><div style="margin-left:auto;display:flex;gap:24px"><button id="btnNext" onclick="A.nextInput()" style="background:var(--p);color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">➡️ 다음입력</button><button onclick="if(confirm('현재 입력을 초기화할까요?')){reset();step(1);stat('🔄 초기화 완료');}" style="background:#1E3A5F;color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">🔄 초기화</button></div></div>
+  <div class="sec-t" style="display:flex;align-items:center;gap:6px"><span class="n">3</span> 하자 정보 <span style="color:var(--p);font-size:.6rem;font-weight:900">★ 하자내용(필수입력)</span><div style="margin-left:auto;display:flex;gap:24px"><button id="btnNext" onclick="A.nextInput()" style="background:var(--p);color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">➡️ 다음입력</button><button onclick="if(confirm('현재 입력을 초기화할까요?')){reset();step(1);stat('🔄 초기화 완료');}" style="background:#FEE2E2;color:#DC2626;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">🔄 초기화</button></div></div>
 
   <div class="input-hint-banner" id="inputHintBanner" style="display:none">
     <span id="inputModeBadge"></span>
@@ -1848,7 +1850,7 @@ input[type="file"]{
     통신판매:제2011-경기군포-00342호<br>
     군포시 용호1로21번길15, 102동1501호<br>
     ✉toi9113@naver.com | 환불:코드 미사용시 전액/사용후 불가<br>
-    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v22.3</span>
+    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v22.4</span>
   </div>
 </div>
 </div><!-- /app -->
@@ -2000,7 +2002,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v22.3';
+const APP_VER = 'v22.4';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
