@@ -6,12 +6,14 @@
 <meta name="theme-color" content="#0A6B5C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>청개구리 입주자 사전점검 AI앱 v22.1</title>
+<title>청개구리 입주자 사전점검 AI앱 v22.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* ============================================================
-   청개구리 입주자 사전점검 AI v22.1
+   청개구리 입주자 사전점검 AI v22.2
+   v22.2 변경사항:
+   - [기능] 버전 태그 3회 클릭 → 관리자 모드 진입
    v22.1 변경사항:
    - [UI] 모바일 시인성 대폭 개선 — 헤더/기부바/이용권바 통합
    - [UI] 음성안내 기능 제거 (사용빈도 낮음)
@@ -1656,7 +1658,7 @@ input[type="file"]{
 <header class="hd">
   <div class="hd-top" style="justify-content:center;align-items:center;padding:12px 14px 10px">
     <div class="hd-title" style="font-size:1.26rem">청개구리 입주점검 AI앱</div>
-    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v22.1</span>
+    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v22.2</span>
     <span id="passTag" style="display:none">기부형 앱</span>
   </div>
   <div id="logoImg" style="display:none"></div>
@@ -1844,7 +1846,7 @@ input[type="file"]{
     통신판매:제2011-경기군포-00342호<br>
     군포시 용호1로21번길15, 102동1501호<br>
     ✉toi9113@naver.com | 환불:코드 미사용시 전액/사용후 불가<br>
-    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v22.1</span>
+    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v22.2</span>
   </div>
 </div>
 </div><!-- /app -->
@@ -1996,7 +1998,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v22.1';
+const APP_VER = 'v22.2';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2266,11 +2268,10 @@ function showRoomWarn(){let warn=$('roomWarnMsg');if(!warn){warn=document.create
 
 /* ── 전문가(직원) 모드 ── */
 A.setMode=m=>{if(m==='admin'){$('moPwd').classList.add('show');$('pwdInput').value='';$('pwdErr').style.display='none';setTimeout(()=>$('pwdInput').focus(),200);return;}mode='free';sessionStorage.removeItem('admin_token');updateQuotaUI();updatePassUI();};
-/* 로고 길게 누르기 → 관리자 모드 */
-(function(){const logo=$('logoImg');if(!logo)return;let lt;logo.addEventListener('touchstart',e=>{e.preventDefault();lt=setTimeout(()=>{A.setMode('admin');},1200);},{passive:false});logo.addEventListener('touchend',e=>{e.preventDefault();clearTimeout(lt);});logo.addEventListener('touchcancel',()=>clearTimeout(lt));logo.addEventListener('contextmenu',e=>e.preventDefault());logo.style.cssText+='touch-action:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;';})();
+/* 관리자 모드: 버전 태그(v22.x) 3회 클릭으로 진입 */
 A.checkPwd=async()=>{const pw=$('pwdInput').value;if(!pw){$('pwdErr').style.display='block';return;}$('pwdInput').disabled=true;try{const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'admin_auth',pwd:pw,fp:FP})});const data=await res.json();if(data.success){sessionStorage.setItem('admin_token',data.token);mode='admin';$('moPwd').classList.remove('show');stat('🔐 관리자 모드 활성화 (24시간)');updateQuotaUI();updatePassUI();}else{$('pwdErr').style.display='block';$('pwdInput').value='';$('pwdInput').focus();}}catch(e){alert('서버 연결 실패. 잠시 후 다시 시도해주세요.');console.error(e);}$('pwdInput').disabled=false;};
 A.cancelPwd=()=>{$('moPwd').classList.remove('show');};
-A.devTap=()=>{}; /* 개발자 모드 제거됨 — 관리자 인증은 서버 측으로 이전 */
+A.devTap=(()=>{let tc=0,tt=null;return()=>{tc++;clearTimeout(tt);if(tc>=3){tc=0;A.setMode('admin');}else{tt=setTimeout(()=>{tc=0;},800);}};})();
 
 /* ============================================================
    🔊 음성안내 (v22.1)
