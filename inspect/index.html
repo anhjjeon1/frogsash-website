@@ -6,26 +6,18 @@
 <meta name="theme-color" content="#0A6B5C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>청개구리 입주자 사전점검 AI앱 v21.0</title>
+<title>청개구리 입주자 사전점검 AI앱 v22.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* ============================================================
-   청개구리 입주자 사전점검 AI v21.0
-   v21.0 변경사항:
-   - [FIX] 스마트스토어 상품 URL 수정 (상품번호 13332726774)
-   - [ADD] 결제 모달에 "코드 사용 후 환불 불가" 안내 문구 추가
-   - [SECURITY] 테스트 인증코드(TEST01/DEMO01/FROG01) 제거
-   v20.8 변경사항:
-   - [IMPROVE] 하자내용 직접 입력 시 AI 정밀 분석 강화
-     · 사용자 입력이 있으면 → 입력 내용이 진단의 주축
-       사진은 입력 내용을 "확인·보강"하는 보조 증거로만 활용
-     · 사용자 입력이 없으면 → 기존 사진 기반 분석 유지
-     · 4단계 분석: 키워드 추출 → 공종 결정 → 사진 교차 확인 → 심각도 판정
-     · 심각도 배지 추가: 경미 / 보통 / 중대하자 자동 판정
-     · _applyAIResult() 헬퍼 함수 분리 (코드 중복 제거)
-   v20.7 변경사항:
-   - [FIX] 저장 시 점검 위치 미선택 → 리스트 미표시 오류 수정
+   청개구리 입주자 사전점검 AI v22.1
+   v22.1 변경사항:
+   - [UI] 모바일 시인성 대폭 개선 — 헤더/기부바/이용권바 통합
+   - [UI] 음성안내 기능 제거 (사용빈도 낮음)
+   - [UI] 단계표시기 → 슬림 프로그레스 바 교체
+   - [UI] 공종/세부/유형 드롭다운 기본 숨김 → 태그 UI
+   - [UI] 하단 버튼 영역 정리, 푸터 간소화
    ============================================================ */
 :root{
   --p:#0A6B5C;--pl:#12B89A;--pg:rgba(18,184,154,.12);
@@ -48,15 +40,15 @@
 html{scroll-behavior:smooth}
 body{
   font-family:'Noto Sans KR',sans-serif;
-  background:var(--bg);color:var(--tx);
+  background:#FAFBFC;color:var(--tx);
   line-height:1.6;-webkit-font-smoothing:antialiased;
-  display:flex;justify-content:center;min-height:100vh;
+  display:flex;justify-content:center;
   overscroll-behavior:none;
 }
 .app{
-  width:100%;max-width:480px;min-height:100vh;
+  width:100%;max-width:480px;
   background:#FAFBFC;position:relative;
-  padding-bottom:calc(96px + var(--safe-bottom));
+  padding-bottom:calc(12px + var(--safe-bottom));
 }
 
 /* ── HEADER ── */
@@ -83,9 +75,9 @@ body{
   bottom:-2px;
   left:0;
   right:0;
-  height:14px;
+  height:10px;
   background:#FAFBFC;
-  border-radius:14px 14px 0 0;
+  border-radius:10px 10px 0 0;
 }
 .hd-top{
   display:flex;align-items:center;justify-content:space-between;
@@ -157,34 +149,12 @@ body{
 }
 .tag-v.dev{background:var(--pu);box-shadow:0 0 10px rgba(124,58,237,.5)}
 
-/* ── 기부 배너 ── */
-.donate-bar{
-  background:#fff;
-  border-bottom:1px solid #E5E7EB;
-  padding:6px 6px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
+/* ── 헤더 기부 텍스트 ── */
+.hd-donate{
+  text-align:center;
+  padding:0 14px 14px;
   position:relative;
-  z-index:1;
-}
-.donate-bar .db-icon{font-size:.9rem}
-.donate-bar .db-text{
-  font-size:.68rem;
-  font-weight:700;
-  color:#166534;
-  display:flex;
-  align-items:center;
-  gap:5px;
-}
-.donate-bar .db-badge{
-  background:var(--gold);
-  color:#1A2332;
-  font-size:.6rem;
-  font-weight:900;
-  padding:1px 6px;
-  border-radius:4px;
+  z-index:2;
 }
 
 /* ── 이용권 상태 바 ── */
@@ -192,23 +162,22 @@ body{
   display:flex;
   align-items:center;
   gap:4px;
-  padding:6px 4px;
-  background:var(--card);
-  border-bottom:1px solid var(--bl);
+  padding:8px 6px;
+  margin:6px 0;
+  background:transparent;
 }
-.unified-bar .st-voice{flex-shrink:0;font-size:.72rem;padding:8px 12px}
-.unified-bar .btn-buy{flex-shrink:0}
-.unified-bar .pass-status{flex-shrink:0;margin-left:auto}
+.unified-bar .btn-buy{flex:1}
+.unified-bar .pass-status{flex-shrink:0}
 .pass-status{
-  flex:1;
   display:flex;
   align-items:center;
-  gap:7px;
-  padding:8px 12px;
-  border-radius:10px;
-  border:1.5px solid var(--bd);
+  gap:5px;
+  padding:6px 12px;
+  border-radius:30px;
+  border:none;
   background:var(--bg);
   transition:var(--tr);
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
 }
 .pass-status.free{border-color:var(--bd)}
 .pass-status.paid{border-color:var(--nv);background:var(--nvb);}
@@ -232,7 +201,7 @@ body{
 }
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .pass-label{
-  font-size:.75rem;
+  font-size:.7rem;
   font-weight:800;
   flex:1;
 }
@@ -240,7 +209,7 @@ body{
 .pass-status.paid .pass-label{color:#059669}
 .pass-status.pro .pass-label{color:var(--pu)}
 .pass-count{
-  font-size:.68rem;
+  font-size:.7rem;
   font-weight:900;
   font-family:'Outfit';
   color:var(--th);
@@ -250,16 +219,39 @@ body{
 .pass-count.out{color:var(--dn)}
 .pass-count.paid-ok{color:var(--nv)}
 
+.btn-voice{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  padding:6px 12px;
+  border-radius:30px;
+  border:none;
+  background:linear-gradient(135deg,#FF6B35,#FF8F5E);
+  color:#fff;
+  font-size:.7rem;
+  font-weight:800;
+  cursor:pointer;
+  font-family:inherit;
+  white-space:nowrap;
+  box-shadow:0 2px 8px rgba(255,107,53,.3);
+  transition:var(--tr);
+  flex-shrink:0;
+}
+.btn-voice:active{transform:scale(.95)}
+.btn-voice.playing{background:linear-gradient(135deg,#E74C3C,#FF6B6B);animation:voicePulse 1.5s ease-in-out infinite}
+@keyframes voicePulse{0%,100%{box-shadow:0 2px 8px rgba(231,76,60,.3)}50%{box-shadow:0 2px 16px rgba(231,76,60,.6)}}
 .btn-buy{
   display:flex;
   align-items:center;
+  justify-content:center;
   gap:5px;
-  padding:8px 14px;
+  padding:6px 12px;
   border-radius:30px;
   border:none;
   background:linear-gradient(135deg,var(--nv),#02A54E);
   color:#fff;
-  font-size:.75rem;
+  font-size:.7rem;
   font-weight:800;
   cursor:pointer;
   font-family:inherit;
@@ -317,104 +309,6 @@ body{
   animation:pulse 2s infinite;
 }
 .st-dot.err{background:var(--dn);animation:none}
-.st-voice{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  background:linear-gradient(135deg,#FF6B35,#FF8F5E);
-  border:none;
-  padding:8px 14px;
-  border-radius:30px;
-  font-size:.78rem;
-  font-weight:800;
-  color:#fff;
-  cursor:pointer;
-  font-family:inherit;
-  box-shadow:0 2px 10px rgba(255,107,53,.35);
-  transition:all .2s ease;
-}
-.st-voice:active{transform:scale(.96)}
-.st-voice.playing{background:linear-gradient(135deg,#E74C3C,#FF6B6B);animation:voicePulse 1.5s ease-in-out infinite}
-@keyframes voicePulse{0%,100%{box-shadow:0 2px 10px rgba(231,76,60,.35)}50%{box-shadow:0 2px 20px rgba(231,76,60,.6)}}
-
-.voice-ctrl{
-  display:none;
-  align-items:center;
-  gap:6px;
-  padding:6px 10px;
-  margin:0 6px 4px;
-  background:linear-gradient(135deg,#FFF7ED,#FFEDD5);
-  border:1.5px solid #FDBA74;
-  border-radius:12px;
-  animation:slideDown .3s ease-out;
-}
-.voice-ctrl.show{display:flex}
-@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-.vc-btn{
-  width:32px;
-  height:32px;
-  border-radius:8px;
-  border:none;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  font-size:.82rem;
-  transition:all .15s;
-  font-family:inherit;
-}
-.vc-btn:active{transform:scale(.9)}
-.vc-btn.pause{background:#FEF3C7;color:#D97706}
-.vc-btn.stop{background:#FEE2E2;color:#EF4444}
-.vc-btn.prev{background:#E0F2FE;color:#0284C7}
-.vc-btn.next{background:#E0F2FE;color:#0284C7}
-.vc-progress{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-}
-.vc-step-text{
-  font-size:.7rem;
-  font-weight:700;
-  color:#C05621;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.vc-bar{
-  height:4px;
-  background:#FED7AA;
-  border-radius:2px;
-  overflow:hidden;
-}
-.vc-bar-fill{
-  height:100%;
-  background:linear-gradient(90deg,#F97316,#FB923C);
-  border-radius:2px;
-  transition:width .3s;
-}
-
-.voice-highlight{
-  position:relative;
-  outline:3px solid #FF6B35 !important;
-  outline-offset:4px;
-  border-radius:16px;
-  animation:highlightPulse 1.2s ease-in-out infinite;
-  z-index:10;
-}
-.voice-highlight::before{
-  content:'🔊';
-  position:absolute;
-  top:-14px;
-  right:-6px;
-  font-size:1.1rem;
-  z-index:20;
-  animation:speakerBounce 1s ease-in-out infinite;
-}
-@keyframes highlightPulse{0%,100%{outline-color:rgba(255,107,53,.8);box-shadow:0 0 0 0 rgba(255,107,53,0)}50%{outline-color:rgba(255,107,53,1);box-shadow:0 0 20px rgba(255,107,53,.2)}}
-@keyframes speakerBounce{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
-
 .quota-bar{
   display:flex;
   align-items:center;
@@ -460,41 +354,57 @@ body{
   transition:width .3s;
 }
 
-/* ── STEPS ── */
+/* ── STEPS (slim progress bar) ── */
 .steps{
   display:flex;
   align-items:center;
-  justify-content:center;
-  gap:0;
-  padding:4px 10px 6px;
+  gap:3px;
+  flex:1;
+  height:8px;
 }
 .sn{
-  width:20px;
-  height:20px;
-  border-radius:50%;
-  font-size:.6rem;
-  font-weight:800;
+  flex:1;
+  height:8px;
+  border-radius:4px;
+  background:var(--bl);
+  transition:var(--tr);
+  font-size:0;
+  overflow:hidden;
+}
+.sn.on{background:var(--p)}
+.sn.ok{background:var(--pl)}
+.sl{display:none}
+
+/* ── AI 태그 (공종/세부/유형) ── */
+.ai-tags{
   display:flex;
   align-items:center;
-  justify-content:center;
-  background:var(--bl);
-  color:var(--th);
-  transition:var(--tr);
-  flex-shrink:0;
+  gap:5px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
 }
-.sn.on{
-  background:var(--p);
-  color:#fff;
-  box-shadow:0 0 0 3px var(--pg);
+.ai-tag{
+  font-size:.7rem;
+  font-weight:700;
+  padding:4px 10px;
+  border-radius:20px;
+  white-space:nowrap;
 }
-.sn.ok{background:var(--pl);color:#fff}
-.sl{
-  height:2px;
-  width:20px;
-  background:var(--bl);
-  transition:var(--tr);
+.ai-tag.work{background:#E6F7F3;color:var(--p)}
+.ai-tag.sub{background:#EDE9FE;color:var(--pu)}
+.ai-tag.type{background:#FFF5F5;color:var(--dn)}
+.ai-tag-edit{
+  font-size:.62rem;
+  font-weight:700;
+  padding:3px 8px;
+  border-radius:12px;
+  border:1px solid var(--bd);
+  background:var(--card);
+  color:var(--ts);
+  cursor:pointer;
+  font-family:inherit;
+  margin-left:auto;
 }
-.sl.ok{background:var(--pl)}
 
 /* ── 하자 입력 힌트 배너 (NEW v20.8) ── */
 .input-hint-banner{
@@ -521,14 +431,14 @@ body{
 /* ── SECTIONS ── */
 .sec{
   background:var(--card);
-  margin:0 2px 6px;
+  margin:0 2px 8px;
   border-radius:12px;
   padding:10px 6px;
   box-shadow:0 2px 8px rgba(0,0,0,.05);
   border:1px solid var(--bl);
 }
 .sec-t{
-  font-size:.8rem;
+  font-size:.82rem;
   font-weight:800;
   color:var(--ts);
   margin-bottom:10px;
@@ -539,13 +449,13 @@ body{
 .sec-t .n{
   background:var(--p);
   color:#fff;
-  width:20px;
-  height:20px;
+  width:22px;
+  height:22px;
   border-radius:6px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:.68rem;
+  font-size:.72rem;
   font-weight:900;
 }
 .ig{margin-bottom:9px}
@@ -561,8 +471,8 @@ body{
 }
 .if{
   width:100%;
-  padding:10px 12px;
-  font-size:.85rem;
+  padding:9px 12px;
+  font-size:.78rem;
   border:1.5px solid var(--bd);
   border-radius:10px;
   background:#FAFBFC;
@@ -581,6 +491,11 @@ body{
 select.if{
   cursor:pointer;
   appearance:none;
+  color:var(--th);
+}
+select.if.has-val{color:var(--tx);
+}
+select.if option{color:var(--tx);
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394A3B8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
   background-repeat:no-repeat;
   background-position:right 11px center;
@@ -699,7 +614,7 @@ textarea.if{
   gap:10px;
 }
 .pc{
-  aspect-ratio:1/1;
+  aspect-ratio:4/3;
   border-radius:var(--r);
   position:relative;
   cursor:pointer;
@@ -864,15 +779,15 @@ textarea.if{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:4px 10px 6px;
-  gap:8px;
+  padding:6px 10px;
+  gap:10px;
 }
 .steps-row .steps{
   display:flex;
   align-items:center;
-  gap:0;
+  gap:3px;
   padding:0;
-  flex-shrink:0;
+  flex:1;
 }
 .sg-badge{
   display:flex;
@@ -882,10 +797,12 @@ textarea.if{
   color:#fff;
   padding:3px 9px;
   border-radius:12px;
-  font-size:.65rem;
+  font-size:.7rem;
   font-weight:800;
   white-space:nowrap;
   box-shadow:0 1px 5px rgba(239,68,68,.3);
+  margin-left:auto;
+  flex-shrink:0;
 }
 .sg-badge i{font-size:.65rem}
 .sg-badge i{font-size:.85rem}
@@ -910,17 +827,17 @@ textarea.if{
 .lc{
   background:var(--p);
   color:#fff;
-  width:26px;
-  height:26px;
-  border-radius:7px;
+  width:22px;
+  height:22px;
+  border-radius:6px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:.82rem;
+  font-size:.72rem;
   font-weight:900;
   font-family:'Outfit';
 }
-.lh-t{font-size:.9rem;font-weight:800}
+.lh-t{font-size:.82rem;font-weight:800}
 .lh-s{
   font-size:.75rem;
   color:var(--p);
@@ -1012,42 +929,27 @@ textarea.if{
 
 /* 하단 버튼 */
 .ba{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
   padding:0 6px;
   margin-top:8px;
 }
 .ab{
   display:flex;
-  flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:4px;
-  padding:10px 6px;
+  gap:8px;
+  padding:14px;
   border:none;
   border-radius:var(--r);
   cursor:pointer;
   font-family:inherit;
   transition:var(--tr);
   text-decoration:none;
-  min-height:70px;
+  font-size:.85rem;
+  font-weight:800;
+  width:100%;
 }
 .ab:active{transform:scale(.96)}
-.ab-ic{
-  width:36px;
-  height:36px;
-  border-radius:10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:1rem;
-  color:#fff;
-}
-.ab-tx{font-size:.75rem;font-weight:700}
-.ab.pdf{background:#ECFDF5}.ab.pdf .ab-ic{background:linear-gradient(135deg,#059669,#10B981)}.ab.pdf .ab-tx{color:#059669}
-.ab.rv{background:var(--pub)}.ab.rv .ab-ic{background:linear-gradient(135deg,#7C3AED,#A78BFA)}.ab.rv .ab-tx{color:var(--pu)}
-.ab.cs{background:#FFF7ED}.ab.cs .ab-ic{background:linear-gradient(135deg,var(--ac),#FF8F5E)}.ab.cs .ab-tx{color:var(--ac)}
+.ab.pdf{background:linear-gradient(135deg,#059669,#10B981);color:#fff;box-shadow:0 2px 10px rgba(5,150,105,.3)}
 
 /* ── 무료 한도 도달 유도 카드 ── */
 .upgrade-card{
@@ -1662,7 +1564,7 @@ textarea.if{
   box-shadow:none;
   padding-bottom:0;
 }
-  .hd,.st,.steps,.sec,.ba,.ft,.cf,.cw,.dc-act,.pass-bar,.donate-bar,.quota-bar,.voice-ctrl,.upgrade-card{display:none!important}
+  .hd,.st,.steps,.sec,.ba,.ft,.cf,.cw,.dc-act,.pass-bar,.donate-bar,.quota-bar,.upgrade-card{display:none!important}
   .ls{padding:0;margin:0}
   .lh{
   border:none;
@@ -1752,30 +1654,16 @@ input[type="file"]{
 
 <!-- ── HEADER ── -->
 <header class="hd">
-  <div class="hd-top">
-    <div class="hd-in">
-      <div class="hd-logo" style="background:transparent;box-shadow:none;overflow:visible">
-        <img id="logoImg" src="data:image/webp;base64,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" alt="청개구리" style="width:44px;height:44px;object-fit:contain">
-      </div>
-      <div class="hd-text">
-        <div class="hd-title" style="font-size:.95rem">청개구리 입주자 사전점검</div>
-        <div class="hd-sub" data-ver>AI 하자분석 · 국토부 기준 참조 · v21.0</div>
-      </div>
-    </div>
-    <div class="hd-tags">
-      <span class="tag tag-free" id="passTag">기부형 앱</span>
-      <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()">v21.0</span>
-    </div>
+  <div class="hd-top" style="justify-content:center;align-items:center;padding:12px 14px 10px">
+    <div class="hd-title" style="font-size:1.26rem">청개구리 입주점검 AI앱</div>
+    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v22.1</span>
+    <span id="passTag" style="display:none">기부형 앱</span>
   </div>
+  <div id="logoImg" style="display:none"></div>
 </header>
 
-<div class="donate-bar">
-  <img src="stc-logo.png" alt="세이브더칠드런" style="height:20px;border-radius:3px;">
-  <div class="db-text">수익의 50%는 세이브더칠드런을 통해 기부됩니다</div>
-</div>
-
-<div class="pass-bar unified-bar" data-voice-id="passbar">
-  <button class="st-voice" id="voiceBtn" onclick="A.voiceGuide()">
+<div class="pass-bar unified-bar">
+  <button class="btn-voice" id="btnVoice" onclick="A.voiceGuide()">
     <i class="fa-solid fa-volume-high"></i> 음성안내
   </button>
   <button class="btn-buy" id="btnBuy" onclick="A.openPayModal()">
@@ -1786,22 +1674,11 @@ input[type="file"]{
     <span class="pass-label" id="passLabel">무료 3건 가능</span>
     <span class="pass-count" id="passCount"></span>
   </div>
+  <div id="sgBadge" style="display:none"><span id="sgTx"></span></div>
 </div>
 <div class="st" style="display:none">
   <div class="st-chip"><div class="st-dot" id="sDot"></div><span id="sMsg">AI 대기 중</span></div>
 </div>
-
-<div class="voice-ctrl" id="voiceCtrl">
-  <button class="vc-btn prev" onclick="A.voicePrev()"><i class="fa-solid fa-backward-step"></i></button>
-  <button class="vc-btn pause" id="vcPause" onclick="A.voicePause()"><i class="fa-solid fa-pause"></i></button>
-  <button class="vc-btn next" onclick="A.voiceNext()"><i class="fa-solid fa-forward-step"></i></button>
-  <div class="vc-progress">
-    <div class="vc-step-text" id="vcText">준비 중...</div>
-    <div class="vc-bar"><div class="vc-bar-fill" id="vcBar" style="width:0%"></div></div>
-  </div>
-  <button class="vc-btn stop" onclick="A.voiceStop()"><i class="fa-solid fa-xmark"></i></button>
-</div>
-
 <div class="quota-bar" style="display:none">
   <div class="quota-pill" id="qPill">
     <i class="fa-solid fa-bolt" style="color:var(--pl)"></i>
@@ -1810,72 +1687,36 @@ input[type="file"]{
     <span class="q-num ok" id="qNum">3/3건</span>
   </div>
 </div>
-<div class="steps-row">
-  <div class="steps">
-    <div class="sn on" id="s1">1</div><div class="sl" id="l1"></div>
-    <div class="sn" id="s2">2</div><div class="sl" id="l2"></div>
-    <div class="sn" id="s3">3</div><div class="sl" id="l3"></div>
-    <div class="sn" id="s4">4</div>
-  </div>
-  <div class="sg-badge" id="sgBadge"><i class="fa-solid fa-clipboard-list"></i> <span id="sgTx">저장 총 하자 : 0 건</span></div>
-</div>
+<div id="s1" style="display:none"></div><div id="s2" style="display:none"></div><div id="s3" style="display:none"></div><div id="s4" style="display:none"></div>
 
 <!-- ── STEP 1: 현장 정보 ── -->
-<div class="sec" data-voice-id="step1">
+<div class="sec">
   <div class="sec-t"><span class="n">1</span> 현장 정보</div>
   <input type="text" class="if" id="fAddr" placeholder="🏠 (예: 서울 송파구 올림픽로 300, 푸르지오 1101동1202호)">
   <input type="hidden" id="fApt"><input type="hidden" id="fDong"><input type="hidden" id="fHo">
-  <div class="ig" style="margin-top:8px">
-    <div class="il"><i class="fa-solid fa-location-dot"></i> 점검 위치 <span style="color:var(--dn);font-size:.6rem">* 필수</span></div>
-    <select class="if" id="fRoom" style="display:none"><option value="">위치 선택</option></select>
-    <div class="cd-wrap" id="cdRoom">
-      <button type="button" class="cd-btn" id="cdBtn" onclick="A.toggleRoom()">
-        <span class="cd-placeholder" id="cdLabel">위치 선택</span>
-        <i class="fa-solid fa-chevron-down cd-arrow"></i>
-      </button>
-      <div class="cd-grid" id="cdGrid">
-        <div class="cd-item" data-val="거실" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">거실</span></div>
-        <div class="cd-item" data-val="주방" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">주방</span></div>
-        <div class="cd-item" data-val="침실1" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">침실1</span></div>
-        <div class="cd-item" data-val="침실2" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">침실2</span></div>
-        <div class="cd-item" data-val="침실3" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">침실3</span></div>
-        <div class="cd-item" data-val="안방" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">안방</span></div>
-        <div class="cd-item" data-val="욕실1" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">욕실1</span></div>
-        <div class="cd-item" data-val="욕실2" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">욕실2</span></div>
-        <div class="cd-item" data-val="현관" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">현관</span></div>
-        <div class="cd-item" data-val="발코니1" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">발코니1</span></div>
-        <div class="cd-item" data-val="발코니2" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">발코니2</span></div>
-        <div class="cd-item" data-val="대피공간" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">대피공간</span></div>
-        <div class="cd-item" data-val="팬트리" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">팬트리</span></div>
-        <div class="cd-item" data-val="드레스룸" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">드레스룸</span></div>
-        <div class="cd-item" data-val="다용도실" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">다용도실</span></div>
-        <div class="cd-item" data-val="기타" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">기타</span></div>
-      </div>
-    </div>
-  </div>
 </div>
 
-<div class="upgrade-card" id="upgradeCard" data-voice-id="upgrade">
+<div class="upgrade-card" id="upgradeCard">
   <div class="upgrade-card-title"><i class="fa-solid fa-bolt"></i> 무료 체험 3회를 모두 사용했어요!</div>
   <div class="upgrade-card-desc">오늘 하루 이용권(₩10,000)으로 <b>100회 AI 분석</b>을 이용하세요.<br><b>수익의 50%</b>가 세이브더칠드런에 기부됩니다 💚</div>
   <button class="upgrade-card-btn" onclick="A.openPayModal()"><i class="fa-brands fa-naver"></i> 네이버페이로 구매하기</button>
 </div>
 
 <!-- ── STEP 2: 사진 촬영 ── -->
-<div class="sec" data-voice-id="step2">
+<div class="sec">
   <div class="sec-t"><span class="n">2</span> 사진 촬영</div>
   <input type="file" id="inW" accept="image/*">
   <input type="file" id="inC" accept="image/*">
   <div class="pg">
     <label class="pc w" id="lblW" for="inW">
       <i class="fa-solid fa-image ic"></i>
-      <div class="lb">멀리서 찍기<br><span class="hn">탭하여 촬영/갤러리</span></div>
+      <div class="lb">멀리서 찍기</div>
       <img class="pp" id="pvW" alt="">
       <button type="button" class="rb" id="rtW" onclick="A.retake('w',event)"><i class="fa-solid fa-camera" style="margin-right:3px;font-size:.7rem"></i>다시찍기</button>
     </label>
     <label class="pc c" id="lblC" for="inC">
       <i class="fa-solid fa-crosshairs ic"></i>
-      <div class="lb">가까이 찍기<br><span class="hn">탭하여 촬영/갤러리</span></div>
+      <div class="lb">가까이 찍기</div>
       <img class="pp" id="pvC" alt="">
       <button type="button" class="rb" id="rtC" onclick="A.retake('c',event)"><i class="fa-solid fa-camera" style="margin-right:3px;font-size:.7rem"></i>다시찍기</button>
     </label>
@@ -1885,52 +1726,80 @@ input[type="file"]{
 </div>
 
 <!-- ── STEP 3: 하자 정보 ── -->
-<div class="sec" data-voice-id="step3">
-  <div class="sec-t" style="display:flex;align-items:center;gap:6px"><span class="n">3</span> 하자 정보 <span style="color:var(--p);font-size:.6rem;font-weight:900">★ 하자내용 입력 시 정밀분석</span><button onclick="if(confirm('현재 입력을 초기화할까요?')){reset();step(1);stat('🔄 초기화 완료');}" style="margin-left:auto;background:#EF4444;color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">🔄 초기화</button></div>
+<div class="sec">
+  <div class="sec-t" style="display:flex;align-items:center;gap:6px"><span class="n">3</span> 하자 정보 <span style="color:var(--p);font-size:.6rem;font-weight:900">★ 하자내용 입력 시 정밀분석</span><div style="margin-left:auto;display:flex;gap:4px"><button onclick="if(confirm('현재 입력을 초기화할까요?')){reset();step(1);stat('🔄 초기화 완료');}" style="background:#EF4444;color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">🔄 초기화</button><button id="btnNext" onclick="A.nextInput()" style="display:none;background:var(--p);color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">➡️ 다음입력</button></div></div>
 
   <div class="input-hint-banner" id="inputHintBanner" style="display:none">
     <span id="inputModeBadge"></span>
   </div>
 
-  <div class="ig">
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:6px;margin-bottom:9px">
+    <div>
+      <select class="if" id="fRoom" style="display:none"><option value="">위치 선택</option></select>
+      <div class="cd-wrap" id="cdRoom">
+        <button type="button" class="cd-btn" id="cdBtn" onclick="A.toggleRoom()" style="padding:10px 10px;font-size:.8rem">
+          <span class="cd-placeholder" id="cdLabel">위치 선택</span>
+          <i class="fa-solid fa-chevron-down cd-arrow"></i>
+        </button>
+        <div class="cd-grid" id="cdGrid">
+          <div class="cd-item" data-val="거실" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">거실</span></div>
+          <div class="cd-item" data-val="주방" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">주방</span></div>
+          <div class="cd-item" data-val="침실1" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">침실1</span></div>
+          <div class="cd-item" data-val="침실2" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">침실2</span></div>
+          <div class="cd-item" data-val="침실3" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">침실3</span></div>
+          <div class="cd-item" data-val="안방" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">안방</span></div>
+          <div class="cd-item" data-val="욕실1" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">욕실1</span></div>
+          <div class="cd-item" data-val="욕실2" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">욕실2</span></div>
+          <div class="cd-item" data-val="현관" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">현관</span></div>
+          <div class="cd-item" data-val="발코니1" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">발코니1</span></div>
+          <div class="cd-item" data-val="발코니2" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">발코니2</span></div>
+          <div class="cd-item" data-val="대피공간" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">대피공간</span></div>
+          <div class="cd-item" data-val="팬트리" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">팬트리</span></div>
+          <div class="cd-item" data-val="드레스룸" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">드레스룸</span></div>
+          <div class="cd-item" data-val="다용도실" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">다용도실</span></div>
+          <div class="cd-item" data-val="기타" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">기타</span></div>
+        </div>
+      </div>
+    </div>
     <div style="position:relative">
       <input type="text" class="if" id="fUser"
-        placeholder="✏️ 하자내용 (예: 창호 수직수평불량 / 도배 들뜸 / 타일 균열)"
-        style="padding-right:36px"
+        placeholder="✏️ 하자내용 (예: 창호 수직수평불량)"
+        style="padding-right:32px"
         oninput="A.onUserInput(this)">
       <i class="fa-solid fa-wand-magic-sparkles" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--pl);font-size:.95rem"></i>
     </div>
   </div>
-  <div class="af">
-    <div class="ig">
-      <select class="if" id="fWork" style="font-size:.8rem;padding:9px" onchange="A.onWork()">
-        <option value="">공종(자동입력)</option>
-      </select>
-    </div>
-    <div class="ig">
-      <select class="if" id="fSub" style="font-size:.8rem;padding:9px" onchange="A.onSub()">
-        <option value="">세부(자동입력)</option>
-      </select>
-    </div>
-    <div class="ig">
-      <select class="if" id="fType" style="font-size:.8rem;padding:9px">
-        <option value="">유형(자동입력)</option>
-      </select>
-    </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:9px">
+    <select class="if" id="fWork" style="padding:9px 6px" onchange="A.onWork()">
+      <option value="">공종(자동입력)</option>
+    </select>
+    <select class="if" id="fSub" style="padding:9px 6px" onchange="A.onSub()">
+      <option value="">세부(자동입력)</option>
+    </select>
+    <select class="if" id="fType" style="padding:9px 6px">
+      <option value="">유형(자동입력)</option>
+    </select>
+  </div>
+  <div class="ai-tags" id="aiTags" style="display:none">
+    <span class="ai-tag work" id="tagWork"></span>
+    <span class="ai-tag sub" id="tagSub"></span>
+    <span class="ai-tag type" id="tagType"></span>
   </div>
   <div class="ig">
-    <div class="il">
-      <span class="ai-b"><i class="fa-solid fa-robot"></i> AI 분석</span>
-      <span style="font-size:.68rem;color:var(--th);margin-left:4px">국토부 기준 참조</span>
+    <div class="il" style="justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:4px">
+        <span class="ai-b"><i class="fa-solid fa-robot"></i> AI 분석</span>
+        <span style="font-size:.62rem;color:var(--th)">국토부 기준 참조</span>
+      </div>
+      <label for="fAgree" style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:.6rem;font-weight:700;color:var(--ts)">
+        <input type="checkbox" id="fAgree" onchange="A.togSave()" style="width:14px;height:14px;accent-color:var(--p);cursor:pointer">
+        AI 참고용, 법적효력 없음 동의
+        <span id="agreeNote" style="font-size:.55rem;color:#059669;display:none">✓</span>
+      </label>
     </div>
     <textarea class="if" id="fDetail" placeholder="사진 촬영 시 AI가 자동 분석합니다.&#10;하자 내용 직접 입력 시 더 정밀한 분석이 제공됩니다."></textarea>
   </div>
-  <div style="display:flex;align-items:center;gap:8px;background:var(--wrb);border:1px solid #FEEBC8;border-radius:8px;padding:7px 10px;margin-top:8px" data-voice-id="step4">
-    <input type="checkbox" id="fAgree" onchange="A.togSave()" style="width:16px;height:16px;accent-color:var(--p);cursor:pointer;flex-shrink:0">
-    <label for="fAgree" style="font-size:.68rem;font-weight:700;color:var(--ts);cursor:pointer;line-height:1.4"><i class="fa-solid fa-shield-halved" style="color:#C05621;margin-right:3px"></i>AI 참고용, 법적효력 없음에 동의</label>
-    <span id="agreeNote" style="font-size:.58rem;color:#059669;display:none;flex-shrink:0">✓</span>
-  </div>
-  <button class="btn-sv off" id="btnSv" onclick="A.save()" disabled data-voice-id="step5" style="display:none">
+  <button class="btn-sv off" id="btnSv" onclick="A.save()" disabled style="display:none">
     <i class="fa-solid fa-check-circle"></i> 리스트에 저장
   </button>
   <div class="auto-save-banner" id="autoSaveBanner" style="display:none">
@@ -1939,11 +1808,11 @@ input[type="file"]{
 </div>
 
 <!-- ── 리스트 ── -->
-<div class="ls" data-voice-id="step6">
+<div class="ls">
   <div class="lh">
     <div class="lh-l">
-      <div class="lc" id="lCnt">0</div>
-      <div><div class="lh-t">점검 리스트</div></div>
+      <div class="lc">4</div>
+      <div><div class="lh-t">점검 리스트 <span id="lCnt" style="font-size:.7rem;color:var(--p);font-weight:900">0</span>건</div></div>
     </div>
     <div style="display:flex;align-items:center;gap:6px">
       <span id="lMode" style="font-size:.68rem;font-weight:800;padding:3px 8px;border-radius:6px;background:var(--pg);color:var(--p);display:none">무료체험</span>
@@ -1953,24 +1822,30 @@ input[type="file"]{
   <div id="lBox"></div>
 </div>
 
-<div class="ba" data-voice-id="step7">
-  <button class="ab pdf" onclick="A.pdf()">
-    <div class="ab-ic"><i class="fa-solid fa-file-arrow-down"></i></div>
-    <span class="ab-tx">전체 저장</span>
+<div class="ba" style="display:grid;grid-template-columns:3fr 1fr;gap:8px">
+  <button class="ab pdf" onclick="A.pdf()" style="border-radius:var(--r);padding:9px;font-size:.82rem;font-weight:800;background:linear-gradient(135deg,#059669,#10B981);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 10px rgba(5,150,105,.3)">
+    <i class="fa-solid fa-file-arrow-down"></i> 전체 저장 (PDF)
   </button>
-  <button class="ab cs" onclick="A.openChatBot()">
-    <div class="ab-ic" style="background:linear-gradient(135deg,#0A6B5C,#12B89A)"><i class="fa-solid fa-robot"></i></div>
-    <span class="ab-tx" style="color:#0A6B5C">AI 상담 챗봇</span>
+  <button onclick="A.openChatBot()" style="border-radius:var(--r);padding:9px;font-size:.78rem;font-weight:800;background:linear-gradient(135deg,#FF6B35,#FF8F5E);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 10px rgba(255,107,53,.3)">
+    <i class="fa-solid fa-robot"></i> 상담
   </button>
 </div>
 
 <div class="ft">
   <div class="ft-donate">
-    <div class="ft-donate-text"><img src="stc-logo.png" alt="세이브더칠드런" style="height:16px;vertical-align:middle;border-radius:3px;margin-right:4px;">유료 수익 <b>50%는 세이브더칠드런을 통해 기부</b>됩니다. 당신의 점검이 따뜻한 도움이 됩니다 💚</div>
+    <div class="ft-donate-text">💚 수익 50% <img src="stc-logo.png" alt="세이브더칠드런" style="height:14px;vertical-align:middle;border-radius:2px"> 기부 됩니다 | 📞 010-2322-0949</div>
   </div>
-  <div class="ft-i" style="font-size:.5rem;margin-top:6px;letter-spacing:-.03em;line-height:1.6;text-align:left;padding:0 6px">
-    청개구리샤시 | 대표:전영웅 | 사업자:123-36-31426 | 통신판매:제2011-경기군포-00342호 | 📞010-2322-0949 | 군포시 용호1로21번길15, 102동1501호(당동,용호마을e-편한세상)<br>
-    ✉toi9113@naver.com | <span style="color:var(--nv);font-weight:700">환불:</span>코드 미사용시 전액환불/사용후 환불불가 | <a href="#" onclick="A.modal('moPrivacy',1);return false;" style="color:var(--ac);text-decoration:underline;font-weight:600">개인정보처리방침</a> | 보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v21.0</span>
+  <div style="text-align:center;margin-top:6px">
+    <button onclick="const d=$('ftDetail');d.style.display=d.style.display==='none'?'block':'none'" style="background:none;border:none;font-size:.58rem;color:var(--th);cursor:pointer;font-family:inherit;text-decoration:underline">사업자 정보 보기</button>
+    <span style="margin:0 4px;color:var(--bd)">|</span>
+    <a href="#" onclick="A.modal('moPrivacy',1);return false;" style="font-size:.58rem;color:var(--ac);text-decoration:underline;font-weight:600">개인정보처리방침</a>
+  </div>
+  <div id="ftDetail" style="display:none;font-size:.5rem;margin-top:6px;letter-spacing:-.03em;line-height:1.6;text-align:center;padding:0 6px;color:var(--th)">
+    청개구리샤시 | 대표:전영웅 | 사업자:123-36-31426<br>
+    통신판매:제2011-경기군포-00342호<br>
+    군포시 용호1로21번길15, 102동1501호<br>
+    ✉toi9113@naver.com | 환불:코드 미사용시 전액/사용후 불가<br>
+    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v22.1</span>
   </div>
 </div>
 </div><!-- /app -->
@@ -2122,7 +1997,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v21.0';
+const APP_VER = 'v22.1';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2253,33 +2128,12 @@ async function chkLim(){if(mode==='admin'&&sessionStorage.getItem('admin_token')
 function updateQuotaUI(){const m=getActiveMode(),limit=getLimit(),{data}=getQuota(),used=data.count||0,remaining=Math.max(0,limit-used),pct=(remaining/(limit||1))*100;const numEl=$('qNum'),barEl=$('qBar'),labelEl=$('qLabel');if(m==='admin'){labelEl.textContent='🔐 관리자 (무제한)';numEl.textContent=`${used}건 사용`;numEl.className='q-num ok';barEl.style.width='100%';barEl.style.background='var(--pu)';updatePassUI();return;}const modeStr=m==='paid'?'이용권':'무료체험';labelEl.textContent=`${modeStr} AI 분석`;if(m==='paid'){numEl.className=remaining<=0?'q-num out':remaining<=10?'q-num low':'q-num nv';barEl.style.background=remaining<=0?'var(--dn)':'var(--nv)';}else{numEl.className=remaining<=0?'q-num out':'q-num ok';barEl.style.background=remaining<=0?'var(--dn)':'var(--pl)';}numEl.textContent=`${remaining}/${limit}건`;barEl.style.width=pct+'%';$('passCount').textContent=`잔여 ${remaining}건`;$('passCount').className=`pass-count ${remaining<=0?'out':m==='paid'?'paid-ok':'ok'}`;if(m==='free'&&remaining<=0)$('upgradeCard').classList.add('show');else $('upgradeCard').classList.remove('show');updatePassUI();}
 
 /* ============================================================
-   🔊 음성안내
-   ============================================================ */
-const VOICE_STEPS=[
-  {id:'passbar',title:'이용권 안내 (필독!)',text:'안녕하세요! 청개구리 입주전 AI 앱입니다. 먼저 이용권 안내를 드립니다. 이 앱은 하루 3회 무료 체험이 가능합니다. 더 많은 분석이 필요하시면 네이버페이 1일 이용권을 구매하세요. 가격은 만원이며, 하루 100회 AI 분석이 가능합니다. 수익의 50퍼센트가 세이브더칠드런에 기부됩니다.'},
-  {id:'step1',title:'1단계: 현장 정보 입력',text:'첫 번째 단계입니다. 현장 정보를 입력해주세요. 주소와 동호수를 한 줄에 입력하고, 점검할 위치를 선택해주세요. 위치 선택은 필수입니다.'},
-  {id:'step2',title:'2단계: 사진 촬영',text:'두 번째 단계입니다. 사진을 촬영합니다. 왼쪽 멀리서 찍기로 하자 위치가 보이도록 넓게 촬영하세요. 오른쪽 가까이 찍기를 누르면 AI 분석이 자동으로 시작됩니다.'},
-  {id:'step3',title:'3단계: 하자 정보 확인',text:'세 번째 단계입니다. 하자 내용을 직접 입력하면 입력 내용을 기준으로 AI가 정밀 분석합니다. 사진만 촬영해도 AI가 자동 분류하지만, 텍스트를 함께 입력하면 훨씬 정확한 결과를 얻을 수 있습니다.'},
-  {id:'step4',title:'4단계: 동의 체크',text:'네 번째 단계입니다. 필수 확인 사항에 동의해주세요. AI 분석은 참고용이며 법적 효력이 없습니다. 동의는 최초 1회만 하면 됩니다.'},
-  {id:'step5',title:'5단계: 리스트에 저장',text:'다섯 번째 단계입니다. 리스트에 저장 버튼을 눌러 점검 항목을 저장하세요.'},
-  {id:'step6',title:'6단계: 점검 리스트 확인',text:'여섯 번째 단계입니다. 점검 리스트에서 저장된 항목을 확인, 수정, 삭제할 수 있습니다.'},
-  {id:'step7',title:'7단계: PDF 저장',text:'마지막 단계입니다. 전체 저장 버튼을 눌러 PDF 파일로 저장하세요. 감사합니다!'}
-];
-let voiceState={isPlaying:false,isPaused:false,currentStep:0,utterance:null,supported:('speechSynthesis' in window)};
-A.voiceGuide=()=>{if(!voiceState.supported){alert('이 브라우저에서는 음성안내를 지원하지 않습니다.');return;}if(voiceState.isPlaying){A.voiceStop();return;}voiceState.currentStep=0;voiceState.isPlaying=true;voiceState.isPaused=false;$('voiceBtn').classList.add('playing');$('voiceBtn').innerHTML='<i class="fa-solid fa-volume-high"></i> 안내 중...';$('voiceCtrl').classList.add('show');speakStep(0);};
-A.voicePause=()=>{if(!voiceState.isPlaying)return;const synth=window.speechSynthesis,btn=$('vcPause');if(voiceState.isPaused){synth.resume();voiceState.isPaused=false;btn.innerHTML='<i class="fa-solid fa-pause"></i>';}else{synth.pause();voiceState.isPaused=true;btn.innerHTML='<i class="fa-solid fa-play"></i>';}};
-A.voicePrev=()=>{if(voiceState.currentStep>0){window.speechSynthesis.cancel();voiceState.isPaused=false;$('vcPause').innerHTML='<i class="fa-solid fa-pause"></i>';speakStep(voiceState.currentStep-1);}};
-A.voiceNext=()=>{if(voiceState.currentStep<VOICE_STEPS.length-1){window.speechSynthesis.cancel();voiceState.isPaused=false;$('vcPause').innerHTML='<i class="fa-solid fa-pause"></i>';speakStep(voiceState.currentStep+1);}};
-A.voiceStop=()=>{window.speechSynthesis.cancel();voiceState.isPlaying=false;voiceState.isPaused=false;voiceState.currentStep=0;$('voiceBtn').classList.remove('playing');$('voiceBtn').innerHTML='<i class="fa-solid fa-volume-high"></i> 음성안내';$('voiceCtrl').classList.remove('show');$('vcPause').innerHTML='<i class="fa-solid fa-pause"></i>';document.querySelectorAll('.voice-highlight').forEach(el=>el.classList.remove('voice-highlight'));};
-function speakStep(idx){if(idx<0||idx>=VOICE_STEPS.length){A.voiceStop();return;}voiceState.currentStep=idx;const step=VOICE_STEPS[idx],pct=((idx+1)/VOICE_STEPS.length*100).toFixed(0);$('vcText').textContent=step.title;$('vcBar').style.width=pct+'%';document.querySelectorAll('.voice-highlight').forEach(el=>el.classList.remove('voice-highlight'));const target=document.querySelector(`[data-voice-id="${step.id}"]`);if(target){target.classList.add('voice-highlight');target.scrollIntoView({behavior:'smooth',block:'center'});}const synth=window.speechSynthesis;synth.cancel();const utter=new SpeechSynthesisUtterance(step.text);utter.lang='ko-KR';utter.rate=0.95;utter.pitch=1.05;utter.volume=1;const voices=synth.getVoices();const koVoice=voices.find(v=>v.lang.startsWith('ko'))||voices[0];if(koVoice)utter.voice=koVoice;utter.onend=()=>{if(voiceState.isPlaying&&!voiceState.isPaused){if(idx<VOICE_STEPS.length-1)setTimeout(()=>{if(voiceState.isPlaying)speakStep(idx+1);},800);else setTimeout(()=>A.voiceStop(),1000);}};utter.onerror=(e)=>{if(e.error!=='canceled'){A.voiceStop();}};voiceState.utterance=utter;synth.speak(utter);}
-if('speechSynthesis' in window){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();}
-
-/* ============================================================
    ⚙️ 공종/세부/유형
    ============================================================ */
 function initWorkSelect(){const sel=$('fWork');sel.innerHTML='<option value="">공종(자동입력)</option>';for(const w of Object.keys(WM)){const o=document.createElement('option');o.value=w;o.textContent=w;sel.appendChild(o);}}
-A.onWork=()=>{const w=$('fWork').value,sub=$('fSub');sub.innerHTML='<option value="">세부(자동입력)</option>';$('fType').innerHTML='<option value="">유형(자동입력)</option>';if(w&&WM[w])for(const s of Object.keys(WM[w])){const o=document.createElement('option');o.value=s;o.textContent=s;sub.appendChild(o);}};
-A.onSub=()=>{const w=$('fWork').value,s=$('fSub').value,tp=$('fType');tp.innerHTML='<option value="">유형(자동입력)</option>';if(w&&s&&WM[w]&&WM[w][s])for(const t of WM[w][s]){const o=document.createElement('option');o.value=t;o.textContent=t;tp.appendChild(o);}};
+A.onWork=()=>{const w=$('fWork').value,sub=$('fSub');$('fWork').classList.toggle('has-val',!!w);sub.innerHTML='<option value="">세부(자동입력)</option>';sub.classList.remove('has-val');$('fType').innerHTML='<option value="">유형(자동입력)</option>';$('fType').classList.remove('has-val');if(w&&WM[w])for(const s of Object.keys(WM[w])){const o=document.createElement('option');o.value=s;o.textContent=s;sub.appendChild(o);}};
+A.onSub=()=>{const w=$('fWork').value,s=$('fSub').value,tp=$('fType');$('fSub').classList.toggle('has-val',!!s);tp.innerHTML='<option value="">유형(자동입력)</option>';tp.classList.remove('has-val');if(w&&s&&WM[w]&&WM[w][s])for(const t of WM[w][s]){const o=document.createElement('option');o.value=t;o.textContent=t;tp.appendChild(o);}};
+$('fType')&&$('fType').addEventListener('change',()=>{$('fType').classList.toggle('has-val',!!$('fType').value);});
 
 /* ── ★ v20.8: 사용자 입력 실시간 UI 업데이트 ── */
 A.onUserInput=(el)=>{
@@ -2362,7 +2216,7 @@ function loadDraft(){try{const raw=ls(DRAFT_KEY);if(!raw)return;const d=JSON.par
 function clearItemDraft(){try{const raw=ls(DRAFT_KEY);if(!raw)return;const d=JSON.parse(raw);d.room=null;d.user=null;d.work=null;d.sub=null;d.type=null;d.detail=null;d.wImg=null;d.cImg=null;d.ts=Date.now();ls(DRAFT_KEY,JSON.stringify(d));}catch(e){}}
 let _draftTimer;
 function draftDebounce(){clearTimeout(_draftTimer);_draftTimer=setTimeout(saveDraft,500);}
-function initDraftListeners(){['fAddr','fDetail'].forEach(id=>$(id).addEventListener('input',draftDebounce));['fWork','fSub','fType'].forEach(id=>$(id).addEventListener('change',draftDebounce));window.addEventListener('beforeunload',()=>{saveDraft();if(voiceState.isPlaying)A.voiceStop();});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveDraft();});window.addEventListener('blur',saveDraft);window.addEventListener('pagehide',saveDraft);}
+function initDraftListeners(){['fAddr','fDetail'].forEach(id=>$(id).addEventListener('input',draftDebounce));['fWork','fSub','fType'].forEach(id=>$(id).addEventListener('change',draftDebounce));window.addEventListener('beforeunload',()=>{saveDraft();});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveDraft();});window.addEventListener('blur',saveDraft);window.addEventListener('pagehide',saveDraft);}
 
 /* ── 다중 탭 동기화 ── */
 window.addEventListener('storage',(e)=>{
@@ -2376,7 +2230,7 @@ window.addEventListener('storage',(e)=>{
 });
 
 /* ── 단계 표시기 ── */
-function step(c){for(let i=1;i<=4;i++){const n=$(`s${i}`),l=$(`l${i}`);n.classList.remove('on','ok');if(l)l.classList.remove('ok');if(i<c){n.classList.add('ok');n.innerHTML='<i class="fa-solid fa-check" style="font-size:.65rem"></i>';if(l)l.classList.add('ok');}else if(i===c){n.classList.add('on');n.textContent=i;}else n.textContent=i;}}
+function step(c){for(let i=1;i<=4;i++){const n=$(`s${i}`);n.classList.remove('on','ok');if(i<c)n.classList.add('ok');else if(i===c)n.classList.add('on');}}
 function stat(m,e){$('sMsg').textContent=m;$('sDot').classList.toggle('err',!!e);}
 function toast(msg,warn=false,dur=2800){const el=$('toastMsg');el.innerHTML=msg;el.className='toast'+(warn?' warn':'');clearTimeout(el._t);requestAnimationFrame(()=>{el.classList.add('show');});el._t=setTimeout(()=>{el.classList.remove('show');},dur);}
 
@@ -2402,6 +2256,7 @@ function autoSave(savedW,savedC){
   if(roomMissing)toast('<i class="fa-solid fa-circle-check"></i> 자동 저장! ⚠️ 위치는 미지정으로 저장됨',true,3500);
   else toast(`<i class="fa-solid fa-circle-check"></i> <b>${room}</b> 자동 저장 완료!`);
   stat('✅ 자동 저장! 다음 항목을 촬영하세요.');
+  $('btnNext').style.display='inline-block';
   setTimeout(()=>{document.querySelector('.lh').scrollIntoView({behavior:'smooth'});setTimeout(()=>step(1),800);},600);
 }
 
@@ -2418,6 +2273,39 @@ A.setMode=m=>{if(m==='admin'){$('moPwd').classList.add('show');$('pwdInput').val
 A.checkPwd=async()=>{const pw=$('pwdInput').value;if(!pw){$('pwdErr').style.display='block';return;}$('pwdInput').disabled=true;try{const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'admin_auth',pwd:pw,fp:FP})});const data=await res.json();if(data.success){sessionStorage.setItem('admin_token',data.token);mode='admin';$('moPwd').classList.remove('show');stat('🔐 관리자 모드 활성화 (24시간)');updateQuotaUI();updatePassUI();}else{$('pwdErr').style.display='block';$('pwdInput').value='';$('pwdInput').focus();}}catch(e){alert('서버 연결 실패. 잠시 후 다시 시도해주세요.');console.error(e);}$('pwdInput').disabled=false;};
 A.cancelPwd=()=>{$('moPwd').classList.remove('show');};
 A.devTap=()=>{}; /* 개발자 모드 제거됨 — 관리자 인증은 서버 측으로 이전 */
+
+/* ============================================================
+   🔊 음성안내 (v22.1)
+   ============================================================ */
+const GUIDE_TEXT=[
+  '안녕하세요! 청개구리 입주점검 AI앱 사용법을 안내합니다.',
+  '1단계, 현장 정보. 주소와 동호수를 입력하세요.',
+  '2단계, 사진 촬영. 멀리서 찍기로 위치를 촬영하고, 가까이 찍기로 하자 부위를 촬영하세요. 가까이 찍기를 누르면 AI 분석이 자동으로 시작됩니다.',
+  '3단계, 하자 정보. 위치를 선택하고, 하자 내용을 직접 입력하면 더 정밀한 AI 분석이 됩니다. 공종, 세부, 유형은 AI가 자동으로 입력합니다.',
+  'AI 분석이 완료되면 자동으로 점검 리스트에 저장됩니다. 다음입력 버튼을 눌러 다음 하자를 계속 입력하세요.',
+  '4단계, 점검 리스트. 저장된 하자 목록을 확인하고, 전체 저장 PDF 버튼으로 리포트를 저장하세요.',
+  '무료 3회 체험 후, 1일 이용권 만원으로 100회 AI 분석이 가능합니다. 수익의 50퍼센트가 세이브더칠드런에 기부됩니다. 감사합니다!'
+];
+let _vIdx=0,_vPlaying=false;
+A.voiceGuide=()=>{
+  if(!('speechSynthesis' in window)){alert('이 브라우저에서는 음성안내를 지원하지 않습니다.');return;}
+  const synth=window.speechSynthesis;
+  if(_vPlaying){synth.cancel();_vPlaying=false;$('btnVoice').classList.remove('playing');$('btnVoice').innerHTML='<i class="fa-solid fa-volume-high"></i> 음성안내';return;}
+  _vIdx=0;_vPlaying=true;
+  $('btnVoice').classList.add('playing');$('btnVoice').innerHTML='<i class="fa-solid fa-stop"></i> 중지';
+  _speakNext();
+};
+function _speakNext(){
+  if(_vIdx>=GUIDE_TEXT.length||!_vPlaying){_vPlaying=false;$('btnVoice').classList.remove('playing');$('btnVoice').innerHTML='<i class="fa-solid fa-volume-high"></i> 음성안내';return;}
+  const synth=window.speechSynthesis;
+  const utter=new SpeechSynthesisUtterance(GUIDE_TEXT[_vIdx]);
+  utter.lang='ko-KR';utter.rate=0.95;utter.pitch=1.05;
+  const voices=synth.getVoices();const ko=voices.find(v=>v.lang.startsWith('ko'));if(ko)utter.voice=ko;
+  utter.onend=()=>{_vIdx++;if(_vPlaying)setTimeout(_speakNext,500);};
+  utter.onerror=(e)=>{if(e.error!=='canceled'){_vPlaying=false;$('btnVoice').classList.remove('playing');$('btnVoice').innerHTML='<i class="fa-solid fa-volume-high"></i> 음성안내';}};
+  synth.speak(utter);
+}
+if('speechSynthesis' in window){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();}
 
 /* ── 이미지 리사이즈 (maxPx 이하로 축소, JPEG 80% 압축) ── */
 function resizeImg(file,maxPx=1280){return new Promise(r=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>maxPx||h>maxPx){const ratio=Math.min(maxPx/w,maxPx/h);w=Math.round(w*ratio);h=Math.round(h*ratio);}const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);const dataUrl=cv.toDataURL('image/jpeg',0.8);r({data:dataUrl.split(',')[1],mimeType:'image/jpeg'});};img.src=URL.createObjectURL(file);});}
@@ -2575,17 +2463,53 @@ async function runAI(){
   }
 }
 
-/* ── ★ v20.8: AI 결과를 공종/세부/유형 셀렉터에 적용 (헬퍼 함수) ── */
+/* ── ★ v22.1: AI 결과를 태그 UI + 셀렉터에 적용 ── */
 function _applyAIResult(aiWork,aiSub,aiType){
   if(aiWork&&!WM[aiWork]){const o=document.createElement('option');o.value=aiWork;o.textContent=aiWork;$('fWork').appendChild(o);}
   $('fWork').value=aiWork;A.onWork();
   if(aiSub){if(!$('fSub').querySelector(`option[value="${aiSub}"]`)){const o=document.createElement('option');o.value=aiSub;o.textContent=aiSub;$('fSub').appendChild(o)}$('fSub').value=aiSub;A.onSub();}
   if(aiType){if(!$('fType').querySelector(`option[value="${aiType}"]`)){const o=document.createElement('option');o.value=aiType;o.textContent=aiType;$('fType').appendChild(o)}$('fType').value=aiType;}
+  /* 태그 UI 표시 */
+  if(aiWork||aiSub||aiType){
+    $('tagWork').textContent=aiWork||'';
+    $('tagSub').textContent=aiSub||'';
+    $('tagType').textContent=aiType||'';
+    $('tagWork').style.display=aiWork?'':'none';
+    $('tagSub').style.display=aiSub?'':'none';
+    $('tagType').style.display=aiType?'':'none';
+    $('aiTags').style.display='flex';
+    $('afSelects').style.display='none';
+  }
 }
+A.nextInput=()=>{
+  /* 위치(fRoom)와 주소(fAddr)는 유지, 나머지 초기화 */
+  $('inW').value='';$('inC').value='';wF=null;cF=null;
+  ['pvW','pvC'].forEach(i=>{$(i).style.display='none';$(i).src='';});
+  ['rtW','rtC'].forEach(i=>{$(i).style.display='none';});
+  $('fUser').value='';$('fDetail').value='';$('fWork').value='';A.onWork();
+  $('fUser').classList.remove('has-value');
+  const banner=$('inputHintBanner');if(banner)banner.classList.remove('has-input');
+  $('aiTags').style.display='none';
+  $('btnNext').style.display='none';
+  clearItemDraft();
+  stat('➡️ 다음 하자를 입력하세요');
+  toast('<i class="fa-solid fa-arrow-right"></i> 다음 하자 입력 준비 완료');
+  document.querySelector('.sec-t .n').scrollIntoView({behavior:'smooth',block:'start'});
+};
+A.toggleSelects=()=>{
+  const sel=$('afSelects'),tags=$('aiTags');
+  if(sel.style.display==='none'){sel.style.display='';tags.style.display='none';}
+  else{
+    $('tagWork').textContent=$('fWork').value||'';
+    $('tagSub').textContent=$('fSub').value||'';
+    $('tagType').textContent=$('fType').value||'';
+    sel.style.display='none';tags.style.display='flex';
+  }
+};
 
 /* ── 저장(수동 폴백) ── */
 A.togSave=()=>{const ok=$('fAgree').checked;if(ok){ls('frog_agreed','true');$('agreeNote').style.display='block';}const banner=$('autoSaveBanner');if(banner){if(ok){banner.style.borderColor='var(--nv)';banner.style.color='#059669';banner.innerHTML='<i class="fa-solid fa-bolt" style="color:var(--pl)"></i><span>가까이 찍기 후 <b>AI 분석 완료 시 자동 저장</b>됩니다</span>';}else{banner.style.borderColor='var(--wr)';banner.style.color='#C05621';banner.innerHTML='<i class="fa-solid fa-triangle-exclamation" style="color:var(--wr)"></i><span>필수 확인에 동의하면 <b>자동 저장</b>이 활성화됩니다</span>';}}};
-A.save=()=>{if(!$('fAgree').checked)return;if(!validateRoom()){const sv=$('btnSv');sv.style.background='#E74C3C';sv.style.boxShadow='0 0 0 4px rgba(231,76,60,.25)';setTimeout(()=>{sv.style.background='';sv.style.boxShadow='';},1200);return;}const cs=$('pvC').src;if(!cF&&(!cs||!cs.startsWith('data:'))){alert('사진(가까이 찍기)이 필요합니다.');return;}const addr=$('fAddr').value||'주소미입력';const info=addr;if($('lInfo'))$('lInfo').textContent=info;$('ptitle').textContent=info+' 사전점검 리포트';const ws=$('pvW').src;const item={id:Date.now(),room:$('fRoom').value||'위치미지정',work:$('fWork').value,sub:$('fSub').value,type:$('fType').value,detail:$('fDetail').value,mode:getActiveMode(),wImg:(ws&&ws.startsWith('data:'))?ws:null,cImg:cs};list.push(item);renderItem(item);updateModeLabel();saveList();reset();stat('저장 완료! 다음 항목을 촬영하세요.');document.querySelector('.lh').scrollIntoView({behavior:'smooth'});setTimeout(()=>step(1),1500);};
+A.save=()=>{if(!$('fAgree').checked)return;if(!validateRoom()){const sv=$('btnSv');sv.style.background='#E74C3C';sv.style.boxShadow='0 0 0 4px rgba(231,76,60,.25)';setTimeout(()=>{sv.style.background='';sv.style.boxShadow='';},1200);return;}const cs=$('pvC').src;if(!cF&&(!cs||!cs.startsWith('data:'))){alert('사진(가까이 찍기)이 필요합니다.');return;}const addr=$('fAddr').value||'주소미입력';const info=addr;if($('lInfo'))$('lInfo').textContent=info;$('ptitle').textContent=info+' 사전점검 리포트';const ws=$('pvW').src;const item={id:Date.now(),room:$('fRoom').value||'위치미지정',work:$('fWork').value,sub:$('fSub').value,type:$('fType').value,detail:$('fDetail').value,mode:getActiveMode(),wImg:(ws&&ws.startsWith('data:'))?ws:null,cImg:cs};list.push(item);renderItem(item);updateModeLabel();saveList();reset();stat('저장 완료! 다음 항목을 촬영하세요.');$('btnNext').style.display='inline-block';document.querySelector('.lh').scrollIntoView({behavior:'smooth'});setTimeout(()=>step(1),1500);};
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function renderItem(it){
@@ -2605,7 +2529,10 @@ function renderItem(it){
 }
 function updateModeLabel(){const el=$('lMode');if(!list.length){el.style.display='none';return;}const hasPaid=list.some(i=>i.mode==='paid'),hasPro=list.some(i=>i.mode==='pro');if(hasPaid){el.textContent='이용권점검';el.style.background='var(--nvb)';el.style.color='#059669';}else if(hasPro){el.textContent='직원점검';el.style.background='var(--pub)';el.style.color='var(--pu)';}else{el.textContent='무료체험';el.style.background='var(--pg)';el.style.color='var(--p)';}el.style.display='inline-block';}
 function reset(){$('inW').value='';$('inC').value='';wF=null;cF=null;['pvW','pvC'].forEach(i=>{$(i).style.display='none';$(i).src='';});['rtW','rtC'].forEach(i=>{$(i).style.display='none';});$('fUser').value='';$('fDetail').value='';$('fWork').value='';A.onWork();$('fRoom').value='';const label=$('cdLabel');label.textContent='위치 선택';label.classList.add('cd-placeholder');label.style.color='';label.style.fontWeight='';$('cdBtn').classList.remove('err-shake');document.querySelectorAll('.cd-item').forEach(i=>i.classList.remove('selected'));// 입력 모드 배너 리셋
-const el=$('fUser');el.classList.remove('has-value');const banner=$('inputHintBanner');if(banner){banner.classList.remove('has-input');const span=banner.querySelector('span:first-of-type');if(span)span.innerHTML='하자 내용을 입력하면 <b>입력 기반 정밀 분석</b>으로 전환됩니다';const badge=$('inputModeBadge');if(badge){badge.className='input-mode-badge photo-mode';badge.innerHTML='📷 사진 모드';}}/* fAgree는 한번 체크하면 세션 내 유지 (reset에서 해제하지 않음) */clearItemDraft();step(4);}
+const el=$('fUser');el.classList.remove('has-value');const banner=$('inputHintBanner');if(banner){banner.classList.remove('has-input');const span=banner.querySelector('span:first-of-type');if(span)span.innerHTML='하자 내용을 입력하면 <b>입력 기반 정밀 분석</b>으로 전환됩니다';const badge=$('inputModeBadge');if(badge){badge.className='input-mode-badge photo-mode';badge.innerHTML='📷 사진 모드';}}/* fAgree는 한번 체크하면 세션 내 유지 (reset에서 해제하지 않음) */
+/* 태그 UI 초기화 */
+$('aiTags').style.display='none';$('afSelects').style.display='none';
+clearItemDraft();step(4);}
 function saveList(){try{ls('frog_list',JSON.stringify(list.map(it=>({...it,wImg:null,cImg:null}))));ls('frog_list_full',JSON.stringify(list));$('sgTx').textContent=`저장 총 하자 : ${list.length} 건`;}catch(e){console.warn('Storage full');}}
 function loadList(){try{const full=ls('frog_list_full');if(full){list=JSON.parse(full);list.forEach(it=>renderItem(it));updateModeLabel();$('sgTx').textContent=`저장 총 하자 : ${list.length} 건`;}else{const d=ls('frog_list');if(d){list=JSON.parse(d);list.forEach(it=>renderItem(it));updateModeLabel();$('sgTx').textContent=`저장 총 하자 : ${list.length} 건`;}}}catch(e){list=[];}}
 A.edit=id=>{const idx=list.findIndex(i=>i.id===id);if(idx===-1)return;if(!confirm('수정 모드로 불러오시겠습니까?'))return;const it=list[idx];$('fRoom').value=it.room;const label=$('cdLabel');label.textContent=it.room;label.classList.remove('cd-placeholder');label.style.color='var(--tx)';label.style.fontWeight='700';document.querySelectorAll('.cd-item').forEach(i=>i.classList.toggle('selected',i.dataset.val===it.room));$('fWork').value=it.work;$('fDetail').value=it.detail;if(it.wImg)showPreview('pvW',it.wImg);if(it.cImg)showPreview('pvC',it.cImg);$(`i-${id}`).remove();list.splice(idx,1);$('lCnt').textContent=list.length;saveList();window.scrollTo(0,0);};
