@@ -6,12 +6,17 @@
 <meta name="theme-color" content="#0A6B5C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>청개구리 입주자 사전점검 AI앱 v22.6</title>
+<title>청개구리 입주자 사전점검 AI앱 v22.9</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* ============================================================
-   청개구리 입주자 사전점검 AI v22.6
+   청개구리 입주자 사전점검 AI v22.9
+   v22.9 변경사항:
+   - [기능] AI 분석 30초 타임아웃 추가 — 초과 시 기본값 자동저장 후 다음입력 이동
+   - [기능] AI 분석 오류 시 기본값(확인필요) 저장 후 자동으로 다음입력 진행
+   v22.7 변경사항:
+   - [UI] AI 참고용 동의 체크박스를 분석결과 textarea 아래로 이동
    v22.6 변경사항:
    - [UI] 위치 선택 버튼 한 줄(flex-wrap) 레이아웃으로 변경
    - [기능] 실외기실 위치 항목 추가
@@ -1673,7 +1678,7 @@ input[type="file"]{
 <header class="hd">
   <div class="hd-top" style="justify-content:center;align-items:center;padding:12px 14px 10px">
     <div class="hd-title" style="font-size:1.26rem">청개구리 입주점검 AI앱</div>
-    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v22.6</span>
+    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v22.9</span>
     <span id="passTag" style="display:none">기부형 앱</span>
   </div>
   <div id="logoImg" style="display:none"></div>
@@ -1809,13 +1814,13 @@ input[type="file"]{
         <span style="font-size:.62rem;color:var(--th)">국토부 기준 참조</span>
         <button class="btn-reanalyze" id="btnReanalyze" onclick="A.reanalyze()" style="display:none"><i class="fa-solid fa-rotate-right"></i> 재분석</button>
       </div>
-      <label for="fAgree" style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:.6rem;font-weight:700;color:var(--ts)">
-        <input type="checkbox" id="fAgree" onchange="A.togSave()" style="width:14px;height:14px;accent-color:var(--p);cursor:pointer">
-        AI 참고용, 법적효력 없음 동의
-        <span id="agreeNote" style="font-size:.55rem;color:#059669;display:none">✓</span>
-      </label>
     </div>
     <textarea class="if" id="fDetail" placeholder="사진 촬영 시 AI가 자동 분석합니다.&#10;하자 내용 직접 입력 시 더 정밀한 분석이 제공됩니다."></textarea>
+    <label for="fAgree" style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:.65rem;font-weight:700;color:var(--ts);margin-top:6px;justify-content:flex-end">
+      <input type="checkbox" id="fAgree" onchange="A.togSave()" style="width:14px;height:14px;accent-color:var(--p);cursor:pointer">
+      AI 참고용, 법적효력 없음 동의
+      <span id="agreeNote" style="font-size:.55rem;color:#059669;display:none">✓</span>
+    </label>
   </div>
   <button class="btn-sv off" id="btnSv" onclick="A.save()" disabled style="display:none">
     <i class="fa-solid fa-check-circle"></i> 리스트에 저장
@@ -1863,7 +1868,7 @@ input[type="file"]{
     통신판매:제2011-경기군포-00342호<br>
     군포시 용호1로21번길15, 102동1501호<br>
     ✉toi9113@naver.com | 환불:코드 미사용시 전액/사용후 불가<br>
-    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v22.6</span>
+    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v22.9</span>
   </div>
 </div>
 </div><!-- /app -->
@@ -2015,7 +2020,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v22.6';
+const APP_VER = 'v22.9';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2331,6 +2336,20 @@ async function runAI(){
   const activeMode=getActiveMode();
   const proExtra=(activeMode==='admin')?'\n[전문 모드] 시공 기준서, KS규격, 국토부 하자판정 기준을 상세히 인용하여 전문 보고서 수준으로 작성하세요.':'';
   const workList=Object.keys(WM).map(w=>`${w}(${Object.keys(WM[w]).join(',')})`).join('; ');
+  /* ── 30초 타임아웃 ── */
+  const AI_TIMEOUT=30000;
+  const _aiTimer=setTimeout(()=>{_aiFallback(det,'⏱️ 분석 시간 초과 (30초)');},AI_TIMEOUT);
+  let _aiDone=false;
+  function _aiFallback(detEl,reason){
+    if(_aiDone)return;_aiDone=true;clearTimeout(_aiTimer);
+    _applyAIResult('확인필요','확인필요','확인필요');
+    detEl.value='⚠️ '+reason+'\n\n[분석 오류 안내]\nAI 분석이 정상적으로 완료되지 않아\n기본 정보(확인필요)만 저장됩니다.\n\n➡️ 자동 저장 후 다음 하자를 입력해주세요.\n※ 리스트에서 수정 가능합니다.';
+    stat('⚠️ '+reason+' — 기본값 저장 후 다음입력 이동');
+    $('btnReanalyze').style.display='none';
+    useQuota();updateQuotaUI();saveDraft();
+    const _wSrc=$('pvW').src,_cSrc=$('pvC').src;
+    setTimeout(()=>{autoSave(_wSrc,_cSrc);setTimeout(()=>A.nextInput(),1200);},500);
+  }
   /* ── 이미지 리사이즈 후 base64 준비 ── */
   const images=[];
   if(wF){const d=await resizeImg(wF);images.push(d);}
@@ -2452,6 +2471,7 @@ async function runAI(){
       det.value=(final.detail||'')+verifyBadge;
     }
 
+    _aiDone=true;clearTimeout(_aiTimer);
     useQuota();updateQuotaUI();saveDraft();
     $('btnReanalyze').style.display='none';
     const remaining=getRemaining();
@@ -2471,14 +2491,10 @@ async function runAI(){
     }
     const errMsg=err?.message||err?.toString()||'';
     if(errMsg.includes('429')||errMsg.includes('quota')||errMsg.includes('RESOURCE_EXHAUSTED')){
-      stat('⚠️ 오늘 전체 사용량 초과',true);
-      det.value='⚠️ 오늘 전체 AI 분석 한도에 도달했습니다.\n내일 자정 이후 이용해주세요.\n📞 010-2322-0949';
+      _aiFallback(det,'⚠️ 오늘 전체 AI 분석 한도 초과');
     }else{
-      stat('분석 실패 — 횟수는 차감되지 않았습니다',true);
-      det.value='일시적 오류가 발생했습니다.\n횟수는 차감되지 않았으니 다시 시도해주세요.';
+      _aiFallback(det,'⚠️ AI 분석 오류 발생');
     }
-    /* 재분석 버튼 표시 (사진이 있을 때만) */
-    if(wF||cF)$('btnReanalyze').style.display='inline-flex';
   }
 }
 
