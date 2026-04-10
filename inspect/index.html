@@ -6,13 +6,13 @@
 <meta name="theme-color" content="#0A6B5C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>청개구리 입주자 사전점검 AI앱 v24.0</title>
+<title>청개구리 입주자 사전점검 AI앱 v24.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* ============================================================
-   청개구리 입주자 사전점검 AI v24.0
-   v24.0 변경사항:
+   청개구리 입주자 사전점검 AI v24.1
+   v24.1 변경사항:
    - [성능] 1차+2차 분석을 1회 통합 호출로 변경 (속도 2배 향상)
    - [성능] AbortController로 타임아웃 시 fetch 즉시 중단
    - [성능] 프롬프트 압축 (품질 유지, 토큰 절감)
@@ -574,6 +574,8 @@ textarea.if{
 }
 .cd-btn.open .cd-arrow{transform:rotate(180deg)}
 .cd-btn .cd-placeholder{color:var(--th)}
+.cd-btn-sm{padding:8px 6px;font-size:.72rem}
+.cd-btn-sm .cd-placeholder{font-size:.72rem}
 .cd-btn.err-shake{
   border-color:var(--dn);
   box-shadow:0 0 0 3px rgba(231,76,60,.15);
@@ -582,12 +584,12 @@ textarea.if{
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .cd-grid{
   display:none;
-  flex-wrap:wrap;
+  grid-template-columns:1fr 1fr;
   gap:6px;
   margin-top:8px;
   animation:cdOpen .2s ease-out;
 }
-.cd-grid.show{display:flex}
+.cd-grid.show{display:grid}
 @keyframes cdOpen{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .cd-item{
   display:flex;
@@ -718,7 +720,7 @@ textarea.if{
 .btn-reanalyze:active{transform:scale(.95)}
 .af{
   display:grid;
-  grid-template-columns:1fr 1fr 1fr;
+  grid-template-columns:1fr 1fr;
   gap:7px;
   margin-bottom:12px;
 }
@@ -1688,7 +1690,7 @@ input[type="file"]{
 <header class="hd">
   <div class="hd-top" style="justify-content:center;align-items:center;padding:12px 14px 10px">
     <div class="hd-title" style="font-size:1.26rem">청개구리 입주점검 AI앱</div>
-    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v24.0</span>
+    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v24.1</span>
     <span id="passTag" style="display:none">기부형 앱</span>
   </div>
   <div id="logoImg" style="display:none"></div>
@@ -1801,16 +1803,31 @@ input[type="file"]{
         oninput="A.onUserInput(this)">
     </div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:9px">
-    <select class="if" id="fWork" style="padding:9px 6px" onchange="A.onWork()">
-      <option value="">공종(자동입력)</option>
-    </select>
-    <select class="if" id="fSub" style="padding:9px 6px" onchange="A.onSub()">
-      <option value="">세부(자동입력)</option>
-    </select>
-    <select class="if" id="fType" style="padding:9px 6px">
-      <option value="">유형(자동입력)</option>
-    </select>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:9px" id="afSelects">
+    <div class="cd-wrap">
+      <select class="if" id="fWork" style="display:none"><option value="">공종</option></select>
+      <button type="button" class="cd-btn cd-btn-sm" id="wkBtn" onclick="A.toggleWork()">
+        <span class="cd-placeholder" id="wkLabel">공종</span>
+        <i class="fa-solid fa-chevron-down cd-arrow"></i>
+      </button>
+      <div class="cd-grid" id="wkGrid"></div>
+    </div>
+    <div class="cd-wrap">
+      <select class="if" id="fSub" style="display:none"><option value="">세부</option></select>
+      <button type="button" class="cd-btn cd-btn-sm" id="subBtn" onclick="A.toggleSub()">
+        <span class="cd-placeholder" id="subLabel">세부</span>
+        <i class="fa-solid fa-chevron-down cd-arrow"></i>
+      </button>
+      <div class="cd-grid" id="subGrid"></div>
+    </div>
+    <div class="cd-wrap">
+      <select class="if" id="fType" style="display:none"><option value="">유형</option></select>
+      <button type="button" class="cd-btn cd-btn-sm" id="typeBtn" onclick="A.toggleType()">
+        <span class="cd-placeholder" id="typeLabel">유형</span>
+        <i class="fa-solid fa-chevron-down cd-arrow"></i>
+      </button>
+      <div class="cd-grid" id="typeGrid"></div>
+    </div>
   </div>
   <div class="ai-tags" id="aiTags" style="display:none">
     <span class="ai-tag work" id="tagWork"></span>
@@ -1880,7 +1897,7 @@ input[type="file"]{
     통신판매:제2011-경기군포-00342호<br>
     군포시 용호1로21번길15, 102동1501호<br>
     ✉toi9113@naver.com | 환불:코드 미사용시 전액/사용후 불가<br>
-    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v24.0</span>
+    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v24.1</span>
   </div>
 </div>
 </div><!-- /app -->
@@ -2032,7 +2049,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v24.0';
+const APP_VER = 'v24.1';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2166,8 +2183,69 @@ function updateQuotaUI(){const m=getActiveMode(),limit=getLimit(),{data}=getQuot
    ⚙️ 공종/세부/유형
    ============================================================ */
 function initWorkSelect(){const sel=$('fWork');sel.innerHTML='<option value="">공종(자동입력)</option>';for(const w of Object.keys(WM)){const o=document.createElement('option');o.value=w;o.textContent=w;sel.appendChild(o);}}
-A.onWork=()=>{const w=$('fWork').value,sub=$('fSub');$('fWork').classList.toggle('has-val',!!w);sub.innerHTML='<option value="">세부(자동입력)</option>';sub.classList.remove('has-val');$('fType').innerHTML='<option value="">유형(자동입력)</option>';$('fType').classList.remove('has-val');if(w&&WM[w])for(const s of Object.keys(WM[w])){const o=document.createElement('option');o.value=s;o.textContent=s;sub.appendChild(o);}};
-A.onSub=()=>{const w=$('fWork').value,s=$('fSub').value,tp=$('fType');$('fSub').classList.toggle('has-val',!!s);tp.innerHTML='<option value="">유형(자동입력)</option>';tp.classList.remove('has-val');if(w&&s&&WM[w]&&WM[w][s])for(const t of WM[w][s]){const o=document.createElement('option');o.value=t;o.textContent=t;tp.appendChild(o);}};
+A.onWork=()=>{const w=$('fWork').value,sub=$('fSub');sub.innerHTML='<option value="">세부</option>';$('fType').innerHTML='<option value="">유형</option>';if(w&&WM[w])for(const s of Object.keys(WM[w])){const o=document.createElement('option');o.value=s;o.textContent=s;sub.appendChild(o);}};
+A.onSub=()=>{const w=$('fWork').value,s=$('fSub').value,tp=$('fType');tp.innerHTML='<option value="">유형</option>';if(w&&s&&WM[w]&&WM[w][s])for(const t of WM[w][s]){const o=document.createElement('option');o.value=t;o.textContent=t;tp.appendChild(o);}};
+
+/* ── 공종/세부/유형 그리드 선택 (위치선택 패턴) ── */
+function _renderGrid(gridEl,items,pickFn){
+  gridEl.innerHTML='';
+  items.forEach(v=>{const d=document.createElement('div');d.className='cd-item';d.dataset.val=v;d.onclick=()=>pickFn(d);d.innerHTML='<span class="cd-radio"></span><span class="cd-label">'+v+'</span>';gridEl.appendChild(d);});
+}
+function _toggleGrid(gridEl,btnEl){btnEl.classList.toggle('open');gridEl.classList.toggle('show');}
+function _closeGrid(gridEl,btnEl){gridEl.classList.remove('show');btnEl.classList.remove('open');}
+function _selectItem(gridEl,val){gridEl.querySelectorAll('.cd-item').forEach(i=>i.classList.toggle('selected',i.dataset.val===val));}
+
+A.toggleWork=()=>{
+  const g=$('wkGrid'),b=$('wkBtn');
+  if(!g.children.length)_renderGrid(g,Object.keys(WM),A.pickWork);
+  _toggleGrid(g,b);
+  _closeGrid($('subGrid'),$('subBtn'));_closeGrid($('typeGrid'),$('typeBtn'));
+};
+A.pickWork=(el)=>{
+  const v=el.dataset.val;$('fWork').value=v;
+  const lb=$('wkLabel');lb.textContent='✔ '+v;lb.classList.remove('cd-placeholder');lb.style.color='var(--p)';lb.style.fontWeight='800';
+  _selectItem($('wkGrid'),v);
+  setTimeout(()=>_closeGrid($('wkGrid'),$('wkBtn')),150);
+  A.onWork();
+  /* 세부 리셋 */
+  $('subLabel').textContent='세부';$('subLabel').className='cd-placeholder';$('subLabel').style.color='';$('subLabel').style.fontWeight='';
+  $('subGrid').innerHTML='';
+  $('typeLabel').textContent='유형';$('typeLabel').className='cd-placeholder';$('typeLabel').style.color='';$('typeLabel').style.fontWeight='';
+  $('typeGrid').innerHTML='';
+  saveDraft();
+};
+A.toggleSub=()=>{
+  const w=$('fWork').value;if(!w){stat('⚠️ 공종을 먼저 선택하세요',true);return;}
+  const g=$('subGrid'),b=$('subBtn');
+  if(!g.children.length)_renderGrid(g,Object.keys(WM[w]||{}),A.pickSub);
+  _toggleGrid(g,b);
+  _closeGrid($('wkGrid'),$('wkBtn'));_closeGrid($('typeGrid'),$('typeBtn'));
+};
+A.pickSub=(el)=>{
+  const v=el.dataset.val;$('fSub').value=v;
+  const lb=$('subLabel');lb.textContent='✔ '+v;lb.classList.remove('cd-placeholder');lb.style.color='var(--p)';lb.style.fontWeight='800';
+  _selectItem($('subGrid'),v);
+  setTimeout(()=>_closeGrid($('subGrid'),$('subBtn')),150);
+  A.onSub();
+  $('typeLabel').textContent='유형';$('typeLabel').className='cd-placeholder';$('typeLabel').style.color='';$('typeLabel').style.fontWeight='';
+  $('typeGrid').innerHTML='';
+  saveDraft();
+};
+A.toggleType=()=>{
+  const w=$('fWork').value,s=$('fSub').value;
+  if(!w||!s){stat('⚠️ 공종과 세부를 먼저 선택하세요',true);return;}
+  const g=$('typeGrid'),b=$('typeBtn');
+  if(!g.children.length)_renderGrid(g,(WM[w]&&WM[w][s])||[],A.pickType);
+  _toggleGrid(g,b);
+  _closeGrid($('wkGrid'),$('wkBtn'));_closeGrid($('subGrid'),$('subBtn'));
+};
+A.pickType=(el)=>{
+  const v=el.dataset.val;$('fType').value=v;
+  const lb=$('typeLabel');lb.textContent='✔ '+v;lb.classList.remove('cd-placeholder');lb.style.color='var(--p)';lb.style.fontWeight='800';
+  _selectItem($('typeGrid'),v);
+  setTimeout(()=>_closeGrid($('typeGrid'),$('typeBtn')),150);
+  saveDraft();
+};
 $('fType')&&$('fType').addEventListener('change',()=>{$('fType').classList.toggle('has-val',!!$('fType').value);});
 
 /* ── ★ v20.8: 사용자 입력 실시간 UI 업데이트 ── */
@@ -2457,6 +2535,10 @@ function _applyAIResult(aiWork,aiSub,aiType){
   $('fWork').value=aiWork;A.onWork();
   if(aiSub){if(!$('fSub').querySelector(`option[value="${aiSub}"]`)){const o=document.createElement('option');o.value=aiSub;o.textContent=aiSub;$('fSub').appendChild(o)}$('fSub').value=aiSub;A.onSub();}
   if(aiType){if(!$('fType').querySelector(`option[value="${aiType}"]`)){const o=document.createElement('option');o.value=aiType;o.textContent=aiType;$('fType').appendChild(o)}$('fType').value=aiType;}
+  /* 버튼 라벨 업데이트 */
+  if(aiWork){const l=$('wkLabel');l.textContent='✔ '+aiWork;l.classList.remove('cd-placeholder');l.style.color='var(--p)';l.style.fontWeight='800';}
+  if(aiSub){const l=$('subLabel');l.textContent='✔ '+aiSub;l.classList.remove('cd-placeholder');l.style.color='var(--p)';l.style.fontWeight='800';}
+  if(aiType){const l=$('typeLabel');l.textContent='✔ '+aiType;l.classList.remove('cd-placeholder');l.style.color='var(--p)';l.style.fontWeight='800';}
   /* 태그 UI 표시 */
   if(aiWork||aiSub||aiType){
     $('tagWork').textContent=aiWork||'';
@@ -2478,6 +2560,10 @@ A.nextInput=()=>{
   $('fUser').classList.remove('has-value');
   const banner=$('inputHintBanner');if(banner)banner.classList.remove('has-input');
   $('aiTags').style.display='none';
+  /* 공종/세부/유형 라벨 리셋 */
+  ['wk','sub','type'].forEach(k=>{const l=$(k+'Label');l.textContent=k==='wk'?'공종':k==='sub'?'세부':'유형';l.className='cd-placeholder';l.style.color='';l.style.fontWeight='';});
+  ['wkGrid','subGrid','typeGrid'].forEach(k=>{$(k).innerHTML='';$(k).classList.remove('show');});
+  ['wkBtn','subBtn','typeBtn'].forEach(k=>$(k).classList.remove('open'));
     clearItemDraft();
   stat('➡️ 다음 하자를 입력하세요');
   toast('<i class="fa-solid fa-arrow-right"></i> 다음 하자 입력 준비 완료');
