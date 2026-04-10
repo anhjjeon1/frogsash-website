@@ -6,13 +6,13 @@
 <meta name="theme-color" content="#0A6B5C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>청개구리 입주자 사전점검 AI앱 v23.3</title>
+<title>청개구리 입주자 사전점검 AI앱 v23.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* ============================================================
-   청개구리 입주자 사전점검 AI v23.3
-   v23.3 변경사항:
+   청개구리 입주자 사전점검 AI v23.4
+   v23.4 변경사항:
    - [성능] 1차+2차 분석을 1회 통합 호출로 변경 (속도 2배 향상)
    - [성능] AbortController로 타임아웃 시 fetch 즉시 중단
    - [성능] 프롬프트 압축 (품질 유지, 토큰 절감)
@@ -1688,7 +1688,7 @@ input[type="file"]{
 <header class="hd">
   <div class="hd-top" style="justify-content:center;align-items:center;padding:12px 14px 10px">
     <div class="hd-title" style="font-size:1.26rem">청개구리 입주점검 AI앱</div>
-    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v23.3</span>
+    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v23.4</span>
     <span id="passTag" style="display:none">기부형 앱</span>
   </div>
   <div id="logoImg" style="display:none"></div>
@@ -1880,7 +1880,7 @@ input[type="file"]{
     통신판매:제2011-경기군포-00342호<br>
     군포시 용호1로21번길15, 102동1501호<br>
     ✉toi9113@naver.com | 환불:코드 미사용시 전액/사용후 불가<br>
-    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v23.3</span>
+    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v23.4</span>
   </div>
 </div>
 </div><!-- /app -->
@@ -2032,7 +2032,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v23.3';
+const APP_VER = 'v23.4';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2341,7 +2341,7 @@ function _speakNext(){
 if('speechSynthesis' in window){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();}
 
 /* ── 이미지 리사이즈 (maxPx 이하로 축소, JPEG 80% 압축) ── */
-function resizeImg(file,maxPx=1280){return new Promise(r=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>maxPx||h>maxPx){const ratio=Math.min(maxPx/w,maxPx/h);w=Math.round(w*ratio);h=Math.round(h*ratio);}const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);const dataUrl=cv.toDataURL('image/jpeg',0.8);r({data:dataUrl.split(',')[1],mimeType:'image/jpeg'});};img.src=URL.createObjectURL(file);});}
+function resizeImg(file,maxPx=800){return new Promise(r=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>maxPx||h>maxPx){const ratio=Math.min(maxPx/w,maxPx/h);w=Math.round(w*ratio);h=Math.round(h*ratio);}const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);const dataUrl=cv.toDataURL('image/jpeg',0.6);r({data:dataUrl.split(',')[1],mimeType:'image/jpeg'});};img.src=URL.createObjectURL(file);});}
 
 async function runAI(){
   const det=$('fDetail'), ui=$('fUser').value.trim();
