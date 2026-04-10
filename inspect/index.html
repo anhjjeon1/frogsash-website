@@ -6,12 +6,17 @@
 <meta name="theme-color" content="#0A6B5C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>청개구리 입주자 사전점검 AI앱 v23.0</title>
+<title>청개구리 입주자 사전점검 AI앱 v23.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* ============================================================
-   청개구리 입주자 사전점검 AI v23.0
+   청개구리 입주자 사전점검 AI v23.1
+   v23.1 변경사항:
+   - [성능] 1차+2차 분석을 1회 통합 호출로 변경 (속도 2배 향상)
+   - [성능] AbortController로 타임아웃 시 fetch 즉시 중단
+   - [성능] 프롬프트 압축 (품질 유지, 토큰 절감)
+   - [성능] 타임아웃 30초→25초로 단축
    v23.0 변경사항:
    - [AI] 1차/2차 분석 프롬프트 전면 업그레이드 (사진·입력 모드 모두)
    - [AI] 국토부 하자판정 기준·KS 표준 구체적 수치 인용 강화
@@ -1683,7 +1688,7 @@ input[type="file"]{
 <header class="hd">
   <div class="hd-top" style="justify-content:center;align-items:center;padding:12px 14px 10px">
     <div class="hd-title" style="font-size:1.26rem">청개구리 입주점검 AI앱</div>
-    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v23.0</span>
+    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v23.1</span>
     <span id="passTag" style="display:none">기부형 앱</span>
   </div>
   <div id="logoImg" style="display:none"></div>
@@ -1873,7 +1878,7 @@ input[type="file"]{
     통신판매:제2011-경기군포-00342호<br>
     군포시 용호1로21번길15, 102동1501호<br>
     ✉toi9113@naver.com | 환불:코드 미사용시 전액/사용후 불가<br>
-    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v23.0</span>
+    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v23.1</span>
   </div>
 </div>
 </div><!-- /app -->
@@ -2025,7 +2030,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v23.0';
+const APP_VER = 'v23.1';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2339,11 +2344,12 @@ function resizeImg(file,maxPx=1280){return new Promise(r=>{const img=new Image()
 async function runAI(){
   const det=$('fDetail'), ui=$('fUser').value.trim();
   const activeMode=getActiveMode();
-  const proExtra=(activeMode==='admin')?'\n[전문 모드] 시공 기준서, KS규격, 국토부 하자판정 기준을 상세히 인용하여 전문 보고서 수준으로 작성하세요.':'';
+  const proExtra=(activeMode==='admin')?'\n[전문모드] 시공기준서·KS규격·국토부 하자판정 기준 상세 인용.':'';
   const workList=Object.keys(WM).map(w=>`${w}(${Object.keys(WM[w]).join(',')})`).join('; ');
-  /* ── 30초 타임아웃 ── */
-  const AI_TIMEOUT=30000;
-  const _aiTimer=setTimeout(()=>{_aiFallback(det,'⏱️ 분석 시간 초과 (30초)');},AI_TIMEOUT);
+  /* ── AbortController + 25초 타임아웃 ── */
+  const _ac=new AbortController();
+  const AI_TIMEOUT=25000;
+  const _aiTimer=setTimeout(()=>{_ac.abort();_aiFallback(det,'⏱️ 분석 시간 초과');},AI_TIMEOUT);
   let _aiDone=false;
   function _aiFallback(detEl,reason){
     if(_aiDone)return;_aiDone=true;clearTimeout(_aiTimer);
@@ -2367,157 +2373,42 @@ async function runAI(){
   ls('_pre_ai_count',String(_qSnap.count||0));
 
   try{
-    /* ================================================================
-       MODE A: 사용자 입력이 있을 때 → 입력 내용이 진단의 주축
-       사진은 입력된 하자를 "확인·보강"하는 보조 증거로만 활용
-       ================================================================ */
-    if(hasUserInput){
-      det.value='🔍 입력 기반 1차 분석 중...';
-      stat('📝 입력 기반 분석 진행 중...');
+    det.value='🔍 AI 분석 중...';
+    stat(hasUserInput?'📝 입력 기반 분석 진행 중...':'📷 사진 기반 분석 진행 중...');
 
-      const prompt1=`당신은 대한민국 아파트 입주자 사전점검 전문 AI입니다.
-[역할] 국토교통부 공동주택 하자판정 기준, 주택건설기준 등에 관한 규정, KS 표준을 숙지한 건축 하자 진단 전문가.
-[사용자 입력 우선] 사용자가 직접 입력한 내용을 최우선 분석 근거로 삼고, 사진은 보조 증거로 활용합니다.${proExtra}
-[사용자 입력] "${ui}"
-[공종 분류체계] ${workList}
-[하자유형 목록] 들뜸,마감불량,흠집/찍힘,면불량,오염,미시공,파손,틈새,코킹불량,수직수평불량,개폐불량,고정불량,작동불량,줄눈불량,단차,구배불량,이색/변색,누수,균열,도장불량,이음불량,배수불량,점등불량,악취,허용범위
-[분석 절차]
-1. 사용자 입력 키워드에서 공종/세부/유형을 1차 매칭
-2. 사진과 교차 확인하여 정확도 보강
-3. 국토부 하자판정 기준의 허용범위 수치를 구체적으로 인용
-4. 하자가 아닌 경우(허용범위 이내) 반드시 type을 "허용범위"로 지정
-[출력 규칙]
-- detail의 각 항목은 구체적 수치와 근거를 포함할 것 (예: "3mm 이상 틈새 발생" / "국토부 기준 2mm 이내")
-- 현상은 사진에서 관찰되는 실제 상태를 구체적으로 기술
-- 조치는 실행 가능한 구체적 시정 방법 제시
-[JSON만 출력]
-{"work":"공종","sub":"세부공종","type":"하자유형","detail":"현상: (구체적 상태 1줄)\\n기준: (국토부/KS 허용범위 수치 포함 1줄)\\n조치: (구체적 시정방법 1줄)"}`;
+    /* ── 통합 프롬프트 (1회 호출로 분석+검증+심각도 동시 수행) ── */
+    const userBlock=hasUserInput?`\n[사용자 입력 — 최우선 분석 근거] "${ui}"`:'';
+    const modeBlock=hasUserInput?'사용자 입력 우선, 사진은 보조 증거.':'사진1(Wide):공종파악, 사진2(Close):하자분석.';
 
-      const gasRes=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt:prompt1,images}]})});
-      if(!gasRes.ok)throw new Error('서버 응답 오류: '+gasRes.status);
-      const gasData=await gasRes.json();
-      if(gasData.error){if(gasData.error==='rate_limit')throw new Error('429');throw new Error(gasData.message||gasData.error);}
+    const prompt=`아파트 사전점검 하자진단 AI. ${modeBlock}${proExtra}${userBlock}
+[분류] ${workList}
+[유형] 들뜸,마감불량,흠집/찍힘,면불량,오염,미시공,파손,틈새,코킹불량,수직수평불량,개폐불량,고정불량,작동불량,줄눈불량,단차,구배불량,이색/변색,누수,균열,도장불량,이음불량,배수불량,점등불량,악취,허용범위
+[규칙] ①공종/세부/유형 정확 분류 ②국토부 허용범위 수치 인용 ③허용범위 이내→type:"허용범위" ④심각도 판정(경미/보통/중대) ⑤현상·기준·조치 각 1줄, 구체적 수치 포함
+[JSON만]
+{"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"현상: (구체적 상태)\\n기준: (국토부/KS 허용범위 수치)\\n조치: (구체적 시정방법)"}`;
 
-      const txt1=gasData.results[0]||'';
-      let d1={};
-      try{const c=txt1.replace(/```json/g,'').replace(/```/g,'').trim();const mt=c.match(/\{[\s\S]*\}/);d1=mt?JSON.parse(mt[0]):{};}
-      catch{d1={detail:'파싱 실패. 하자 내용을 다시 입력해주세요.',work:'기타',sub:'',type:'확인필요'};}
+    const gasRes=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt,images}]}),signal:_ac.signal});
+    if(_aiDone)return;
+    if(!gasRes.ok)throw new Error('서버 응답 오류: '+gasRes.status);
+    const gasData=await gasRes.json();
+    if(_aiDone)return;
+    if(gasData.error){if(gasData.error==='rate_limit')throw new Error('429');throw new Error(gasData.message||gasData.error);}
 
-      /* ── 2차 검증 ── */
-      det.value='⏳ 2차 검증 중...';stat('🔄 AI 교차 검증 중...');
-      const prompt2=`당신은 대한민국 아파트 사전점검 2차 검증 AI입니다.
-[역할] 1차 분석 결과를 사진·입력과 교차 검증하여 오분류를 바로잡는 품질 검수 전문가.
-[사용자 원본 입력] "${ui}"
-[1차 분석 결과] 공종:${d1.work||'미분류'} / 세부:${d1.sub||'미분류'} / 유형:${d1.type||'미분류'} / 내용:${d1.detail||'없음'}
-[검증 절차]
-1. 사용자 입력 키워드와 1차 공종/세부/유형 분류가 정확히 일치하는지 확인
-2. 사진에서 보이는 실제 하자와 1차 분석 내용이 부합하는지 교차 확인
-3. 불일치 발견 시 올바른 분류로 수정하고 corrected:true 표시
-4. 심각도 판정: 국토부 하자판정 기준 허용범위 대비 초과 정도로 판단
-   - 경미: 허용범위 근접 또는 미세 초과, 미관상 문제
-   - 보통: 허용범위 명확히 초과, 기능 저하 우려
-   - 중대: 허용범위 대폭 초과, 구조·안전·누수 관련
-5. 허용범위 이내면 type을 "허용범위"로, severity를 "경미"로 지정
-[출력 규칙] 현상·기준·조치에 구체적 수치와 근거 포함
-[JSON만 출력]
-{"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","corrected":true/false,"detail":"현상: (구체적 상태 1줄)\\n기준: (국토부/KS 허용범위 수치 포함 1줄)\\n조치: (구체적 시정방법 1줄)"}`;
-      const gasRes2=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt:prompt2,images}]})});
-      const gasData2=await gasRes2.json();
-      if(gasData2.error)throw new Error(gasData2.message||gasData2.error);
-      const txt2=gasData2.results[0]||'';
-      let d2={};
-      try{const c=txt2.replace(/```json/g,'').replace(/```/g,'').trim();const mt=c.match(/\{[\s\S]*\}/);d2=mt?JSON.parse(mt[0]):{};}
-      catch{d2=d1;}
+    const txt=gasData.results[0]||'';
+    let d={};
+    try{const c=txt.replace(/```json/g,'').replace(/```/g,'').trim();const mt=c.match(/\{[\s\S]*\}/);d=mt?JSON.parse(mt[0]):{};}
+    catch{d={detail:'파싱 실패. 하자 내용을 직접 입력하면 정확도가 높아집니다.',work:'기타',sub:'',type:'확인필요'};}
 
-      const final=(d2.work||d2.detail)?d2:d1;
-      const severity=final.severity||'';
-      const severityBadge=
-        severity==='중대'?'\n⛔ [중대하자 — 즉시 시정 요청]':
-        severity==='보통'?'\n⚠️ [보통 — 시정 권고]':
-        severity==='경미'?'\n✅ [경미 — 기록 후 보수]':'';
-      const inputBadge=`\n${severityBadge}\n📝 입력 기반 분석 | ✅ 2차 검증 완료 (참고용)`;
+    const severity=d.severity||'';
+    const severityBadge=
+      severity==='중대'?'\n⛔ [중대하자 — 즉시 시정 요청]':
+      severity==='보통'?'\n⚠️ [보통 — 시정 권고]':
+      severity==='경미'?'\n✅ [경미 — 기록 후 보수]':'';
+    const modeBadge=hasUserInput?'📝 입력 기반':'📷 사진 기반';
+    const badge=`\n${severityBadge}\n${modeBadge} 분석 완료 (참고용)`;
 
-      _applyAIResult(final.work||'',final.sub||'',final.type||'');
-      det.value=(final.detail||'')+inputBadge;
-
-    } else {
-      /* ================================================================
-         MODE B: 사용자 입력 없을 때 → 사진 기반 분석 (기존 로직 유지)
-         ================================================================ */
-      det.value='🔍 1차 사진 분석 중...';stat('📷 사진 기반 분석 진행 중...');
-
-      const prompt1=`당신은 대한민국 아파트 입주자 사전점검 전문 AI입니다.
-[역할] 국토교통부 공동주택 하자판정 기준, 주택건설기준 등에 관한 규정, KS 표준을 숙지한 건축 하자 진단 전문가.
-[사진 분석 모드] 사진1(Wide)로 공간·공종을 파악하고, 사진2(Close)로 하자 부위를 정밀 분석합니다.${proExtra}
-[공종 분류체계] ${workList}
-[하자유형 목록] 들뜸,마감불량,흠집/찍힘,면불량,오염,미시공,파손,틈새,코킹불량,수직수평불량,개폐불량,고정불량,작동불량,줄눈불량,단차,구배불량,이색/변색,누수,균열,도장불량,이음불량,배수불량,점등불량,악취,허용범위
-[분석 절차]
-1. Wide 사진에서 공간(거실/주방/욕실 등)과 해당 공종을 식별
-2. Close 사진에서 하자 부위의 상태·크기·범위를 정밀 관찰
-3. 관찰된 하자를 공종 분류체계에 정확히 매칭
-4. 국토부 하자판정 기준의 허용범위와 비교하여 하자 여부 판단
-5. 하자가 아닌 경우(허용범위 이내) 반드시 type을 "허용범위"로 지정
-[출력 규칙]
-- 현상: 사진에서 관찰되는 실제 상태를 구체적으로 기술 (크기, 범위, 위치 포함)
-- 기준: 국토부/KS 허용범위 수치를 구체적으로 인용
-- 조치: 실행 가능한 구체적 시정 방법 제시
-- 하자 내용을 직접 입력하면 더 정밀한 분석이 가능합니다
-[JSON만 출력]
-{"work":"공종","sub":"세부공종","type":"하자유형","detail":"현상: (구체적 상태 1줄)\\n기준: (국토부/KS 허용범위 수치 포함 1줄)\\n조치: (구체적 시정방법 1줄)"}`;
-
-      /* ── GAS 프록시로 1차 요청 ── */
-      const gasRes1=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt:prompt1,images}]})});
-      if(!gasRes1.ok)throw new Error('서버 응답 오류: '+gasRes1.status);
-      const gasData1=await gasRes1.json();
-      if(gasData1.error){if(gasData1.error==='rate_limit')throw new Error('429');throw new Error(gasData1.message||gasData1.error);}
-      const txt1=gasData1.results[0]||'';
-      let d1={};
-      try{const c=txt1.replace(/```json/g,'').replace(/```/g,'').trim();const mt=c.match(/\{[\s\S]*\}/);d1=mt?JSON.parse(mt[0]):{};}
-      catch{d1={detail:'파싱 실패. 하자 내용을 직접 입력하면 정확도가 높아집니다.',work:'기타',sub:'',type:'확인필요'};}
-
-      det.value='⏳ 2차 검증 중...';stat('🔄 AI 재검증 중...');
-
-      const prompt2=`당신은 대한민국 아파트 사전점검 2차 검증 AI입니다.
-[역할] 1차 분석 결과를 사진과 교차 검증하여 오분류를 바로잡는 품질 검수 전문가.
-[1차 분석 결과] 공종:${d1.work||'미분류'} / 세부:${d1.sub||'미분류'} / 유형:${d1.type||'미분류'} / 내용:${d1.detail||'없음'}
-[검증 절차]
-1. 사진에서 보이는 실제 하자와 1차 분석의 공종/세부/유형이 정확히 일치하는지 확인
-2. 불일치 발견 시 올바른 분류로 수정하고 corrected:true 표시
-3. 심각도 판정: 국토부 하자판정 기준 허용범위 대비 초과 정도로 판단
-   - 경미: 허용범위 근접 또는 미세 초과, 미관상 문제
-   - 보통: 허용범위 명확히 초과, 기능 저하 우려
-   - 중대: 허용범위 대폭 초과, 구조·안전·누수 관련
-4. 허용범위 이내면 type을 "허용범위"로, severity를 "경미"로 지정
-5. 1차 분석의 현상·기준·조치 내용이 부정확하면 수정
-[출력 규칙] 현상·기준·조치에 구체적 수치와 근거 포함
-[JSON만 출력]
-{"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","corrected":true/false,"detail":"현상: (구체적 상태 1줄)\\n기준: (국토부/KS 허용범위 수치 포함 1줄)\\n조치: (구체적 시정방법 1줄)"}`;
-
-      /* ── GAS 프록시로 2차 요청 ── */
-      const gasRes2=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt:prompt2,images}]})});
-      const gasData2=await gasRes2.json();
-      if(gasData2.error)throw new Error(gasData2.message||gasData2.error);
-      const txt2=gasData2.results[0]||'';
-      let d2={};
-      try{const c=txt2.replace(/```json/g,'').replace(/```/g,'').trim();const mt=c.match(/\{[\s\S]*\}/);d2=mt?JSON.parse(mt[0]):{};}
-      catch{d2=d1;}
-
-      const final=(d2.work||d2.detail)?d2:d1;
-      const wasCorrected=!!final.corrected;
-      const severity=final.severity||'';
-      const severityBadge=
-        severity==='중대'?'\n⛔ [심각도: 중대하자 — 즉시 시정 요청 필요]':
-        severity==='보통'?'\n⚠️ [심각도: 보통 — 시정 요청 권고]':
-        severity==='경미'?'\n✅ [심각도: 경미 — 기록 후 보수 요청]':'';
-      const severityBadge2=
-        severity==='중대'?'\n⛔ [중대하자 — 즉시 시정 요청]':
-        severity==='보통'?'\n⚠️ [보통 — 시정 권고]':
-        severity==='경미'?'\n✅ [경미 — 기록 후 보수]':'';
-      const verifyBadge=`\n${severityBadge2}\n📷 사진 분석 | ✅ 2차 검증 완료 (참고용)`;
-
-      _applyAIResult(final.work||'',final.sub||'',final.type||'');
-      det.value=(final.detail||'')+verifyBadge;
-    }
+    _applyAIResult(d.work||'',d.sub||'',d.type||'');
+    det.value=(d.detail||'')+badge;
 
     _aiDone=true;clearTimeout(_aiTimer);
     useQuota();updateQuotaUI();saveDraft();
