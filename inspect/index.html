@@ -6,13 +6,13 @@
 <meta name="theme-color" content="#0A6B5C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>청개구리 입주자 사전점검 AI앱 v23.5</title>
+<title>청개구리 입주자 사전점검 AI앱 v24.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* ============================================================
-   청개구리 입주자 사전점검 AI v23.5
-   v23.5 변경사항:
+   청개구리 입주자 사전점검 AI v24.0
+   v24.0 변경사항:
    - [성능] 1차+2차 분석을 1회 통합 호출로 변경 (속도 2배 향상)
    - [성능] AbortController로 타임아웃 시 fetch 즉시 중단
    - [성능] 프롬프트 압축 (품질 유지, 토큰 절감)
@@ -1688,7 +1688,7 @@ input[type="file"]{
 <header class="hd">
   <div class="hd-top" style="justify-content:center;align-items:center;padding:12px 14px 10px">
     <div class="hd-title" style="font-size:1.26rem">청개구리 입주점검 AI앱</div>
-    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v23.5</span>
+    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v24.0</span>
     <span id="passTag" style="display:none">기부형 앱</span>
   </div>
   <div id="logoImg" style="display:none"></div>
@@ -1880,7 +1880,7 @@ input[type="file"]{
     통신판매:제2011-경기군포-00342호<br>
     군포시 용호1로21번길15, 102동1501호<br>
     ✉toi9113@naver.com | 환불:코드 미사용시 전액/사용후 불가<br>
-    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v23.5</span>
+    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v24.0</span>
   </div>
 </div>
 </div><!-- /app -->
@@ -2032,7 +2032,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v23.5';
+const APP_VER = 'v24.0';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2389,14 +2389,18 @@ async function runAI(){
 [JSON만]
 {"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"현상: (50자이내)\\n기준: (허용수치)\\n조치: (시정방법)"}`;
 
-    const gasRes=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt,images}]}),signal:_ac.signal});
+    /* ── Gemini 2.5 Flash 직접 호출 ── */
+    const GEMINI_KEY='AIzaSyBoHZXi7YdDmHV6GMEw49MYi74LILPKeCI';
+    const GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+GEMINI_KEY;
+    const parts=[{text:prompt}];
+    images.forEach(img=>parts.push({inline_data:{mime_type:img.mimeType,data:img.data}}));
+    const gemRes=await fetch(GEMINI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0.2,maxOutputTokens:512}}),signal:_ac.signal});
     if(_aiDone)return;
-    if(!gasRes.ok)throw new Error('서버 응답 오류: '+gasRes.status);
-    const gasData=await gasRes.json();
+    if(!gemRes.ok){const errBody=await gemRes.text().catch(()=>'');if(errBody.includes('RESOURCE_EXHAUSTED'))throw new Error('429');throw new Error('Gemini 응답 오류: '+gemRes.status);}
+    const gemData=await gemRes.json();
     if(_aiDone)return;
-    if(gasData.error){if(gasData.error==='rate_limit')throw new Error('429');throw new Error(gasData.message||gasData.error);}
 
-    const txt=gasData.results[0]||'';
+    const txt=gemData?.candidates?.[0]?.content?.parts?.[0]?.text||'';
     let d={};
     try{const c=txt.replace(/```json/g,'').replace(/```/g,'').trim();const mt=c.match(/\{[\s\S]*\}/);d=mt?JSON.parse(mt[0]):{};}
     catch{d={detail:'파싱 실패. 하자 내용을 직접 입력하면 정확도가 높아집니다.',work:'기타',sub:'',type:'확인필요'};}
