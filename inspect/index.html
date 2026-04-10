@@ -6,12 +6,16 @@
 <meta name="theme-color" content="#0A6B5C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>청개구리 입주자 사전점검 AI앱 v22.4</title>
+<title>청개구리 입주자 사전점검 AI앱 v22.6</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* ============================================================
-   청개구리 입주자 사전점검 AI v22.4
+   청개구리 입주자 사전점검 AI v22.6
+   v22.6 변경사항:
+   - [UI] 위치 선택 버튼 한 줄(flex-wrap) 레이아웃으로 변경
+   - [기능] 실외기실 위치 항목 추가
+   - [기능] AI 분석 오류 시 재분석 버튼 표시 (분석 성공 시 자동 숨김)
    v22.4 변경사항:
    - [UI] 초기화 버튼 연한 붉은색 배경으로 변경
    v22.3 변경사항:
@@ -563,25 +567,25 @@ textarea.if{
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .cd-grid{
   display:none;
-  grid-template-columns:1fr 1fr;
+  flex-wrap:wrap;
   gap:6px;
   margin-top:8px;
   animation:cdOpen .2s ease-out;
 }
-.cd-grid.show{display:grid}
+.cd-grid.show{display:flex}
 @keyframes cdOpen{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .cd-item{
   display:flex;
   align-items:center;
-  gap:6px;
-  padding:7px 10px;
+  gap:4px;
+  padding:6px 10px;
   border:1.5px solid var(--bd);
   border-radius:10px;
   background:#FAFBFC;
   cursor:pointer;
   transition:all .15s;
   user-select:none;
-  min-height:35px;
+  white-space:nowrap;
 }
 .cd-item:active{transform:scale(.97)}
 .cd-item .cd-radio{
@@ -690,6 +694,13 @@ textarea.if{
   font-size:.68rem;
   font-weight:700;
 }
+.btn-reanalyze{
+  display:inline-flex;align-items:center;gap:3px;
+  background:#EF4444;color:#fff;border:none;border-radius:5px;
+  padding:2px 8px;font-size:.65rem;font-weight:700;cursor:pointer;
+  transition:all .15s;
+}
+.btn-reanalyze:active{transform:scale(.95)}
 .af{
   display:grid;
   grid-template-columns:1fr 1fr 1fr;
@@ -1662,7 +1673,7 @@ input[type="file"]{
 <header class="hd">
   <div class="hd-top" style="justify-content:center;align-items:center;padding:12px 14px 10px">
     <div class="hd-title" style="font-size:1.26rem">청개구리 입주점검 AI앱</div>
-    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v22.4</span>
+    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v22.6</span>
     <span id="passTag" style="display:none">기부형 앱</span>
   </div>
   <div id="logoImg" style="display:none"></div>
@@ -1763,6 +1774,7 @@ input[type="file"]{
           <div class="cd-item" data-val="팬트리" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">팬트리</span></div>
           <div class="cd-item" data-val="드레스룸" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">드레스룸</span></div>
           <div class="cd-item" data-val="다용도실" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">다용도실</span></div>
+          <div class="cd-item" data-val="실외기실" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">실외기실</span></div>
           <div class="cd-item" data-val="기타" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">기타</span></div>
         </div>
       </div>
@@ -1795,6 +1807,7 @@ input[type="file"]{
       <div style="display:flex;align-items:center;gap:4px">
         <span class="ai-b"><i class="fa-solid fa-robot"></i> AI 분석</span>
         <span style="font-size:.62rem;color:var(--th)">국토부 기준 참조</span>
+        <button class="btn-reanalyze" id="btnReanalyze" onclick="A.reanalyze()" style="display:none"><i class="fa-solid fa-rotate-right"></i> 재분석</button>
       </div>
       <label for="fAgree" style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:.6rem;font-weight:700;color:var(--ts)">
         <input type="checkbox" id="fAgree" onchange="A.togSave()" style="width:14px;height:14px;accent-color:var(--p);cursor:pointer">
@@ -1850,7 +1863,7 @@ input[type="file"]{
     통신판매:제2011-경기군포-00342호<br>
     군포시 용호1로21번길15, 102동1501호<br>
     ✉toi9113@naver.com | 환불:코드 미사용시 전액/사용후 불가<br>
-    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v22.4</span>
+    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v22.6</span>
   </div>
 </div>
 </div><!-- /app -->
@@ -2002,7 +2015,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v22.4';
+const APP_VER = 'v22.6';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2440,6 +2453,7 @@ async function runAI(){
     }
 
     useQuota();updateQuotaUI();saveDraft();
+    $('btnReanalyze').style.display='none';
     const remaining=getRemaining();
     if(hasUserInput){stat(`📝 입력 기반 정밀 분석 완료 (잔여 ${remaining}건)`);}
     else{stat(`✅ 사진 분석 완료 (잔여 ${remaining}건)`);}
@@ -2463,8 +2477,18 @@ async function runAI(){
       stat('분석 실패 — 횟수는 차감되지 않았습니다',true);
       det.value='일시적 오류가 발생했습니다.\n횟수는 차감되지 않았으니 다시 시도해주세요.';
     }
+    /* 재분석 버튼 표시 (사진이 있을 때만) */
+    if(wF||cF)$('btnReanalyze').style.display='inline-flex';
   }
 }
+
+/* ── 재분석 ── */
+A.reanalyze=()=>{
+  if(!wF&&!cF){stat('⚠️ 촬영된 사진이 없습니다',true);return;}
+  $('btnReanalyze').style.display='none';
+  $('fDetail').value='';
+  runAI();
+};
 
 /* ── ★ v22.1: AI 결과를 태그 UI + 셀렉터에 적용 ── */
 function _applyAIResult(aiWork,aiSub,aiType){
