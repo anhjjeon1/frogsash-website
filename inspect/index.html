@@ -533,8 +533,10 @@ select.if option{color:var(--tx);
 }
 textarea.if{
   resize:none;
-  height:85px;
+  min-height:85px;
+  height:auto;
   line-height:1.6;
+  overflow-y:hidden;
 }
 .row{display:flex;gap:9px}
 .row>*{flex:1}
@@ -2036,7 +2038,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v25.8';
+const APP_VER = 'v25.9';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2607,8 +2609,10 @@ async function runAI(){
     const badge=`\n${severityBadge}\n${modeBadge} 분석 완료 (참고용)`;
 
     _applyAIResult(d.work||'',d.sub||'',d.type||'');
-    const workInfo=`[공종] ${d.work||''} > ${d.sub||''}\n[유형] ${d.type||''}\n\n`;
+    const workInfo=`[공종] ${d.work||''} [세부] ${d.sub||''} [유형] ${d.type||''}\n\n`;
     det.value=workInfo+(d.detail||'')+badge;
+    /* textarea 높이 자동 조절 */
+    det.style.height='auto';det.style.height=det.scrollHeight+'px';
 
     _aiDone=true;clearTimeout(_aiTimer);
     useQuota();updateQuotaUI();saveDraft();
