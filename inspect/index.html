@@ -1808,32 +1808,14 @@ input[type="file"]{
         oninput="A.onUserInput(this)">
     </div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:9px" id="afSelects">
-    <div class="cd-wrap">
-      <input type="hidden" id="fWork" value="">
-      <button type="button" class="cd-btn cd-btn-sm" id="wkBtn" onclick="A.toggleWork()">
-        <span class="cd-placeholder" id="wkLabel">공종</span>
-        <i class="fa-solid fa-chevron-down cd-arrow"></i>
-      </button>
-      <div class="cd-grid" id="wkGrid"></div>
-    </div>
-    <div class="cd-wrap">
-      <input type="hidden" id="fSub" value="">
-      <button type="button" class="cd-btn cd-btn-sm" id="subBtn" onclick="A.toggleSub()">
-        <span class="cd-placeholder" id="subLabel">세부</span>
-        <i class="fa-solid fa-chevron-down cd-arrow"></i>
-      </button>
-      <div class="cd-grid" id="subGrid"></div>
-    </div>
-    <div class="cd-wrap">
-      <input type="hidden" id="fType" value="">
-      <button type="button" class="cd-btn cd-btn-sm" id="typeBtn" onclick="A.toggleType()">
-        <span class="cd-placeholder" id="typeLabel">유형</span>
-        <i class="fa-solid fa-chevron-down cd-arrow"></i>
-      </button>
-      <div class="cd-grid" id="typeGrid"></div>
-    </div>
-  </div>
+  <!-- 공종/세부/유형 hidden inputs (AI 자동 입력) -->
+  <input type="hidden" id="fWork" value="">
+  <input type="hidden" id="fSub" value="">
+  <input type="hidden" id="fType" value="">
+  <div style="display:none" id="afSelects"></div>
+  <div style="display:none" id="wkBtn"></div><div style="display:none" id="subBtn"></div><div style="display:none" id="typeBtn"></div>
+  <div style="display:none" id="wkGrid"></div><div style="display:none" id="subGrid"></div><div style="display:none" id="typeGrid"></div>
+  <div style="display:none" id="wkLabel"></div><div style="display:none" id="subLabel"></div><div style="display:none" id="typeLabel"></div>
   <div class="ai-tags" id="aiTags" style="display:none">
     <span class="ai-tag work" id="tagWork"></span>
     <span class="ai-tag sub" id="tagSub"></span>
@@ -2054,7 +2036,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v25.6';
+const APP_VER = 'v25.7';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
