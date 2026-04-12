@@ -2054,7 +2054,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v25.4';
+const APP_VER = 'v25.5';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2586,9 +2586,9 @@ async function runAI(){
 [JSON만]
 {"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"현상: (50자이내)\\n기준: (허용수치)\\n조치: (시정방법)"}`;
 
-    /* ── Gemini 2.0 Flash 직접 호출 ── */
+    /* ── Gemini 2.5 Flash Lite 직접 호출 ── */
     const GEMINI_KEY=atob('QUl6YVN5Q2lTQjY5ZktZd21sVG8wajRXdElOd3NSNE9rU05jcWFZ');
-    const GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+GEMINI_KEY;
+    const GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key='+GEMINI_KEY;
     const parts=[{text:prompt}];
     images.forEach(img=>parts.push({inline_data:{mime_type:img.mimeType,data:img.data}}));
     const gemRes=await fetch(GEMINI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0.2,maxOutputTokens:512,responseMimeType:'application/json'}}),signal:_ac.signal});
