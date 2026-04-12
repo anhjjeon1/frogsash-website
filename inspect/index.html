@@ -2054,7 +2054,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v25.3';
+const APP_VER = 'v25.4';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2591,7 +2591,7 @@ async function runAI(){
     const GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+GEMINI_KEY;
     const parts=[{text:prompt}];
     images.forEach(img=>parts.push({inline_data:{mime_type:img.mimeType,data:img.data}}));
-    const gemRes=await fetch(GEMINI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0.2,maxOutputTokens:512}}),signal:_ac.signal});
+    const gemRes=await fetch(GEMINI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0.2,maxOutputTokens:512,responseMimeType:'application/json'}}),signal:_ac.signal});
     if(_aiDone)return;
     if(!gemRes.ok){const errBody=await gemRes.text().catch(()=>'');if(errBody.includes('RESOURCE_EXHAUSTED'))throw new Error('429');throw new Error('Gemini 응답 오류: '+gemRes.status);}
     const gemData=await gemRes.json();
@@ -2599,8 +2599,8 @@ async function runAI(){
 
     const txt=gemData?.candidates?.[0]?.content?.parts?.[0]?.text||'';
     let d={};
-    try{const c=txt.replace(/```json/g,'').replace(/```/g,'').trim();const mt=c.match(/\{[\s\S]*\}/);d=mt?JSON.parse(mt[0]):{};}
-    catch{d={detail:'파싱 실패. 하자 내용을 직접 입력하면 정확도가 높아집니다.',work:$('fWork').value||'기타',sub:$('fSub').value||'',type:$('fType').value||''};}
+    try{const c=txt.replace(/```json/g,'').replace(/```/g,'').trim();let parsed=JSON.parse(c);if(Array.isArray(parsed))parsed=parsed[0]||{};d=parsed;}
+    catch{try{const mt=txt.match(/\{[\s\S]*\}/);d=mt?JSON.parse(mt[0]):{};}catch{d={detail:`현상: ${$('fUser').value||'사진 참조'}\n기준: 시공기준 확인 필요\n조치: 현장 확인 후 시정`,work:$('fWork').value||'기타',sub:$('fSub').value||'',type:$('fType').value||'',severity:'보통'};}}
 
     const severity=d.severity||'';
     const severityBadge=
