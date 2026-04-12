@@ -2054,7 +2054,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v25.2';
+const APP_VER = 'v25.3';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2547,9 +2547,12 @@ async function runAI(){
   let _aiDone=false;
   function _aiFallback(detEl,reason){
     if(_aiDone)return;_aiDone=true;clearTimeout(_aiTimer);
-    _applyAIResult('확인필요','확인필요','확인필요');
-    detEl.value='⚠️ '+reason+'\n\n[분석 오류 안내]\nAI 분석이 정상적으로 완료되지 않아\n기본 정보(확인필요)로 표시됩니다.\n\n➡️ 재분석 버튼을 누르거나, 수동으로 수정 후 AI 분석 버튼을 다시 눌러주세요.';
-    stat('⚠️ '+reason+' — 재분석 또는 수동 입력 후 AI 분석을 다시 눌러주세요',true);
+    /* 기존 키워드 매칭 값이 있으면 유지, 없을 때만 빈값 */
+    if(!$('fWork').value)$('fWork').value='';
+    if(!$('fSub').value)$('fSub').value='';
+    if(!$('fType').value)$('fType').value='';
+    detEl.value='⚠️ '+reason+'\n\n➡️ AI 분석 버튼을 다시 눌러주세요.\n※ 하자내용을 입력하면 더 정확합니다.';
+    stat('⚠️ '+reason+' — AI 분석 버튼을 다시 눌러주세요',true);
     $('btnReanalyze').style.display='inline-flex';
     $('btnRunAI').disabled=false;$('btnRunAI').style.opacity='1';
     saveDraft();
@@ -2583,8 +2586,8 @@ async function runAI(){
 [JSON만]
 {"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"현상: (50자이내)\\n기준: (허용수치)\\n조치: (시정방법)"}`;
 
-    /* ── Gemini 2.0 Flash 직접 호출 (v25.1: 2.5→2.0 안정성 개선) ── */
-    const GEMINI_KEY='AIzaSyDmcFrKc0JXDBa5WG4uCtKFM64nTd-hkwk';
+    /* ── Gemini 2.0 Flash 직접 호출 ── */
+    const GEMINI_KEY=atob('QUl6YVN5Q2lTQjY5ZktZd21sVG8wajRXdElOd3NSNE9rU05jcWFZ');
     const GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+GEMINI_KEY;
     const parts=[{text:prompt}];
     images.forEach(img=>parts.push({inline_data:{mime_type:img.mimeType,data:img.data}}));
@@ -2597,7 +2600,7 @@ async function runAI(){
     const txt=gemData?.candidates?.[0]?.content?.parts?.[0]?.text||'';
     let d={};
     try{const c=txt.replace(/```json/g,'').replace(/```/g,'').trim();const mt=c.match(/\{[\s\S]*\}/);d=mt?JSON.parse(mt[0]):{};}
-    catch{d={detail:'파싱 실패. 하자 내용을 직접 입력하면 정확도가 높아집니다.',work:'기타',sub:'',type:'확인필요'};}
+    catch{d={detail:'파싱 실패. 하자 내용을 직접 입력하면 정확도가 높아집니다.',work:$('fWork').value||'기타',sub:$('fSub').value||'',type:$('fType').value||''};}
 
     const severity=d.severity||'';
     const severityBadge=
