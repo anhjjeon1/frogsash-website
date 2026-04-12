@@ -2054,7 +2054,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v25.5';
+const APP_VER = 'v25.6';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2579,19 +2579,30 @@ async function runAI(){
     const userBlock=hasUserInput?`\n[사용자 입력 — 최우선 분석 근거] "${ui}"`:'';
     const modeBlock=hasManual?'수동 선택 정보 우선, 사진으로 검증.':hasUserInput?'사용자 입력 우선, 사진은 보조 증거.':'사진1(Wide):공종파악, 사진2(Close):하자분석.';
 
-    const prompt=`아파트 사전점검 하자진단 AI. ${modeBlock}${proExtra}${manualBlock}${userBlock}
-[분류] ${workList}
-[유형] 들뜸,마감불량,흠집/찍힘,면불량,오염,미시공,파손,틈새,코킹불량,수직수평불량,개폐불량,고정불량,작동불량,줄눈불량,단차,구배불량,이색/변색,누수,균열,도장불량,이음불량,배수불량,점등불량,악취,허용범위
-[규칙] ①정확 분류 ②허용범위 이내→type:"허용범위" ③심각도(경미/보통/중대) ④각 항목 50자 이내 핵심만
-[JSON만]
-{"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"현상: (50자이내)\\n기준: (허용수치)\\n조치: (시정방법)"}`;
+    const prompt=`당신은 아파트 사전점검 전문 하자진단 AI입니다. ${modeBlock}${proExtra}${manualBlock}${userBlock}
+[공종분류] ${workList}
+[하자유형] 들뜸,마감불량,흠집/찍힘,면불량,오염,미시공,파손,틈새,코킹불량,수직수평불량,개폐불량,고정불량,작동불량,줄눈불량,단차,구배불량,이색/변색,누수,균열,도장불량,이음불량,배수불량,점등불량,악취,허용범위
+[판정기준]
+- 국토부 「공동주택 하자의 조사, 보수비용 산정 및 하자판정기준」적용
+- KS표준(KS F 2292 바닥충격음, KS F 4530 창세트, KS L 1001 타일 등) 인용
+- 허용범위: 수직수평 3mm이내, 틈새 2mm이내, 단차 1.5mm이내 → type:"허용범위"
+- 심각도: 경미(미관/사용무관), 보통(기능저하/시정권고), 중대(안전/구조/누수→즉시시정)
+[출력규칙]
+- detail 항목은 반드시 아래 5줄 형식으로 상세 작성:
+  ■ 하자현상: 구체적 현상 서술 (위치, 범위, 크기 포함)
+  ■ 판정근거: 국토부 기준 또는 KS표준 조항명과 허용수치 명시
+  ■ 심각도: 경미/보통/중대 + 판정 사유
+  ■ 시정방법: 구체적 보수/교체 방법
+  ■ 비고: 추가 확인사항이나 관련 하자 주의점
+[JSON]
+{"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"■ 하자현상: ...\\n■ 판정근거: ...\\n■ 심각도: ...\\n■ 시정방법: ...\\n■ 비고: ..."}`;
 
     /* ── Gemini 2.5 Flash Lite 직접 호출 ── */
     const GEMINI_KEY=atob('QUl6YVN5Q2lTQjY5ZktZd21sVG8wajRXdElOd3NSNE9rU05jcWFZ');
     const GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key='+GEMINI_KEY;
     const parts=[{text:prompt}];
     images.forEach(img=>parts.push({inline_data:{mime_type:img.mimeType,data:img.data}}));
-    const gemRes=await fetch(GEMINI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0.2,maxOutputTokens:512,responseMimeType:'application/json'}}),signal:_ac.signal});
+    const gemRes=await fetch(GEMINI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0.2,maxOutputTokens:1024,responseMimeType:'application/json'}}),signal:_ac.signal});
     if(_aiDone)return;
     if(!gemRes.ok){const errBody=await gemRes.text().catch(()=>'');if(errBody.includes('RESOURCE_EXHAUSTED'))throw new Error('429');throw new Error('Gemini 응답 오류: '+gemRes.status);}
     const gemData=await gemRes.json();
@@ -2611,7 +2622,8 @@ async function runAI(){
     const badge=`\n${severityBadge}\n${modeBadge} 분석 완료 (참고용)`;
 
     _applyAIResult(d.work||'',d.sub||'',d.type||'');
-    det.value=(d.detail||'')+badge;
+    const workInfo=`[공종] ${d.work||''} > ${d.sub||''}\n[유형] ${d.type||''}\n\n`;
+    det.value=workInfo+(d.detail||'')+badge;
 
     _aiDone=true;clearTimeout(_aiTimer);
     useQuota();updateQuotaUI();saveDraft();
