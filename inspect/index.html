@@ -1875,14 +1875,16 @@ input[type="file"]{
 </div>
 
 <div style="background:#F1F4F8;border-radius:10px;padding:8px 12px;margin:8px 0 4px;text-align:center">
-  <div style="font-size:.68rem;color:#6B7B8F;font-weight:700;line-height:1.5">💚 수익 50% <img src="stc-logo.png" alt="Save the Children" style="height:14px;vertical-align:middle;border-radius:2px"> 에 기부됩니다 | 📞 010-2322-0949</div>
-  <div style="margin-top:4px;font-size:.55rem;color:var(--th);line-height:1.5">
+  <div style="font-size:.68rem;color:#6B7B8F;font-weight:700;line-height:1.5">💚 <img src="stc-logo.png" alt="Save the Children" style="height:14px;vertical-align:middle;border-radius:2px"> 에 구매액의 50%가 기부됩니다 | 📞 010-2322-0949</div>
+  <div style="margin-top:4px;display:flex;justify-content:center;align-items:center;gap:6px">
+    <button onclick="const d=$('ftDetail');d.style.display=d.style.display==='none'?'block':'none'" style="background:none;border:none;font-size:.55rem;color:var(--th);cursor:pointer;font-family:inherit;text-decoration:underline">사업자 정보 보기</button>
+    <span style="color:var(--bd)">|</span>
+    <a href="#" onclick="A.modal('moPrivacy',1);return false;" style="font-size:.55rem;color:var(--ac);text-decoration:underline;font-weight:600">개인정보처리방침</a>
+  </div>
+  <div id="ftDetail" style="display:none;font-size:.5rem;margin-top:4px;color:var(--th);line-height:1.5">
     청개구리샤시 | 대표:전영웅 | 사업자:123-36-31426 | 통신판매:제2011-경기군포-00342호<br>
     군포시 용호1로21번길15, 102동1501호 | ✉toi9113@naver.com<br>
-    환불:코드 미사용시 전액/사용후 불가 | 보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v26.2</span>
-  </div>
-  <div style="margin-top:3px">
-    <a href="#" onclick="A.modal('moPrivacy',1);return false;" style="font-size:.55rem;color:var(--ac);text-decoration:underline;font-weight:600">개인정보처리방침</a>
+    환불:코드 미사용시 전액/사용후 불가 | 보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v26.3</span>
   </div>
 </div>
 </div><!-- /app -->
@@ -2034,7 +2036,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v26.2';
+const APP_VER = 'v26.3';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
