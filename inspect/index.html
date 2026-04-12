@@ -2036,7 +2036,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v25.7';
+const APP_VER = 'v25.8';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2444,12 +2444,15 @@ function stat(m,e){$('sMsg').textContent=m;$('sDot').classList.toggle('err',!!e)
 function toast(msg,warn=false,dur=2800){const el=$('toastMsg');el.innerHTML=msg;el.className='toast'+(warn?' warn':'');clearTimeout(el._t);requestAnimationFrame(()=>{el.classList.add('show');});el._t=setTimeout(()=>{el.classList.remove('show');},dur);}
 
 /* ── 자동 저장 ── */
-function autoSave(savedW,savedC){
+function autoSave(savedW,savedC,savedDetail){
   const cs=savedC||$('pvC').src;
   const ws=savedW||$('pvW').src;
   const hasClose=cs&&cs.startsWith('data:');
   const hasWide=ws&&ws.startsWith('data:');
   if(!hasClose&&!hasWide){console.warn('[autoSave] 이미지 없음 - 저장 건너뜀');return;}
+  /* AI 분석 중이면 저장 건너뜀 */
+  const detVal=savedDetail||$('fDetail').value;
+  if(detVal.includes('AI 분석 중')){console.warn('[autoSave] AI 분석 미완료 - 저장 건너뜀');return;}
   if(!$('fAgree').checked){
     if(ls('frog_agreed')==='true'){$('fAgree').checked=true;$('agreeNote').style.display='block';}
     else{$('fAgree').checked=true;ls('frog_agreed','true');$('agreeNote').style.display='block';A.togSave();toast('<i class="fa-solid fa-circle-check"></i> AI 참고용 동의가 자동 적용되었습니다',false,2500);}
@@ -2458,7 +2461,7 @@ function autoSave(savedW,savedC){
   const room=$('fRoom').value||'위치미지정';
   const info=addr;
   if($('lInfo'))$('lInfo').textContent=info;$('ptitle').textContent=info+' 사전점검 리포트';
-  const item={id:Date.now(),room,work:$('fWork').value,sub:$('fSub').value,type:$('fType').value,detail:$('fDetail').value,mode:getActiveMode(),wImg:hasWide?ws:null,cImg:hasClose?cs:(hasWide?ws:null)};
+  const item={id:Date.now(),room,work:$('fWork').value,sub:$('fSub').value,type:$('fType').value,detail:detVal,mode:getActiveMode(),wImg:hasWide?ws:null,cImg:hasClose?cs:(hasWide?ws:null)};
   list.push(item);renderItem(item);updateModeLabel();saveList();
   const roomMissing=!$('fRoom').value;
   reset();
@@ -2615,9 +2618,9 @@ async function runAI(){
     const remaining=getRemaining();
     if(hasUserInput){stat(`📝 입력 기반 정밀 분석 완료 (잔여 ${remaining}건)`);}
     else{stat(`✅ 사진 분석 완료 — 자동 저장 중... (잔여 ${remaining}건)`);}
-    /* AI 분석 완료 후 자동 저장 */
-    const _wSrc=$('pvW').src, _cSrc=$('pvC').src;
-    setTimeout(()=>autoSave(_wSrc,_cSrc),800);
+    /* AI 분석 완료 후 자동 저장 — detail을 즉시 캡처 */
+    const _wSrc=$('pvW').src, _cSrc=$('pvC').src, _detail=det.value;
+    setTimeout(()=>autoSave(_wSrc,_cSrc,_detail),800);
 
   }catch(err){
     console.error(err);
