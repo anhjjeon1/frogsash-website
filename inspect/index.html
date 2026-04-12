@@ -1805,11 +1805,12 @@ input[type="file"]{
         </div>
       </div>
     </div>
-    <div style="position:relative">
+    <div style="position:relative;display:flex;gap:4px;align-items:center">
       <input type="text" class="if" id="fUser"
         placeholder="✏️ 하자내용 (예: 창호 수직수평불량)"
-        style=""
+        style="flex:1"
         oninput="A.onUserInput(this)">
+      <button class="ai-b" id="btnRunAI" onclick="A.startAI()" style="border:none;cursor:pointer;padding:8px 12px;font-size:.72rem;white-space:nowrap;flex-shrink:0"><i class="fa-solid fa-robot"></i> AI분석</button>
     </div>
   </div>
   <!-- 공종/세부/유형 hidden inputs (AI 자동 입력) -->
@@ -1828,7 +1829,6 @@ input[type="file"]{
   <div class="ig">
     <div class="il" style="justify-content:space-between">
       <div style="display:flex;align-items:center;gap:4px">
-        <button class="ai-b" id="btnRunAI" onclick="A.startAI()" style="border:none;cursor:pointer;padding:6px 14px;font-size:.75rem"><i class="fa-solid fa-robot"></i> AI 분석</button>
         <span style="font-size:.62rem;color:var(--th)">국토부 기준 참조</span>
         <button class="btn-reanalyze" id="btnReanalyze" onclick="A.reanalyze()" style="display:none"><i class="fa-solid fa-rotate-right"></i> 수정 후 재분석</button>
       </div>
@@ -2036,7 +2036,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v27.2';
+const APP_VER = 'v27.3';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2232,8 +2232,6 @@ A.pickType=(el)=>{
   _selectItem($('typeGrid'),v);
   setTimeout(()=>_closeGrid($('typeGrid'),$('typeBtn')),150);
   saveDraft();
-  /* 유형 선택 완료 → 사진 있으면 AI 분석 자동 실행 */
-  if(cF){setTimeout(()=>{$('btnRunAI').disabled=true;$('btnRunAI').style.opacity='0.5';runAI();},300);}
 };
 $('fType')&&$('fType').addEventListener('change',()=>{$('fType').classList.toggle('has-val',!!$('fType').value);});
 
@@ -2360,9 +2358,7 @@ function _autoMatch(text){
   /* 공종/세부/유형 자동 적용 */
   _applyAIResult(m.work,m.sub,m.type);
   saveDraft();
-  stat(`🔍 "${text}" → ${m.work} > ${m.sub} > ${m.type} 자동 매칭`);
-  /* 사진이 있으면 AI 분석 자동 실행 */
-  if(cF){setTimeout(()=>{$('btnRunAI').disabled=true;$('btnRunAI').style.opacity='0.5';runAI();},500);}
+  stat(`🔍 "${text}" → ${m.work} > ${m.sub} > ${m.type} 자동 매칭 — AI분석 버튼을 눌러주세요`);
 }
 
 /* ============================================================
