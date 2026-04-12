@@ -2038,7 +2038,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v25.9';
+const APP_VER = 'v26.0';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2724,7 +2724,7 @@ function renderItem(it){
     <div class="dc-hd"><div class="dc-tag"><span class="dc-rm">${safeRoom}</span><span class="dc-tp${isSafe?' safe':''}">${safeType}</span>${mTag}</div>
     <div class="dc-act"><button class="bi ed" onclick="A.edit(${it.id})"><i class="fa-solid fa-pen"></i></button><button class="bi dl" onclick="A.del(${it.id})"><i class="fa-solid fa-trash-can"></i></button></div></div>
     <div class="dc-ph${!it.wImg?' single':''}">${it.wImg?`<img src="${it.wImg}" title="멀리서">`:''}<img src="${it.cImg}" title="가까이"></div>
-    <div class="dc-bd"><div class="dc-wk">${safeWork} → ${safeSub}</div><div class="dc-dt">${safeDetail}</div></div></div>`;
+    <div class="dc-bd"><div class="dc-wk">[공종] ${safeWork} [세부] ${safeSub} [유형] ${safeType}</div><div class="dc-dt">${safeDetail}</div></div></div>`;
   $('lBox').insertAdjacentHTML('beforeend',h);
   $('lCnt').textContent=list.length;
 }
