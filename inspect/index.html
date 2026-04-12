@@ -6,13 +6,18 @@
 <meta name="theme-color" content="#0A6B5C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>청개구리 입주자 사전점검 AI앱 v24.3</title>
+<title>청개구리 입주자 사전점검 AI앱 v25.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 /* ============================================================
-   청개구리 입주자 사전점검 AI v24.3
-   v24.3 변경사항:
+   청개구리 입주자 사전점검 AI v25.0
+   v25.0 변경사항:
+   - [흐름] 사진→위치→하자내용→AI분석→자동저장 순서로 변경
+   - [UI] AI 분석 라벨을 클릭 가능한 버튼으로 변경
+   - [기능] AI 오류/타임아웃 시 자동저장 제거 (재분석만 가능)
+   - [기능] 가까이 찍기 후 AI 자동실행 제거 (사용자가 AI 분석 버튼 클릭)
+   v25.0 변경사항:
    - [성능] 1차+2차 분석을 1회 통합 호출로 변경 (속도 2배 향상)
    - [성능] AbortController로 타임아웃 시 fetch 즉시 중단
    - [성능] 프롬프트 압축 (품질 유지, 토큰 절감)
@@ -1690,7 +1695,7 @@ input[type="file"]{
 <header class="hd">
   <div class="hd-top" style="justify-content:center;align-items:center;padding:12px 14px 10px">
     <div class="hd-title" style="font-size:1.26rem">청개구리 입주점검 AI앱</div>
-    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v24.3</span>
+    <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v25.0</span>
     <span id="passTag" style="display:none">기부형 앱</span>
   </div>
   <div id="logoImg" style="display:none"></div>
@@ -1837,7 +1842,7 @@ input[type="file"]{
   <div class="ig">
     <div class="il" style="justify-content:space-between">
       <div style="display:flex;align-items:center;gap:4px">
-        <span class="ai-b"><i class="fa-solid fa-robot"></i> AI 분석</span>
+        <button class="ai-b" id="btnRunAI" onclick="A.startAI()" style="border:none;cursor:pointer;padding:6px 14px;font-size:.75rem"><i class="fa-solid fa-robot"></i> AI 분석</button>
         <span style="font-size:.62rem;color:var(--th)">국토부 기준 참조</span>
         <button class="btn-reanalyze" id="btnReanalyze" onclick="A.reanalyze()" style="display:none"><i class="fa-solid fa-rotate-right"></i> 수정 후 재분석</button>
       </div>
@@ -1897,7 +1902,7 @@ input[type="file"]{
     통신판매:제2011-경기군포-00342호<br>
     군포시 용호1로21번길15, 102동1501호<br>
     ✉toi9113@naver.com | 환불:코드 미사용시 전액/사용후 불가<br>
-    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v24.3</span>
+    보조도구이며 법적책임없음 | ⓒ2026 Cheong-gaeguri | <span data-ver>v25.0</span>
   </div>
 </div>
 </div><!-- /app -->
@@ -2049,7 +2054,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v24.3';
+const APP_VER = 'v25.0';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2245,6 +2250,8 @@ A.pickType=(el)=>{
   _selectItem($('typeGrid'),v);
   setTimeout(()=>_closeGrid($('typeGrid'),$('typeBtn')),150);
   saveDraft();
+  /* 유형 선택 완료 → 사진 있으면 AI 분석 자동 실행 */
+  if(cF){setTimeout(()=>{$('btnRunAI').disabled=true;$('btnRunAI').style.opacity='0.5';runAI();},300);}
 };
 $('fType')&&$('fType').addEventListener('change',()=>{$('fType').classList.toggle('has-val',!!$('fType').value);});
 
@@ -2308,7 +2315,7 @@ function processPhoto(f,t){
   if(f.size>20*1024*1024){if(!confirm(`파일 크기가 큽니다(${(f.size/1024/1024).toFixed(1)}MB). 계속하시겠습니까?`))return;}
   resizeForPreview(f).then(dataUrl=>{
     if(t==='w'){wF=f;showPreview('pvW',dataUrl);$('rtW').style.display='block';stat('가까이 찍기를 촬영하세요');step(2);saveDraft();}
-    else{cF=f;showPreview('pvC',dataUrl);$('rtC').style.display='block';step(3);saveDraft();runAI();}
+    else{cF=f;showPreview('pvC',dataUrl);$('rtC').style.display='block';step(3);saveDraft();stat('📍 위치 선택 → 하자내용 입력 → AI 분석 버튼을 누르세요');}
   }).catch(()=>{stat('사진 읽기 실패. 다시 시도해주세요.',true);alert('사진을 불러오지 못했습니다.\n다른 사진을 선택해주세요.');});
 }
 
@@ -2434,12 +2441,11 @@ async function runAI(){
   function _aiFallback(detEl,reason){
     if(_aiDone)return;_aiDone=true;clearTimeout(_aiTimer);
     _applyAIResult('확인필요','확인필요','확인필요');
-    detEl.value='⚠️ '+reason+'\n\n[분석 오류 안내]\nAI 분석이 정상적으로 완료되지 않아\n기본 정보(확인필요)만 저장됩니다.\n\n➡️ 자동 저장 후 다음 하자를 입력해주세요.\n※ 리스트에서 수정 가능합니다.';
-    stat('⚠️ '+reason+' — 기본값 저장 후 다음입력 이동');
-    $('btnReanalyze').style.display='none';
-    useQuota();updateQuotaUI();saveDraft();
-    const _wSrc=$('pvW').src,_cSrc=$('pvC').src;
-    setTimeout(()=>{autoSave(_wSrc,_cSrc);setTimeout(()=>A.nextInput(),1200);},500);
+    detEl.value='⚠️ '+reason+'\n\n[분석 오류 안내]\nAI 분석이 정상적으로 완료되지 않아\n기본 정보(확인필요)로 표시됩니다.\n\n➡️ 재분석 버튼을 누르거나, 수동으로 수정 후 AI 분석 버튼을 다시 눌러주세요.';
+    stat('⚠️ '+reason+' — 재분석 또는 수동 입력 후 AI 분석을 다시 눌러주세요',true);
+    $('btnReanalyze').style.display='inline-flex';
+    $('btnRunAI').disabled=false;$('btnRunAI').style.opacity='1';
+    saveDraft();
   }
   /* ── 이미지 리사이즈 후 base64 준비 ── */
   const images=[];
@@ -2501,10 +2507,11 @@ async function runAI(){
     useQuota();updateQuotaUI();saveDraft();
     /* 재분석 버튼 항상 표시 (사진 있을 때) */
     if(wF||cF)$('btnReanalyze').style.display='inline-flex';
+    $('btnRunAI').disabled=false;$('btnRunAI').style.opacity='1';
     const remaining=getRemaining();
     if(hasUserInput){stat(`📝 입력 기반 정밀 분석 완료 (잔여 ${remaining}건)`);}
-    else{stat(`✅ 사진 분석 완료 (잔여 ${remaining}건)`);}
-    /* 현재 이미지 src를 캡처해두고 autoSave에 전달 */
+    else{stat(`✅ 사진 분석 완료 — 자동 저장 중... (잔여 ${remaining}건)`);}
+    /* AI 분석 완료 후 자동 저장 */
     const _wSrc=$('pvW').src, _cSrc=$('pvC').src;
     setTimeout(()=>autoSave(_wSrc,_cSrc),800);
 
@@ -2525,10 +2532,18 @@ async function runAI(){
   }
 }
 
+/* ── AI 분석 시작 (버튼 클릭) ── */
+A.startAI=()=>{
+  if(!wF&&!cF){stat('⚠️ 사진을 먼저 촬영해주세요',true);toast('📷 멀리서 찍기 → 가까이 찍기를 먼저 촬영하세요',true);return;}
+  if(!cF){stat('⚠️ 가까이 찍기를 촬영해주세요',true);return;}
+  $('btnRunAI').disabled=true;$('btnRunAI').style.opacity='0.5';
+  runAI();
+};
 /* ── 재분석 ── */
 A.reanalyze=()=>{
   if(!wF&&!cF){stat('⚠️ 촬영된 사진이 없습니다',true);return;}
   $('fDetail').value='';
+  $('btnRunAI').disabled=true;$('btnRunAI').style.opacity='0.5';
   runAI();
 };
 
@@ -2583,7 +2598,7 @@ A.toggleSelects=()=>{
 };
 
 /* ── 저장(수동 폴백) ── */
-A.togSave=()=>{const ok=$('fAgree').checked;if(ok){ls('frog_agreed','true');$('agreeNote').style.display='block';}const banner=$('autoSaveBanner');if(banner){if(ok){banner.style.borderColor='var(--nv)';banner.style.color='#059669';banner.innerHTML='<i class="fa-solid fa-bolt" style="color:var(--pl)"></i><span>가까이 찍기 후 <b>AI 분석 완료 시 자동 저장</b>됩니다</span>';}else{banner.style.borderColor='var(--wr)';banner.style.color='#C05621';banner.innerHTML='<i class="fa-solid fa-triangle-exclamation" style="color:var(--wr)"></i><span>필수 확인에 동의하면 <b>자동 저장</b>이 활성화됩니다</span>';}}};
+A.togSave=()=>{const ok=$('fAgree').checked;if(ok){ls('frog_agreed','true');$('agreeNote').style.display='block';}const banner=$('autoSaveBanner');if(banner){if(ok){banner.style.borderColor='var(--nv)';banner.style.color='#059669';banner.innerHTML='<i class="fa-solid fa-bolt" style="color:var(--pl)"></i><span><b>AI 분석 버튼</b> 클릭 → 분석 완료 시 <b>자동 저장</b>됩니다</span>';}else{banner.style.borderColor='var(--wr)';banner.style.color='#C05621';banner.innerHTML='<i class="fa-solid fa-triangle-exclamation" style="color:var(--wr)"></i><span>필수 확인에 동의하면 <b>자동 저장</b>이 활성화됩니다</span>';}}};
 A.save=()=>{if(!$('fAgree').checked)return;if(!validateRoom()){const sv=$('btnSv');sv.style.background='#E74C3C';sv.style.boxShadow='0 0 0 4px rgba(231,76,60,.25)';setTimeout(()=>{sv.style.background='';sv.style.boxShadow='';},1200);return;}const cs=$('pvC').src;if(!cF&&(!cs||!cs.startsWith('data:'))){alert('사진(가까이 찍기)이 필요합니다.');return;}const addr=$('fAddr').value||'주소미입력';const info=addr;if($('lInfo'))$('lInfo').textContent=info;$('ptitle').textContent=info+' 사전점검 리포트';const ws=$('pvW').src;const item={id:Date.now(),room:$('fRoom').value||'위치미지정',work:$('fWork').value,sub:$('fSub').value,type:$('fType').value,detail:$('fDetail').value,mode:getActiveMode(),wImg:(ws&&ws.startsWith('data:'))?ws:null,cImg:cs};list.push(item);renderItem(item);updateModeLabel();saveList();reset();stat('저장 완료! 다음 항목을 촬영하세요.');$('btnNext').style.display='inline-block';document.querySelector('.lh').scrollIntoView({behavior:'smooth'});setTimeout(()=>step(1),1500);};
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
