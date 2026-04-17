@@ -1825,7 +1825,7 @@ input[type="file"]{
 
 <!-- ── STEP 3: 하자 정보 ── -->
 <div class="sec">
-  <div class="sec-t" style="display:flex;align-items:center;gap:6px"><span class="n">3</span> 하자 정보<div style="margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button id="btnNext" onclick="A.nextInput()" style="background:var(--p);color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">➡️ 다음입력</button><button onclick="if(confirm('현재 입력을 초기화할까요?')){reset();step(1);stat('🔄 초기화 완료');}" style="background:#FEE2E2;color:#DC2626;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">🔄 초기화</button></div></div>
+  <div class="sec-t"><span class="n">3</span> 하자 정보</div>
 
   <div class="input-hint-banner" id="inputHintBanner" style="display:none">
     <span id="inputModeBadge"></span>
@@ -1897,11 +1897,17 @@ input[type="file"]{
     </div>
     <div style="background:#F3F4F6;border:1.5px solid var(--bd);border-radius:10px;overflow:hidden;position:relative">
       <textarea class="if" id="fDetail" placeholder="" style="border:none;border-radius:0;margin:0"></textarea>
-      <label for="fAgree" style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:.65rem;font-weight:700;color:var(--ts);padding:6px 10px;justify-content:flex-end;border-top:1px solid var(--bd)">
-        <input type="checkbox" id="fAgree" onchange="A.togSave()" style="width:14px;height:14px;accent-color:var(--p);cursor:pointer">
-        AI 참고용, 법적효력 없음 동의
-        <span id="agreeNote" style="font-size:.55rem;color:#059669;display:none">✓</span>
-      </label>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 10px;border-top:1px solid var(--bd);flex-wrap:wrap">
+        <label for="fAgree" style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:.65rem;font-weight:700;color:var(--ts);margin:0">
+          <input type="checkbox" id="fAgree" onchange="A.togSave()" style="width:14px;height:14px;accent-color:var(--p);cursor:pointer">
+          AI 참고용, 법적효력 없음 동의
+          <span id="agreeNote" style="font-size:.55rem;color:#059669;display:none">✓</span>
+        </label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button id="btnNext" onclick="A.nextInput()" style="background:var(--p);color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">➡️ 다음입력</button>
+          <button onclick="if(confirm('현재 입력을 초기화할까요?')){reset();step(1);stat('🔄 초기화 완료');}" style="background:#FEE2E2;color:#DC2626;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">🔄 초기화</button>
+        </div>
+      </div>
     </div>
   </div>
   <button class="btn-sv off" id="btnSv" onclick="A.save()" disabled style="display:none">
@@ -2098,7 +2104,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v28.3';
+const APP_VER = 'v28.4';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
