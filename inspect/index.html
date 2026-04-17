@@ -600,30 +600,6 @@ textarea.if{
 .mic-btn.unsupported{display:none!important}
 .if-with-mic{display:flex;gap:6px;align-items:center}
 .if-with-mic > .if{flex:1;min-width:0}
-.mic-cat-btn{
-  display:inline-flex;
-  align-items:center;
-  gap:4px;
-  padding:4px 10px;
-  border-radius:20px;
-  border:1.5px solid var(--bd);
-  background:#fff;
-  color:var(--th);
-  font-size:.6rem;
-  font-weight:700;
-  cursor:pointer;
-  font-family:inherit;
-  transition:var(--tr);
-  white-space:nowrap;
-}
-.mic-cat-btn:hover{background:#F3F4F6;border-color:var(--pl);color:var(--p)}
-.mic-cat-btn.listening{
-  background:linear-gradient(135deg,#E74C3C,#FF6B6B);
-  border-color:#E74C3C;
-  color:#fff;
-  animation:micPulse 1.2s ease-in-out infinite;
-}
-.mic-cat-btn.unsupported{display:none!important}
 .mic-in-toolbar{width:28px;height:28px;font-size:.72rem}
 
 .cd-wrap{width:100%}
@@ -1849,7 +1825,7 @@ input[type="file"]{
 
 <!-- ── STEP 3: 하자 정보 ── -->
 <div class="sec">
-  <div class="sec-t" style="display:flex;align-items:center;gap:6px"><span class="n">3</span> 하자 정보<div style="margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button type="button" class="mic-cat-btn" id="micCat" onclick="A.voiceCategory()" title="공종/세부/유형 음성선택"><i class="fa-solid fa-microphone"></i> 음성선택</button><button id="btnNext" onclick="A.nextInput()" style="background:var(--p);color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">➡️ 다음입력</button><button onclick="if(confirm('현재 입력을 초기화할까요?')){reset();step(1);stat('🔄 초기화 완료');}" style="background:#FEE2E2;color:#DC2626;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">🔄 초기화</button></div></div>
+  <div class="sec-t" style="display:flex;align-items:center;gap:6px"><span class="n">3</span> 하자 정보<div style="margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button id="btnNext" onclick="A.nextInput()" style="background:var(--p);color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">➡️ 다음입력</button><button onclick="if(confirm('현재 입력을 초기화할까요?')){reset();step(1);stat('🔄 초기화 완료');}" style="background:#FEE2E2;color:#DC2626;border:none;border-radius:20px;padding:4px 10px;font-size:.6rem;font-weight:700;cursor:pointer;font-family:inherit">🔄 초기화</button></div></div>
 
   <div class="input-hint-banner" id="inputHintBanner" style="display:none">
     <span id="inputModeBadge"></span>
@@ -1887,18 +1863,15 @@ input[type="file"]{
         </div>
       </div>
     </div>
-    <div style="position:relative;display:flex;gap:4px;align-items:center">
-      <div style="position:relative;flex:1;min-width:0">
-        <input type="text" class="if" id="fUser"
-          placeholder="하자내용 (예: 창호 수직수평불량)"
-          style="width:100%;padding-right:40px;box-sizing:border-box"
-          oninput="A.onUserInput(this)"
-          onfocus="A.voiceAutoStart('fUser')">
-        <button type="button" class="mic-btn mic-in-toolbar" id="micUser" onclick="A.voiceInput('fUser')" title="하자내용 음성입력" aria-label="하자내용 음성입력" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:#fff">
-          <i class="fa-solid fa-microphone"></i>
-        </button>
-      </div>
-      <button class="ai-b" id="btnRunAI" onclick="A.startAI()" style="border:none;cursor:pointer;padding:8px 12px;font-size:.72rem;white-space:nowrap;flex-shrink:0"><i class="fa-solid fa-robot"></i> AI분석</button>
+    <div style="position:relative;display:block">
+      <input type="text" class="if" id="fUser"
+        placeholder="하자내용 (예: 창호 수직수평불량)"
+        style="width:100%;padding-right:40px;box-sizing:border-box"
+        oninput="A.onUserInput(this)"
+        onfocus="A.voiceAutoStart('fUser')">
+      <button type="button" class="mic-btn mic-in-toolbar" id="micUser" onclick="A.voiceInput('fUser')" title="하자내용 음성입력" aria-label="하자내용 음성입력" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:#fff">
+        <i class="fa-solid fa-microphone"></i>
+      </button>
     </div>
   </div>
   <!-- 공종/세부/유형 hidden inputs (AI 자동 입력) -->
@@ -1916,7 +1889,8 @@ input[type="file"]{
   </div>
   <div class="ig">
     <div class="il" style="justify-content:space-between">
-      <div style="display:flex;align-items:center;gap:4px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="ai-b" id="btnRunAI" onclick="A.startAI()" style="border:none;cursor:pointer;padding:6px 10px;font-size:.72rem;white-space:nowrap;flex-shrink:0"><i class="fa-solid fa-robot"></i> AI분석</button>
         <span style="font-size:.62rem;color:var(--th)">국토부 기준 참조</span>
         <button class="btn-reanalyze" id="btnReanalyze" onclick="A.reanalyze()" style="display:none"><i class="fa-solid fa-rotate-right"></i> 수정 후 재분석</button>
       </div>
@@ -2124,7 +2098,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v28.0';
+const APP_VER = 'v28.2';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2272,7 +2246,7 @@ function _stopRec(){
     _currentRec = null;
   }
   _recActive = null;
-  document.querySelectorAll('.mic-btn.listening, .mic-cat-btn.listening').forEach(b=>b.classList.remove('listening'));
+  document.querySelectorAll('.mic-btn.listening').forEach(b=>b.classList.remove('listening'));
 }
 
 /* v27.9: 위치 음성입력 — 말한 텍스트 그대로 설정 (유효성 검사 없음) */
@@ -2355,48 +2329,6 @@ A.voiceInput = (targetId) => {
   }
 };
 
-/* 하자정보(공종/세부/유형) 음성 키워드 매칭 */
-A.voiceCategory = () => {
-  if(!_SR){ alert('이 브라우저는 음성입력을 지원하지 않습니다.'); return; }
-  const btn = $('micCat');
-  if(_recActive === 'cat'){ _stopRec(); if(typeof stat==='function') stat('🎤 음성입력 중단'); return; }
-  _stopRec();
-  _recActive = 'cat';
-  if(btn) btn.classList.add('listening');
-  if(typeof stat==='function') stat('🎤 공종/세부/유형을 말씀해 주세요... (예: "창호 파손", "타일 줄눈불량")');
-  const rec = _mkRec(
-    (text) => {
-      const m = _matchWM(text);
-      if(m.work || m.sub || m.type){
-        if(m.work){ $('fWork').value = m.work; A.onWork(); }
-        if(m.sub){ $('fSub').value = m.sub; A.onSub(); }
-        if(m.type){ $('fType').value = m.type; }
-        // AI 태그 UI 표시
-        const tags = $('aiTags'); if(tags) tags.style.display = 'flex';
-        if($('tagWork')) $('tagWork').textContent = m.work||'';
-        if($('tagSub')) $('tagSub').textContent = m.sub||'';
-        if($('tagType')) $('tagType').textContent = m.type||'';
-        if(typeof stat==='function') stat(`🎯 매칭: ${m.work||'-'} > ${m.sub||'-'} > ${m.type||'-'}`);
-        if(typeof saveDraft==='function') saveDraft();
-      } else {
-        // 매칭 실패 → fUser에 폴백 입력
-        const u = $('fUser');
-        if(u){
-          u.value = text;
-          u.dispatchEvent(new Event('input', {bubbles:true}));
-        }
-        if(typeof stat==='function') stat('🎤 "'+text+'" - 카테고리 매칭 실패, 하자내용에 입력했습니다', true);
-      }
-    },
-    () => { if(btn) btn.classList.remove('listening'); _recActive = null; _currentRec = null; }
-  );
-  _currentRec = rec;
-  try{ rec.start(); }catch(e){
-    if(btn) btn.classList.remove('listening');
-    _recActive = null; _currentRec = null;
-  }
-};
-
 /* 음성 텍스트 → WM 카테고리 매칭 엔진 (구어체 동의어 지원) */
 const _SYN = {
   sub: {
@@ -2470,7 +2402,7 @@ function _matchWM(text){
 /* 브라우저 미지원 시 마이크 버튼 자동 숨김 */
 function _initVoiceUI(){
   if(!_SR){
-    document.querySelectorAll('.mic-btn, .mic-cat-btn').forEach(b=>b.classList.add('unsupported'));
+    document.querySelectorAll('.mic-btn').forEach(b=>b.classList.add('unsupported'));
     return;
   }
 }
@@ -2831,7 +2763,7 @@ const GUIDE_TEXT=[
   '1단계, 주소 입력. 주소와 동호수를 입력하세요.',
   '2단계, 사진 촬영. 멀리서 찍기로 전체 위치를, 가까이 찍기로 하자 부위를 촬영하세요.',
   '3단계, 하자 정보. 위치를 선택하고, 하자 내용을 입력하세요. 예를 들어, 터닝도어 파손, 타일 들뜸 등을 입력하면, 공종, 세부, 유형이 자동으로 매칭됩니다.',
-  '하자 내용 입력이 끝나면, 입력칸 우측의 AI분석 버튼을 눌러주세요. 1차 AI 분석 후 2차 검증을 거쳐 국토부 기준에 따른 정확한 결과를 출력합니다.',
+  '하자 내용 입력이 끝나면, 국토부 기준 참조 좌측의 AI분석 버튼을 눌러주세요. 1차 AI 분석 후 2차 검증을 거쳐 국토부 기준에 따른 정확한 결과를 출력합니다.',
   'AI 2차 검증이 완료되면 자동으로 점검 리스트에 저장됩니다. 다음입력 버튼을 눌러 계속 진행하세요.',
   '4단계, 점검 리스트. 저장된 하자 목록을 확인하고, 전체 저장 PDF 버튼으로 리포트를 저장하세요.',
   '무료 3회 체험 후, 1일 이용권 만원으로 100회 AI 분석이 가능합니다. 수익의 50퍼센트가 세이브더칠드런에 기부됩니다. 감사합니다!'
