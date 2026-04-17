@@ -2110,7 +2110,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v28.9';
+const APP_VER = 'v29.0';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2468,10 +2468,10 @@ async function verifyCodeGAS(code){const url=`${GAS_URL}?action=verify&code=${en
 A.openPayModal=()=>{$('codeInput').value='';$('codeMsg').textContent='';$('codeMsg').className='code-msg';$('btnVerify').disabled=false;A.modal('payGuide',1);};
 A.showCodeInput=()=>{};
 A.verifyCode=async()=>{const code=$('codeInput').value.trim().toUpperCase();if(!code||code.length<4){$('codeInput').classList.add('error');$('codeMsg').textContent='코드를 입력해주세요 (4자 이상)';$('codeMsg').className='code-msg err';setTimeout(()=>$('codeInput').classList.remove('error'),500);return;}const p=getPassState();if(p.active&&p.code===code){$('codeMsg').textContent='이미 활성화된 코드입니다 ✓';$('codeMsg').className='code-msg ok';setTimeout(()=>A.modal('payGuide',0),1200);return;}$('btnVerify').disabled=true;$('codeMsg').textContent='확인 중...';$('codeMsg').className='code-msg loading';try{const result=await verifyCodeGAS(code);if(result.valid){$('codeInput').classList.remove('error');$('codeInput').classList.add('success');$('codeMsg').textContent='✓ 인증 성공! 오늘 하루 이용권이 활성화되었습니다';$('codeMsg').className='code-msg ok';activatePass(code,'paid');mode='paid';updatePassUI();updateQuotaUI();stat('🎟️ 1일 이용권 활성화! AI 분석 100회 사용 가능');setTimeout(()=>A.modal('payGuide',0),1800);}else{$('codeInput').classList.add('error');$('codeMsg').textContent=result.message||'유효하지 않은 코드입니다';$('codeMsg').className='code-msg err';setTimeout(()=>$('codeInput').classList.remove('error'),500);$('btnVerify').disabled=false;}}catch(e){$('codeMsg').textContent='검증 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';$('codeMsg').className='code-msg err';$('btnVerify').disabled=false;}};
-function updatePassUI(){const p=getPassState();const statusEl=$('passStatus'),labelEl=$('passLabel'),tagEl=$('passTag'),btnBuy=$('btnBuy');if(mode==='admin'&&sessionStorage.getItem('admin_token')){statusEl.className='pass-status pro';labelEl.textContent='🔐 관리자 모드';tagEl.textContent='관리자';tagEl.style.background='var(--pu)';btnBuy.style.display='none';
+function updatePassUI(){const p=getPassState();const statusEl=$('passStatus'),labelEl=$('passLabel'),tagEl=$('passTag'),btnBuy=$('btnBuy');if(mode==='admin'&&sessionStorage.getItem('admin_token')){statusEl.className='pass-status pro';statusEl.style.display='';labelEl.textContent='🔐 관리자 모드';tagEl.textContent='관리자';tagEl.style.background='var(--pu)';btnBuy.style.display='none';
 $('passCount').textContent='무제한';
 $('passCount').className='pass-count ok';
-return;}if(p.active&&p.type==='paid'){statusEl.className='pass-status paid';labelEl.textContent='1일 이용권 이용 중';tagEl.textContent='이용권';tagEl.style.background='var(--nv)';btnBuy.innerHTML='<i class="fa-solid fa-check"></i> 이용 중';btnBuy.style.background='linear-gradient(135deg,var(--p),var(--pl))';btnBuy.onclick=()=>A.openPayModal();}else{statusEl.className='pass-status free';labelEl.textContent='무료 3건 가능';tagEl.textContent='기부형 앱';tagEl.style.background='var(--ac)';btnBuy.innerHTML='<i class="fa-brands fa-naver"></i> 1일권 구매';btnBuy.style.background='';btnBuy.onclick=()=>A.openPayModal();}}
+return;}if(p.active&&p.type==='paid'){/* v29.0: 1일권 이용 중이면 잔여 칩 숨김 */statusEl.style.display='none';tagEl.textContent='이용권';tagEl.style.background='var(--nv)';btnBuy.innerHTML='<i class="fa-solid fa-check"></i> 이용 중';btnBuy.style.background='linear-gradient(135deg,var(--p),var(--pl))';btnBuy.onclick=()=>A.openPayModal();}else{statusEl.className='pass-status free';statusEl.style.display='';labelEl.textContent='무료 3건 가능';tagEl.textContent='기부형 앱';tagEl.style.background='var(--ac)';btnBuy.innerHTML='<i class="fa-brands fa-naver"></i> 1일권 구매';btnBuy.style.background='';btnBuy.onclick=()=>A.openPayModal();}}
 
 /* ============================================================
    🔒 사용량 제한
@@ -2753,7 +2753,7 @@ window.addEventListener('storage',(e)=>{
 });
 
 /* ── 단계 표시기 ── */
-function step(c){for(let i=1;i<=4;i++){const n=$(`s${i}`);n.classList.remove('on','ok');if(i<c)n.classList.add('ok');else if(i===c)n.classList.add('on');}/* v28.8: 사진 업로드 시점(step≥2)부터 하단 기부/정책 영역 숨김 */const ft=$('footerInfo');if(ft&&c>=2)ft.style.display='none';/* v28.9: step≥2에서 주소 입력칸을 요약 뱃지로 축소 */if(c>=2){const a=$('fAddr'),im=$('addrInputMode'),cm=$('addrCompactMode'),ct=$('addrCompactText');if(a&&im&&cm&&ct&&a.value.trim()){ct.textContent=a.value.trim();im.style.display='none';cm.style.display='flex';}}}
+function step(c){for(let i=1;i<=4;i++){const n=$(`s${i}`);n.classList.remove('on','ok');if(i<c)n.classList.add('ok');else if(i===c)n.classList.add('on');}/* v28.8: 사진 업로드 시점(step≥2)부터 하단 기부/정책 영역 숨김 */const ft=$('footerInfo');if(ft&&c>=2)ft.style.display='none';/* v28.9: step≥2에서 주소 입력칸을 요약 뱃지로 축소 */if(c>=2){const a=$('fAddr'),im=$('addrInputMode'),cm=$('addrCompactMode'),ct=$('addrCompactText');if(a&&im&&cm&&ct&&a.value.trim()){ct.textContent=a.value.trim();im.style.display='none';cm.style.display='flex';}}/* v29.0: step≥2에서 음성안내 + 1일권 구매 버튼 숨김 (잔여 칩은 유지) */if(c>=2){const bv=$('btnVoice'),bb=$('btnBuy');if(bv)bv.style.display='none';if(bb)bb.style.display='none';}}
 A.expandAddr=()=>{const im=$('addrInputMode'),cm=$('addrCompactMode');if(im&&cm){cm.style.display='none';im.style.display='block';setTimeout(()=>{const a=$('fAddr');if(a)a.focus();},50);}};
 function stat(m,e){$('sMsg').textContent=m;$('sDot').classList.toggle('err',!!e);}
 function toast(msg,warn=false,dur=2800){const el=$('toastMsg');el.innerHTML=msg;el.className='toast'+(warn?' warn':'');clearTimeout(el._t);requestAnimationFrame(()=>{el.classList.add('show');});el._t=setTimeout(()=>{el.classList.remove('show');},dur);}
