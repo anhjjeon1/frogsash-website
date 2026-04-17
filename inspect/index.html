@@ -2098,7 +2098,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v28.2';
+const APP_VER = 'v28.3';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2318,6 +2318,8 @@ A.voiceInput = (targetId) => {
       }
       if(typeof stat==='function') stat('🎤 입력 완료: '+text);
       if(typeof saveDraft==='function') saveDraft();
+      /* v28.3: 하자내용 음성입력 시 공종/유형 미리보기 + 5초 후 자동 AI분석 */
+      if(targetId === 'fUser') _scheduleVoiceAI(text);
     },
     () => { if(btn) btn.classList.remove('listening'); _recActive = null; _currentRec = null; }
   );
@@ -2328,6 +2330,35 @@ A.voiceInput = (targetId) => {
     if(typeof stat==='function') stat('🎤 음성입력 시작 실패: '+(e.message||''), true);
   }
 };
+
+/* v28.3: 하자내용 음성입력 후 AI 분석 자동 예약 (5초 후) */
+let _voiceAITimer;
+function _scheduleVoiceAI(text){
+  clearTimeout(_voiceAITimer);
+  const det = $('fDetail');
+  if(!det) return;
+  const t = (text||'').trim();
+  if(!t) return;
+  const m = _matchWorkSubType(t);
+  if(!m){
+    det.value = `🔍 "${t}"\n\n카테고리 자동 매칭 실패.\n사진 촬영 후 AI분석 버튼을 눌러 정밀 분석을 실행하세요.`;
+    return;
+  }
+  let msg = `🔍 1차 자동 매칭 결과\n\n• 공종: ${m.work}\n• 세부: ${m.sub}\n• 유형: ${m.type}\n\n`;
+  if(cF){
+    msg += '⏱️ 5초 후 AI 정밀 분석이 자동 시작됩니다.\n(AI분석 버튼을 누르면 즉시 실행)';
+    det.value = msg;
+    if(typeof stat==='function') stat('⏱️ 5초 후 AI 정밀 분석이 시작됩니다 (AI분석 버튼 클릭 시 즉시 실행)');
+    _voiceAITimer = setTimeout(() => {
+      if(!$('btnRunAI').disabled && $('fUser').value.trim() === t){
+        A.startAI();
+      }
+    }, 5000);
+  } else {
+    msg += '📷 사진(가까이 찍기)을 촬영한 뒤 AI분석 버튼을 눌러주세요.';
+    det.value = msg;
+  }
+}
 
 /* 음성 텍스트 → WM 카테고리 매칭 엔진 (구어체 동의어 지원) */
 const _SYN = {
@@ -2959,6 +2990,7 @@ ${d1.detail||''}
 
 /* ── AI 분석 시작 (버튼 클릭) ── */
 A.startAI=()=>{
+  clearTimeout(_voiceAITimer); /* v28.3: 자동 분석 타이머 취소 */
   if(!wF&&!cF){stat('⚠️ 사진을 먼저 촬영해주세요',true);toast('📷 멀리서 찍기 → 가까이 찍기를 먼저 촬영하세요',true);return;}
   if(!cF){stat('⚠️ 가까이 찍기를 촬영해주세요',true);return;}
   $('btnRunAI').disabled=true;$('btnRunAI').style.opacity='0.5';
