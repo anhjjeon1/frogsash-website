@@ -12,6 +12,10 @@
 <style>
 /* ============================================================
    청개구리 입주자 사전점검 AI v25.0
+   v27.9 변경사항:
+   - [UI] 마이크 버튼을 입력칸 내부로 이동 (주소 / 하자내용)
+   - [기능] 위치 선택에 🎤 음성입력 추가 (말한 텍스트 그대로 입력, 유효성 검사 없음)
+   - [정리] AI분석 출력칸(상세설명)의 마이크 버튼 제거, 자동 음성입력 해제
    v27.8 변경사항:
    - [기능] 🎤 음성입력 우선 모드 — 입력칸 탭 시 마이크 자동 활성화 (주소/하자내용/상세설명)
    - [안전] 필드에 이미 값이 있으면 자동실행 건너뜀 (수정 시 덮어쓰기 방지)
@@ -1805,9 +1809,9 @@ input[type="file"]{
 <!-- ── STEP 1: 현장 정보 ── -->
 <div class="sec">
   <div class="sec-t"><span class="n">1</span> 현장 정보</div>
-  <div class="if-with-mic">
-    <input type="text" class="if" id="fAddr" placeholder="🏠 (예: 서울 송파구 올림픽로 300, 푸르지오 1101동1202호)" onfocus="A.voiceAutoStart('fAddr')">
-    <button type="button" class="mic-btn" id="micAddr" onclick="A.voiceInput('fAddr')" title="주소 음성입력" aria-label="주소 음성입력">
+  <div class="if-with-mic" style="position:relative;display:block">
+    <input type="text" class="if" id="fAddr" placeholder="🏠 (예: 서울 송파구 올림픽로 300, 푸르지오 1101동1202호)" style="width:100%;padding-right:44px;box-sizing:border-box" onfocus="A.voiceAutoStart('fAddr')">
+    <button type="button" class="mic-btn mic-in-toolbar" id="micAddr" onclick="A.voiceInput('fAddr')" title="주소 음성입력" aria-label="주소 음성입력" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#fff">
       <i class="fa-solid fa-microphone"></i>
     </button>
   </div>
@@ -1854,10 +1858,13 @@ input[type="file"]{
   <div style="display:grid;grid-template-columns:1fr 2fr;gap:6px;margin-bottom:9px">
     <div>
       <select class="if" id="fRoom" style="display:none"><option value="">위치 선택</option></select>
-      <div class="cd-wrap" id="cdRoom">
-        <button type="button" class="cd-btn" id="cdBtn" onclick="A.toggleRoom()" style="padding:10px 10px;font-size:.8rem">
+      <div class="cd-wrap" id="cdRoom" style="position:relative">
+        <button type="button" class="cd-btn" id="cdBtn" onclick="A.toggleRoom()" style="padding:10px 56px 10px 10px;font-size:.8rem">
           <span class="cd-placeholder" id="cdLabel">위치 선택</span>
           <i class="fa-solid fa-chevron-down cd-arrow"></i>
+        </button>
+        <button type="button" class="mic-btn mic-in-toolbar" id="micRoom" onclick="event.stopPropagation();A.voiceRoom()" title="위치 음성입력" aria-label="위치 음성입력" style="position:absolute;right:30px;top:50%;transform:translateY(-50%);background:#fff;z-index:2">
+          <i class="fa-solid fa-microphone"></i>
         </button>
         <div class="cd-grid" id="cdGrid">
           <div class="cd-item" data-val="거실" onclick="A.pickRoom(this)"><span class="cd-radio"></span><span class="cd-label">거실</span></div>
@@ -1881,14 +1888,16 @@ input[type="file"]{
       </div>
     </div>
     <div style="position:relative;display:flex;gap:4px;align-items:center">
-      <input type="text" class="if" id="fUser"
-        placeholder="✏️ 하자내용 (예: 창호 수직수평불량)"
-        style="flex:1;min-width:0"
-        oninput="A.onUserInput(this)"
-        onfocus="A.voiceAutoStart('fUser')">
-      <button type="button" class="mic-btn" id="micUser" onclick="A.voiceInput('fUser')" title="하자내용 음성입력" aria-label="하자내용 음성입력">
-        <i class="fa-solid fa-microphone"></i>
-      </button>
+      <div style="position:relative;flex:1;min-width:0">
+        <input type="text" class="if" id="fUser"
+          placeholder="✏️ 하자내용 (예: 창호 수직수평불량)"
+          style="width:100%;padding-right:40px;box-sizing:border-box"
+          oninput="A.onUserInput(this)"
+          onfocus="A.voiceAutoStart('fUser')">
+        <button type="button" class="mic-btn mic-in-toolbar" id="micUser" onclick="A.voiceInput('fUser')" title="하자내용 음성입력" aria-label="하자내용 음성입력" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:#fff">
+          <i class="fa-solid fa-microphone"></i>
+        </button>
+      </div>
       <button class="ai-b" id="btnRunAI" onclick="A.startAI()" style="border:none;cursor:pointer;padding:8px 12px;font-size:.72rem;white-space:nowrap;flex-shrink:0"><i class="fa-solid fa-robot"></i> AI분석</button>
     </div>
   </div>
@@ -1913,10 +1922,7 @@ input[type="file"]{
       </div>
     </div>
     <div style="background:#F3F4F6;border:1.5px solid var(--bd);border-radius:10px;overflow:hidden;position:relative">
-      <textarea class="if" id="fDetail" placeholder="" style="border:none;border-radius:0;margin:0;padding-right:44px" onfocus="A.voiceAutoStart('fDetail')"></textarea>
-      <button type="button" class="mic-btn mic-in-toolbar" id="micDetail" onclick="A.voiceInput('fDetail')" title="상세설명 음성입력" aria-label="상세설명 음성입력" style="position:absolute;top:6px;right:8px;background:#fff">
-        <i class="fa-solid fa-microphone"></i>
-      </button>
+      <textarea class="if" id="fDetail" placeholder="" style="border:none;border-radius:0;margin:0"></textarea>
       <label for="fAgree" style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:.65rem;font-weight:700;color:var(--ts);padding:6px 10px;justify-content:flex-end;border-top:1px solid var(--bd)">
         <input type="checkbox" id="fAgree" onchange="A.togSave()" style="width:14px;height:14px;accent-color:var(--p);cursor:pointer">
         AI 참고용, 법적효력 없음 동의
@@ -2118,7 +2124,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v27.8';
+const APP_VER = 'v27.9';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2268,6 +2274,44 @@ function _stopRec(){
   _recActive = null;
   document.querySelectorAll('.mic-btn.listening, .mic-cat-btn.listening').forEach(b=>b.classList.remove('listening'));
 }
+
+/* v27.9: 위치 음성입력 — 말한 텍스트 그대로 설정 (유효성 검사 없음) */
+A.voiceRoom = () => {
+  if(!_SR){ alert('이 브라우저는 음성입력을 지원하지 않습니다.\nChrome, Edge, Safari(iOS 14.5+)를 사용해주세요.'); return; }
+  const btn = $('micRoom');
+  if(_recActive === 'room'){ _stopRec(); if(typeof stat==='function') stat('🎤 음성입력 중단'); return; }
+  _stopRec();
+  _recActive = 'room';
+  if(btn) btn.classList.add('listening');
+  if(typeof stat==='function') stat('🎤 위치를 말씀해 주세요... (예: "거실", "안방")');
+  const rec = _mkRec(
+    (text) => {
+      $('fRoom').value = text;
+      const label = $('cdLabel');
+      if(label){
+        label.textContent = '✔ ' + text;
+        label.classList.remove('cd-placeholder');
+        label.style.color = 'var(--p)';
+        label.style.fontWeight = '800';
+      }
+      $('cdBtn').classList.remove('err-shake');
+      document.querySelectorAll('.cd-item').forEach(i=>{
+        i.classList.remove('selected');
+        if(i.dataset.val === text) i.classList.add('selected');
+      });
+      const warn = $('roomWarnMsg'); if(warn) warn.style.display = 'none';
+      if(typeof stat==='function') stat('📍 위치: '+text);
+      if(typeof saveDraft==='function') saveDraft();
+    },
+    () => { if(btn) btn.classList.remove('listening'); _recActive = null; _currentRec = null; }
+  );
+  _currentRec = rec;
+  try{ rec.start(); }catch(e){
+    if(btn) btn.classList.remove('listening');
+    _recActive = null; _currentRec = null;
+    if(typeof stat==='function') stat('🎤 음성입력 시작 실패: '+(e.message||''), true);
+  }
+};
 
 /* v27.8: 음성입력 우선 모드 — 입력칸 focus 시 자동 시작 (값 있으면 건너뜀) */
 A.voiceAutoStart = (targetId) => {
