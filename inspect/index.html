@@ -1784,13 +1784,18 @@ input[type="file"]{
 <div id="s1" style="display:none"></div><div id="s2" style="display:none"></div><div id="s3" style="display:none"></div><div id="s4" style="display:none"></div>
 
 <!-- ── STEP 1: 현장 정보 ── -->
-<div class="sec">
+<div class="sec" id="addrSec">
   <div class="sec-t"><span class="n">1</span> 주소 입력</div>
-  <div class="if-with-mic" style="position:relative;display:block">
+  <div id="addrInputMode" class="if-with-mic" style="position:relative;display:block">
     <input type="text" class="if" id="fAddr" placeholder="(예: 서울 송파구 올림픽로 300, 푸르지오 1101동1202호)" style="width:100%;padding-right:44px;box-sizing:border-box" onfocus="A.voiceAutoStart('fAddr')">
     <button type="button" class="mic-btn mic-in-toolbar" id="micAddr" onclick="A.voiceInput('fAddr')" title="주소 음성입력" aria-label="주소 음성입력" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#fff">
       <i class="fa-solid fa-microphone"></i>
     </button>
+  </div>
+  <div id="addrCompactMode" style="display:none;align-items:center;gap:8px;padding:10px 12px;background:#F9FAFB;border:1.5px solid var(--bd);border-radius:10px">
+    <span style="font-size:.95rem">📍</span>
+    <span id="addrCompactText" style="flex:1;min-width:0;font-size:.78rem;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+    <button type="button" onclick="A.expandAddr()" style="background:#fff;border:1px solid var(--bd);border-radius:16px;padding:4px 10px;font-size:.62rem;font-weight:700;color:var(--ts);cursor:pointer;font-family:inherit;flex-shrink:0"><i class="fa-solid fa-pen"></i> 수정</button>
   </div>
   <input type="hidden" id="fApt"><input type="hidden" id="fDong"><input type="hidden" id="fHo">
 </div>
@@ -2105,7 +2110,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v28.8';
+const APP_VER = 'v28.9';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2748,7 +2753,8 @@ window.addEventListener('storage',(e)=>{
 });
 
 /* ── 단계 표시기 ── */
-function step(c){for(let i=1;i<=4;i++){const n=$(`s${i}`);n.classList.remove('on','ok');if(i<c)n.classList.add('ok');else if(i===c)n.classList.add('on');}/* v28.8: 사진 업로드 시점(step≥2)부터 하단 기부/정책 영역 숨김 */const ft=$('footerInfo');if(ft&&c>=2)ft.style.display='none';}
+function step(c){for(let i=1;i<=4;i++){const n=$(`s${i}`);n.classList.remove('on','ok');if(i<c)n.classList.add('ok');else if(i===c)n.classList.add('on');}/* v28.8: 사진 업로드 시점(step≥2)부터 하단 기부/정책 영역 숨김 */const ft=$('footerInfo');if(ft&&c>=2)ft.style.display='none';/* v28.9: step≥2에서 주소 입력칸을 요약 뱃지로 축소 */if(c>=2){const a=$('fAddr'),im=$('addrInputMode'),cm=$('addrCompactMode'),ct=$('addrCompactText');if(a&&im&&cm&&ct&&a.value.trim()){ct.textContent=a.value.trim();im.style.display='none';cm.style.display='flex';}}}
+A.expandAddr=()=>{const im=$('addrInputMode'),cm=$('addrCompactMode');if(im&&cm){cm.style.display='none';im.style.display='block';setTimeout(()=>{const a=$('fAddr');if(a)a.focus();},50);}};
 function stat(m,e){$('sMsg').textContent=m;$('sDot').classList.toggle('err',!!e);}
 function toast(msg,warn=false,dur=2800){const el=$('toastMsg');el.innerHTML=msg;el.className='toast'+(warn?' warn':'');clearTimeout(el._t);requestAnimationFrame(()=>{el.classList.add('show');});el._t=setTimeout(()=>{el.classList.remove('show');},dur);}
 
