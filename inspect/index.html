@@ -1940,11 +1940,11 @@ input[type="file"]{
   <div id="lBox"></div>
 </div>
 
-<div class="ba" style="display:grid;grid-template-columns:3fr 1fr;gap:8px">
-  <button class="ab pdf" onclick="A.pdf()" style="border-radius:var(--r);padding:9px;font-size:.82rem;font-weight:800;background:var(--p);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 8px rgba(10,107,92,.25)">
+<div class="ba" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+  <button class="ab pdf" onclick="A.pdf()" style="width:auto;border-radius:var(--r);padding:9px 16px;font-size:.78rem;font-weight:800;background:var(--p);color:#fff;border:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(10,107,92,.25);white-space:nowrap;flex-shrink:0">
     <i class="fa-solid fa-file-arrow-down"></i> 전체 저장 (PDF)
   </button>
-  <button onclick="A.openChatBot()" style="border-radius:var(--r);padding:9px;font-size:.78rem;font-weight:800;background:linear-gradient(135deg,#1E3A5F,#2C5282);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(30,58,95,.25)">
+  <button onclick="A.openChatBot()" style="border-radius:var(--r);padding:9px 18px;font-size:.78rem;font-weight:800;background:linear-gradient(135deg,#1E3A5F,#2C5282);color:#fff;border:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(30,58,95,.25);white-space:nowrap;flex-shrink:0">
     <i class="fa-solid fa-robot"></i> 상담
   </button>
 </div>
@@ -2111,7 +2111,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v29.3';
+const APP_VER = 'v29.5';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
