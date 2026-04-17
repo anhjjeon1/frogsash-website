@@ -1808,9 +1808,9 @@ input[type="file"]{
 
 <!-- ── STEP 1: 현장 정보 ── -->
 <div class="sec">
-  <div class="sec-t"><span class="n">1</span> 현장 정보</div>
+  <div class="sec-t"><span class="n">1</span> 주소 입력</div>
   <div class="if-with-mic" style="position:relative;display:block">
-    <input type="text" class="if" id="fAddr" placeholder="🏠 (예: 서울 송파구 올림픽로 300, 푸르지오 1101동1202호)" style="width:100%;padding-right:44px;box-sizing:border-box" onfocus="A.voiceAutoStart('fAddr')">
+    <input type="text" class="if" id="fAddr" placeholder="(예: 서울 송파구 올림픽로 300, 푸르지오 1101동1202호)" style="width:100%;padding-right:44px;box-sizing:border-box" onfocus="A.voiceAutoStart('fAddr')">
     <button type="button" class="mic-btn mic-in-toolbar" id="micAddr" onclick="A.voiceInput('fAddr')" title="주소 음성입력" aria-label="주소 음성입력" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#fff">
       <i class="fa-solid fa-microphone"></i>
     </button>
@@ -1890,7 +1890,7 @@ input[type="file"]{
     <div style="position:relative;display:flex;gap:4px;align-items:center">
       <div style="position:relative;flex:1;min-width:0">
         <input type="text" class="if" id="fUser"
-          placeholder="✏️ 하자내용 (예: 창호 수직수평불량)"
+          placeholder="하자내용 (예: 창호 수직수평불량)"
           style="width:100%;padding-right:40px;box-sizing:border-box"
           oninput="A.onUserInput(this)"
           onfocus="A.voiceAutoStart('fUser')">
@@ -2124,7 +2124,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v27.9';
+const APP_VER = 'v28.0';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2828,7 +2828,7 @@ A.devTap=(()=>{let tc=0,tt=null;return()=>{tc++;clearTimeout(tt);if(tc>=3){tc=0;
    ============================================================ */
 const GUIDE_TEXT=[
   '안녕하세요! 청개구리 입주점검 AI앱 사용법을 안내합니다.',
-  '1단계, 현장 정보. 주소와 동호수를 입력하세요.',
+  '1단계, 주소 입력. 주소와 동호수를 입력하세요.',
   '2단계, 사진 촬영. 멀리서 찍기로 전체 위치를, 가까이 찍기로 하자 부위를 촬영하세요.',
   '3단계, 하자 정보. 위치를 선택하고, 하자 내용을 입력하세요. 예를 들어, 터닝도어 파손, 타일 들뜸 등을 입력하면, 공종, 세부, 유형이 자동으로 매칭됩니다.',
   '하자 내용 입력이 끝나면, 입력칸 우측의 AI분석 버튼을 눌러주세요. 1차 AI 분석 후 2차 검증을 거쳐 국토부 기준에 따른 정확한 결과를 출력합니다.',
