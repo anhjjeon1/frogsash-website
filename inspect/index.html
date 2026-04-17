@@ -633,6 +633,7 @@ textarea.if{
 }
 .cd-btn.open .cd-arrow{transform:rotate(180deg)}
 .cd-btn .cd-placeholder{color:var(--th)}
+.cd-btn > span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
 .cd-btn-sm{padding:8px 6px;font-size:.72rem}
 .cd-btn-sm .cd-placeholder{font-size:.72rem}
 .cd-btn.err-shake{
@@ -1831,7 +1832,7 @@ input[type="file"]{
     <span id="inputModeBadge"></span>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 2fr;gap:6px;margin-bottom:9px">
+  <div style="display:grid;grid-template-columns:1.3fr 2fr;gap:6px;margin-bottom:9px">
     <div>
       <select class="if" id="fRoom" style="display:none"><option value="">위치 선택</option></select>
       <div class="cd-wrap" id="cdRoom" style="position:relative">
@@ -2104,7 +2105,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v28.4';
+const APP_VER = 'v28.5';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
