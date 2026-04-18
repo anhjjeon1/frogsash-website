@@ -2111,7 +2111,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v30.6';
+const APP_VER = 'v30.7';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -3122,7 +3122,9 @@ A.pdf=()=>{
   list.forEach((it,idx)=>{
     const isSafe=it.type==='허용범위';
     const tc=isSafe?'#059669':'#E74C3C',tb=isSafe?'#ECFDF5':'#FFF5F5';
-    const room=esc(it.room||'위치미지정'),type=esc(it.type||''),work=esc(it.work||''),sub=esc(it.sub||''),detail=esc(it.detail||'');
+    /* v30.7: PDF에서는 "분석 완료 · 2차 검증 완료" 줄 제거 */
+    const detailRaw=(it.detail||'').split('\n').filter(l=>!/분석\s*완료\s*·\s*2차\s*검증\s*완료/.test(l)).join('\n').replace(/\n{2,}/g,'\n').trim();
+    const room=esc(it.room||'위치미지정'),type=esc(it.type||''),work=esc(it.work||''),sub=esc(it.sub||''),detail=esc(detailRaw);
     const mTag=it.mode==='paid'?'<span style="font-size:9px;background:#03C75A;color:#fff;padding:2px 6px;border-radius:3px">이용권</span>':it.mode==='pro'?'<span style="font-size:9px;background:#7C3AED;color:#fff;padding:2px 6px;border-radius:3px">직원</span>':'<span style="font-size:9px;background:#E6F7F3;color:#0A6B5C;padding:2px 6px;border-radius:3px">무료</span>';
     const hasW=it.wImg&&it.wImg.startsWith('data:'),hasC=it.cImg&&it.cImg.startsWith('data:');
     let imgHtml='';
