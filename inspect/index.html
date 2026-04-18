@@ -2111,7 +2111,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v30.2';
+const APP_VER = 'v30.3';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -3132,24 +3132,24 @@ A.pdf=()=>{
       if(hasC)imgHtml+=`<img src="${it.cImg}" style="height:200px;aspect-ratio:4/3;object-fit:cover;background:#fff;border-radius:5px">`;
       imgHtml+='</div>';
     }
-    items+=`<div class="pdf-item" style="border:1px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:8px;break-inside:avoid;page-break-inside:avoid">
-      <div style="padding:5px 10px;background:#F4F6F9;border-bottom:1px solid #eee;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <span style="display:inline-block;font-size:9px;font-weight:900;background:#0A6B5C;color:#fff;width:18px;height:18px;border-radius:4px;text-align:center;line-height:18px">${idx+1}</span>
-        <b style="font-size:12px">${room}</b>
-        <span style="font-size:9px;font-weight:700;color:${tc};background:${tb};padding:1px 6px;border-radius:3px">${type}</span>
+    items+=`<div class="pdf-item" style="border:1px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:6px;break-inside:avoid;page-break-inside:avoid">
+      <div style="padding:6px 12px;background:#F4F6F9;border-bottom:1px solid #eee;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="display:inline-block;font-size:10px;font-weight:900;background:#0A6B5C;color:#fff;width:20px;height:20px;border-radius:4px;text-align:center;line-height:20px">${idx+1}</span>
+        <b style="font-size:14px">${room}</b>
+        <span style="font-size:11px;font-weight:700;color:${tc};background:${tb};padding:2px 7px;border-radius:3px">${type}</span>
         ${mTag}
       </div>
       ${imgHtml}
-      <div style="padding:6px 10px">
-        <div style="font-size:10px;font-weight:700;color:#0A6B5C;margin-bottom:3px">${work} → ${sub}</div>
-        <div style="font-size:10px;color:#5A6B7F;line-height:1.55;white-space:pre-wrap">${detail}</div>
+      <div style="padding:8px 12px">
+        <div style="font-size:12px;font-weight:700;color:#0A6B5C;margin-bottom:4px">${work} → ${sub}</div>
+        <div style="font-size:12px;color:#3A4B5F;line-height:1.6;white-space:pre-wrap">${detail}</div>
       </div>
     </div>`;
   });
 
   const html=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>사전점검 리포트 - ${info}</title>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;background:#fff;color:#1A2332;padding:10px;max-width:800px;margin:0 auto;line-height:1.5}
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;background:#fff;color:#1A2332;padding:8px;max-width:800px;margin:0 auto;line-height:1.5}
 img{max-width:100%;display:block}
 @media print{@page{size:A4;margin:8mm}body{padding:0}.pdf-item{break-inside:avoid;page-break-inside:avoid}}</style></head>
 <body>
@@ -3159,7 +3159,7 @@ img{max-width:100%;display:block}
   <div style="font-size:10px;color:#94A3B8;margin-top:4px">${dateStr} 작성 | 총 ${list.length}건 | ${APP_VER}</div>
 </div>
 ${items}
-<div style="text-align:center;font-size:8px;color:#94A3B8;margin-top:14px;padding-top:10px;border-top:1px solid #E8ECF1;line-height:1.6">
+<div style="text-align:center;font-size:9px;color:#94A3B8;margin-top:6px;padding-top:6px;border-top:1px solid #E8ECF1;line-height:1.5">
   ※ 본 리포트는 입주자 사전점검 보조 자료이며 법적 효력이 없습니다.<br>
   청개구리샤시 | 대표: 전영웅 | 📞 010-2322-0949 | © 2026 Cheong-gaeguri | ${APP_VER}
 </div>
