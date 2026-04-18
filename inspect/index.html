@@ -2111,7 +2111,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v30.5';
+const APP_VER = 'v30.6';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -3127,7 +3127,7 @@ A.pdf=()=>{
     const hasW=it.wImg&&it.wImg.startsWith('data:'),hasC=it.cImg&&it.cImg.startsWith('data:');
     let imgHtml='';
     if(hasW||hasC){
-      imgHtml='<div style="display:flex;gap:20px;padding:6px 16px;background:#F1F4F8;justify-content:center">';
+      imgHtml='<div style="display:flex;gap:80px;padding:6px 16px;background:#F1F4F8;justify-content:center">';
       if(hasW)imgHtml+=`<img src="${it.wImg}" style="height:200px;aspect-ratio:4/3;object-fit:cover;background:#fff;border-radius:5px">`;
       if(hasC)imgHtml+=`<img src="${it.cImg}" style="height:200px;aspect-ratio:4/3;object-fit:cover;background:#fff;border-radius:5px">`;
       imgHtml+='</div>';
@@ -3159,9 +3159,8 @@ img{max-width:100%;display:block}
   <div style="font-size:10px;color:#94A3B8;margin-top:4px">${dateStr} 작성 | 총 ${list.length}건 | ${APP_VER}</div>
 </div>
 ${items}
-<div style="text-align:center;font-size:9px;color:#94A3B8;margin-top:6px;padding-top:6px;border-top:1px solid #E8ECF1;line-height:1.5">
-  ※ 본 리포트는 입주자 사전점검 보조 자료이며 법적 효력이 없습니다.<br>
-  청개구리샤시 | 대표: 전영웅 | 📞 010-2322-0949 | © 2026 Cheong-gaeguri | ${APP_VER}
+<div style="text-align:center;font-size:9px;color:#94A3B8;margin-top:4px;padding-top:4px;border-top:1px solid #E8ECF1;line-height:1.5">
+  ※ 본 리포트는 입주자 사전점검 보조 자료이며 법적 효력이 없습니다.
 </div>
 </body></html>`;
 
