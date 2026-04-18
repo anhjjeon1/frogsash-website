@@ -2159,7 +2159,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v32.1';
+const APP_VER = 'v32.2';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2293,13 +2293,18 @@ function _mkRec(onResult, onEnd, opts){
       clearTimeout(silenceTimer);
       silenceTimer = setTimeout(() => { try{ rec.stop(); }catch(e){} }, silenceMs);
     };
+    /* v32.2: resultIndex 의존성 제거 — 삼성 인터넷 등에서 resultIndex=0 고정 시
+       같은 final을 매 이벤트마다 재누적하는 중복 버그. 대신 매 이벤트마다
+       전체 e.results를 훑어 final/interim을 통째로 재구성. */
     rec.onresult = (e) => {
+      let finalText = '';
       let interim = '';
-      for(let i = e.resultIndex; i < e.results.length; i++){
+      for(let i = 0; i < e.results.length; i++){
         const t = e.results[i][0].transcript || '';
-        if(e.results[i].isFinal) accumulated += t;
+        if(e.results[i].isFinal) finalText += t;
         else interim += t;
       }
+      accumulated = finalText;
       const display = (accumulated + interim).trim();
       if(display && onInterim) onInterim(display);
       resetSilence();
