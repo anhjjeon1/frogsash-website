@@ -2111,7 +2111,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v29.6';
+const APP_VER = 'v29.7';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2273,10 +2273,12 @@ A.voiceRoom = () => {
   if(typeof stat==='function') stat('🎤 위치를 말씀해 주세요... (예: "거실", "안방")');
   const rec = _mkRec(
     (text) => {
-      $('fRoom').value = text;
+      /* v29.7: 음성 텍스트 정규화 후 option 동적 추가 (select 빈값 저장 버그 수정) */
+      const val = _normalizeRoomText(text);
+      _setRoomValue(val);
       const label = $('cdLabel');
       if(label){
-        label.textContent = '✔ ' + text;
+        label.textContent = '✔ ' + val;
         label.classList.remove('cd-placeholder');
         label.style.color = 'var(--p)';
         label.style.fontWeight = '800';
@@ -2284,10 +2286,10 @@ A.voiceRoom = () => {
       $('cdBtn').classList.remove('err-shake');
       document.querySelectorAll('.cd-item').forEach(i=>{
         i.classList.remove('selected');
-        if(i.dataset.val === text) i.classList.add('selected');
+        if(i.dataset.val === val) i.classList.add('selected');
       });
       const warn = $('roomWarnMsg'); if(warn) warn.style.display = 'none';
-      if(typeof stat==='function') stat('📍 위치: '+text);
+      if(typeof stat==='function') stat('📍 위치: '+val);
       if(typeof saveDraft==='function') saveDraft();
     },
     () => { if(btn) btn.classList.remove('listening'); _recActive = null; _currentRec = null; }
@@ -2736,7 +2738,7 @@ const ls=(k,v)=>{if(v===undefined)return localStorage.getItem(k);try{localStorag
 /* ── 임시저장 ── */
 const DRAFT_KEY='frog_draft',DRAFT_TTL=24*60*60*1000;
 function saveDraft(){try{const d={ts:Date.now(),addr:$('fAddr').value,room:$('fRoom').value,user:$('fUser').value,work:$('fWork').value,sub:$('fSub').value,type:$('fType').value,detail:$('fDetail').value,wImg:($('pvW').style.display!=='none'&&$('pvW').src.startsWith('data:'))?$('pvW').src:null,cImg:($('pvC').style.display!=='none'&&$('pvC').src.startsWith('data:'))?$('pvC').src:null};ls(DRAFT_KEY,JSON.stringify(d));}catch(e){try{const lite={ts:Date.now(),addr:$('fAddr').value,room:$('fRoom').value,user:$('fUser').value,work:$('fWork').value,sub:$('fSub').value,type:$('fType').value,detail:$('fDetail').value,wImg:null,cImg:null};ls(DRAFT_KEY,JSON.stringify(lite));}catch(e2){}}}
-function loadDraft(){try{const raw=ls(DRAFT_KEY);if(!raw)return;const d=JSON.parse(raw);if(Date.now()-d.ts>DRAFT_TTL){localStorage.removeItem(DRAFT_KEY);return;}if(d.addr)$('fAddr').value=d.addr;if(d.room){$('fRoom').value=d.room;const lb=$('cdLabel');lb.textContent='✔ '+d.room;lb.classList.remove('cd-placeholder');lb.style.color='var(--p)';lb.style.fontWeight='800';document.querySelectorAll('.cd-item').forEach(i=>i.classList.toggle('selected',i.dataset.val===d.room));}if(d.user){$('fUser').value=d.user;A.onUserInput($('fUser'));}if(d.work){$('fWork').value=d.work;A.onWork();if(d.sub){if(!$('fSub').querySelector(`option[value="${d.sub}"]`)){const o=document.createElement('option');o.value=d.sub;o.textContent=d.sub;$('fSub').appendChild(o)}$('fSub').value=d.sub;A.onSub();if(d.type){if(!$('fType').querySelector(`option[value="${d.type}"]`)){const o=document.createElement('option');o.value=d.type;o.textContent=d.type;$('fType').appendChild(o)}$('fType').value=d.type;}}}if(d.detail)$('fDetail').value=d.detail;if(d.wImg&&d.wImg.startsWith('data:')){showPreview('pvW',d.wImg);$('rtW').style.display='block';}if(d.cImg&&d.cImg.startsWith('data:')){showPreview('pvC',d.cImg);$('rtC').style.display='block';}if(d.cImg)step(3);else if(d.wImg)step(2);if(d.addr||d.room||d.wImg||d.cImg||d.detail)stat('💾 이전 입력 내용이 복원되었습니다');}catch(e){console.warn('Draft load failed')}}
+function loadDraft(){try{const raw=ls(DRAFT_KEY);if(!raw)return;const d=JSON.parse(raw);if(Date.now()-d.ts>DRAFT_TTL){localStorage.removeItem(DRAFT_KEY);return;}if(d.addr)$('fAddr').value=d.addr;if(d.room){_setRoomValue(d.room);const lb=$('cdLabel');lb.textContent='✔ '+d.room;lb.classList.remove('cd-placeholder');lb.style.color='var(--p)';lb.style.fontWeight='800';document.querySelectorAll('.cd-item').forEach(i=>i.classList.toggle('selected',i.dataset.val===d.room));}if(d.user){$('fUser').value=d.user;A.onUserInput($('fUser'));}if(d.work){$('fWork').value=d.work;A.onWork();if(d.sub){if(!$('fSub').querySelector(`option[value="${d.sub}"]`)){const o=document.createElement('option');o.value=d.sub;o.textContent=d.sub;$('fSub').appendChild(o)}$('fSub').value=d.sub;A.onSub();if(d.type){if(!$('fType').querySelector(`option[value="${d.type}"]`)){const o=document.createElement('option');o.value=d.type;o.textContent=d.type;$('fType').appendChild(o)}$('fType').value=d.type;}}}if(d.detail)$('fDetail').value=d.detail;if(d.wImg&&d.wImg.startsWith('data:')){showPreview('pvW',d.wImg);$('rtW').style.display='block';}if(d.cImg&&d.cImg.startsWith('data:')){showPreview('pvC',d.cImg);$('rtC').style.display='block';}if(d.cImg)step(3);else if(d.wImg)step(2);if(d.addr||d.room||d.wImg||d.cImg||d.detail)stat('💾 이전 입력 내용이 복원되었습니다');}catch(e){console.warn('Draft load failed')}}
 function clearItemDraft(){try{const raw=ls(DRAFT_KEY);if(!raw)return;const d=JSON.parse(raw);d.room=null;d.user=null;d.work=null;d.sub=null;d.type=null;d.detail=null;d.wImg=null;d.cImg=null;d.ts=Date.now();ls(DRAFT_KEY,JSON.stringify(d));}catch(e){}}
 let _draftTimer;
 function draftDebounce(){clearTimeout(_draftTimer);_draftTimer=setTimeout(saveDraft,500);}
@@ -2788,8 +2790,12 @@ function autoSave(savedW,savedC,savedDetail){
 }
 
 /* ── 위치 선택 ── */
+/* v29.7: fRoom select에 매칭 option이 없으면 동적 추가 후 value 설정 (음성입력 버그 수정) */
+function _setRoomValue(val){const sel=$('fRoom');if(val&&!sel.querySelector(`option[value="${val.replace(/"/g,'\\"')}"]`)){const o=document.createElement('option');o.value=val;o.textContent=val;sel.appendChild(o);}sel.value=val||'';}
+/* v29.7: 음성 텍스트를 cd-item 값과 매칭하여 정규화 (공백/조사 제거, 포함매칭) */
+function _normalizeRoomText(text){if(!text)return'';const t=text.replace(/\s+/g,'').replace(/[.,!?]/g,'').trim();const items=Array.from(document.querySelectorAll('#cdGrid .cd-item')).map(i=>i.dataset.val);for(const v of items){if(v===t)return v;}const sorted=items.slice().sort((a,b)=>b.length-a.length);for(const v of sorted){if(t.includes(v))return v;}return text.trim();}
 A.toggleRoom=()=>{const grid=$('cdGrid'),btn=$('cdBtn');btn.classList.remove('err-shake');const isOpen=grid.classList.contains('show');if(isOpen){grid.classList.remove('show');btn.classList.remove('open');}else{grid.classList.add('show');btn.classList.add('open');}};
-A.pickRoom=(el)=>{const val=el.dataset.val;$('fRoom').value=val;const label=$('cdLabel');label.textContent='✔ '+val;label.classList.remove('cd-placeholder');label.style.color='var(--p)';label.style.fontWeight='800';$('cdBtn').classList.remove('err-shake');document.querySelectorAll('.cd-item').forEach(i=>i.classList.remove('selected'));el.classList.add('selected');setTimeout(()=>{$('cdGrid').classList.remove('show');$('cdBtn').classList.remove('open');},150);const warn=$('roomWarnMsg');if(warn)warn.style.display='none';saveDraft();};
+A.pickRoom=(el)=>{const val=el.dataset.val;_setRoomValue(val);const label=$('cdLabel');label.textContent='✔ '+val;label.classList.remove('cd-placeholder');label.style.color='var(--p)';label.style.fontWeight='800';$('cdBtn').classList.remove('err-shake');document.querySelectorAll('.cd-item').forEach(i=>i.classList.remove('selected'));el.classList.add('selected');setTimeout(()=>{$('cdGrid').classList.remove('show');$('cdBtn').classList.remove('open');},150);const warn=$('roomWarnMsg');if(warn)warn.style.display='none';saveDraft();};
 function validateRoom(){if(!$('fRoom').value){showRoomWarn();const btn=$('cdBtn');btn.classList.remove('err-shake');void btn.offsetWidth;btn.classList.add('err-shake');$('cdGrid').classList.add('show');btn.classList.add('open');stat('⚠️ 점검 위치를 선택해주세요',true);btn.scrollIntoView({behavior:'smooth',block:'center'});return false;}return true;}
 function showRoomWarn(){let warn=$('roomWarnMsg');if(!warn){warn=document.createElement('div');warn.id='roomWarnMsg';warn.style.cssText='background:#FFF5F5;border:1.5px solid var(--dn);border-radius:10px;padding:10px 14px;font-size:.78rem;font-weight:700;color:var(--dn);display:flex;align-items:center;gap:8px;margin-top:8px;animation:shake .4s';warn.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> ① 위 <b style="color:#0A6B5C">점검 위치</b>를 먼저 선택한 후 저장하세요!';const btnSv=$('btnSv');btnSv.parentNode.insertBefore(warn,btnSv);}warn.style.display='flex';clearTimeout(warn._t);warn._t=setTimeout(()=>{if(warn)warn.style.display='none';},4000);}
 
@@ -3097,7 +3103,7 @@ $('aiTags').style.display='none';$('afSelects').style.display='none';
 clearItemDraft();step(4);}
 function saveList(){try{ls('frog_list',JSON.stringify(list.map(it=>({...it,wImg:null,cImg:null}))));ls('frog_list_full',JSON.stringify(list));$('sgTx').textContent=`저장 총 하자 : ${list.length} 건`;}catch(e){console.warn('Storage full');}}
 function loadList(){try{const full=ls('frog_list_full');if(full){list=JSON.parse(full);list.forEach(it=>renderItem(it));updateModeLabel();$('sgTx').textContent=`저장 총 하자 : ${list.length} 건`;}else{const d=ls('frog_list');if(d){list=JSON.parse(d);list.forEach(it=>renderItem(it));updateModeLabel();$('sgTx').textContent=`저장 총 하자 : ${list.length} 건`;}}}catch(e){list=[];}}
-A.edit=id=>{const idx=list.findIndex(i=>i.id===id);if(idx===-1)return;if(!confirm('수정 모드로 불러오시겠습니까?'))return;const it=list[idx];$('fRoom').value=it.room;const label=$('cdLabel');label.textContent=it.room;label.classList.remove('cd-placeholder');label.style.color='var(--tx)';label.style.fontWeight='700';document.querySelectorAll('.cd-item').forEach(i=>i.classList.toggle('selected',i.dataset.val===it.room));$('fWork').value=it.work;$('fDetail').value=it.detail;if(it.wImg)showPreview('pvW',it.wImg);if(it.cImg)showPreview('pvC',it.cImg);$(`i-${id}`).remove();list.splice(idx,1);$('lCnt').textContent=list.length;saveList();window.scrollTo(0,0);};
+A.edit=id=>{const idx=list.findIndex(i=>i.id===id);if(idx===-1)return;if(!confirm('수정 모드로 불러오시겠습니까?'))return;const it=list[idx];_setRoomValue(it.room);const label=$('cdLabel');label.textContent=it.room;label.classList.remove('cd-placeholder');label.style.color='var(--tx)';label.style.fontWeight='700';document.querySelectorAll('.cd-item').forEach(i=>i.classList.toggle('selected',i.dataset.val===it.room));$('fWork').value=it.work;$('fDetail').value=it.detail;if(it.wImg)showPreview('pvW',it.wImg);if(it.cImg)showPreview('pvC',it.cImg);$(`i-${id}`).remove();list.splice(idx,1);$('lCnt').textContent=list.length;saveList();window.scrollTo(0,0);};
 A.del=id=>{if(!confirm('삭제하시겠습니까?'))return;$(`i-${id}`).remove();list=list.filter(i=>i.id!==id);$('lCnt').textContent=list.length;updateModeLabel();saveList();};
 A.clearAll=()=>{if(!list.length)return;if(!confirm(`${list.length}건 전체 삭제하시겠습니까?`))return;list=[];$('lBox').innerHTML='';$('lCnt').textContent=0;updateModeLabel();saveList();};
 
