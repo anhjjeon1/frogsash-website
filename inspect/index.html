@@ -2111,7 +2111,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v29.7';
+const APP_VER = 'v29.8';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -3127,22 +3127,22 @@ A.pdf=()=>{
     const hasW=it.wImg&&it.wImg.startsWith('data:'),hasC=it.cImg&&it.cImg.startsWith('data:');
     let imgHtml='';
     if(hasW||hasC){
-      imgHtml='<div style="display:flex;gap:4px;padding:4px;background:#F1F4F8">';
-      if(hasW)imgHtml+=`<img src="${it.wImg}" style="flex:1;max-height:180px;object-fit:cover;border-radius:6px">`;
-      if(hasC)imgHtml+=`<img src="${it.cImg}" style="flex:1;max-height:180px;object-fit:cover;border-radius:6px">`;
+      imgHtml='<div style="display:flex;gap:3px;padding:3px;background:#F1F4F8">';
+      if(hasW)imgHtml+=`<img src="${it.wImg}" style="flex:1;max-height:110px;object-fit:cover;border-radius:5px">`;
+      if(hasC)imgHtml+=`<img src="${it.cImg}" style="flex:1;max-height:110px;object-fit:cover;border-radius:5px">`;
       imgHtml+='</div>';
     }
-    items+=`<div style="border:1px solid #ddd;border-radius:10px;overflow:hidden;margin-bottom:12px;break-inside:avoid">
-      <div style="padding:8px 12px;background:#F4F6F9;border-bottom:1px solid #eee;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <span style="display:inline-block;font-size:10px;font-weight:900;background:#0A6B5C;color:#fff;width:22px;height:22px;border-radius:5px;text-align:center;line-height:22px">${idx+1}</span>
-        <b style="font-size:13px">${room}</b>
-        <span style="font-size:10px;font-weight:700;color:${tc};background:${tb};padding:2px 8px;border-radius:4px">${type}</span>
+    items+=`<div class="pdf-item" style="border:1px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:8px;break-inside:avoid;page-break-inside:avoid">
+      <div style="padding:5px 10px;background:#F4F6F9;border-bottom:1px solid #eee;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="display:inline-block;font-size:9px;font-weight:900;background:#0A6B5C;color:#fff;width:18px;height:18px;border-radius:4px;text-align:center;line-height:18px">${idx+1}</span>
+        <b style="font-size:12px">${room}</b>
+        <span style="font-size:9px;font-weight:700;color:${tc};background:${tb};padding:1px 6px;border-radius:3px">${type}</span>
         ${mTag}
       </div>
       ${imgHtml}
-      <div style="padding:10px 12px">
-        <div style="font-size:11px;font-weight:700;color:#0A6B5C;margin-bottom:4px">${work} → ${sub}</div>
-        <div style="font-size:11px;color:#5A6B7F;line-height:1.7;white-space:pre-wrap">${detail}</div>
+      <div style="padding:6px 10px">
+        <div style="font-size:10px;font-weight:700;color:#0A6B5C;margin-bottom:3px">${work} → ${sub}</div>
+        <div style="font-size:10px;color:#5A6B7F;line-height:1.55;white-space:pre-wrap">${detail}</div>
       </div>
     </div>`;
   });
@@ -3151,7 +3151,7 @@ A.pdf=()=>{
 <title>사전점검 리포트 - ${info}</title>
 <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;background:#fff;color:#1A2332;padding:16px;max-width:800px;margin:0 auto;line-height:1.5}
 img{max-width:100%;display:block}
-@media print{body{padding:8px}div{break-inside:avoid}}</style></head>
+@media print{@page{size:A4;margin:8mm}body{padding:0}.pdf-item{break-inside:avoid;page-break-inside:avoid}}</style></head>
 <body>
 <div style="text-align:center;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #0A6B5C">
   <div style="font-size:20px;font-weight:900;color:#0A6B5C;margin-bottom:6px">🐸 청개구리 입주자 사전점검 리포트</div>
