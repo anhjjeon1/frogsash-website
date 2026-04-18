@@ -2111,7 +2111,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v29.8';
+const APP_VER = 'v29.9';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -3127,9 +3127,9 @@ A.pdf=()=>{
     const hasW=it.wImg&&it.wImg.startsWith('data:'),hasC=it.cImg&&it.cImg.startsWith('data:');
     let imgHtml='';
     if(hasW||hasC){
-      imgHtml='<div style="display:flex;gap:3px;padding:3px;background:#F1F4F8">';
-      if(hasW)imgHtml+=`<img src="${it.wImg}" style="flex:1;max-height:110px;object-fit:cover;border-radius:5px">`;
-      if(hasC)imgHtml+=`<img src="${it.cImg}" style="flex:1;max-height:110px;object-fit:cover;border-radius:5px">`;
+      imgHtml='<div style="display:flex;gap:4px;padding:4px;background:#F1F4F8">';
+      if(hasW)imgHtml+=`<img src="${it.wImg}" style="width:50%;height:190px;object-fit:contain;background:#fff;border-radius:5px">`;
+      if(hasC)imgHtml+=`<img src="${it.cImg}" style="width:50%;height:190px;object-fit:contain;background:#fff;border-radius:5px">`;
       imgHtml+='</div>';
     }
     items+=`<div class="pdf-item" style="border:1px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:8px;break-inside:avoid;page-break-inside:avoid">
