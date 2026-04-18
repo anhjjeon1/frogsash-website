@@ -2111,7 +2111,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v30.7';
+const APP_VER = 'v30.8';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2225,18 +2225,53 @@ const _SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let _recActive = null;
 let _currentRec = null;
 
-function _mkRec(onResult, onEnd){
+/* v30.8: 긴 입력 지원 — continuous 모드 + 침묵 타이머로 중간 멈춤 허용 */
+function _mkRec(onResult, onEnd, opts){
+  opts = opts || {};
+  const longForm = !!opts.longForm;
+  const silenceMs = opts.silenceMs || 4000;
+  const onInterim = opts.onInterim;
   const rec = new _SR();
   rec.lang = 'ko-KR';
-  rec.interimResults = false;
-  rec.continuous = false;
+  rec.interimResults = longForm;
+  rec.continuous = longForm;
   rec.maxAlternatives = 1;
-  rec.onresult = (e) => {
-    try{
-      const transcript = (e.results[0][0].transcript||'').trim();
-      if(transcript) onResult(transcript);
-    }catch(err){}
-  };
+
+  if(longForm){
+    let accumulated = '';
+    let silenceTimer = null;
+    const resetSilence = () => {
+      clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(() => { try{ rec.stop(); }catch(e){} }, silenceMs);
+    };
+    rec.onresult = (e) => {
+      let interim = '';
+      for(let i = e.resultIndex; i < e.results.length; i++){
+        const t = e.results[i][0].transcript || '';
+        if(e.results[i].isFinal) accumulated += t;
+        else interim += t;
+      }
+      const display = (accumulated + interim).trim();
+      if(display && onInterim) onInterim(display);
+      resetSilence();
+    };
+    rec.onend = () => {
+      clearTimeout(silenceTimer);
+      const text = accumulated.trim();
+      if(text) onResult(text);
+      if(onEnd) onEnd();
+    };
+    rec._lfStart = resetSilence;
+  } else {
+    rec.onresult = (e) => {
+      try{
+        const transcript = (e.results[0][0].transcript||'').trim();
+        if(transcript) onResult(transcript);
+      }catch(err){}
+    };
+    rec.onend = () => { if(onEnd) onEnd(); };
+  }
+
   rec.onerror = (e) => {
     const err = e.error||'';
     if(err === 'not-allowed' || err === 'permission-denied' || err === 'service-not-allowed'){
@@ -2247,15 +2282,14 @@ function _mkRec(onResult, onEnd){
       if(typeof stat==='function') stat('🎤 음성인식 오류: '+err, true);
     }
   };
-  rec.onend = () => {
-    if(onEnd) onEnd();
-  };
   return rec;
 }
 
 function _stopRec(){
   if(_currentRec){
-    try{ _currentRec.abort(); }catch(e){}
+    /* v30.8: long-form은 stop()으로 누적 텍스트 확정, 일반은 abort()로 취소 */
+    const isLongForm = !!_currentRec._lfStart;
+    try{ isLongForm ? _currentRec.stop() : _currentRec.abort(); }catch(e){}
     _currentRec = null;
   }
   _recActive = null;
@@ -2316,13 +2350,15 @@ A.voiceInput = (targetId) => {
   if(!_SR){ alert('이 브라우저는 음성입력을 지원하지 않습니다.\nChrome, Edge, Safari(iOS 14.5+)를 사용해주세요.'); return; }
   const micMap = {fAddr:'micAddr', fUser:'micUser', fDetail:'micDetail'};
   const btn = $(micMap[targetId]);
-  // 같은 버튼 재클릭 시 중단
-  if(_recActive === targetId){ _stopRec(); if(typeof stat==='function') stat('🎤 음성입력 중단'); return; }
+  // 같은 버튼 재클릭 시 종료 (long-form은 확정, 일반은 취소)
+  if(_recActive === targetId){ _stopRec(); if(typeof stat==='function') stat('🎤 음성입력 종료'); return; }
   // 다른 음성 입력 중이면 먼저 중단
   _stopRec();
   _recActive = targetId;
   if(btn) btn.classList.add('listening');
-  if(typeof stat==='function') stat('🎤 말씀해 주세요... (다시 누르면 중단)');
+  /* v30.8: 주소/하자내용은 긴 문장 대응 (continuous+4초 침묵 허용) */
+  const longForm = (targetId === 'fAddr' || targetId === 'fUser');
+  if(typeof stat==='function') stat(longForm ? '🎤 천천히 말씀해 주세요... (4초간 말이 없으면 자동 종료, 다시 누르면 즉시 종료)' : '🎤 말씀해 주세요... (다시 누르면 중단)');
   const rec = _mkRec(
     (text) => {
       const field = $(targetId);
@@ -2336,10 +2372,15 @@ A.voiceInput = (targetId) => {
       /* v28.3: 하자내용 음성입력 시 공종/유형 미리보기 + 5초 후 자동 AI분석 */
       if(targetId === 'fUser') _scheduleVoiceAI(text);
     },
-    () => { if(btn) btn.classList.remove('listening'); _recActive = null; _currentRec = null; }
+    () => { if(btn) btn.classList.remove('listening'); _recActive = null; _currentRec = null; },
+    longForm ? {
+      longForm: true,
+      silenceMs: 4000,
+      onInterim: (txt) => { const f = $(targetId); if(f){ f.value = txt; } }
+    } : undefined
   );
   _currentRec = rec;
-  try{ rec.start(); }catch(e){
+  try{ rec.start(); if(longForm && rec._lfStart) rec._lfStart(); }catch(e){
     if(btn) btn.classList.remove('listening');
     _recActive = null; _currentRec = null;
     if(typeof stat==='function') stat('🎤 음성입력 시작 실패: '+(e.message||''), true);
