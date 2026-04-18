@@ -786,6 +786,15 @@ textarea.if{
   transition:all .15s;
 }
 .btn-reanalyze:active{transform:scale(.95)}
+.btn-reanalyze.highlight{
+  animation:reanalyzePulse 1.2s ease-in-out infinite;
+  box-shadow:0 0 0 0 rgba(239,68,68,.6);
+}
+@keyframes reanalyzePulse{
+  0%{box-shadow:0 0 0 0 rgba(239,68,68,.6);transform:scale(1)}
+  50%{box-shadow:0 0 0 8px rgba(239,68,68,0);transform:scale(1.06)}
+  100%{box-shadow:0 0 0 0 rgba(239,68,68,0);transform:scale(1)}
+}
 .af{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -2053,6 +2062,7 @@ input[type="file"]{
   </div>
   <div style="font-size:.68rem;color:var(--th);text-align:center;margin-top:10px;line-height:1.6">코드 미수신 시 📞 010-2322-0949 문자 문의<br>인증코드는 1회 사용 후 당일 자정 만료</div>
   <div style="font-size:.65rem;color:#ef4444;text-align:center;margin-top:6px;line-height:1.5;background:#fef2f2;border-radius:8px;padding:6px 10px"><i class="fa-solid fa-triangle-exclamation"></i> <b>환불 안내:</b> 인증코드 사용 후에는 환불이 불가합니다. 코드 미사용 시 전액 환불 가능.</div>
+  <div style="font-size:.64rem;color:#065f46;text-align:center;margin-top:4px;line-height:1.5;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:6px 10px"><i class="fa-solid fa-shield-halved"></i> <b>분석 실패 보호:</b> AI가 빈 응답·오류를 내면 <b>쿼터 차감 없이 자동 롤백</b>됩니다. 결과가 이상하면 <b>"수정 후 재분석"</b> 버튼으로 <b>최대 3회 무료 재시도</b>가 가능합니다. 지속 실패 시 📞 010-2322-0949</div>
   <button class="mo-cls" onclick="A.modal('payGuide',0)">닫기</button>
 </div>
 </div>
@@ -2149,7 +2159,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v31.4';
+const APP_VER = 'v32.0';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -3075,20 +3085,45 @@ ${d1.detail||''}
     const modeBadge=hasUserInput?'📝 입력 기반':'📷 사진 기반';
     const badge=`\n${severityBadge}\n${modeBadge} 분석 완료 · 2차 검증 완료 (참고용)`;
 
+    /* v32.0: 품질 평가 — failed면 쿼터 차감 없이 재분석 유도 */
+    const _q=_assessAIQuality(d, ui);
+    if(_q.quality==='failed'){
+      _aiDone=true;clearTimeout(_aiTimer);
+      det.value=`⚠️ AI 분석이 정상적으로 완료되지 않았습니다 (${_q.reason}).\n\n➡️ 아래 "수정 후 재분석" 버튼으로 다시 시도해주세요.\n💡 하자내용을 더 구체적으로 입력하면 정확도가 올라갑니다.\n\n※ 이 분석은 쿼터에서 차감되지 않았습니다.`;
+      if(wF||cF){const b=$('btnReanalyze');b.style.display='inline-flex';b.classList.add('highlight');}
+      $('btnRunAI').disabled=false;$('btnRunAI').style.opacity='1';
+      stat(`⚠️ 분석 실패 — 재분석을 권장합니다 (쿼터 차감 없음)`,true);
+      updateQuotaUI();
+      return;
+    }
+
     _applyAIResult(d.work||'',d.sub||'',d.type||'');
     const workInfo=`[공종] ${d.work||''} [세부] ${d.sub||''} [유형] ${d.type||''}\n\n`;
-    det.value=workInfo+(d.detail||'')+badge;
+    /* v32.0: poor 품질이면 재분석 권장 안내 추가 */
+    const poorBadge=_q.quality==='poor'?`\n\n⚠️ 분석 신뢰도가 낮을 수 있습니다 (${_q.reason}). "수정 후 재분석" 버튼으로 다시 시도해보세요.`:'';
+    det.value=workInfo+(d.detail||'')+badge+poorBadge;
     /* textarea 높이 자동 조절 */
     det.style.height='auto';det.style.height=det.scrollHeight+'px';
 
     _aiDone=true;clearTimeout(_aiTimer);
-    useQuota();updateQuotaUI();saveDraft();
+    /* v32.0: 세션 재분석 무료 처리 — 같은 입력 기준 최대 3회 */
+    const _sig=_mkInputSig();
+    if(_reanalyzeSession.sig===_sig && _reanalyzeSession.count>0 && _reanalyzeSession.count<=REANALYZE_FREE_MAX){
+      /* 재분석이므로 쿼터 차감 스킵 */
+    }else{
+      useQuota();
+      _reanalyzeSession={sig:_sig, count:0};
+    }
+    updateQuotaUI();saveDraft();
     /* 재분석 버튼 항상 표시 (사진 있을 때) */
-    if(wF||cF)$('btnReanalyze').style.display='inline-flex';
+    if(wF||cF){const b=$('btnReanalyze');b.style.display='inline-flex';if(_q.quality==='poor')b.classList.add('highlight');else b.classList.remove('highlight');}
     $('btnRunAI').disabled=false;$('btnRunAI').style.opacity='1';
     const remaining=getRemaining();
-    if(hasUserInput){stat(`📝 입력 기반 정밀 분석 완료 (잔여 ${remaining}건)`);}
-    else{stat(`✅ 사진 분석 완료 — 자동 저장 중... (잔여 ${remaining}건)`);}
+    const isFreeRe=_reanalyzeSession.sig===_sig&&_reanalyzeSession.count>0;
+    const reTag=isFreeRe?` [재분석 ${_reanalyzeSession.count}/${REANALYZE_FREE_MAX} 무료]`:'';
+    if(_q.quality==='poor'){stat(`⚠️ 분석 완료 — 재분석 권장${reTag}`,true);}
+    else if(hasUserInput){stat(`📝 입력 기반 정밀 분석 완료 (잔여 ${remaining}건)${reTag}`);}
+    else{stat(`✅ 사진 분석 완료 — 자동 저장 중... (잔여 ${remaining}건)${reTag}`);}
     /* AI 분석 완료 후 자동 저장 — detail을 즉시 캡처 */
     const _wSrc=$('pvW').src, _cSrc=$('pvC').src, _detail=det.value;
     setTimeout(()=>autoSave(_wSrc,_cSrc,_detail),800);
@@ -3112,6 +3147,26 @@ ${d1.detail||''}
 
 /* v31.1: AI 이중 호출 방지 — 모듈 스코프 busy 플래그 */
 let _aiBusy = false;
+/* v32.0: 세션 내 재분석 카운터 (같은 입력 기준) */
+let _reanalyzeSession = {sig:'', count:0};
+const REANALYZE_FREE_MAX = 3;
+function _mkInputSig(){
+  /* 입력 변경 시 세션 리셋용 서명: 사용자입력 + 위치 + 공종/세부/유형 + 사진 유무 */
+  const ui=$('fUser').value.trim(), rm=$('fRoom').value, w=$('fWork').value, s=$('fSub').value, t=$('fType').value;
+  return `${ui}|${rm}|${w}|${s}|${t}|${wF?'W':''}${cF?'C':''}`;
+}
+/* v32.0: AI 분석 품질 평가 — 실패/저품질 감지 */
+function _assessAIQuality(d, userInput){
+  const detail=(d&&d.detail||'').trim();
+  const work=(d&&d.work||'').trim();
+  if(!detail && !work) return {quality:'failed', reason:'빈 응답'};
+  if(!detail || detail.length<30) return {quality:'failed', reason:'분석 내용 부족'};
+  const bulletCount=(detail.match(/■/g)||[]).length;
+  if(bulletCount<2) return {quality:'poor', reason:'형식 불완전'};
+  if(/판단\s*불가|알\s*수\s*없|확인\s*필요|재분석\s*권장/.test(detail) && detail.length<150) return {quality:'poor', reason:'판정 보류'};
+  if(work==='기타' && userInput && userInput.length>3) return {quality:'poor', reason:'공종 매칭 실패'};
+  return {quality:'good', reason:''};
+}
 /* v31.1: Gemini 429/5xx 지수 백오프 재시도 (1s → 2s → 4s, 최대 2회) */
 async function _geminiFetchRetry(url, opts, maxRetries){
   maxRetries = (typeof maxRetries === 'number') ? maxRetries : 2;
@@ -3150,12 +3205,23 @@ A.startAI=()=>{
   $('btnRunAI').disabled=true;$('btnRunAI').style.opacity='0.5';
   runAI().finally(()=>{_aiBusy=false;});
 };
-/* ── 재분석 ── */
+/* ── 재분석 (v32.0: 같은 입력 기준 세션 내 최대 3회 무료) ── */
 A.reanalyze=()=>{
   if(!wF&&!cF){stat('⚠️ 촬영된 사진이 없습니다',true);return;}
+  if(_aiBusy){stat('⏳ 이미 분석 중입니다...',true);return;}
+  const sig=_mkInputSig();
+  if(_reanalyzeSession.sig!==sig){_reanalyzeSession={sig, count:0};}
+  if(_reanalyzeSession.count>=REANALYZE_FREE_MAX){
+    if(!confirm(`무료 재분석 ${REANALYZE_FREE_MAX}회를 모두 사용했습니다.\n\n계속하면 쿼터에서 1건 차감됩니다. 진행할까요?`))return;
+    _reanalyzeSession={sig:'', count:0};
+  }else{
+    _reanalyzeSession.count++;
+  }
   $('fDetail').value='';
+  const b=$('btnReanalyze');b.classList.remove('highlight');
   $('btnRunAI').disabled=true;$('btnRunAI').style.opacity='0.5';
-  runAI();
+  _aiBusy=true;
+  runAI().finally(()=>{_aiBusy=false;});
 };
 
 /* ── ★ v22.1: AI 결과를 태그 UI + 셀렉터에 적용 ── */
@@ -3339,8 +3405,8 @@ A.modal=(n,s)=>{let el;if(n==='paid')el=$('moPaid');else if(n==='payGuide')el=$(
 /* ============================================================
    🤖 AI 상담 챗봇
    ============================================================ */
-const CB_CATS={use:[{icon:'📱',label:'앱 사용 순서',key:'howto'},{icon:'📸',label:'사진 몇 장?',key:'photo'},{icon:'📝',label:'입력 시 장점은?',key:'text_input'},{icon:'🆓',label:'무료 몇 회?',key:'free_count'},{icon:'✅',label:'저장 후 다음은?',key:'after_save'}],pass:[{icon:'🎟️',label:'1일권이란?',key:'daily'},{icon:'🛒',label:'어디서 구매?',key:'buy_where'},{icon:'🔑',label:'코드 입력법',key:'code_how'},{icon:'⏰',label:'언제 만료?',key:'expire'},{icon:'💸',label:'환불 방법',key:'refund'}],donate:[{icon:'💚',label:'기부앱이란?',key:'donate_what'},{icon:'📊',label:'기부 비율은?',key:'donate_ratio'},{icon:'🏢',label:'어디에 기부?',key:'donate_where'}],defect:[{icon:'🏠',label:'하자란?',key:'defect_what'},{icon:'⚠️',label:'중대하자란?',key:'major_defect'},{icon:'🤖',label:'AI vs 전문가',key:'diff'},{icon:'📋',label:'결과 신뢰도?',key:'accuracy'}],save:[{icon:'💾',label:'PDF 저장법',key:'pdf_how'},{icon:'📁',label:'파일 위치?',key:'file_location'},{icon:'🗑️',label:'항목 삭제법',key:'delete_how'}]};
-const CB_ANS={howto:{q:'앱 사용 순서가 어떻게 되나요?',a:'📱 <b>앱 사용 순서 (4단계)</b><br><br>① 현장 정보 — 주소·동·호수 입력<br>② 사진 촬영 — 멀리서 1장 + 가까이 1장<br>③ 하자 정보 — 위치 선택 → 하자내용 입력(예: 터닝도어 파손) → 공종/세부/유형 자동 매칭 → <b>AI 분석</b> 버튼 클릭 → 국토부 기준 상세 분석 → 자동 저장<br>④ 점검 리스트 → <b>[전체 저장]</b>으로 PDF 마무리'},photo:{q:'사진은 몇 장 찍어야 하나요?',a:'📸 하자 1건당 최대 <b>2장</b> 촬영합니다.<br><br>• <b>멀리서 찍기</b> — 전체 위치 파악용 (선택)<br>• <b>가까이 찍기</b> — 하자 부위 상세 (필수)<br><br>💡 사진 촬영 후 <b>하자내용 입력 → AI 분석 버튼</b>을 눌러주세요!'},text_input:{q:'하자 내용을 직접 입력하면 어떤 점이 좋나요?',a:'📝 <b>하자내용 입력의 장점</b><br><br>① 공종·세부·유형이 <b>자동으로 매칭</b>됩니다<br>② AI가 국토부 기준으로 <b>상세 분석</b>합니다<br>③ 하자현상·판정근거·심각도·시정방법이 출력됩니다<br>④ 분석 완료 후 <b>자동 저장</b>됩니다<br><br>예: <b>"터닝도어 파손"</b> → PL창호공사 > 터닝도어 > 파손 자동 매칭!'},free_count:{q:'무료로 몇 번 사용할 수 있나요?',a:'🆓 매일 자정 초기화되는 <b>무료 3회</b> 제공됩니다.<br><br>더 필요하시면 1일이용권(₩10,000)으로 <b>100회</b> 이용 가능합니다!'},after_save:{q:'저장 후에는 어떻게 하나요?',a:'✅ AI 분석 완료 시 <b>자동 저장</b>됩니다.<br><br>다음입력 버튼 → 다음 하자 촬영 → 반복 → 모두 완료 시 <b>[전체 저장]</b> → PDF 다운로드!'},daily:{q:'1일이용권이 무엇인가요?',a:'🎟️ <b>오늘 하루</b> AI 분석 <b>100회</b> 이용권<br><br>• 💰 ₩10,000 / 구매 당일 <b>자정(24:00)</b>까지 유효<br>• ⏰ <b>24시간 유효</b> — 당일 구입 → <b>당일 사용만</b> 가능<br>• ⚠️ 미사용분은 다음 날로 이월되지 않습니다<br>• 💚 수익 50% → 세이브더칠드런 기부<br>• 상단 <b>[1일권 구매]</b> 버튼으로 구매!'},buy_where:{q:'어디서 어떻게 구매하나요?',a:'🛒 ① [1일권 구매] 버튼 → ② 네이버스마트스토어 결제 → ③ 문자로 코드 수신 → ④ 앱에서 입력<br><br>📞 미수신: 010-2322-0949'},code_how:{q:'인증코드 입력하는 방법은?',a:'🔑 [1일권 구매] → 팝업 하단 코드입력란에 입력 → [확인] 클릭 → 즉시 100회 활성화!'},expire:{q:'이용권 만료 시간은 언제인가요?',a:'⏰ <b>구매 당일 자정(00:00)</b>에 자동 만료됩니다.<br><br>• ⏱️ <b>24시간 유효</b> — 당일 구입 → 당일 사용<br>• 잔여 횟수는 다음 날로 이월되지 않음<br>• 미사용 코드만 환불 가능 (사용 후 환불 불가)'},donate_what:{q:'기부형 앱이란 무엇인가요?',a:'<img src="stc-logo.png" alt="세이브더칠드런" style="height:16px;vertical-align:middle;border-radius:3px;margin-right:4px;">유료 수익의 <b>50%를 세이브더칠드런에 기부</b>하는 앱입니다.<br>1만원 결제 시 5천원이 기부됩니다 🌱'},donate_ratio:{q:'기부 비율이 얼마나 되나요?',a:'📊 정확히 <b>50%</b> 기부됩니다.<br>₩5,000은 세이브더칠드런에 기부되고,<br>수수료를 제외한 ₩4,813은 앱 운영비로 사용됩니다.'},donate_where:{q:'어디에 기부하나요?',a:'🏢 <b>세이브더칠드런</b>(Save the Children)을 통해 기부됩니다.<br>아동 보호·교육·건강 등 전 세계 어린이를 위해 사용됩니다 💚'},defect_what:{q:'하자란 무엇인가요?',a:'🏠 아파트 시공 과정에서 발생한 <b>품질 결함</b>입니다.<br>입주 전 발견하면 건설사에 <b>무상 보수</b>를 요청할 수 있어요!'},major_defect:{q:'중대하자란 무엇인가요?',a:'⚠️ 결로·외풍·제작불량·시공불량 등<br>생활에 직접 영향을 미치는 심각한 결함입니다.'},diff:{q:'AI 점검과 전문가 점검의 차이는?',a:'🤖 <b>AI</b>: 무료3회/이용권100회, 입력+사진 기반 참고용<br>👷 <b>전문가</b>: 직접방문 (29평↓13만원/30평↑15만원)<br>📞 010-2322-0949'},accuracy:{q:'AI 분석 결과는 얼마나 정확한가요?',a:'📋 <b>하자 내용 직접 입력</b> 시 높은 정확도 ✅<br>사진만 촬영 시 다소 낮을 수 있어요 ⚠️<br>입력 내용이 구체적일수록 정밀도 향상!'},pdf_how:{q:'PDF 저장하는 방법은?',a:'💾 하단 <b>[전체 저장]</b> 클릭 → 자동 다운로드<br>파일명: 사전점검_동_호_날짜.pdf'},file_location:{q:'저장된 파일은 어디에 있나요?',a:'📁 <b>안드로이드</b>: 내파일 → 다운로드<br><b>아이폰</b>: 파일앱 → 다운로드'},delete_how:{q:'저장한 항목을 삭제하려면?',a:'🗑️ 항목 우측 <i class="fa-solid fa-trash-can"></i> → 개별 삭제<br>상단 [전체삭제] → 전체 초기화'},refund:{q:'환불은 어떻게 하나요?',a:'💸 <b>환불 방법 안내</b><br><br>📌 <b>환불은 네이버 스마트스토어에서만 처리됩니다</b><br>(구매가 스마트스토어를 통해 이뤄지므로, 환불도 동일 경로로만 가능)<br><br>• <b>코드 미사용 시</b>: 네이버 스마트스토어 → <b>주문내역 → 취소/환불 신청</b> → 판매자 승인 후 전액 환불<br>• <b>코드 사용 후</b>: ❌ <b>환불 불가</b> (당일 100회 이용권 사용 완료로 간주)<br>• ⏰ 1일 이용권은 <b>당일 구입 → 당일 사용</b>만 가능 (24시간 유효)<br><br>🏪 스마트스토어 바로가기: <a href="https://smartstore.naver.com/cheong-gaeguri" target="_blank" style="color:#03C75A;font-weight:700;text-decoration:underline">smartstore.naver.com/cheong-gaeguri</a><br><br>📞 일반 문의(환불 처리 불가): 010-2322-0949'}};
+const CB_CATS={use:[{icon:'📱',label:'앱 사용 순서',key:'howto'},{icon:'📸',label:'사진 몇 장?',key:'photo'},{icon:'📝',label:'입력 시 장점은?',key:'text_input'},{icon:'🆓',label:'무료 몇 회?',key:'free_count'},{icon:'✅',label:'저장 후 다음은?',key:'after_save'},{icon:'🤔',label:'분석이 이상해요',key:'analysis_issue'}],pass:[{icon:'🎟️',label:'1일권이란?',key:'daily'},{icon:'🛒',label:'어디서 구매?',key:'buy_where'},{icon:'🔑',label:'코드 입력법',key:'code_how'},{icon:'⏰',label:'언제 만료?',key:'expire'},{icon:'🤔',label:'분석 실패 시?',key:'analysis_fail_paid'},{icon:'💸',label:'환불 방법',key:'refund'}],donate:[{icon:'💚',label:'기부앱이란?',key:'donate_what'},{icon:'📊',label:'기부 비율은?',key:'donate_ratio'},{icon:'🏢',label:'어디에 기부?',key:'donate_where'}],defect:[{icon:'🏠',label:'하자란?',key:'defect_what'},{icon:'⚠️',label:'중대하자란?',key:'major_defect'},{icon:'🤖',label:'AI vs 전문가',key:'diff'},{icon:'📋',label:'결과 신뢰도?',key:'accuracy'}],save:[{icon:'💾',label:'PDF 저장법',key:'pdf_how'},{icon:'📁',label:'파일 위치?',key:'file_location'},{icon:'🗑️',label:'항목 삭제법',key:'delete_how'}]};
+const CB_ANS={howto:{q:'앱 사용 순서가 어떻게 되나요?',a:'📱 <b>앱 사용 순서 (4단계)</b><br><br>① 현장 정보 — 주소·동·호수 입력<br>② 사진 촬영 — 멀리서 1장 + 가까이 1장<br>③ 하자 정보 — 위치 선택 → 하자내용 입력(예: 터닝도어 파손) → 공종/세부/유형 자동 매칭 → <b>AI 분석</b> 버튼 클릭 → 국토부 기준 상세 분석 → 자동 저장<br>④ 점검 리스트 → <b>[전체 저장]</b>으로 PDF 마무리'},photo:{q:'사진은 몇 장 찍어야 하나요?',a:'📸 하자 1건당 최대 <b>2장</b> 촬영합니다.<br><br>• <b>멀리서 찍기</b> — 전체 위치 파악용 (선택)<br>• <b>가까이 찍기</b> — 하자 부위 상세 (필수)<br><br>💡 사진 촬영 후 <b>하자내용 입력 → AI 분석 버튼</b>을 눌러주세요!'},text_input:{q:'하자 내용을 직접 입력하면 어떤 점이 좋나요?',a:'📝 <b>하자내용 입력의 장점</b><br><br>① 공종·세부·유형이 <b>자동으로 매칭</b>됩니다<br>② AI가 국토부 기준으로 <b>상세 분석</b>합니다<br>③ 하자현상·판정근거·심각도·시정방법이 출력됩니다<br>④ 분석 완료 후 <b>자동 저장</b>됩니다<br><br>예: <b>"터닝도어 파손"</b> → PL창호공사 > 터닝도어 > 파손 자동 매칭!'},free_count:{q:'무료로 몇 번 사용할 수 있나요?',a:'🆓 매일 자정 초기화되는 <b>무료 3회</b> 제공됩니다.<br><br>더 필요하시면 1일이용권(₩10,000)으로 <b>100회</b> 이용 가능합니다!'},after_save:{q:'저장 후에는 어떻게 하나요?',a:'✅ AI 분석 완료 시 <b>자동 저장</b>됩니다.<br><br>다음입력 버튼 → 다음 하자 촬영 → 반복 → 모두 완료 시 <b>[전체 저장]</b> → PDF 다운로드!'},daily:{q:'1일이용권이 무엇인가요?',a:'🎟️ <b>오늘 하루</b> AI 분석 <b>100회</b> 이용권<br><br>• 💰 ₩10,000 / 구매 당일 <b>자정(24:00)</b>까지 유효<br>• ⏰ <b>24시간 유효</b> — 당일 구입 → <b>당일 사용만</b> 가능<br>• ⚠️ 미사용분은 다음 날로 이월되지 않습니다<br>• 💚 수익 50% → 세이브더칠드런 기부<br>• 상단 <b>[1일권 구매]</b> 버튼으로 구매!'},buy_where:{q:'어디서 어떻게 구매하나요?',a:'🛒 ① [1일권 구매] 버튼 → ② 네이버스마트스토어 결제 → ③ 문자로 코드 수신 → ④ 앱에서 입력<br><br>📞 미수신: 010-2322-0949'},code_how:{q:'인증코드 입력하는 방법은?',a:'🔑 [1일권 구매] → 팝업 하단 코드입력란에 입력 → [확인] 클릭 → 즉시 100회 활성화!'},expire:{q:'이용권 만료 시간은 언제인가요?',a:'⏰ <b>구매 당일 자정(00:00)</b>에 자동 만료됩니다.<br><br>• ⏱️ <b>24시간 유효</b> — 당일 구입 → 당일 사용<br>• 잔여 횟수는 다음 날로 이월되지 않음<br>• 미사용 코드만 환불 가능 (사용 후 환불 불가)'},donate_what:{q:'기부형 앱이란 무엇인가요?',a:'<img src="stc-logo.png" alt="세이브더칠드런" style="height:16px;vertical-align:middle;border-radius:3px;margin-right:4px;">유료 수익의 <b>50%를 세이브더칠드런에 기부</b>하는 앱입니다.<br>1만원 결제 시 5천원이 기부됩니다 🌱'},donate_ratio:{q:'기부 비율이 얼마나 되나요?',a:'📊 정확히 <b>50%</b> 기부됩니다.<br>₩5,000은 세이브더칠드런에 기부되고,<br>수수료를 제외한 ₩4,813은 앱 운영비로 사용됩니다.'},donate_where:{q:'어디에 기부하나요?',a:'🏢 <b>세이브더칠드런</b>(Save the Children)을 통해 기부됩니다.<br>아동 보호·교육·건강 등 전 세계 어린이를 위해 사용됩니다 💚'},defect_what:{q:'하자란 무엇인가요?',a:'🏠 아파트 시공 과정에서 발생한 <b>품질 결함</b>입니다.<br>입주 전 발견하면 건설사에 <b>무상 보수</b>를 요청할 수 있어요!'},major_defect:{q:'중대하자란 무엇인가요?',a:'⚠️ 결로·외풍·제작불량·시공불량 등<br>생활에 직접 영향을 미치는 심각한 결함입니다.'},diff:{q:'AI 점검과 전문가 점검의 차이는?',a:'🤖 <b>AI</b>: 무료3회/이용권100회, 입력+사진 기반 참고용<br>👷 <b>전문가</b>: 직접방문 (29평↓13만원/30평↑15만원)<br>📞 010-2322-0949'},accuracy:{q:'AI 분석 결과는 얼마나 정확한가요?',a:'📋 <b>하자 내용 직접 입력</b> 시 높은 정확도 ✅<br>사진만 촬영 시 다소 낮을 수 있어요 ⚠️<br>입력 내용이 구체적일수록 정밀도 향상!'},pdf_how:{q:'PDF 저장하는 방법은?',a:'💾 하단 <b>[전체 저장]</b> 클릭 → 자동 다운로드<br>파일명: 사전점검_동_호_날짜.pdf'},file_location:{q:'저장된 파일은 어디에 있나요?',a:'📁 <b>안드로이드</b>: 내파일 → 다운로드<br><b>아이폰</b>: 파일앱 → 다운로드'},delete_how:{q:'저장한 항목을 삭제하려면?',a:'🗑️ 항목 우측 <i class="fa-solid fa-trash-can"></i> → 개별 삭제<br>상단 [전체삭제] → 전체 초기화'},refund:{q:'환불은 어떻게 하나요?',a:'💸 <b>환불 방법 안내</b><br><br>📌 <b>환불은 네이버 스마트스토어에서만 처리됩니다</b><br>(구매가 스마트스토어를 통해 이뤄지므로, 환불도 동일 경로로만 가능)<br><br>• <b>코드 미사용 시</b>: 네이버 스마트스토어 → <b>주문내역 → 취소/환불 신청</b> → 판매자 승인 후 전액 환불<br>• <b>코드 사용 후</b>: ❌ <b>환불 불가</b> (당일 100회 이용권 사용 완료로 간주)<br>• ⏰ 1일 이용권은 <b>당일 구입 → 당일 사용</b>만 가능 (24시간 유효)<br><br>🏪 스마트스토어 바로가기: <a href="https://smartstore.naver.com/cheong-gaeguri" target="_blank" style="color:#03C75A;font-weight:700;text-decoration:underline">smartstore.naver.com/cheong-gaeguri</a><br><br>📞 일반 문의(환불 처리 불가): 010-2322-0949'},analysis_issue:{q:'AI 분석 결과가 이상하거나 부정확해요',a:'🤔 <b>분석이 이상할 때 해결법</b><br><br>① <b>"수정 후 재분석" 빨간 버튼</b>을 눌러주세요<br>&nbsp;&nbsp;• 같은 입력 기준 <b>최대 3회 무료 재분석</b><br>&nbsp;&nbsp;• 쿼터(잔여 건수)에서 차감되지 않습니다<br><br>② <b>하자내용을 더 구체적으로</b> 입력 후 재분석<br>&nbsp;&nbsp;• 예: "창문" ❌ → "안방 창호 틈새 외풍" ✅<br><br>③ 공종/세부/유형을 <b>수동으로 선택</b> 후 재분석<br>&nbsp;&nbsp;• AI가 수동 선택값을 최우선 참고합니다<br><br>④ 사진을 <b>하자 부위 중심</b>으로 다시 촬영<br>&nbsp;&nbsp;• 멀리 1장 + 가까이 1장 (흔들림 없이)<br><br>⑤ 계속 실패 시 📞 <b>010-2322-0949</b> 문의<br><br>💡 AI 응답 오류/빈 응답은 <b>쿼터 차감 없이</b> 자동 롤백됩니다.'},analysis_fail_paid:{q:'유료 이용권인데 AI 분석이 실패했어요',a:'⚠️ <b>이용권 사용 중 분석 실패 시</b><br><br>✅ <b>자동 보호 기능</b><br>&nbsp;&nbsp;• AI가 빈 응답을 주거나 오류 시 → <b>쿼터 차감 없음</b><br>&nbsp;&nbsp;• 분석 화면에 "쿼터 차감되지 않았음" 문구 표시<br><br>✅ <b>무료 재분석</b><br>&nbsp;&nbsp;• "수정 후 재분석" 버튼 → 같은 입력 기준 <b>3회 무료</b><br>&nbsp;&nbsp;• 3회 초과 시에만 쿼터 1건 차감<br><br>📌 <b>지속적 실패 시 조치</b><br>&nbsp;&nbsp;1️⃣ 하자내용을 구체적으로 재입력 후 재분석<br>&nbsp;&nbsp;2️⃣ 공종/세부/유형 수동 선택 후 재분석<br>&nbsp;&nbsp;3️⃣ 사진 재촬영 (가까이 찍기 필수)<br>&nbsp;&nbsp;4️⃣ 📞 <b>010-2322-0949</b> 문의 → 보상 쿠폰 재발급 검토<br><br>🏪 이용권 전액 환불은 <b>코드 미사용 시 스마트스토어</b>에서 가능합니다.'}};
 A.cbTab=(el,cat)=>{document.querySelectorAll('.cb-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');const quick=$('cbQuick');quick.innerHTML='';(CB_CATS[cat]||[]).forEach(item=>{const btn=document.createElement('button');btn.className='cb-qbtn';btn.innerHTML=`<span class="cb-qicon">${item.icon}</span>${item.label}`;btn.onclick=()=>A.cbAsk(item.key);quick.appendChild(btn);});};
 A.cbAsk=key=>{const ans=CB_ANS[key];if(!ans)return;cbAddMsg(ans.q,'usr');setTimeout(()=>cbAddMsg(ans.a,'bot'),280);};
 function cbAddMsg(html,type){const msgs=$('cbMsgs');const div=document.createElement('div');div.className=`cb-msg ${type}`;if(type==='bot'){div.innerHTML=`<div class="cb-avatar">🐸</div><div><div class="cb-bubble">${html}</div></div>`;}else{div.innerHTML=`<div class="cb-bubble">${html}</div>`;}msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
