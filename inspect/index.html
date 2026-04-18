@@ -1751,6 +1751,15 @@ input[type="file"]{
 </style>
 </head>
 <body>
+<!-- v31.4: JS 미지원/파싱 실패 시 SPARE 정적 링크 -->
+<noscript>
+  <div style="padding:32px 20px;text-align:center;font-family:-apple-system,'Noto Sans KR',sans-serif;max-width:500px;margin:40px auto;background:#fff;border:2px solid #1B6B28;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.1)">
+    <h1 style="color:#1B6B28;margin:0 0 12px">🐸 청개구리 사전점검</h1>
+    <p style="color:#5A6B7F;margin:0 0 20px;line-height:1.6">이 앱은 JavaScript가 필요합니다.<br>브라우저 설정에서 활성화하거나<br>아래 <b>대체 앱</b>을 이용해주세요.</p>
+    <a href="https://anhjjeon1.github.io/inspect-spare/" style="display:inline-block;padding:14px 32px;background:#1B6B28;color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px">✅ 대체 앱(SPARE)으로 이동</a>
+    <p style="color:#94A3B8;margin:20px 0 0;font-size:13px">📞 문의: 010-2322-0949</p>
+  </div>
+</noscript>
 <div class="app">
 <div id="ptitle" style="display:none"></div>
 
@@ -2115,10 +2124,32 @@ input[type="file"]{
 
 <!-- PDF 라이브러리 제거: HTML 파일 저장 방식으로 변경 -->
 <script>
+/* v31.4: 치명적 초기 오류 자동 failover — 앱 초기화 전 에러 발생 시 SPARE로 이전 안내 */
+(function(){
+  let _initFailShown=false;
+  function offerFailover(reason){
+    if(_initFailShown)return;_initFailShown=true;
+    /* 앱 초기화 완료 전이면 즉시 프롬프트, 이후 단계면 무시 (정상 에러 핸들러에 위임) */
+    if(window.A&&typeof window.A.startAI==='function')return;
+    setTimeout(function(){
+      if(confirm('⚠️ 메인앱 초기 로드 오류가 발생했습니다 ('+reason+').\n\n대체 앱(SPARE)으로 이동하시겠습니까?')){
+        window.location.href='https://anhjjeon1.github.io/inspect-spare/';
+      }
+    },100);
+  }
+  window.addEventListener('error',function(e){offerFailover(e.message||'스크립트 오류');},true);
+  window.addEventListener('unhandledrejection',function(e){offerFailover(e.reason?.message||'비동기 오류');});
+  /* 10초 내 A.startAI 미정의 시 로드 실패로 간주 (CDN/파싱 이슈) */
+  setTimeout(function(){
+    if(!window.A||typeof window.A.startAI!=='function'){
+      offerFailover('앱 초기화 타임아웃');
+    }
+  },10000);
+})();
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v31.3';
+const APP_VER = 'v31.4';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2746,7 +2777,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('[data-ver]').forEach(el=>{el.textContent=el.textContent.replace(/v[\d.]+/,APP_VER);});
   document.title=document.title.replace(/v[\d.]+/,APP_VER);
   /* 서버 헬스체크 (30초 후 비간섭적 실행) */
-  setTimeout(spareFailover,30000);
+  setTimeout(spareFailover,15000); /* v31.4: 30→15초 단축 */
 
   const inW=$('inW'), inC=$('inC');
   const lblW=$('lblW'), lblC=$('lblC');
