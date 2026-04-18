@@ -2159,7 +2159,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v32.4';
+const APP_VER = 'v32.5';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2278,7 +2278,7 @@ let _currentRec = null;
 function _mkRec(onResult, onEnd, opts){
   opts = opts || {};
   const longForm = !!opts.longForm;
-  const silenceMs = opts.silenceMs || 5000;
+  const silenceMs = opts.silenceMs || 10000;
   const onInterim = opts.onInterim;
   const rec = new _SR();
   rec.lang = 'ko-KR';
@@ -2287,14 +2287,21 @@ function _mkRec(onResult, onEnd, opts){
   rec.maxAlternatives = 1;
 
   if(longForm){
+    /* v32.5: savedAccumulated = 이전 세션들에서 확정된 텍스트,
+       accumulated = savedAccumulated + 현재 세션의 final 합 */
+    let savedAccumulated = '';
     let accumulated = '';
     let silenceTimer = null;
     let hasStartedSpeaking = false;
+    let isIntendedStop = false; /* 사용자/silenceTimer가 명시적으로 종료시키면 true */
     /* v32.4: 첫 발화 전에는 침묵 타이머를 돌리지 않음 — 주소 생각하는 시간 확보 */
     const resetSilence = () => {
       if(!hasStartedSpeaking) return;
       clearTimeout(silenceTimer);
-      silenceTimer = setTimeout(() => { try{ rec.stop(); }catch(e){} }, silenceMs);
+      silenceTimer = setTimeout(() => {
+        isIntendedStop = true;
+        try{ rec.stop(); }catch(e){}
+      }, silenceMs);
     };
     /* v32.3: 삼성 인터넷에서 동일/포함관계 final 중복 누적 버그 대응.
        한쪽이 다른 쪽의 prefix면 긴 쪽만 유지, 완전히 다른 발화는 연결. */
@@ -2315,7 +2322,8 @@ function _mkRec(onResult, onEnd, opts){
           interim += t;
         }
       }
-      accumulated = finalParts.join(' ');
+      const currentSession = finalParts.join(' ');
+      accumulated = (savedAccumulated + (currentSession ? (savedAccumulated ? ' ' : '') + currentSession : '')).trim();
       const display = (accumulated + (interim ? ' ' + interim : '')).trim();
       /* v32.4: 유의미한 텍스트가 들어온 순간부터 침묵 타이머 시작 */
       if(display && !hasStartedSpeaking) hasStartedSpeaking = true;
@@ -2324,10 +2332,19 @@ function _mkRec(onResult, onEnd, opts){
     };
     rec.onend = () => {
       clearTimeout(silenceTimer);
+      /* v32.5: 사용자가 멈추지 않았는데 브라우저가 자체 종료하면 자동 재시작.
+         이어지는 세션을 위해 현재까지 accumulated를 savedAccumulated로 보존. */
+      if(!isIntendedStop){
+        savedAccumulated = accumulated;
+        hasStartedSpeaking = false; /* 재시작 후 새 첫 발화 대기 */
+        try{ rec.start(); return; }catch(e){/* 재시작 실패 시 아래 종료 처리로 fallthrough */}
+      }
       const text = accumulated.trim();
       if(text) onResult(text);
       if(onEnd) onEnd();
     };
+    /* v32.5: 외부에서 명시적 종료 시 호출 — 재시작 방지 */
+    rec._lfMarkIntended = () => { isIntendedStop = true; };
     /* v32.4: start() 직후엔 타이머를 돌리지 않음 — 첫 발화 감지 후 onresult에서 시작 */
     rec._lfStart = () => {};
   } else {
@@ -2357,6 +2374,8 @@ function _stopRec(){
   if(_currentRec){
     /* v30.8: long-form은 stop()으로 누적 텍스트 확정, 일반은 abort()로 취소 */
     const isLongForm = !!_currentRec._lfStart;
+    /* v32.5: long-form의 의도적 종료 — auto-restart 방지 */
+    if(isLongForm && _currentRec._lfMarkIntended) _currentRec._lfMarkIntended();
     try{ isLongForm ? _currentRec.stop() : _currentRec.abort(); }catch(e){}
     _currentRec = null;
   }
@@ -2424,9 +2443,9 @@ A.voiceInput = (targetId) => {
   _stopRec();
   _recActive = targetId;
   if(btn) btn.classList.add('listening');
-  /* v30.8: 주소/하자내용은 긴 문장 대응 (continuous), v32.4: 5초 침묵 + 첫 발화 전 대기 */
+  /* v30.8: 주소/하자내용은 긴 문장 대응 (continuous), v32.5: 10초 침묵 + 첫 발화 전 대기 + auto-restart */
   const longForm = (targetId === 'fAddr' || targetId === 'fUser');
-  if(typeof stat==='function') stat(longForm ? '🎤 천천히 말씀해 주세요... (말이 끝나고 5초 후 자동 종료, 다시 누르면 즉시 종료)' : '🎤 말씀해 주세요... (다시 누르면 중단)');
+  if(typeof stat==='function') stat(longForm ? '🎤 천천히 말씀해 주세요... (말이 끝나고 10초 후 자동 종료, 다시 누르면 즉시 종료)' : '🎤 말씀해 주세요... (다시 누르면 중단)');
   const rec = _mkRec(
     (text) => {
       const field = $(targetId);
@@ -2443,7 +2462,7 @@ A.voiceInput = (targetId) => {
     () => { if(btn) btn.classList.remove('listening'); _recActive = null; _currentRec = null; },
     longForm ? {
       longForm: true,
-      silenceMs: 5000,
+      silenceMs: 10000,
       onInterim: (txt) => { const f = $(targetId); if(f){ f.value = txt; } }
     } : undefined
   );
@@ -2923,7 +2942,7 @@ A.devTap=(()=>{let tc=0,tt=null;return()=>{tc++;clearTimeout(tt);if(tc>=3){tc=0;
    ============================================================ */
 const GUIDE_TEXT=[
   '안녕하세요. 청개구리 입주 사전점검 A I 앱 사용법을 안내해 드립니다.',
-  '첫째, 주소 입력입니다. 주소와 동호수를 직접 입력하시거나, 입력칸 우측의 마이크 버튼을 눌러 음성으로 말씀해 주세요. 긴 주소도 천천히 말씀하시면 됩니다. 말씀을 마치고 약 5초간 침묵하시면 자동으로 입력이 완료됩니다.',
+  '첫째, 주소 입력입니다. 주소와 동호수를 직접 입력하시거나, 입력칸 우측의 마이크 버튼을 눌러 음성으로 말씀해 주세요. 긴 주소도 천천히 말씀하시면 됩니다. 말씀을 마치고 약 10초간 침묵하시면 자동으로 입력이 완료됩니다.',
   '둘째, 사진 촬영입니다. 멀리서 찍기로 전체 위치를 담고, 가까이 찍기로 하자 부위를 선명하게 촬영해 주세요.',
   '셋째, 하자 정보 입력입니다. 위치 선택에서 해당 공간을 고르고, 하자 내용을 말씀해 주세요. 하자 내용 역시 음성으로 길게 말씀하셔도 됩니다.',
   '음성으로 하자를 입력하시면, 국토부 기준에 따른 공종과 세부, 유형이 자동으로 매칭되고, 곧바로 A I 정밀 분석이 시작됩니다. 1차 분석 후 2차 검증을 거쳐 최종 결과가 출력되며, 검증이 완료되면 점검 리스트에 자동 저장됩니다.',
