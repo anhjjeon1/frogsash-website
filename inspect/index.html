@@ -2111,7 +2111,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v30.3';
+const APP_VER = 'v30.4';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -3127,7 +3127,7 @@ A.pdf=()=>{
     const hasW=it.wImg&&it.wImg.startsWith('data:'),hasC=it.cImg&&it.cImg.startsWith('data:');
     let imgHtml='';
     if(hasW||hasC){
-      imgHtml='<div style="display:flex;gap:6px;padding:4px;background:#F1F4F8;justify-content:center">';
+      imgHtml='<div style="display:flex;gap:20px;padding:6px 16px;background:#F1F4F8;justify-content:center">';
       if(hasW)imgHtml+=`<img src="${it.wImg}" style="height:200px;aspect-ratio:4/3;object-fit:cover;background:#fff;border-radius:5px">`;
       if(hasC)imgHtml+=`<img src="${it.cImg}" style="height:200px;aspect-ratio:4/3;object-fit:cover;background:#fff;border-radius:5px">`;
       imgHtml+='</div>';
@@ -3154,7 +3154,7 @@ img{max-width:100%;display:block}
 @media print{@page{size:A4;margin:8mm}body{padding:0}.pdf-item{break-inside:avoid;page-break-inside:avoid}}</style></head>
 <body>
 <div style="text-align:center;margin-bottom:10px;padding-bottom:8px;border-bottom:3px solid #0A6B5C">
-  <div style="font-size:20px;font-weight:900;color:#0A6B5C;margin-bottom:6px">🐸 청개구리 입주자 사전점검 리포트</div>
+  <div style="font-size:28px;font-weight:900;color:#0A6B5C;margin-bottom:8px;letter-spacing:-.5px">청개구리 입주자 사전점검 리포트</div>
   <div style="font-size:13px;font-weight:700;color:#5A6B7F">${info}</div>
   <div style="font-size:10px;color:#94A3B8;margin-top:4px">${dateStr} 작성 | 총 ${list.length}건 | ${APP_VER}</div>
 </div>
