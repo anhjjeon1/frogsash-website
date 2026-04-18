@@ -2159,7 +2159,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v32.0';
+const APP_VER = 'v32.1';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -3303,27 +3303,30 @@ const el=$('fUser');el.classList.remove('has-value');const banner=$('inputHintBa
 $('aiTags').style.display='none';$('afSelects').style.display='none';
 clearItemDraft();step(4);}
 /* v31.1: 탭 간 저장 충돌 방지 — frog_list_full의 원격 추가분을 id 기준 병합 */
-function saveList(){
-  try{
-    const remoteRaw=ls('frog_list_full');
-    if(remoteRaw){
-      const remote=JSON.parse(remoteRaw);
-      const localIds=new Set(list.map(it=>it.id));
-      const additions=remote.filter(r=>r&&r.id&&!localIds.has(r.id));
-      if(additions.length){
-        list.push(...additions);
-        additions.forEach(renderItem);
-        $('lCnt').textContent=list.length;
-        updateModeLabel();
+function saveList(skipMerge){
+  /* v32.1: skipMerge=true → 삭제 경로(clearAll/del)에서 union merge 우회하여 복구 방지 */
+  if(!skipMerge){
+    try{
+      const remoteRaw=ls('frog_list_full');
+      if(remoteRaw){
+        const remote=JSON.parse(remoteRaw);
+        const localIds=new Set(list.map(it=>it.id));
+        const additions=remote.filter(r=>r&&r.id&&!localIds.has(r.id));
+        if(additions.length){
+          list.push(...additions);
+          additions.forEach(renderItem);
+          $('lCnt').textContent=list.length;
+          updateModeLabel();
+        }
       }
-    }
-  }catch(e){/* 병합 실패 시 그대로 저장 진행 */}
+    }catch(e){/* 병합 실패 시 그대로 저장 진행 */}
+  }
   try{ls('frog_list',JSON.stringify(list.map(it=>({...it,wImg:null,cImg:null}))));ls('frog_list_full',JSON.stringify(list));$('sgTx').textContent=`저장 총 하자 : ${list.length} 건`;}catch(e){console.warn('Storage full');}
 }
 function loadList(){try{const full=ls('frog_list_full');if(full){list=JSON.parse(full);list.forEach(it=>renderItem(it));updateModeLabel();$('sgTx').textContent=`저장 총 하자 : ${list.length} 건`;}else{const d=ls('frog_list');if(d){list=JSON.parse(d);list.forEach(it=>renderItem(it));updateModeLabel();$('sgTx').textContent=`저장 총 하자 : ${list.length} 건`;}}}catch(e){list=[];}}
 A.edit=id=>{const idx=list.findIndex(i=>i.id===id);if(idx===-1)return;if(!confirm('수정 모드로 불러오시겠습니까?'))return;const it=list[idx];_setRoomValue(it.room);const label=$('cdLabel');label.textContent=it.room;label.classList.remove('cd-placeholder');label.style.color='var(--tx)';label.style.fontWeight='700';document.querySelectorAll('.cd-item').forEach(i=>i.classList.toggle('selected',i.dataset.val===it.room));$('fWork').value=it.work;$('fDetail').value=it.detail;if(it.wImg)showPreview('pvW',it.wImg);if(it.cImg)showPreview('pvC',it.cImg);$(`i-${id}`).remove();list.splice(idx,1);$('lCnt').textContent=list.length;saveList();window.scrollTo(0,0);};
-A.del=id=>{if(!confirm('삭제하시겠습니까?'))return;$(`i-${id}`).remove();list=list.filter(i=>i.id!==id);$('lCnt').textContent=list.length;updateModeLabel();saveList();};
-A.clearAll=()=>{if(!list.length)return;if(!confirm(`${list.length}건 전체 삭제하시겠습니까?`))return;list=[];$('lBox').innerHTML='';$('lCnt').textContent=0;updateModeLabel();saveList();};
+A.del=id=>{if(!confirm('삭제하시겠습니까?'))return;$(`i-${id}`).remove();list=list.filter(i=>i.id!==id);$('lCnt').textContent=list.length;updateModeLabel();saveList(true);};
+A.clearAll=()=>{if(!list.length)return;if(!confirm(`${list.length}건 전체 삭제하시겠습니까?`))return;list=[];$('lBox').innerHTML='';$('lCnt').textContent=0;updateModeLabel();saveList(true);};
 
 /* ── 전체 저장 (HTML 파일 다운로드 - 즉시 생성) ── */
 A.pdf=()=>{
