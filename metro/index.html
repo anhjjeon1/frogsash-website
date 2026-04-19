@@ -204,7 +204,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V18.0</div>
+      <div class="ver">V18.1</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -251,6 +251,7 @@
       <!-- 로드 버튼 -->
       <div id="loadControls">
         <button class="btn-cloud" onclick="App.loadFromSheet()">&#9729; 구글시트에서 불러오기</button>
+        <button class="btn-cloud" style="background:linear-gradient(180deg,#10B981,#059669);box-shadow:0 3px 0 #047857,0 4px 8px rgba(5,150,105,.25);margin-top:8px" onclick="document.getElementById('fileInput').click()">&#128194; 엑셀 파일 &#8594; 구글시트 업로드</button>
         <input type="file" id="fileInput" accept=".xlsx,.xlsm,.xls,.csv" hidden onchange="App.uploadExcelToSheet(this)">
       </div>
     </div>
