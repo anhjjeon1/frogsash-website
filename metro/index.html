@@ -16,20 +16,19 @@
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <style>
     :root{
-      --primary:#2563EB;--primary-dark:#1D4ED8;--primary-light:#DBEAFE;--primary-pale:#EFF6FF;
-      --accent:#F59E0B;--accent-dark:#D97706;--accent-light:#FEF3C7;
-      --success:#10B981;--success-light:#D1FAE5;
-      --danger:#EF4444;--danger-light:#FEE2E2;
-      --info:#6366F1;--info-light:#E0E7FF;
-      --orange:#F97316;--orange-light:#FFF7ED;
-      --bg:#F0F4F8;--surface:#FFFFFF;--surface-alt:#F8FAFC;
-      --text:#1E293B;--text-sub:#64748B;--text-dim:#94A3B8;--text-muted:#CBD5E1;
+      /* 3-color professional palette: Slate (primary) + Cyan (accent) + Neutral */
+      --primary:#0F172A;--primary-dark:#020617;--primary-mid:#334155;--primary-light:#CBD5E1;--primary-pale:#F1F5F9;
+      --accent:#0891B2;--accent-dark:#0E7490;--accent-light:#CFFAFE;--accent-pale:#ECFEFF;
+      --success:#059669;--success-light:#ECFDF5;
+      --danger:#DC2626;--danger-light:#FEE2E2;
+      --bg:#F8FAFC;--surface:#FFFFFF;--surface-alt:#F1F5F9;
+      --text:#0F172A;--text-sub:#475569;--text-dim:#94A3B8;--text-muted:#CBD5E1;
       --border:#E2E8F0;--border-light:#F1F5F9;
-      --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-      --shadow-md:0 4px 6px rgba(0,0,0,.05),0 2px 4px rgba(0,0,0,.04);
-      --shadow-lg:0 10px 25px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.04);
-      --shadow-3d:0 2px 0 rgba(0,0,0,.12);
-      --r:10px;--r-sm:6px;--r-lg:14px;
+      --shadow:0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);
+      --shadow-md:0 4px 6px rgba(15,23,42,.05),0 2px 4px rgba(15,23,42,.04);
+      --shadow-lg:0 10px 25px rgba(15,23,42,.08),0 4px 10px rgba(15,23,42,.04);
+      --shadow-3d:0 2px 0 rgba(15,23,42,.12);
+      --r:8px;--r-sm:6px;--r-lg:12px;
     }
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     body,html{height:100%;background:var(--bg);overflow:hidden}
@@ -38,10 +37,10 @@
     .app::-webkit-scrollbar{width:3px}
     .app::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
-    header{background:linear-gradient(135deg,#1F2937,#374151,#4B5563);color:white;padding:14px 16px;position:relative;box-shadow:0 3px 10px rgba(31,41,55,.3);display:flex;align-items:center;justify-content:center}
-    header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#F59E0B,#FBBF24,#F59E0B)}
+    header{background:linear-gradient(180deg,#0F172A,#1E293B);color:white;padding:14px 16px;position:relative;box-shadow:0 2px 8px rgba(15,23,42,.25);display:flex;align-items:center;justify-content:center}
+    header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:#0891B2}
     header h1{font-family:'Noto Sans KR';font-size:.88rem;font-weight:800;letter-spacing:.5px;text-shadow:0 1px 2px rgba(0,0,0,.15)}
-    header .ver{font-family:'JetBrains Mono';font-size:.6rem;color:#93C5FD;font-weight:600;position:absolute;right:16px}
+    header .ver{font-family:'JetBrains Mono';font-size:.6rem;color:#67E8F9;font-weight:600;position:absolute;right:16px;letter-spacing:.5px}
     header .settings-btn{position:absolute;left:14px;font-size:1.1rem;cursor:pointer;opacity:.8}
     header .settings-btn:active{opacity:1}
 
@@ -49,7 +48,7 @@
     .sec{padding:12px 14px;margin:0}
     .sec.sec-tight{padding:8px 4px}
     .sec-head{display:flex;align-items:center;gap:7px;margin-bottom:10px}
-    .sec-num{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#2563EB);color:white;font-family:'Outfit';font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 4px rgba(37,99,235,.3)}
+    .sec-num{width:22px;height:22px;border-radius:4px;background:#0F172A;color:white;font-family:'Outfit';font-size:.68rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .sec-title{font-size:.8rem;font-weight:800;color:var(--text)}
     .sec-sub{font-size:.55rem;color:var(--text-dim);margin-left:4px}
 
@@ -67,7 +66,7 @@
     .settings-btns{display:flex;gap:6px;margin-top:12px}
     .settings-btns button{flex:1;padding:9px;border:none;border-radius:var(--r-sm);font-size:.66rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;box-shadow:var(--shadow-3d)}
     .settings-btns button:active{transform:translateY(1px);box-shadow:none}
-    .settings-btns .btn-save{background:linear-gradient(180deg,#3B82F6,#2563EB);color:white}
+    .settings-btns .btn-save{background:#0F172A;color:white}
     .settings-btns .btn-cancel{background:var(--surface);color:var(--text-sub);border:1px solid var(--border)}
     .conn-status{margin-top:8px;padding:6px 10px;border-radius:var(--r-sm);font-size:.56rem;font-weight:700;text-align:center}
     .conn-status.ok{background:var(--success-light);color:var(--success)}
@@ -85,7 +84,7 @@
     .field-inline input.has-mic{padding-left:10px;padding-right:44px;text-align:left}
     .field-inline input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
     .field-inline input::placeholder{color:var(--text-muted);font-weight:400;font-size:.7rem}
-    .field-inline.locked input{background:#ECFDF5;border-color:#34D399}
+    .field-inline.locked input{background:#F1F5F9;border-color:#CBD5E1;color:#0F172A}
     .field-inline .has-mic + .mic-btn + label{right:4px;font-size:.38rem}
     .mic-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);background:#fff;color:#64748B;cursor:pointer;font-size:.7rem;padding:0;font-family:inherit;position:absolute;right:14px;top:50%;transform:translateY(-50%);z-index:2;transition:all .2s}
     .mic-btn:active{transform:translateY(-50%) scale(.92)}
@@ -96,14 +95,15 @@
     /* LOG TABLE */
     .table-wrap{width:100%;overflow-x:auto;overflow-y:auto;max-height:400px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);-webkit-overflow-scrolling:touch;box-shadow:var(--shadow-md)}
     .log-table{width:100%;border-collapse:collapse;font-size:.68rem}
-    .log-table th{background:linear-gradient(180deg,#3B82F6,#2563EB);color:white;padding:5px 1px;border:1px solid #1D4ED8;font-weight:700;white-space:nowrap;position:sticky;top:0;z-index:10;font-size:.56rem;text-shadow:0 1px 1px rgba(0,0,0,.15)}
+    .log-table th{background:#0F172A;color:white;padding:5px 1px;border:1px solid #1E293B;font-weight:700;white-space:nowrap;position:sticky;top:0;z-index:10;font-size:.56rem;letter-spacing:.2px}
     .log-table td{padding:3px 1px;border:1px solid var(--border-light);text-align:center;vertical-align:middle;font-size:.65rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
     .log-table td.td-type{white-space:normal;word-break:break-all;line-height:1.2;font-size:.6rem;max-width:36px}
     .log-table td.td-memo{text-align:left;white-space:normal;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-height:4.2em;word-break:break-all;font-weight:700;cursor:pointer;font-size:.68rem}
     .photo-cell{padding:0!important;width:48px;height:48px;position:relative;cursor:pointer;background:var(--surface-alt)}
     .photo-cell img{width:100%;height:100%;object-fit:cover;display:block}
-    .photo-cell .pc-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:48px;font-size:14px;color:var(--text-muted)}
-    .photo-cell .pc-empty span{font-size:.38rem;color:var(--text-muted)}
+    .photo-cell .pc-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:48px;gap:2px;color:#94A3B8}
+    .photo-cell .pc-empty i{font-size:14px}
+    .photo-cell .pc-empty span{font-size:.36rem;color:#94A3B8;font-weight:600;letter-spacing:.3px}
     .photo-cell.has-photo .pc-empty{display:none}
     .photo-cell .pc-del{position:absolute;top:0;right:0;width:16px;height:16px;background:var(--danger);color:white;border:none;border-radius:0 0 0 4px;font-size:9px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:5}
     .photo-cell.has-photo .pc-del{display:flex}
@@ -121,9 +121,9 @@
     .bottom-bar .btn-row{display:flex;gap:6px}
     .bottom-bar button{flex:1;height:38px;border-radius:var(--r);border:none;font-weight:800;font-size:.72rem;cursor:pointer;font-family:'Noto Sans KR';letter-spacing:.3px;transition:all .1s;box-shadow:0 3px 0 rgba(0,0,0,.1),var(--shadow)}
     .bottom-bar button:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.1)}
-    .btn-send{background:linear-gradient(180deg,#FBBF24,#F59E0B);color:#78350F}
+    .btn-send{background:#0F172A;color:white}
     .btn-new{background:linear-gradient(180deg,#F8FAFC,#E2E8F0);color:var(--text)}
-    .btn-refresh{background:linear-gradient(180deg,#34D399,#10B981);color:white}
+    .btn-refresh{background:#fff;color:#334155;border:1.5px solid #CBD5E1!important}
 
     /* TOAST & LOADER */
     .toast{position:fixed;bottom:68px;left:50%;transform:translateX(-50%) translateY(20px);padding:10px 22px;border-radius:var(--r);font-size:.7rem;font-weight:700;z-index:10000;opacity:0;transition:all .3s;pointer-events:none;max-width:90%;text-align:center;white-space:nowrap;box-shadow:var(--shadow-lg)}
@@ -148,11 +148,14 @@
     .memo-popup-body{font-size:1rem;font-weight:700;color:var(--text);line-height:1.6;word-break:break-all}
 
     /* UPLOAD BUTTONS */
-    .btn-cloud{width:100%;padding:14px;border:none;border-radius:var(--r);background:linear-gradient(180deg,#3B82F6,#2563EB);color:white;font-size:.74rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;box-shadow:0 3px 0 #1D4ED8,0 4px 8px rgba(37,99,235,.25);transition:all .1s}
-    .btn-cloud:active{transform:translateY(2px);box-shadow:0 1px 0 #1D4ED8}
+    .btn-cloud{width:100%;padding:13px;border:none;border-radius:var(--r);background:#0F172A;color:white;font-size:.78rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;letter-spacing:.3px;transition:all .15s}
+    .btn-cloud:active{transform:translateY(1px);background:#020617}
+    .btn-cloud.secondary{background:#fff;color:#0F172A;border:1.5px solid #CBD5E1}
+    .btn-cloud.secondary:active{background:#F1F5F9}
     .btn-upload-excel{width:100%;margin-top:6px;padding:10px;border:1.5px dashed var(--border);border-radius:var(--r-sm);background:var(--surface-alt);color:var(--text-sub);font-size:.62rem;font-weight:700;font-family:'Noto Sans KR';cursor:pointer;text-align:center}
     .btn-upload-excel:active{background:var(--primary-pale);border-color:var(--primary)}
-    .loaded-info{font-size:.64rem;font-weight:700;color:var(--success);text-align:center;padding:8px;border:1.5px solid var(--success);border-radius:var(--r-sm);background:var(--success-light)}
+    .loaded-info{font-size:.64rem;font-weight:700;color:#0F172A;text-align:center;padding:10px;border:1.5px solid #CBD5E1;border-radius:var(--r-sm);background:#F8FAFC}
+    .loaded-info i{color:#0891B2;margin-right:4px}
     .loaded-sub{font-size:.48rem;color:var(--text-dim);margin-top:2px}
     @media print{
       body,html,.app{height:auto!important;overflow:visible!important;background:#fff!important}
@@ -217,7 +220,7 @@
     </div>
     <div class="conn-status" id="connStatus" style="display:none"></div>
     <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-      <button class="btn-cancel" style="width:100%;background:#F59E0B;color:#fff;font-weight:700" onclick="App.migratePhotos()">기존 사진 → Drive 이미지 마이그레이션</button>
+      <button class="btn-cancel" style="width:100%;background:#334155;color:#fff;font-weight:700;border:none" onclick="App.migratePhotos()">기존 사진 → Drive 이미지 마이그레이션</button>
       <div class="sf-hint" style="margin-top:6px">v17 이하 base64 사진을 Drive URL+IMAGE 수식으로 일괄 변환 (사진 많으면 수 분 소요)</div>
     </div>
   </div>
@@ -228,7 +231,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V18.8</div>
+      <div class="ver">V19.0</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -267,15 +270,15 @@
 
       <!-- 로드된 상태 -->
       <div id="loadedInfo" style="display:none">
-        <div class="loaded-info">&#10004; <span id="loadedSheetName"></span> &middot; <span id="loadedRowCount"></span>건 로드됨
+        <div class="loaded-info"><i class="fa-solid fa-circle-check"></i><span id="loadedSheetName"></span> · <span id="loadedRowCount"></span>건 로드됨
           <div class="loaded-sub" id="loadedTime"></div>
         </div>
       </div>
 
       <!-- 로드 버튼 -->
       <div id="loadControls">
-        <button class="btn-cloud" onclick="App.loadFromSheet()">&#9729; 구글시트에서 불러오기</button>
-        <button class="btn-cloud" style="background:linear-gradient(180deg,#10B981,#059669);box-shadow:0 3px 0 #047857,0 4px 8px rgba(5,150,105,.25);margin-top:8px" onclick="document.getElementById('fileInput').click()">&#128194; 엑셀 파일 &#8594; 구글시트 업로드</button>
+        <button class="btn-cloud" onclick="App.loadFromSheet()"><i class="fa-solid fa-cloud-arrow-down"></i> 구글시트에서 불러오기</button>
+        <button class="btn-cloud secondary" style="margin-top:8px" onclick="document.getElementById('fileInput').click()"><i class="fa-solid fa-folder-open"></i> 엑셀 파일 → 구글시트 업로드</button>
         <input type="file" id="fileInput" accept=".xlsx,.xlsm,.xls,.csv" hidden onchange="App.uploadExcelToSheet(this)">
       </div>
     </div>
@@ -297,8 +300,8 @@
     <!-- 3. 하자 리스트 -->
     <div class="sec sec-tight" id="secLog">
       <div class="log-head" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-        <h3><span class="sec-num" style="background:linear-gradient(135deg,#10B981,#059669)">3</span> 하자 리스트 <span class="log-count" id="logCount">(0건)</span></h3>
-        <button onclick="App.newEntry()" style="padding:7px 14px;font-size:.68rem;font-weight:800;font-family:'Noto Sans KR';border:none;border-radius:var(--r);background:linear-gradient(180deg,#A78BFA,#7C3AED);color:white;cursor:pointer;box-shadow:0 3px 0 #5B21B6,0 3px 6px rgba(124,58,237,.3);white-space:nowrap">&#128221; 다음세대 입력</button>
+        <h3><span class="sec-num">3</span> 하자 리스트 <span class="log-count" id="logCount">(0건)</span></h3>
+        <button onclick="App.newEntry()" style="padding:7px 14px;font-size:.68rem;font-weight:800;font-family:'Noto Sans KR';border:none;border-radius:var(--r);background:#0891B2;color:white;cursor:pointer;white-space:nowrap;letter-spacing:.3px"><i class="fa-solid fa-plus"></i> 다음세대 입력</button>
       </div>
       <div class="table-wrap">
         <table class="log-table">
@@ -314,10 +317,10 @@
   <!-- 하단 버튼 -->
   <div class="bottom-bar">
     <div class="btn-row">
-      <button class="btn-send" onclick="App.saveAndShare()" style="flex:1">&#128229; 엑셀저장</button>
-      <button onclick="App.savePdf()" style="flex:1;border:none;border-radius:var(--r);background:linear-gradient(180deg,#EF4444,#DC2626);color:white;font-size:.74rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;box-shadow:0 3px 0 #991B1B,0 4px 8px rgba(220,38,38,.25);padding:0 12px">&#128196; PDF저장</button>
-      <button class="btn-refresh" onclick="App.refresh()" style="flex:0 0 auto;padding:0 12px">새로고침</button>
-      <button onclick="App.resetAll()" style="flex:0 0 auto;padding:0 12px;border:none;border-radius:var(--r);background:linear-gradient(180deg,#FCA5A5,#FEE2E2);color:#DC2626;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.06),var(--shadow)">전체삭제</button>
+      <button class="btn-send" onclick="App.saveAndShare()" style="flex:1"><i class="fa-solid fa-file-excel"></i> 엑셀저장</button>
+      <button onclick="App.savePdf()" style="flex:1;border:none;border-radius:var(--r);background:#0F172A;color:white;font-size:.74rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;padding:0 12px;letter-spacing:.3px"><i class="fa-solid fa-file-pdf"></i> PDF저장</button>
+      <button class="btn-refresh" onclick="App.refresh()" style="flex:0 0 auto;padding:0 12px"><i class="fa-solid fa-rotate"></i> 새로고침</button>
+      <button onclick="App.resetAll()" style="flex:0 0 auto;padding:0 12px;border:1.5px solid #FCA5A5;border-radius:var(--r);background:#fff;color:#DC2626;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer">전체삭제</button>
     </div>
   </div>
 </div>
@@ -604,7 +607,7 @@ var App={
     var has=src?'has-photo':'';
     var uploading=this.uploadingCells[rn+'_'+type]?'uploading':'';
     return '<td class="photo-cell '+has+' '+uploading+'" onclick="App.takeRowPhoto('+rn+',\''+type+'\')">'
-      +(src?'<img src="'+src+'">':'<div class="pc-empty">&#128247;<span>촬영</span></div>')
+      +(src?'<img src="'+src+'">':'<div class="pc-empty"><i class="fa-solid fa-camera"></i><span>촬영</span></div>')
       +'<button class="pc-del" onclick="event.stopPropagation();App.delRowPhoto('+rn+',\''+type+'\')">&#10005;</button>'
     +'</td>';
   },
