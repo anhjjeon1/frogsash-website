@@ -45,9 +45,9 @@
     header .settings-btn:active{opacity:1}
 
     .content{flex:1;overflow-y:auto;background:var(--bg)}
-    .sec{padding:12px 14px;margin:0}
-    .sec.sec-tight{padding:8px 4px}
-    .sec-head{display:flex;align-items:center;gap:7px;margin-bottom:10px}
+    .sec{padding:14px 14px 10px;margin:0}
+    .sec.sec-tight{padding:14px 4px 10px}
+    .sec-head{display:flex;align-items:center;gap:7px;margin-bottom:10px;min-height:22px}
     .sec-num{width:22px;height:22px;border-radius:4px;background:#0F172A;color:white;font-family:'Outfit';font-size:.68rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .sec-title{font-size:.8rem;font-weight:800;color:var(--text)}
     .sec-sub{font-size:.55rem;color:var(--text-dim);margin-left:4px}
@@ -111,8 +111,8 @@
     .photo-cell.uploading::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;z-index:6}
     .log-table tbody tr:nth-child(even){background:var(--surface-alt)}
     .log-table .order-num{font-weight:800;color:var(--primary);font-size:.55rem;font-family:'JetBrains Mono'}
-    .log-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .log-head h3{font-size:.76rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px}
+    .log-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;min-height:22px;padding:0 10px}
+    .log-head h3{font-size:.8rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px;margin:0}
     .log-count{font-size:.56rem;font-weight:400;color:var(--text-dim)}
     .log-empty{text-align:center;padding:16px;color:var(--text-muted);font-size:.65rem}
 
@@ -231,7 +231,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V19.0</div>
+      <div class="ver">V19.1</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
