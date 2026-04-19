@@ -146,6 +146,22 @@
     .btn-upload-excel:active{background:var(--primary-pale);border-color:var(--primary)}
     .loaded-info{font-size:.64rem;font-weight:700;color:var(--success);text-align:center;padding:8px;border:1.5px solid var(--success);border-radius:var(--r-sm);background:var(--success-light)}
     .loaded-sub{font-size:.48rem;color:var(--text-dim);margin-top:2px}
+    @media print{
+      body,html,.app{height:auto!important;overflow:visible!important;background:#fff!important}
+      .app{max-width:100%!important;box-shadow:none!important}
+      header,.bottom-bar,.settings-overlay,.memo-popup-overlay,#loader,.toast,.hidden-inputs,.sec-head .btn-new,button{display:none!important}
+      .content{overflow:visible!important}
+      .sec{box-shadow:none!important;border:none!important;page-break-inside:avoid}
+      .table-wrap{max-height:none!important;overflow:visible!important;border:none!important}
+      .log-table{font-size:10pt!important}
+      .log-table th{background:#2563EB!important;-webkit-print-color-adjust:exact;color:#fff!important}
+      .log-table td{white-space:normal!important;word-break:break-all!important;padding:4px!important}
+      .log-table td.td-memo{-webkit-line-clamp:unset!important;max-height:none!important;display:block!important}
+      .photo-cell{width:60px!important;height:60px!important}
+      .photo-cell img{width:100%!important;height:100%!important;object-fit:cover!important}
+      .photo-cell .pc-empty,.photo-cell .pc-del{display:none!important}
+      @page{size:A4;margin:10mm}
+    }
   </style>
 </head>
 <body>
@@ -204,7 +220,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V18.1</div>
+      <div class="ver">V18.2</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -272,8 +288,9 @@
 
     <!-- 3. 하자 리스트 -->
     <div class="sec sec-tight" id="secLog">
-      <div class="log-head">
+      <div class="log-head" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
         <h3><span class="sec-num" style="background:linear-gradient(135deg,#10B981,#059669)">3</span> 하자 리스트 <span class="log-count" id="logCount">(0건)</span></h3>
+        <button class="btn-new" onclick="App.newEntry()" style="padding:6px 12px;font-size:.65rem">&#128221; 다음세대 입력</button>
       </div>
       <div class="table-wrap">
         <table class="log-table">
@@ -289,9 +306,9 @@
   <!-- 하단 버튼 -->
   <div class="bottom-bar">
     <div class="btn-row">
-      <button class="btn-send" onclick="App.saveAndShare()" style="flex:1">&#128229; 엑셀 내보내기</button>
+      <button class="btn-send" onclick="App.saveAndShare()" style="flex:1">&#128229; 엑셀저장</button>
+      <button onclick="App.savePdf()" style="flex:1;border:none;border-radius:var(--r);background:linear-gradient(180deg,#EF4444,#DC2626);color:white;font-size:.74rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;box-shadow:0 3px 0 #991B1B,0 4px 8px rgba(220,38,38,.25);padding:0 12px">&#128196; PDF저장</button>
       <button class="btn-refresh" onclick="App.refresh()" style="flex:0 0 auto;padding:0 12px">새로고침</button>
-      <button class="btn-new" onclick="App.newEntry()" style="flex:0 0 auto;padding:0 12px">다음세대</button>
       <button onclick="App.resetAll()" style="flex:0 0 auto;padding:0 12px;border:none;border-radius:var(--r);background:linear-gradient(180deg,#FCA5A5,#FEE2E2);color:#DC2626;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.06),var(--shadow)">초기화</button>
     </div>
   </div>
@@ -660,6 +677,13 @@ var App={
   closeMemoPopup:function(e){
     if(e&&e.target!==document.getElementById('memoPopup'))return;
     document.getElementById('memoPopup').classList.remove('show');
+  },
+
+  // === PDF 저장 (브라우저 인쇄 → PDF로 저장) ===
+  savePdf:function(){
+    if(!this.sourceData.length){this.toast('데이터가 없습니다','error');return;}
+    this.toast('인쇄 대화상자가 열립니다. 대상에서 "PDF로 저장" 선택','info',4000);
+    setTimeout(function(){ window.print(); }, 400);
   },
 
   // === 새로입력 (다음세대) ===
