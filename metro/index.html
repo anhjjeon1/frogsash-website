@@ -231,7 +231,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V19.1</div>
+      <div class="ver">V19.2</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -246,26 +246,34 @@
       </div>
 
       <div id="appGuide" style="display:none;margin-bottom:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.58rem;line-height:1.6;color:var(--text-sub)">
-        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">메트로 R&S AI v14.0 사용설명서</div>
+        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">메트로 R&S AI v19.1 사용설명서</div>
         <b>최초 설정 (1회)</b><br>
-        &middot; 좌측 상단 &#9881; 설정 버튼 클릭<br>
-        &middot; Script URL, Sheet ID, 시트명은 자동 입력됨<br>
+        &middot; 좌측 상단 <i class="fa-solid fa-gear"></i> 설정 버튼 탭<br>
+        &middot; Script URL / Sheet ID / 시트명은 자동 입력됨<br>
         &middot; 작업자 이름만 A / B / C 입력 후 저장<br><br>
-        <b>A 작업자: 엑셀 업로드</b><br>
-        &middot; '엑셀 파일 &#8594; 구글시트 업로드' 클릭 → 엑셀 선택<br>
+        <b>데이터 준비 (A 작업자, 최초 1회)</b><br>
+        &middot; <i class="fa-solid fa-folder-open"></i> '엑셀 파일 → 구글시트 업로드' 탭 → 원본 엑셀 선택<br>
         &middot; 엑셀 데이터가 구글시트에 자동 업로드됨<br><br>
-        <b>A/B/C 작업자: 데이터 불러오기</b><br>
-        &middot; '구글시트에서 불러오기' 클릭 → 하자리스트 로드<br>
-        &middot; 동/호 입력 → 해당 하자 목록 필터링<br><br>
+        <b>데이터 불러오기 (A/B/C 작업자)</b><br>
+        &middot; <i class="fa-solid fa-cloud-arrow-down"></i> '구글시트에서 불러오기' 탭 → 하자리스트 로드<br>
+        &middot; 동/호 숫자 입력 → 해당 세대 하자 자동 필터<br>
+        &middot; 우측 <i class="fa-solid fa-microphone"></i> 마이크 버튼: 음성으로 숫자 입력 가능<br>
+        &middot; '210' 처럼 앞 0 없이 입력해도 '0210'과 일치<br><br>
         <b>사진 촬영 (자동 저장)</b><br>
-        &middot; 수리전/수리후/확인서 &#128247; 탭 → 사진 촬영<br>
-        &middot; 촬영 즉시 Google Drive + 구글시트에 자동 저장<br>
-        &middot; 다른 작업자는 새로고침 버튼으로 사진 확인<br><br>
+        &middot; 수리전/수리후/확인서 <i class="fa-solid fa-camera"></i> 탭 → 사진 촬영<br>
+        &middot; 촬영 즉시 Google Drive 업로드 + 구글시트 셀에 이미지 자동 표시<br>
+        &middot; 다른 작업자는 '새로고침'으로 최신 사진 확인<br><br>
         <b>하단 버튼</b><br>
-        &middot; 엑셀 내보내기: 사진 포함 엑셀 파일 → OneDrive에 저장<br>
-        &middot; 새로고침: 구글시트에서 최신 데이터 동기화<br>
-        &middot; 다음세대: 동/호 초기화 (데이터 유지)<br>
-        &middot; 전체삭제: 모든 데이터 삭제
+        &middot; <i class="fa-solid fa-file-excel"></i> 엑셀저장: 사진 포함 엑셀 파일 폰에 다운로드<br>
+        &middot; <i class="fa-solid fa-file-pdf"></i> PDF저장: 브라우저 인쇄 → 'PDF로 저장' 선택 (내 파일 → 다운로드)<br>
+        &middot; <i class="fa-solid fa-rotate"></i> 새로고침: 구글시트에서 최신 데이터 동기화<br>
+        &middot; 전체삭제: 로컬 모든 데이터 삭제 (확인 팝업 있음)<br><br>
+        <b>3. 하자 리스트 우측 버튼</b><br>
+        &middot; <i class="fa-solid fa-plus"></i> 다음세대 입력: 현재 동/호 초기화 (데이터는 유지)<br>
+        &middot; 다른 세대로 작업 전환 시 사용<br><br>
+        <b>마이그레이션 (v17 이하 이력 있는 경우)</b><br>
+        &middot; 설정 패널 하단 '기존 사진 → Drive 이미지 마이그레이션' 버튼<br>
+        &middot; 구버전에 base64로 저장된 사진을 Drive URL + =IMAGE() 수식으로 일괄 변환
       </div>
 
       <!-- 로드된 상태 -->
