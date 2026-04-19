@@ -220,7 +220,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V18.2</div>
+      <div class="ver">V18.3</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -254,7 +254,7 @@
         &middot; 엑셀 내보내기: 사진 포함 엑셀 파일 → OneDrive에 저장<br>
         &middot; 새로고침: 구글시트에서 최신 데이터 동기화<br>
         &middot; 다음세대: 동/호 초기화 (데이터 유지)<br>
-        &middot; 초기화: 모든 데이터 삭제
+        &middot; 전체삭제: 모든 데이터 삭제
       </div>
 
       <!-- 로드된 상태 -->
@@ -309,7 +309,7 @@
       <button class="btn-send" onclick="App.saveAndShare()" style="flex:1">&#128229; 엑셀저장</button>
       <button onclick="App.savePdf()" style="flex:1;border:none;border-radius:var(--r);background:linear-gradient(180deg,#EF4444,#DC2626);color:white;font-size:.74rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;box-shadow:0 3px 0 #991B1B,0 4px 8px rgba(220,38,38,.25);padding:0 12px">&#128196; PDF저장</button>
       <button class="btn-refresh" onclick="App.refresh()" style="flex:0 0 auto;padding:0 12px">새로고침</button>
-      <button onclick="App.resetAll()" style="flex:0 0 auto;padding:0 12px;border:none;border-radius:var(--r);background:linear-gradient(180deg,#FCA5A5,#FEE2E2);color:#DC2626;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.06),var(--shadow)">초기화</button>
+      <button onclick="App.resetAll()" style="flex:0 0 auto;padding:0 12px;border:none;border-radius:var(--r);background:linear-gradient(180deg,#FCA5A5,#FEE2E2);color:#DC2626;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.06),var(--shadow)">전체삭제</button>
     </div>
   </div>
 </div>
