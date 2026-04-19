@@ -2159,7 +2159,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v32.7';
+const APP_VER = 'v32.8';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2432,7 +2432,7 @@ A.voiceRoom = async () => {
   _stopRec();
   _recActive = 'room';
   if(btn) btn.classList.add('listening');
-  if(typeof stat==='function') stat('🎤 위치를 말씀해 주세요... (예: "거실", "안방")');
+  if(typeof stat==='function') stat('🎤 위치를 말씀해 주세요... (3초 침묵 시 자동 입력, 예: "거실", "안방")');
   const rec = _mkRec(
     (text) => {
       /* v29.7: 음성 텍스트 정규화 후 option 동적 추가 (select 빈값 저장 버그 수정) */
@@ -2454,10 +2454,13 @@ A.voiceRoom = async () => {
       if(typeof stat==='function') stat('📍 위치: '+val);
       if(typeof saveDraft==='function') saveDraft();
     },
-    () => { if(btn) btn.classList.remove('listening'); _recActive = null; _currentRec = null; }
+    () => { if(btn) btn.classList.remove('listening'); _recActive = null; _currentRec = null; },
+    /* v32.8: 3초 침묵 자동 확정 (8초 하드 캡) */
+    { longForm:true, silenceMs:3000, maxDurationMs:8000,
+      onInterim: (txt) => { if(typeof stat==='function') stat('🎤 듣는 중: '+txt); } }
   );
   _currentRec = rec;
-  try{ rec.start(); }catch(e){
+  try{ rec.start(); if(rec._lfStart) rec._lfStart(); }catch(e){
     if(btn) btn.classList.remove('listening');
     _recActive = null; _currentRec = null;
     if(typeof stat==='function') stat('🎤 음성입력 시작 실패: '+(e.message||''), true);
@@ -2487,9 +2490,18 @@ A.voiceInput = async (targetId) => {
   _stopRec();
   _recActive = targetId;
   if(btn) btn.classList.add('listening');
-  /* v30.8: 주소/하자내용은 긴 문장 대응 (continuous), v32.6: 최대 15초 하드 캡 + 10초 침묵 종료 + auto-restart */
-  const longForm = (targetId === 'fAddr' || targetId === 'fUser');
-  if(typeof stat==='function') stat(longForm ? '🎤 천천히 말씀해 주세요... (최대 15초 녹음, 10초 침묵 시 자동 종료, 다시 누르면 즉시 종료)' : '🎤 말씀해 주세요... (다시 누르면 중단)');
+  /* v32.8: 필드별 음성입력 설정
+     - fAddr(주소): 긴 문장 → 15초 하드캡 + 10초 침묵 종료
+     - fUser(하자내용): 짧은 문장 → 10초 하드캡 + 3초 침묵 자동확정
+     - fDetail(상세설명): 단발 모드 */
+  const voiceCfg = {
+    fAddr: {longForm:true,  silenceMs:10000, maxDurationMs:15000, msg:'🎤 천천히 말씀해 주세요... (최대 15초, 10초 침묵 시 자동 종료)'},
+    fUser: {longForm:true,  silenceMs:3000,  maxDurationMs:10000, msg:'🎤 말씀해 주세요... (3초 침묵 시 자동 입력)'},
+    fDetail:{longForm:false, msg:'🎤 말씀해 주세요... (다시 누르면 중단)'}
+  };
+  const cfg = voiceCfg[targetId] || voiceCfg.fDetail;
+  const longForm = cfg.longForm;
+  if(typeof stat==='function') stat(cfg.msg);
   const rec = _mkRec(
     (text) => {
       const field = $(targetId);
@@ -2506,7 +2518,8 @@ A.voiceInput = async (targetId) => {
     () => { if(btn) btn.classList.remove('listening'); _recActive = null; _currentRec = null; },
     longForm ? {
       longForm: true,
-      silenceMs: 10000,
+      silenceMs: cfg.silenceMs,
+      maxDurationMs: cfg.maxDurationMs,
       onInterim: (txt) => { const f = $(targetId); if(f){ f.value = txt; } }
     } : undefined
   );
