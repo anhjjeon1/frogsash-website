@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v17.0</title>
+  <title>(주)메트로 R & S AI v18.0</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -192,6 +192,10 @@
       <button class="btn-save" onclick="App.saveSettings()">저장</button>
     </div>
     <div class="conn-status" id="connStatus" style="display:none"></div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="btn-cancel" style="width:100%;background:#F59E0B;color:#fff;font-weight:700" onclick="App.migratePhotos()">기존 사진 → Drive 이미지 마이그레이션</button>
+      <div class="sf-hint" style="margin-top:6px">v17 이하 base64 사진을 Drive URL+IMAGE 수식으로 일괄 변환 (사진 많으면 수 분 소요)</div>
+    </div>
   </div>
 </div>
 
@@ -200,7 +204,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V17.0</div>
+      <div class="ver">V18.0</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -665,6 +669,35 @@ var App={
     document.querySelector('.content').scrollTo({top:0,behavior:'smooth'});
     document.getElementById('fDong').focus();
     this.toast('동/호 초기화 (데이터 유지)','info');
+  },
+
+  // === 기존 base64 사진 → Drive URL 마이그레이션 ===
+  migratePhotos:function(){
+    var url=this.getSetting('SCRIPT');
+    var sid=this.getSetting('SHEET');
+    var sn=this.getSetting('SHEET_NAME');
+    if(!url||!sid){this.toast('Script URL / Sheet ID 먼저 설정','error');return;}
+    if(!confirm('기존 base64 사진을 Drive 이미지로 일괄 변환합니다.\n사진이 많으면 수 분 소요될 수 있습니다. 진행하시겠습니까?')) return;
+    var self=this;
+    this.showLoader('사진 마이그레이션 중... (수 분 소요 가능)');
+    var xhr=new XMLHttpRequest();
+    xhr.open('POST',url,true);
+    xhr.timeout=300000;
+    xhr.onload=function(){
+      self.hideLoader();
+      try{
+        var d=JSON.parse(xhr.responseText);
+        if(d.status==='ok'){
+          self.toast('마이그레이션 완료: '+d.migrated+'건 변환'+(d.errors?(', '+d.errors+'건 실패'):''),'success',5000);
+          setTimeout(function(){self.loadFromSheet();},1000);
+        }else{
+          self.toast('실패: '+(d.message||''),'error');
+        }
+      }catch(e){self.toast('응답 파싱 실패','error');}
+    };
+    xhr.onerror=function(){self.hideLoader();self.toast('네트워크 오류','error');};
+    xhr.ontimeout=function(){self.hideLoader();self.toast('타임아웃 (사진이 너무 많음)','error');};
+    xhr.send(JSON.stringify({action:'migratePhotos',sheetId:sid,sheetName:sn}));
   },
 
   // === 전체 초기화 ===
