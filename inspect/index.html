@@ -2159,7 +2159,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v32.6';
+const APP_VER = 'v32.7';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 3;
@@ -2273,6 +2273,32 @@ const $=id=>document.getElementById(id);
 const _SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let _recActive = null;
 let _currentRec = null;
+
+/* v32.7: 마이크 권한 사전 확보 — "이번만 허용" 반복 팝업 방지
+   - 첫 마이크 클릭 시 1회 안내 → getUserMedia로 영구 권한 요청
+   - 사용자가 "항상 허용"을 고르면 이후 SpeechRecognition 호출마다 재요청 안 뜸 */
+let _micPrimed = false;
+async function _primeMic(){
+  if(_micPrimed) return true;
+  try{
+    if(!localStorage.getItem('_micGuideShown')){
+      alert('🎤 마이크 권한 안내\n\n곧 브라우저에서 마이크 권한 팝업이 뜹니다.\n"항상 허용" (또는 "사이트 접속 시 허용")을 선택해 주세요.\n\n⚠️ "이번만 허용"을 고르면 음성 버튼을 누를 때마다 팝업이 다시 나타납니다.\n\n[삼성인터넷 영구 허용 방법]\n설정 ▸ 사이트 권한 ▸ 마이크 ▸ frogsash.co.kr ▸ 허용');
+      localStorage.setItem('_micGuideShown','1');
+    }
+    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+      const s = await navigator.mediaDevices.getUserMedia({audio:true});
+      s.getTracks().forEach(t => { try{ t.stop(); }catch(e){} });
+    }
+    _micPrimed = true;
+    return true;
+  }catch(e){
+    const err = (e && (e.name||e.message))||'';
+    if(err.indexOf('NotAllowed')>=0 || err.indexOf('Permission')>=0){
+      alert('🎤 마이크가 차단되었습니다.\n브라우저 주소창 좌측 자물쇠 아이콘 ▸ 사이트 설정 ▸ 마이크 ▸ 허용으로 변경해 주세요.');
+    }
+    return false;
+  }
+}
 
 /* v30.8: 긴 입력 지원 — continuous 모드 + 침묵 타이머로 중간 멈춤 허용 */
 function _mkRec(onResult, onEnd, opts){
@@ -2396,10 +2422,13 @@ function _stopRec(){
 }
 
 /* v27.9: 위치 음성입력 — 말한 텍스트 그대로 설정 (유효성 검사 없음) */
-A.voiceRoom = () => {
+A.voiceRoom = async () => {
   if(!_SR){ alert('이 브라우저는 음성입력을 지원하지 않습니다.\nChrome, Edge, Safari(iOS 14.5+)를 사용해주세요.'); return; }
   const btn = $('micRoom');
   if(_recActive === 'room'){ _stopRec(); if(typeof stat==='function') stat('🎤 음성입력 중단'); return; }
+  /* v32.7: 첫 호출 시 권한 사전 확보 */
+  const ok = await _primeMic();
+  if(!ok) return;
   _stopRec();
   _recActive = 'room';
   if(btn) btn.classList.add('listening');
@@ -2445,12 +2474,15 @@ A.voiceAutoStart = (targetId) => {
 };
 
 /* 일반 텍스트 필드 음성입력 (덮어쓰기) */
-A.voiceInput = (targetId) => {
+A.voiceInput = async (targetId) => {
   if(!_SR){ alert('이 브라우저는 음성입력을 지원하지 않습니다.\nChrome, Edge, Safari(iOS 14.5+)를 사용해주세요.'); return; }
   const micMap = {fAddr:'micAddr', fUser:'micUser', fDetail:'micDetail'};
   const btn = $(micMap[targetId]);
   // 같은 버튼 재클릭 시 종료 (long-form은 확정, 일반은 취소)
   if(_recActive === targetId){ _stopRec(); if(typeof stat==='function') stat('🎤 음성입력 종료'); return; }
+  /* v32.7: 첫 호출 시 권한 사전 확보 */
+  const ok = await _primeMic();
+  if(!ok) return;
   // 다른 음성 입력 중이면 먼저 중단
   _stopRec();
   _recActive = targetId;
