@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0A6B5C">
-<title>청개구리 하자관리 대시보드 · FROG-CMS v0.2</title>
+<title>[DEMO] 청개구리 하자관리 대시보드 · FROG-CMS v0.3 (입대위 시연용)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -12,7 +12,7 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 /* ============================================================
-   FROG-CMS · Complex Maintenance System v0.2
+   FROG-CMS · Complex Maintenance System v0.3 (DEMO 명시 추가)
    청개구리샤시 × 입주자대표회의 공동 운영 대시보드
    브랜드: 딥티얼(#0A6B5C) + 주황(#FF6B35) — 사전점검앱 통일
    레이아웃: 데스크탑 사이드바(반응형) + 다섯 가지 섹션
@@ -436,6 +436,52 @@ body.public-mode .tb-right .btn.ac{display:none}
 .print-only{display:none}
 @media print{.print-only{display:block}}
 
+/* ── DEMO banner (항상 노출) ── */
+.demo-banner{
+  background:repeating-linear-gradient(135deg,#FFF4D1 0 14px,#FFE88A 14px 28px);
+  border-bottom:3px solid #F59E0B;
+  padding:10px 22px;display:flex;align-items:center;gap:12px;
+  color:#7C5A00;font-weight:700;font-size:.88rem;
+  position:sticky;top:57px;z-index:40;
+}
+.demo-banner .demo-tag{
+  background:#F59E0B;color:#fff;padding:4px 10px;border-radius:5px;
+  font-weight:900;font-size:.82rem;letter-spacing:.08em;
+  box-shadow:0 2px 6px rgba(245,158,11,.35);
+  display:inline-flex;align-items:center;gap:5px;flex-shrink:0;
+}
+.demo-banner .demo-msg{flex:1;line-height:1.35}
+.demo-banner .demo-msg b{color:#7C2D12}
+.demo-banner .demo-msg small{display:block;font-weight:500;font-size:.74rem;color:#92400E;margin-top:2px}
+
+/* Sidebar DEMO tag */
+.sb-brand-demo{
+  display:inline-block;background:#F59E0B;color:#fff;
+  padding:2px 7px;border-radius:4px;font-size:.55rem;font-weight:900;
+  letter-spacing:.1em;margin-left:5px;vertical-align:middle;
+}
+
+/* Report watermark header */
+.report-demo-header{
+  background:repeating-linear-gradient(135deg,#FFF4D1 0 18px,#FFE88A 18px 36px);
+  border:2px solid #F59E0B;border-radius:10px;padding:14px 18px;
+  margin-bottom:20px;text-align:center;color:#7C2D12;
+}
+.report-demo-header .big{font-size:1.1rem;font-weight:900;letter-spacing:.04em;margin-bottom:4px}
+.report-demo-header .small{font-size:.78rem;color:#92400E}
+
+/* Print: 워터마크 대각선으로 */
+@media print{
+  .demo-banner{display:none !important}
+  .report-demo-header{display:block !important}
+  body::before{
+    content:'DEMO - 시연용 샘플';
+    position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:8rem;font-weight:900;color:rgba(245,158,11,.15);
+    transform:rotate(-25deg);pointer-events:none;z-index:999;
+  }
+}
+
 /* Scrollbars */
 .sb::-webkit-scrollbar,.md-b::-webkit-scrollbar,.act-feed::-webkit-scrollbar{width:6px}
 .sb::-webkit-scrollbar-thumb,.md-b::-webkit-scrollbar-thumb,.act-feed::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
@@ -451,8 +497,8 @@ body.public-mode .tb-right .btn.ac{display:none}
     <div class="sb-top">
       <div class="sb-logo">FCM</div>
       <div>
-        <div class="sb-brand">FROG-CMS</div>
-        <div class="sb-brand-sub">COMPLEX MAINTENANCE</div>
+        <div class="sb-brand">FROG-CMS <span class="sb-brand-demo">DEMO</span></div>
+        <div class="sb-brand-sub">입대위 시연용 · SAMPLE ONLY</div>
       </div>
     </div>
 
@@ -482,7 +528,7 @@ body.public-mode .tb-right .btn.ac{display:none}
       <b>청개구리샤시</b>
       대표 전영웅<br>
       010-2322-0949<br>
-      <small style="opacity:.6;margin-top:6px;display:block">FROG-CMS v0.2 · MVP</small>
+      <small style="opacity:.6;margin-top:6px;display:block">FROG-CMS v0.3 · DEMO</small>
     </div>
   </aside>
 
@@ -506,6 +552,15 @@ body.public-mode .tb-right .btn.ac{display:none}
         <button class="btn ac" onclick="openDrawer()" id="btnAdd" style="display:none"><i class="fa-solid fa-plus"></i> 신규 접수</button>
       </div>
     </header>
+
+    <!-- DEMO 경고 배너 -->
+    <div class="demo-banner" role="alert" aria-label="시연용 안내">
+      <span class="demo-tag"><i class="fa-solid fa-flask"></i> DEMO</span>
+      <div class="demo-msg">
+        <b>입대위 시연용 샘플 — 실제 데이터 아님</b>
+        <small>본 화면은 청개구리샤시 제안 검토용 프로토타입입니다. 표시되는 18건의 접수 내역은 가상의 예시이며, 실제 계약 시 별도 운영 시스템으로 이관됩니다.</small>
+      </div>
+    </div>
 
     <main class="mn">
 
@@ -769,7 +824,7 @@ body.public-mode .tb-right .btn.ac{display:none}
 
 <script>
 /* ══════════════════════════════════════════════════════════════════════
-   FROG-CMS v0.2 Client Logic
+   FROG-CMS v0.3 Client Logic
    ══════════════════════════════════════════════════════════════════════ */
 const $=id=>document.getElementById(id);
 const $$=s=>document.querySelectorAll(s);
@@ -1236,8 +1291,12 @@ function renderReport(){
   const ongoing=state.defects.filter(d=>d.stage!=='done');
   const today=new Date().toLocaleDateString('ko-KR');
   $('reportSheet').innerHTML=`
+    <div class="report-demo-header">
+      <div class="big">⚠️ 시연용 샘플 보고서 (DEMO)</div>
+      <div class="small">본 보고서는 실제 하자 접수 내역이 아닌 <b>제안 시연용 샘플 데이터</b>입니다.<br>실제 계약 후 청개구리샤시 운영 시스템에서 생성된 보고서만이 공식 증빙으로 사용될 수 있습니다.</div>
+    </div>
     <h2>입주자 대표회의 하자처리 현황 보고서</h2>
-    <div class="sub">검단 모아엘가 · 작성일 ${today} · 발행 청개구리샤시</div>
+    <div class="sub">검단 모아엘가 · 작성일 ${today} · 발행 청개구리샤시 <span style="background:#F59E0B;color:#fff;padding:2px 6px;border-radius:3px;font-size:.7rem;margin-left:4px">DEMO</span></div>
 
     <h3>1. 종합 집계</h3>
     <table>
