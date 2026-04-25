@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v20.2</title>
+  <title>(주)메트로 R & S AI v20.3</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -232,7 +232,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V20.2</div>
+      <div class="ver">V20.3</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -556,7 +556,7 @@ var App={
       site:find('현장명','현장'),
       photoBefore:find('수리전'),
       photoAfter:find('수리후'),
-      photoConfirm:find('완료확인서'),
+      photoConfirm:find('완료확인서','확인서'),
       doneDate:find('완료일'),
       done:find('완료')
     };
@@ -942,7 +942,7 @@ var App={
       var cn=colKeys[ci].replace(/\s/g,'');
       if(cn==='수리전') photoColIdx.before=ci+1;
       else if(cn==='수리후') photoColIdx.after=ci+1;
-      else if(cn==='완료확인서') photoColIdx.confirm=ci+1;
+      else if(cn==='완료확인서'||cn==='확인서') photoColIdx.confirm=ci+1;
     }
 
     // 로컬 사진(base64)만 엑셀에 삽입

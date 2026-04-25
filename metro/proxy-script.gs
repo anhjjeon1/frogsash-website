@@ -95,10 +95,10 @@ function doGet(e) {
         var hn = String(headers[h]).replace(/\s/g,'');
         if (hn === '수리전_data') photoDataCols.before = h;
         else if (hn === '수리후_data') photoDataCols.after = h;
-        else if (hn === '완료확인서_data') photoDataCols.confirm = h;
+        else if (hn === '완료확인서_data' || hn === '확인서_data') photoDataCols.confirm = h;
         else if (hn === '수리전') photoImgCols.before = h;
         else if (hn === '수리후') photoImgCols.after = h;
-        else if (hn === '완료확인서') photoImgCols.confirm = h;
+        else if (hn === '완료확인서' || hn === '확인서') photoImgCols.confirm = h;
       }
 
       var rows = [];
@@ -211,19 +211,27 @@ function doPost(e) {
       if (!ws) return makeRes({status:'error', message:'시트를 찾을 수 없음'});
 
       var headers = ws.getRange(1, 1, 1, ws.getLastColumn()).getValues()[0];
-      var typeMap = {before:'수리전', after:'수리후', confirm:'완료확인서'};
-      var colName = typeMap[photoType];
-      if (!colName) return makeRes({status:'error', message:'잘못된 photoType: '+photoType});
+      // 시트 헤더가 '완료확인서' 또는 '확인서' 둘 다 지원 (v20.3)
+      var typeAliases = {before:['수리전'], after:['수리후'], confirm:['완료확인서','확인서']};
+      var aliases = typeAliases[photoType];
+      if (!aliases) return makeRes({status:'error', message:'잘못된 photoType: '+photoType});
 
-      var dataColName = colName + '_data';
+      var colName = '';
       var imgColIdx = -1;
-      var dataColIdx = -1;
       for (var h = 0; h < headers.length; h++) {
         var hn = String(headers[h]).replace(/\s/g,'');
-        if (hn === colName) imgColIdx = h + 1;
-        if (hn === dataColName) dataColIdx = h + 1;
+        for (var ai = 0; ai < aliases.length; ai++) {
+          if (hn === aliases[ai]) { imgColIdx = h + 1; colName = aliases[ai]; break; }
+        }
+        if (imgColIdx > 0) break;
       }
-      if (imgColIdx < 0) return makeRes({status:'error', message:colName+' 열 없음'});
+      if (imgColIdx < 0) return makeRes({status:'error', message:aliases.join('/')+' 열 없음'});
+
+      var dataColName = colName + '_data';
+      var dataColIdx = -1;
+      for (var h3 = 0; h3 < headers.length; h3++) {
+        if (String(headers[h3]).replace(/\s/g,'') === dataColName) { dataColIdx = h3 + 1; break; }
+      }
 
       // _data 열 자동 생성
       if (dataColIdx < 0) {
@@ -265,7 +273,16 @@ function doPost(e) {
       if (!ws) return makeRes({status:'error', message:'시트를 찾을 수 없음'});
 
       var lastRow = ws.getLastRow();
-      var typeMap2 = {'수리전':'before','수리후':'after','완료확인서':'confirm'};
+      // v20.3: 시트 헤더가 '완료확인서'/'확인서' 둘 다 지원 — 실제 헤더에서 사용 중인 이름만 처리
+      var lastColM = ws.getLastColumn();
+      var headersM = ws.getRange(1, 1, 1, lastColM).getValues()[0];
+      var headerSetM = {};
+      for (var hm = 0; hm < headersM.length; hm++) headerSetM[String(headersM[hm]).replace(/\s/g,'')] = true;
+      var typeMap2 = {};
+      if (headerSetM['수리전']) typeMap2['수리전'] = 'before';
+      if (headerSetM['수리후']) typeMap2['수리후'] = 'after';
+      if (headerSetM['완료확인서']) typeMap2['완료확인서'] = 'confirm';
+      else if (headerSetM['확인서']) typeMap2['확인서'] = 'confirm';
       var migrated = 0;
       var errors = 0;
 
