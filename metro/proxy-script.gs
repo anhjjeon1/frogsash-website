@@ -270,7 +270,9 @@ function doPost(e) {
         if (doneDateIdx > 0) {
           var existDate = ws.getRange(rowNum, doneDateIdx).getValue();
           if (!existDate) {
-            ws.getRange(rowNum, doneDateIdx).setValue(new Date()).setNumberFormat('yyyy-MM-dd');
+            // v20.7: GAS 프로젝트 시간대가 다를 수 있으므로 명시적 KST 변환
+            var ymd = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
+            ws.getRange(rowNum, doneDateIdx).setValue(ymd);
             autoDone = true;
           }
         }
@@ -443,8 +445,8 @@ function doPost(e) {
         if (colType > 0 && data.type) newRow[colType - 1] = String(data.type).trim();
         newRow[colMemo - 1] = String(data.memo).trim();
         if (colDate > 0) {
-          var d = new Date();
-          newRow[colDate - 1] = (d.getMonth()+1)+'월'+d.getDate()+'일';
+          // v20.7: 명시적 KST 변환 — GAS 프로젝트 timezone 의존 제거
+          newRow[colDate - 1] = Utilities.formatDate(new Date(), 'Asia/Seoul', "M'월'd'일'");
         }
         if (colAdded > 0 && worker) newRow[colAdded - 1] = worker;
 
