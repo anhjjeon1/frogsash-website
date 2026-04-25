@@ -258,8 +258,33 @@ function doPost(e) {
       // 이미지 보이게 행 높이 조정
       try { ws.setRowHeight(rowNum, 80); } catch(e) {}
 
+      // v20.6: 확인서 사진 업로드 시 자동 완료 처리 (빈 셀일 때만 — 기존 데이터 보호)
+      var autoDone = false;
+      if (photoType === 'confirm') {
+        var doneDateIdx = -1, doneIdx = -1;
+        for (var hd = 0; hd < headers.length; hd++) {
+          var hnd = String(headers[hd]).replace(/\s/g,'');
+          if (hnd === '완료일') doneDateIdx = hd + 1;
+          else if (hnd === '완료') doneIdx = hd + 1;
+        }
+        if (doneDateIdx > 0) {
+          var existDate = ws.getRange(rowNum, doneDateIdx).getValue();
+          if (!existDate) {
+            ws.getRange(rowNum, doneDateIdx).setValue(new Date()).setNumberFormat('yyyy-MM-dd');
+            autoDone = true;
+          }
+        }
+        if (doneIdx > 0) {
+          var existDone = ws.getRange(rowNum, doneIdx).getValue();
+          if (!existDone) {
+            ws.getRange(rowNum, doneIdx).setValue('완료');
+            autoDone = true;
+          }
+        }
+      }
+
       SpreadsheetApp.flush();
-      return makeRes({status:'ok', url:uploaded.url, fileId:uploaded.id, rowNum:rowNum, photoType:photoType});
+      return makeRes({status:'ok', url:uploaded.url, fileId:uploaded.id, rowNum:rowNum, photoType:photoType, autoDone:autoDone});
     }
 
     // === 기존 데이터 마이그레이션 (base64 → Drive 업로드 + =IMAGE) ===
