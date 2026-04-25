@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v20.3</title>
+  <title>(주)메트로 R & S AI v20.4</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -232,7 +232,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V20.3</div>
+      <div class="ver">V20.4</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -706,6 +706,13 @@ var App={
     document.getElementById('memoPopup').classList.remove('show');
   },
 
+  // === 음성 텍스트 후처리: "침실일/방이" → "침실1/방2" (v20.4) ===
+  _normalizeNumWords:function(text){
+    if(!text) return text;
+    var nm={'일':'1','이':'2','삼':'3','사':'4','오':'5'};
+    return text.replace(/(침실|화장실|방)\s?([일이삼사오])(?=$|\s|[,.])/g,function(_,p,n){return p+nm[n];});
+  },
+
   // === 음성 입력 (동/호 숫자) ===
   _koreanToDigits:function(text){
     var map={'공':'0','영':'0','빵':'0','일':'1','하나':'1','이':'2','둘':'2','삼':'3','셋':'3','사':'4','넷':'4','오':'5','다섯':'5','육':'6','여섯':'6','칠':'7','일곱':'7','팔':'8','여덟':'8','구':'9','아홉':'9','십':'10','백':'100','천':'1000'};
@@ -793,7 +800,7 @@ var App={
           if(d){picked=d;break;}
         }
       }else{
-        picked=alts[0]||'';
+        picked=self._normalizeNumWords(alts[0]||'');
       }
       if(picked){
         input.value=picked;
@@ -838,28 +845,37 @@ var App={
       data:{ dong:dong, ho:ho, loc:loc, type:tp, memo:memo }
     };
 
-    fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
-      .then(function(r){return r.json();})
-      .then(function(d){
-        if(d.status!=='ok') throw new Error(d.message||'추가 실패');
-        self.toast('추가 완료! (No.'+d.no+')','success',2200);
-        // 인라인 입력칸 초기화 (동/호는 유지 — 같은 세대 추가 흐름)
-        document.getElementById('addLoc').value='';
-        document.getElementById('addType').value='';
-        document.getElementById('addMemo').value='';
-        // 새로고침으로 최신 데이터 로드 → renderLog
-        self.loadFromSheet();
-        // 다음 입력 위해 위치 칸에 포커스
-        setTimeout(function(){document.getElementById('addLoc').focus();},400);
-      })
-      .catch(function(err){
-        self.toast('오류: '+err.message,'error',4000);
-      })
-      .finally(function(){
-        self.hideLoader();
-        btn.disabled=false;
-        btn.innerHTML=oldHtml;
-      });
+    // v20.4: LockService 충돌 시 자동 1회 재시도
+    var attempt=function(retryCount){
+      fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
+        .then(function(r){return r.json();})
+        .then(function(d){
+          if(d.status!=='ok'){
+            // 락 충돌 → 1.5초 후 1회 재시도
+            if(retryCount<1 && d.message && d.message.indexOf('다른 작업자')>=0){
+              self.showLoader('잠시 후 재시도 중... (1/1)');
+              setTimeout(function(){attempt(retryCount+1);},1500);
+              return;
+            }
+            throw new Error(d.message||'추가 실패');
+          }
+          self.toast('추가 완료! (No.'+d.no+')','success',2200);
+          document.getElementById('addLoc').value='';
+          document.getElementById('addType').value='';
+          document.getElementById('addMemo').value='';
+          self.loadFromSheet();
+          setTimeout(function(){document.getElementById('addLoc').focus();},400);
+        })
+        .catch(function(err){
+          self.toast('오류: '+err.message,'error',4000);
+        })
+        .finally(function(){
+          self.hideLoader();
+          btn.disabled=false;
+          btn.innerHTML=oldHtml;
+        });
+    };
+    attempt(0);
   },
 
   // === 기존 base64 사진 → Drive URL 마이그레이션 ===
