@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v20.0</title>
+  <title>(주)메트로 R & S AI v20.1</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -158,35 +158,6 @@
     .loaded-info i{color:#0891B2;margin-right:4px}
     .loaded-sub{font-size:.48rem;color:var(--text-dim);margin-top:2px}
 
-    /* ADD-DEFECT MODAL (전체화면 슬라이드업) */
-    .add-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);z-index:9999;display:none;align-items:flex-end}
-    .add-overlay.show{display:flex}
-    .add-modal{background:var(--surface);width:100%;max-width:520px;margin:0 auto;height:100%;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .25s ease-out}
-    .add-overlay.show .add-modal{transform:translateY(0)}
-    .add-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:linear-gradient(180deg,#0F172A,#1E293B);color:#fff;box-shadow:0 2px 8px rgba(15,23,42,.25);position:sticky;top:0;z-index:2}
-    .add-head h3{font-size:.85rem;font-weight:800;letter-spacing:.3px}
-    .add-head .add-close{background:transparent;border:none;color:#fff;font-size:1.2rem;cursor:pointer;width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center}
-    .add-head .add-close:active{background:rgba(255,255,255,.1)}
-    .add-head .add-save-top{background:#0891B2;color:#fff;border:none;padding:7px 14px;border-radius:6px;font-size:.7rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;letter-spacing:.3px}
-    .add-head .add-save-top:active{transform:translateY(1px)}
-    .add-body{flex:1;overflow-y:auto;padding:14px;background:var(--bg);-webkit-overflow-scrolling:touch}
-    .add-field{margin-bottom:10px}
-    .add-field-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding:0 2px}
-    .add-field-label .lbl{font-size:.62rem;font-weight:800;color:var(--text-sub);letter-spacing:.3px}
-    .add-field-label .lbl-req{color:#DC2626;font-size:.55rem;margin-left:3px}
-    .add-field-label .lbl-hint{font-size:.5rem;color:var(--text-dim);font-weight:600}
-    .add-input-wrap{position:relative;background:#fff;border:1.5px solid var(--border);border-radius:var(--r);transition:border-color .15s}
-    .add-input-wrap:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(8,145,178,.12)}
-    .add-input-wrap input,.add-input-wrap textarea{width:100%;padding:10px 38px 10px 12px;border:none;border-radius:var(--r);font-size:.85rem;font-family:'Noto Sans KR';font-weight:700;color:var(--text);outline:none;background:transparent}
-    .add-input-wrap textarea{min-height:72px;resize:vertical;line-height:1.5;font-weight:600;font-size:.78rem}
-    .add-input-wrap input::placeholder,.add-input-wrap textarea::placeholder{color:var(--text-muted);font-weight:400;font-size:.72rem}
-    .add-input-wrap .mic-btn{position:absolute;right:8px;top:8px;transform:none;width:26px;height:26px;font-size:.7rem}
-    .add-input-wrap.tx .mic-btn{top:8px}
-    .add-foot{padding:10px 14px 12px;background:var(--surface);border-top:1px solid var(--border);box-shadow:0 -2px 8px rgba(15,23,42,.06)}
-    .btn-save-big{width:100%;padding:13px;border:none;border-radius:var(--r);background:#0891B2;color:#fff;font-size:.85rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;letter-spacing:.4px;box-shadow:var(--shadow-3d);display:flex;align-items:center;justify-content:center;gap:6px}
-    .btn-save-big:active{transform:translateY(1px);box-shadow:none}
-    .btn-save-big:disabled{background:#94A3B8;cursor:not-allowed;box-shadow:none}
-
     @media print{
       body,html,.app{height:auto!important;overflow:visible!important;background:#fff!important}
       .app{max-width:100%!important;box-shadow:none!important}
@@ -256,56 +227,12 @@
   </div>
 </div>
 
-<!-- 새 하자 추가 모달 (전체화면 슬라이드업, v20.0) -->
-<div class="add-overlay" id="addOverlay" onclick="App.closeAddModal(event)">
-  <div class="add-modal" onclick="event.stopPropagation()">
-    <header class="add-head">
-      <button class="add-close" onclick="App.closeAddModal()" aria-label="닫기"><i class="fa-solid fa-xmark"></i></button>
-      <h3><i class="fa-solid fa-plus"></i> 새 하자 추가</h3>
-      <button class="add-save-top" onclick="App.saveNewDefect()">저장</button>
-    </header>
-    <div class="add-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div class="add-field">
-          <div class="add-field-label"><span class="lbl">동<span class="lbl-req">*</span></span><span class="lbl-hint">필터값 자동</span></div>
-          <div class="add-input-wrap"><input type="text" id="addDong" inputmode="numeric" placeholder="101"><button class="mic-btn" id="addMicDong" onclick="App.startVoiceForField('addDong','addMicDong','digit')" aria-label="동 음성"><i class="fa-solid fa-microphone"></i></button></div>
-        </div>
-        <div class="add-field">
-          <div class="add-field-label"><span class="lbl">호<span class="lbl-req">*</span></span><span class="lbl-hint">필터값 자동</span></div>
-          <div class="add-input-wrap"><input type="text" id="addHo" inputmode="numeric" placeholder="0210"><button class="mic-btn" id="addMicHo" onclick="App.startVoiceForField('addHo','addMicHo','digit')" aria-label="호 음성"><i class="fa-solid fa-microphone"></i></button></div>
-        </div>
-      </div>
-      <div class="add-field">
-        <div class="add-field-label"><span class="lbl">위치</span><span class="lbl-hint">예: 거실, 안방, 주방, 화장실</span></div>
-        <div class="add-input-wrap"><input type="text" id="addLoc" placeholder="거실 창문 옆"><button class="mic-btn" id="addMicLoc" onclick="App.startVoiceForField('addLoc','addMicLoc','text')" aria-label="위치 음성"><i class="fa-solid fa-microphone"></i></button></div>
-      </div>
-      <div class="add-field">
-        <div class="add-field-label"><span class="lbl">유형</span><span class="lbl-hint">예: 외풍, 결로, 파손, 누수</span></div>
-        <div class="add-input-wrap"><input type="text" id="addType" placeholder="외풍"><button class="mic-btn" id="addMicType" onclick="App.startVoiceForField('addType','addMicType','text')" aria-label="유형 음성"><i class="fa-solid fa-microphone"></i></button></div>
-      </div>
-      <div class="add-field">
-        <div class="add-field-label"><span class="lbl">하자내용<span class="lbl-req">*</span></span><span class="lbl-hint">상세 설명</span></div>
-        <div class="add-input-wrap tx"><textarea id="addMemo" placeholder="거실 창문 잠김상태 불량, 손잡이가 헐거움"></textarea><button class="mic-btn" id="addMicMemo" onclick="App.startVoiceForField('addMemo','addMicMemo','text')" aria-label="하자내용 음성"><i class="fa-solid fa-microphone"></i></button></div>
-      </div>
-      <div style="font-size:.55rem;color:var(--text-dim);text-align:center;margin-top:8px;line-height:1.5">
-        저장하면 구글시트의 마지막 행에 추가되고 즉시 다른 작업자에게 동기화됩니다.<br>
-        사진은 저장 후 하자 리스트에서 촬영하세요.
-      </div>
-    </div>
-    <div class="add-foot">
-      <button class="btn-save-big" id="btnSaveNew" onclick="App.saveNewDefect()">
-        <i class="fa-solid fa-floppy-disk"></i> 저장 · 구글시트에 추가
-      </button>
-    </div>
-  </div>
-</div>
-
 <div class="app">
   <div class="content">
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V20.0</div>
+      <div class="ver">V20.1</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -320,7 +247,7 @@
       </div>
 
       <div id="appGuide" style="display:none;margin-bottom:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.58rem;line-height:1.6;color:var(--text-sub)">
-        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">메트로 R&S AI v20.0 사용설명서</div>
+        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">메트로 R&S AI v20.1 사용설명서</div>
         <b>최초 설정 (1회)</b><br>
         &middot; 좌측 상단 <i class="fa-solid fa-gear"></i> 설정 버튼 탭<br>
         &middot; Script URL / Sheet ID / 시트명은 자동 입력됨<br>
@@ -375,11 +302,19 @@
         </h3>
         <input type="hidden" id="fSite">
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:5px;margin-bottom:6px;align-items:center">
+      <!-- 동/호 필터 + 다음세대 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:5px;margin-bottom:6px;align-items:center">
         <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fDong" placeholder="동" inputmode="numeric" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micDong" onclick="App.startVoiceInput('fDong','micDong')" aria-label="동 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
         <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fHo" placeholder="호" inputmode="numeric" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micHo" onclick="App.startVoiceInput('fHo','micHo')" aria-label="호 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
-        <button onclick="App.openAddModal()" style="padding:7px 9px;font-size:.62rem;font-weight:800;font-family:'Noto Sans KR';border:none;border-radius:var(--r);background:#0891B2;color:white;cursor:pointer;white-space:nowrap;letter-spacing:.2px;box-shadow:var(--shadow-3d)" title="새 하자 추가"><i class="fa-solid fa-plus"></i> 추가</button>
         <button onclick="App.newEntry()" style="padding:7px 9px;font-size:.62rem;font-weight:800;font-family:'Noto Sans KR';border:1px solid var(--border);border-radius:var(--r);background:#fff;color:var(--text-sub);cursor:pointer;white-space:nowrap;letter-spacing:.2px" title="다음 세대 (필터 초기화)"><i class="fa-solid fa-rotate-right"></i> 다음</button>
+      </div>
+      <!-- 새 하자 인라인 입력 (위치·유형·하자내용 음성) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1.5fr auto;gap:4px;margin-bottom:8px;align-items:center;padding:8px 6px 6px;background:var(--accent-pale);border:1px solid var(--accent-light);border-radius:var(--r);position:relative">
+        <span style="position:absolute;top:-7px;left:8px;font-size:.5rem;font-weight:800;color:var(--accent-dark);background:var(--surface);padding:1px 5px;border-radius:3px;letter-spacing:.3px">+ 새 하자</span>
+        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="addLoc" placeholder="위치" style="font-size:.7rem;padding:7px 26px 7px 7px"><button class="mic-btn" id="addMicLoc" onclick="App.startVoiceForField('addLoc','addMicLoc','text')" aria-label="위치 음성" style="width:22px;height:22px;font-size:.6rem;right:4px"><i class="fa-solid fa-microphone"></i></button></div>
+        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="addType" placeholder="유형" style="font-size:.7rem;padding:7px 26px 7px 7px"><button class="mic-btn" id="addMicType" onclick="App.startVoiceForField('addType','addMicType','text')" aria-label="유형 음성" style="width:22px;height:22px;font-size:.6rem;right:4px"><i class="fa-solid fa-microphone"></i></button></div>
+        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="addMemo" placeholder="하자내용" style="font-size:.7rem;padding:7px 26px 7px 7px"><button class="mic-btn" id="addMicMemo" onclick="App.startVoiceForField('addMemo','addMicMemo','text')" aria-label="내용 음성" style="width:22px;height:22px;font-size:.6rem;right:4px"><i class="fa-solid fa-microphone"></i></button></div>
+        <button id="btnSaveNew" onclick="App.saveNewDefect()" style="padding:7px 9px;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';border:none;border-radius:var(--r);background:#0891B2;color:white;cursor:pointer;white-space:nowrap;letter-spacing:.2px;box-shadow:var(--shadow-3d)" title="구글시트에 추가"><i class="fa-solid fa-floppy-disk"></i></button>
       </div>
       <div class="table-wrap">
         <table class="log-table">
@@ -831,27 +766,6 @@ var App={
     this.toast('동/호 초기화 (데이터 유지)','info');
   },
 
-  // === 새 하자 추가 모달 (v20.0) ===
-  openAddModal:function(){
-    if(!this.sourceData.length){this.toast('먼저 구글시트에서 데이터를 불러오세요','error');return;}
-    // 현재 필터값을 동/호에 자동 채움
-    document.getElementById('addDong').value=document.getElementById('fDong').value||'';
-    document.getElementById('addHo').value=document.getElementById('fHo').value||'';
-    document.getElementById('addLoc').value='';
-    document.getElementById('addType').value='';
-    document.getElementById('addMemo').value='';
-    document.getElementById('addOverlay').classList.add('show');
-    // 첫 빈 필드에 포커스
-    setTimeout(function(){
-      var first=['addDong','addHo','addLoc','addType','addMemo'].find(function(id){return !document.getElementById(id).value;});
-      if(first) document.getElementById(first).focus();
-    },300);
-  },
-  closeAddModal:function(e){
-    if(e&&e.target!==document.getElementById('addOverlay'))return;
-    document.getElementById('addOverlay').classList.remove('show');
-  },
-
   // === 필드별 음성 입력 (mode: 'digit' | 'text') ===
   startVoiceForField:function(inputId,micId,mode){
     var Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -890,14 +804,15 @@ var App={
     try{rec.start();}catch(err){mic.classList.remove('listening');self.toast('음성 시작 실패','error');}
   },
 
-  // === 새 하자 GAS 시트에 추가 ===
+  // === 새 하자 GAS 시트에 인라인 추가 (v20.1) ===
   saveNewDefect:function(){
-    var dong=document.getElementById('addDong').value.trim();
-    var ho=document.getElementById('addHo').value.trim();
+    // 동/호는 필터값에서 가져옴
+    var dong=document.getElementById('fDong').value.trim();
+    var ho=document.getElementById('fHo').value.trim();
     var loc=document.getElementById('addLoc').value.trim();
     var tp=document.getElementById('addType').value.trim();
     var memo=document.getElementById('addMemo').value.trim();
-    if(!dong||!ho){this.toast('동/호는 필수입니다','error');return;}
+    if(!dong||!ho){this.toast('동/호 필터를 먼저 입력하세요','error');return;}
     if(!memo){this.toast('하자내용을 입력하세요','error');return;}
 
     var url=this.getSetting('SCRIPT');
@@ -908,7 +823,8 @@ var App={
     var self=this;
     var btn=document.getElementById('btnSaveNew');
     btn.disabled=true;
-    btn.innerHTML='<i class="fa-solid fa-circle-notch fa-spin"></i> 저장 중...';
+    var oldHtml=btn.innerHTML;
+    btn.innerHTML='<i class="fa-solid fa-circle-notch fa-spin"></i>';
     this.showLoader('GAS 시트에 추가 중...');
 
     var payload={
@@ -923,13 +839,15 @@ var App={
       .then(function(r){return r.json();})
       .then(function(d){
         if(d.status!=='ok') throw new Error(d.message||'추가 실패');
-        self.toast('추가 완료! (행 '+d.rowNum+')','success',2500);
-        self.closeAddModal();
-        // 동/호 필터를 새로 추가한 행 기준으로 자동 적용
-        document.getElementById('fDong').value=dong;
-        document.getElementById('fHo').value=ho;
+        self.toast('추가 완료! (No.'+d.no+')','success',2200);
+        // 인라인 입력칸 초기화 (동/호는 유지 — 같은 세대 추가 흐름)
+        document.getElementById('addLoc').value='';
+        document.getElementById('addType').value='';
+        document.getElementById('addMemo').value='';
         // 새로고침으로 최신 데이터 로드 → renderLog
         self.loadFromSheet();
+        // 다음 입력 위해 위치 칸에 포커스
+        setTimeout(function(){document.getElementById('addLoc').focus();},400);
       })
       .catch(function(err){
         self.toast('오류: '+err.message,'error',4000);
@@ -937,7 +855,7 @@ var App={
       .finally(function(){
         self.hideLoader();
         btn.disabled=false;
-        btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> 저장 · 구글시트에 추가';
+        btn.innerHTML=oldHtml;
       });
   },
 
