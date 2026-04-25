@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v20.1</title>
+  <title>(주)메트로 R & S AI v20.2</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -232,7 +232,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V20.1</div>
+      <div class="ver">V20.2</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -407,6 +407,9 @@ var App={
     var sid=document.getElementById('setSheetId').value.trim();
     var sn=document.getElementById('setSheetName').value.trim();
     var w=document.getElementById('setWorker').value.trim();
+    // Sheets URL 통째로 붙여넣은 경우 ID만 자동 추출 (v20.2)
+    var m=sid.match(/\/d\/([a-zA-Z0-9_-]{20,})/);
+    if(m){sid=m[1];document.getElementById('setSheetId').value=sid;}
     if(!url||!sid){this.toast('Script URL과 Sheet ID는 필수입니다','error');return;}
     this.setSetting('SCRIPT',url);
     this.setSetting('SHEET',sid);
