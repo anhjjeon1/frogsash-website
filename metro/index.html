@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v20.4</title>
+  <title>(주)메트로 R & S AI v20.5</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -232,7 +232,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V20.4</div>
+      <div class="ver">V20.5</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -845,16 +845,17 @@ var App={
       data:{ dong:dong, ho:ho, loc:loc, type:tp, memo:memo }
     };
 
-    // v20.4: LockService 충돌 시 자동 1회 재시도
+    // v20.5: LockService 충돌 시 자동 2회 재시도 (백오프 1.5s, 3s)
+    var maxRetry=2;
     var attempt=function(retryCount){
       fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
         .then(function(r){return r.json();})
         .then(function(d){
           if(d.status!=='ok'){
-            // 락 충돌 → 1.5초 후 1회 재시도
-            if(retryCount<1 && d.message && d.message.indexOf('다른 작업자')>=0){
-              self.showLoader('잠시 후 재시도 중... (1/1)');
-              setTimeout(function(){attempt(retryCount+1);},1500);
+            if(retryCount<maxRetry && d.message && d.message.indexOf('다른 작업자')>=0){
+              var delay=retryCount===0?1500:3000;
+              self.showLoader('잠시 후 재시도 중... ('+(retryCount+1)+'/'+maxRetry+')');
+              setTimeout(function(){attempt(retryCount+1);},delay);
               return;
             }
             throw new Error(d.message||'추가 실패');

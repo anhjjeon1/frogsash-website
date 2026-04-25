@@ -350,9 +350,10 @@ function doPost(e) {
       if (!data.dong || !data.ho) return makeRes({status:'error', message:'동/호 필수'});
       if (!data.memo) return makeRes({status:'error', message:'하자내용 필수'});
 
-      var lock = LockService.getDocumentLock();
+      // v20.5: standalone Web App에서는 getScriptLock 사용 (getDocumentLock은 container-bound 전용)
+      var lock = LockService.getScriptLock();
       try {
-        lock.waitLock(20000); // 최대 20초 대기 (동시 추가 충돌 방지)
+        lock.waitLock(10000); // 최대 10초 대기 (동시 추가 충돌 방지)
       } catch(le) {
         return makeRes({status:'error', message:'다른 작업자가 추가 중. 잠시 후 다시 시도하세요'});
       }
