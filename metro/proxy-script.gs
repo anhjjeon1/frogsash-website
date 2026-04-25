@@ -3,6 +3,23 @@
 // 구글시트 협업 + Drive 사진 업로드 + =IMAGE() 수식 표시
 // ========================================
 
+// 권한 재승인 트리거용 — GAS 편집기에서 직접 실행
+function authorizeAll() {
+  try {
+    // SpreadsheetApp 접근
+    var files = DriveApp.getFilesByName('__metro_auth_test__');
+    while (files.hasNext()) files.next();
+    // Drive 쓰기 권한
+    var f = DriveApp.createFile('__metro_auth_test__.txt', 'auth test', 'text/plain');
+    f.setTrashed(true);
+    Logger.log('✅ 권한 승인 완료: SpreadsheetApp + DriveApp');
+    return 'OK';
+  } catch(e) {
+    Logger.log('❌ 권한 오류: ' + e.message);
+    throw e;
+  }
+}
+
 function makeRes(data) {
   return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
@@ -303,6 +320,104 @@ function doPost(e) {
 
       SpreadsheetApp.flush();
       return makeRes({status:'ok', migrated:migrated, errors:errors});
+    }
+
+    // === 새 하자 행 추가 (v20.0) — 동시성 보호: LockService ===
+    if (action === 'appendRow') {
+      var sheetId = body.sheetId;
+      var sheetName = body.sheetName || '';
+      var data = body.data || {};
+      var worker = body.worker || '';
+
+      if (!sheetId) return makeRes({status:'error', message:'sheetId 필요'});
+      if (!data.dong || !data.ho) return makeRes({status:'error', message:'동/호 필수'});
+      if (!data.memo) return makeRes({status:'error', message:'하자내용 필수'});
+
+      var lock = LockService.getDocumentLock();
+      try {
+        lock.waitLock(20000); // 최대 20초 대기 (동시 추가 충돌 방지)
+      } catch(le) {
+        return makeRes({status:'error', message:'다른 작업자가 추가 중. 잠시 후 다시 시도하세요'});
+      }
+
+      try {
+        var ss = SpreadsheetApp.openById(sheetId);
+        var ws = sheetName ? ss.getSheetByName(sheetName) : ss.getSheets()[0];
+        if (!ws) return makeRes({status:'error', message:'시트 없음: '+sheetName});
+
+        var lastCol = ws.getLastColumn();
+        var lastRow = ws.getLastRow();
+        var headers = ws.getRange(1, 1, 1, lastCol).getValues()[0];
+
+        // 헤더 → 컬럼 인덱스 매핑 (1-based)
+        function findCol() {
+          var names = Array.prototype.slice.call(arguments);
+          for (var i = 0; i < headers.length; i++) {
+            var hn = String(headers[i]).replace(/\s/g,'');
+            for (var j = 0; j < names.length; j++) {
+              if (hn === names[j].replace(/\s/g,'')) return i + 1;
+            }
+          }
+          // 부분 일치 (정확 일치 후순위)
+          for (var i2 = 0; i2 < headers.length; i2++) {
+            var hn2 = String(headers[i2]).replace(/\s/g,'');
+            for (var j2 = 0; j2 < names.length; j2++) {
+              if (hn2.indexOf(names[j2].replace(/\s/g,'')) >= 0) return i2 + 1;
+            }
+          }
+          return -1;
+        }
+
+        var colNo    = findCol('NO','번호','순번');
+        var colDong  = findCol('동');
+        var colHo    = findCol('호수','호');
+        var colLoc   = findCol('위치','실명');
+        var colType  = findCol('유형','하자유형');
+        var colMemo  = findCol('하자내용','내용','상세내용');
+        var colDate  = findCol('순번','접수일','날짜');
+        var colAdded = findCol('작업자','등록자','입력자');
+
+        if (colDong < 0 || colHo < 0 || colMemo < 0) {
+          return makeRes({status:'error', message:'필수 컬럼 누락 (동/호/하자내용)'});
+        }
+
+        // NO 자동 채번 (기존 NO 컬럼 max + 1)
+        var nextNo = 1;
+        if (colNo > 0 && lastRow >= 2) {
+          var nos = ws.getRange(2, colNo, lastRow - 1, 1).getValues();
+          for (var n = 0; n < nos.length; n++) {
+            var v = parseInt(nos[n][0], 10);
+            if (!isNaN(v) && v >= nextNo) nextNo = v + 1;
+          }
+        }
+
+        // 새 행 작성
+        var newRow = new Array(lastCol).fill('');
+        if (colNo > 0) newRow[colNo - 1] = nextNo;
+        newRow[colDong - 1] = String(data.dong).trim();
+        newRow[colHo - 1] = String(data.ho).trim();
+        if (colLoc > 0 && data.loc) newRow[colLoc - 1] = String(data.loc).trim();
+        if (colType > 0 && data.type) newRow[colType - 1] = String(data.type).trim();
+        newRow[colMemo - 1] = String(data.memo).trim();
+        if (colDate > 0) {
+          var d = new Date();
+          newRow[colDate - 1] = (d.getMonth()+1)+'월'+d.getDate()+'일';
+        }
+        if (colAdded > 0 && worker) newRow[colAdded - 1] = worker;
+
+        var insertRow = lastRow + 1;
+        ws.getRange(insertRow, 1, 1, lastCol).setValues([newRow]);
+        SpreadsheetApp.flush();
+
+        return makeRes({
+          status:'ok',
+          rowNum: insertRow,
+          no: nextNo,
+          worker: worker
+        });
+      } finally {
+        try { lock.releaseLock(); } catch(re) {}
+      }
     }
 
     return makeRes({status:'error', message:'unknown action: '+action});
