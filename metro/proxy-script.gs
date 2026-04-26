@@ -1,6 +1,7 @@
 // ========================================
-// (주)메트로 R&S AI v18.0 - Google Apps Script
-// 구글시트 협업 + Drive 사진 업로드 + =IMAGE() 수식 표시
+// (주)메트로 R&S AI v20.8 - Google Apps Script
+// 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto(v20.8), deleteRow(v20.8)
 // ========================================
 
 // 권한 재승인 트리거용 — GAS 편집기에서 직접 실행
@@ -151,7 +152,7 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v18.0 연결됨'});
+  return makeRes({status:'ok', message:'메트로 R&S v20.8 연결됨'});
 }
 
 // === POST 요청 ===
