@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v20.7</title>
+  <title>(주)메트로 R & S AI v20.8</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -232,7 +232,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V20.7</div>
+      <div class="ver">V20.8</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -319,9 +319,9 @@
       <div class="table-wrap">
         <table class="log-table">
           <thead><tr>
-            <th style="width:20px">No</th><th style="width:24px">동</th><th style="width:30px">호</th><th style="width:30px">위치</th><th style="width:26px">유형</th><th>하자내용</th><th style="width:46px">수리전</th><th style="width:46px">수리후</th><th style="width:46px">확인서</th>
+            <th style="width:20px">No</th><th style="width:24px">동</th><th style="width:30px">호</th><th style="width:30px">위치</th><th style="width:26px">유형</th><th>하자내용</th><th style="width:46px">수리전</th><th style="width:46px">수리후</th><th style="width:46px">확인서</th><th style="width:24px" title="행 삭제">🗑</th>
           </tr></thead>
-          <tbody id="logBody"><tr><td colspan="9" class="log-empty">구글시트에서 데이터를 불러오세요</td></tr></tbody>
+          <tbody id="logBody"><tr><td colspan="10" class="log-empty">구글시트에서 데이터를 불러오세요</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -573,7 +573,7 @@ var App={
   renderLog:function(){
     if(!this.sourceData.length){
       document.getElementById('logCount').textContent='(0건)';
-      document.getElementById('logBody').innerHTML='<tr><td colspan="9" class="log-empty">구글시트에서 데이터를 불러오세요</td></tr>';
+      document.getElementById('logBody').innerHTML='<tr><td colspan="10" class="log-empty">구글시트에서 데이터를 불러오세요</td></tr>';
       return;
     }
     var qD=document.getElementById('fDong').value.trim();
@@ -591,7 +591,7 @@ var App={
       filtered.push(row);
     }
     document.getElementById('logCount').textContent='('+filtered.length+'/'+this.sourceData.length+'건)';
-    if(!filtered.length){document.getElementById('logBody').innerHTML='<tr><td colspan="9" class="log-empty">해당 동/호 데이터 없음</td></tr>';return;}
+    if(!filtered.length){document.getElementById('logBody').innerHTML='<tr><td colspan="10" class="log-empty">해당 동/호 데이터 없음</td></tr>';return;}
     var html='';
     for(var j=0;j<filtered.length;j++){
       var r=filtered[j];
@@ -614,6 +614,7 @@ var App={
         +this._photoCell(rn,'before',ph.before)
         +this._photoCell(rn,'after',ph.after)
         +this._photoCell(rn,'confirm',ph.confirm)
+        +'<td style="text-align:center;padding:0"><button onclick="App.deleteRow('+rn+','+no+')" style="border:none;background:transparent;color:var(--danger);font-size:.85rem;cursor:pointer;padding:4px 6px" title="행 삭제">🗑</button></td>'
       +'</tr>';
     }
     document.getElementById('logBody').innerHTML=html;
@@ -690,9 +691,84 @@ var App={
     xhr.send(JSON.stringify({action:'savePhoto',sheetId:sid,sheetName:sn,rowNum:rn,photoType:type,base64:base64}));
   },
 
+  // === 사진 삭제 (v20.8) — Drive 파일 trash + 시트 셀(_data 포함) 비우기 ===
   delRowPhoto:function(rn,type){
-    if(this.rowPhotos[rn]) this.rowPhotos[rn][type]='';
+    var typeKR={before:'수리전',after:'수리후',confirm:'확인서'}[type]||type;
+    if(!confirm(typeKR+' 사진을 삭제하시겠습니까?\n(Drive 파일과 시트 데이터 모두 삭제됩니다)')) return;
+    var url=this.getSetting('SCRIPT');
+    var sid=this.getSetting('SHEET');
+    var sn=this.getSetting('SHEET_NAME');
+    if(!url||!sid){this.toast('설정을 먼저 완료하세요','error');return;}
+    var self=this;
+    this.uploadingCells[rn+'_'+type]=true;
     this.renderLog();
+    var xhr=new XMLHttpRequest();
+    xhr.open('POST',url,true);
+    xhr.timeout=30000;
+    xhr.onload=function(){
+      delete self.uploadingCells[rn+'_'+type];
+      try{
+        var d=JSON.parse(xhr.responseText);
+        if(d.status==='ok'){
+          if(self.rowPhotos[rn]) self.rowPhotos[rn][type]='';
+          self.toast(typeKR+' 사진 삭제 완료','success',1500);
+        }else{
+          self.toast('삭제 실패: '+(d.message||''),'error');
+        }
+      }catch(e){
+        self.toast('삭제 실패: 응답 파싱 오류','error');
+      }
+      self.renderLog();
+    };
+    xhr.onerror=function(){
+      delete self.uploadingCells[rn+'_'+type];
+      self.toast('삭제 실패: 네트워크 오류','error');
+      self.renderLog();
+    };
+    xhr.ontimeout=function(){
+      delete self.uploadingCells[rn+'_'+type];
+      self.toast('삭제 타임아웃','error');
+      self.renderLog();
+    };
+    xhr.send(JSON.stringify({action:'deletePhoto',sheetId:sid,sheetName:sn,rowNum:rn,photoType:type}));
+  },
+
+  // === 행 삭제 (v20.8) — 사진 일괄 trash + 행 통째 제거 ===
+  deleteRow:function(rn,no){
+    if(!confirm('No.'+no+' 행을 삭제하시겠습니까?\n(사진 포함 모든 데이터가 영구 삭제됩니다)')) return;
+    var url=this.getSetting('SCRIPT');
+    var sid=this.getSetting('SHEET');
+    var sn=this.getSetting('SHEET_NAME');
+    if(!url||!sid){this.toast('설정을 먼저 완료하세요','error');return;}
+    var self=this;
+    this.showLoader('행 삭제 중...');
+    var xhr=new XMLHttpRequest();
+    xhr.open('POST',url,true);
+    xhr.timeout=30000;
+    xhr.onload=function(){
+      self.hideLoader();
+      try{
+        var d=JSON.parse(xhr.responseText);
+        if(d.status==='ok'){
+          self.toast('No.'+no+' 삭제 완료','success',1500);
+          // 시트에서 행이 빠지면 _rowNum이 어긋나므로 전체 다시 로드
+          setTimeout(function(){self.loadFromSheet();},500);
+        }else{
+          self.toast('삭제 실패: '+(d.message||''),'error');
+        }
+      }catch(e){
+        self.toast('삭제 실패: 응답 파싱 오류','error');
+      }
+    };
+    xhr.onerror=function(){
+      self.hideLoader();
+      self.toast('삭제 실패: 네트워크 오류','error');
+    };
+    xhr.ontimeout=function(){
+      self.hideLoader();
+      self.toast('삭제 타임아웃','error');
+    };
+    xhr.send(JSON.stringify({action:'deleteRow',sheetId:sid,sheetName:sn,rowNum:rn}));
   },
 
   // === 하자내용 팝업 ===

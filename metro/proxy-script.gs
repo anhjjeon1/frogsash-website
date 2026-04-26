@@ -465,6 +465,108 @@ function doPost(e) {
       }
     }
 
+    // === 사진 삭제 (v20.8) — Drive 파일 trash + 이미지 셀 + _data 셀 비우기 ===
+    if (action === 'deletePhoto') {
+      var sheetId = body.sheetId;
+      var sheetName = body.sheetName || '';
+      var rowNum = parseInt(body.rowNum);
+      var photoType = body.photoType;
+
+      if (!sheetId || !rowNum || !photoType) {
+        return makeRes({status:'error', message:'필수 파라미터 누락'});
+      }
+
+      var ss = SpreadsheetApp.openById(sheetId);
+      var ws = sheetName ? ss.getSheetByName(sheetName) : ss.getSheets()[0];
+      if (!ws) return makeRes({status:'error', message:'시트를 찾을 수 없음'});
+
+      var headers = ws.getRange(1, 1, 1, ws.getLastColumn()).getValues()[0];
+      var typeAliases = {before:['수리전'], after:['수리후'], confirm:['완료확인서','확인서']};
+      var aliases = typeAliases[photoType];
+      if (!aliases) return makeRes({status:'error', message:'잘못된 photoType: '+photoType});
+
+      // 이미지 컬럼 + _data 컬럼 인덱스 찾기 (모든 alias 매칭)
+      var imgColIdx = -1, dataColIdx = -1, colName = '';
+      for (var h = 0; h < headers.length; h++) {
+        var hn = String(headers[h]).replace(/\s/g,'');
+        for (var ai = 0; ai < aliases.length; ai++) {
+          if (hn === aliases[ai]) { imgColIdx = h + 1; colName = aliases[ai]; break; }
+          if (hn === aliases[ai] + '_data') { dataColIdx = h + 1; }
+        }
+      }
+      // _data는 이미지 컬럼명을 기반으로 한 번 더 확인
+      if (imgColIdx > 0 && dataColIdx < 0) {
+        for (var h2 = 0; h2 < headers.length; h2++) {
+          if (String(headers[h2]).replace(/\s/g,'') === colName + '_data') { dataColIdx = h2 + 1; break; }
+        }
+      }
+
+      // Drive 파일 trash
+      if (imgColIdx > 0) tryTrashOldImageFile(ws, rowNum, imgColIdx);
+
+      // 이미지 셀 비우기 (수식 먼저 제거 후 값 비우기)
+      if (imgColIdx > 0) {
+        ws.getRange(rowNum, imgColIdx).setFormula('');
+        ws.getRange(rowNum, imgColIdx).setValue('');
+      }
+
+      // _data 셀 비우기
+      if (dataColIdx > 0) {
+        ws.getRange(rowNum, dataColIdx).setValue('');
+      }
+
+      SpreadsheetApp.flush();
+      return makeRes({status:'ok', rowNum:rowNum, photoType:photoType, imgCleared:imgColIdx>0, dataCleared:dataColIdx>0});
+    }
+
+    // === 행 삭제 (v20.8) — 사진 모두 trash + 행 통째 제거 (LockService 보호) ===
+    if (action === 'deleteRow') {
+      var sheetId = body.sheetId;
+      var sheetName = body.sheetName || '';
+      var rowNum = parseInt(body.rowNum);
+
+      if (!sheetId || !rowNum || rowNum < 2) {
+        return makeRes({status:'error', message:'rowNum 필수 (2 이상)'});
+      }
+
+      var lock = LockService.getScriptLock();
+      try {
+        lock.waitLock(10000);
+      } catch(le) {
+        return makeRes({status:'error', message:'다른 작업자가 작업 중. 잠시 후 다시 시도하세요'});
+      }
+
+      try {
+        var ss = SpreadsheetApp.openById(sheetId);
+        var ws = sheetName ? ss.getSheetByName(sheetName) : ss.getSheets()[0];
+        if (!ws) return makeRes({status:'error', message:'시트 없음: '+sheetName});
+
+        var lastRow = ws.getLastRow();
+        if (rowNum > lastRow) return makeRes({status:'error', message:'행 번호가 데이터 범위 초과'});
+
+        // 모든 사진 컬럼의 Drive 파일 trash
+        var headers = ws.getRange(1, 1, 1, ws.getLastColumn()).getValues()[0];
+        var imgCols = [];
+        for (var h = 0; h < headers.length; h++) {
+          var hn = String(headers[h]).replace(/\s/g,'');
+          if (hn === '수리전' || hn === '수리후' || hn === '완료확인서' || hn === '확인서') {
+            imgCols.push(h + 1);
+          }
+        }
+        for (var ic = 0; ic < imgCols.length; ic++) {
+          tryTrashOldImageFile(ws, rowNum, imgCols[ic]);
+        }
+
+        // 행 삭제
+        ws.deleteRow(rowNum);
+        SpreadsheetApp.flush();
+
+        return makeRes({status:'ok', rowNum:rowNum, photosTrashed:imgCols.length});
+      } finally {
+        try { lock.releaseLock(); } catch(re) {}
+      }
+    }
+
     return makeRes({status:'error', message:'unknown action: '+action});
   } catch(err) {
     return makeRes({status:'error', message:err.message});
