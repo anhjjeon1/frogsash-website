@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v21.3</title>
+  <title>(주)메트로 R & S AI v21.4</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -243,7 +243,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V21.3</div>
+      <div class="ver">V21.4</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -1117,29 +1117,44 @@ var App={
   _showSavePopup:function(blob,fn,photoCount){
     var existing=document.getElementById('savePopup');
     if(existing) existing.remove();
-    // base64 data URL 생성 (삼성 브라우저 blob 차단 우회)
-    var reader=new FileReader();
-    reader.onload=function(){
-      var dataUrl=reader.result;
-      var overlay=document.createElement('div');
-      overlay.id='savePopup';
-      overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-      var box=document.createElement('div');
-      box.style.cssText='background:#fff;border-radius:16px;padding:24px;max-width:320px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.3)';
-      box.innerHTML='<div style="font-size:2rem;margin-bottom:12px">📁</div>'
-        +'<div style="font-size:1rem;font-weight:700;margin-bottom:8px">엑셀 파일 준비 완료</div>'
-        +'<div style="font-size:.8rem;color:#666;margin-bottom:16px">'+fn+'<br>('+photoCount+'건 사진 포함)</div>'
-        +'<a id="spDown" href="'+dataUrl+'" download="'+fn+'" style="display:block;width:100%;padding:14px;border:none;border-radius:10px;background:#2563EB;color:#fff;font-size:.9rem;font-weight:700;margin-bottom:8px;cursor:pointer;text-decoration:none;text-align:center">다운로드</a>'
-        +'<button id="spClose" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;background:#fff;color:#666;font-size:.8rem;cursor:pointer">닫기</button>';
-      overlay.appendChild(box);
-      document.body.appendChild(overlay);
-      document.getElementById('spDown').onclick=function(){
-        setTimeout(function(){overlay.remove();},500);
-      };
-      document.getElementById('spClose').onclick=function(){overlay.remove();};
-      overlay.onclick=function(e){if(e.target===overlay) overlay.remove();};
+    var self=this;
+    // v21.4: data URL → Blob URL (폰 다운로드 차단 우회) + Web Share API 통합
+    var file=null;
+    try{ file=new File([blob],fn,{type:blob.type}); }catch(e){}
+    var canShare=file && navigator.canShare && navigator.canShare({files:[file]});
+    var blobUrl=URL.createObjectURL(blob);
+
+    var overlay=document.createElement('div');
+    overlay.id='savePopup';
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+    var box=document.createElement('div');
+    box.style.cssText='background:#fff;border-radius:16px;padding:24px;max-width:340px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.3)';
+    var html='<div style="font-size:2rem;margin-bottom:12px">📁</div>'
+      +'<div style="font-size:1rem;font-weight:700;margin-bottom:8px">엑셀 파일 준비 완료</div>'
+      +'<div style="font-size:.8rem;color:#666;margin-bottom:16px">'+fn+'<br>('+photoCount+'건 사진 포함)</div>';
+    if(canShare){
+      html+='<button id="spShare" style="display:block;width:100%;padding:14px;border:none;border-radius:10px;background:#0891B2;color:#fff;font-size:.9rem;font-weight:700;margin-bottom:8px;cursor:pointer">📤 공유 (카톡/메일/드라이브)</button>';
+    }
+    html+='<a id="spDown" href="'+blobUrl+'" download="'+fn+'" style="display:block;width:100%;padding:14px;border:none;border-radius:10px;background:#2563EB;color:#fff;font-size:.9rem;font-weight:700;margin-bottom:8px;cursor:pointer;text-decoration:none;text-align:center">⬇ 다운로드</a>'
+      +'<button id="spClose" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;background:#fff;color:#666;font-size:.8rem;cursor:pointer">닫기</button>';
+    box.innerHTML=html;
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    var cleanup=function(){
+      if(overlay.parentNode) overlay.remove();
+      setTimeout(function(){try{URL.revokeObjectURL(blobUrl);}catch(e){}},1000);
     };
-    reader.readAsDataURL(blob);
+    if(canShare){
+      document.getElementById('spShare').onclick=function(){
+        navigator.share({files:[file],title:fn,text:'메트로 R&S 하자관리'})
+          .then(cleanup)
+          .catch(function(err){if(err.name!=='AbortError') self.toast('공유 실패: '+err.message,'error');});
+      };
+    }
+    document.getElementById('spDown').onclick=function(){setTimeout(cleanup,500);};
+    document.getElementById('spClose').onclick=cleanup;
+    overlay.onclick=function(e){if(e.target===overlay) cleanup();};
   },
 
   shrinkPhoto:function(dataUrl,maxW,quality){
