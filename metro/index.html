@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v21.1</title>
+  <title>(주)메트로 R & S AI v21.2</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -243,7 +243,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V21.1</div>
+      <div class="ver">V21.2</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -280,9 +280,6 @@
         &middot; <i class="fa-solid fa-file-pdf"></i> PDF저장: 브라우저 인쇄 → 'PDF로 저장' 선택 (내 파일 → 다운로드)<br>
         &middot; <i class="fa-solid fa-rotate"></i> 새로고침: 구글시트에서 최신 데이터 동기화<br>
         &middot; 전체삭제: 로컬 모든 데이터 삭제 (확인 팝업 있음)<br><br>
-        <b>3. 하자 리스트 우측 버튼</b><br>
-        &middot; <i class="fa-solid fa-plus"></i> 다음세대 입력: 현재 동/호 초기화 (데이터는 유지)<br>
-        &middot; 다른 세대로 작업 전환 시 사용<br><br>
         <b>마이그레이션 (v17 이하 이력 있는 경우)</b><br>
         &middot; 설정 패널 하단 '기존 사진 → Drive 이미지 마이그레이션' 버튼<br>
         &middot; 구버전에 base64로 저장된 사진을 Drive URL + =IMAGE() 수식으로 일괄 변환
@@ -303,7 +300,7 @@
       </div>
     </div>
 
-    <!-- 2. 하자 리스트 (동/호 필터 + 추가/다음세대 버튼 통합) -->
+    <!-- 2. 하자 리스트 (동/호 필터) -->
     <div class="sec sec-tight" id="secLog">
       <div class="log-head" style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px">
         <h3 style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
@@ -313,11 +310,10 @@
         </h3>
         <input type="hidden" id="fSite">
       </div>
-      <!-- 동/호 필터 + 다음세대 -->
-      <div class="no-print" style="display:grid;grid-template-columns:1fr 1fr auto;gap:5px;margin-bottom:6px;align-items:center">
+      <!-- 동/호 필터 -->
+      <div class="no-print" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px;align-items:center">
         <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fDong" placeholder="동" inputmode="numeric" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micDong" onclick="App.startVoiceInput('fDong','micDong')" aria-label="동 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
         <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fHo" placeholder="호" inputmode="numeric" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micHo" onclick="App.startVoiceInput('fHo','micHo')" aria-label="호 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
-        <button onclick="App.newEntry()" style="padding:7px 9px;font-size:.62rem;font-weight:800;font-family:'Noto Sans KR';border:1px solid var(--border);border-radius:var(--r);background:#fff;color:var(--text-sub);cursor:pointer;white-space:nowrap;letter-spacing:.2px" title="다음 세대 (필터 초기화)"><i class="fa-solid fa-rotate-right"></i> 다음</button>
       </div>
       <!-- 새 하자 인라인 입력 (위치·하자내용 음성) -->
       <div class="no-print" style="display:grid;grid-template-columns:1fr 2fr auto;gap:4px;margin-bottom:8px;align-items:center;padding:8px 6px 6px;background:var(--accent-pale);border:1px solid var(--accent-light);border-radius:var(--r);position:relative">
@@ -850,16 +846,6 @@ var App={
     if(!this.sourceData.length){this.toast('데이터가 없습니다','error');return;}
     this.toast('인쇄 대화상자가 열립니다. 대상에서 "PDF로 저장" 선택','info',4000);
     setTimeout(function(){ window.print(); }, 400);
-  },
-
-  // === 새로입력 (다음세대) ===
-  newEntry:function(){
-    document.getElementById('fDong').value='';
-    document.getElementById('fHo').value='';
-    this.renderLog();
-    document.querySelector('.content').scrollTo({top:0,behavior:'smooth'});
-    document.getElementById('fDong').focus();
-    this.toast('동/호 초기화 (데이터 유지)','info');
   },
 
   // === 필드별 음성 입력 (mode: 'digit' | 'text') ===
