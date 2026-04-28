@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v20.9</title>
+  <title>(주)메트로 R & S AI v21.0</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -97,7 +97,6 @@
     .log-table{width:100%;border-collapse:collapse;font-size:.68rem}
     .log-table th{background:#0F172A;color:white;padding:5px 1px;border:1px solid #1E293B;font-weight:700;white-space:nowrap;position:sticky;top:0;z-index:10;font-size:.56rem;letter-spacing:.2px}
     .log-table td{padding:3px 1px;border:1px solid var(--border-light);text-align:center;vertical-align:middle;font-size:.65rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
-    .log-table td.td-type{white-space:normal;word-break:break-all;line-height:1.2;font-size:.6rem;max-width:36px}
     .log-table td.td-memo{text-align:left;white-space:normal;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-height:4.2em;word-break:break-all;font-weight:700;cursor:pointer;font-size:.68rem}
     .photo-cell{padding:0!important;width:48px;height:48px;position:relative;cursor:pointer;background:var(--surface-alt)}
     .photo-cell img{width:100%;height:100%;object-fit:cover;display:block}
@@ -159,20 +158,32 @@
     .loaded-sub{font-size:.48rem;color:var(--text-dim);margin-top:2px}
 
     @media print{
+      *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
       body,html,.app{height:auto!important;overflow:visible!important;background:#fff!important}
-      .app{max-width:100%!important;box-shadow:none!important}
-      header,.bottom-bar,.settings-overlay,.memo-popup-overlay,#loader,.toast,.hidden-inputs,.sec-head .btn-new,button{display:none!important}
+      .app{max-width:100%!important;box-shadow:none!important;display:block!important}
+      /* 헤더/하단/오버레이/입력 폼 모두 숨김 */
+      header,.bottom-bar,.settings-overlay,.memo-popup-overlay,#loader,.toast,.hidden-inputs,button,.no-print{display:none!important}
+      /* 섹션 1(하자 리스트 불러오기) 통째로 숨김 - 첫 페이지 빈 영역 제거 */
+      #sec-load,.sec:first-of-type{display:none!important}
       .content{overflow:visible!important}
-      .sec{box-shadow:none!important;border:none!important;page-break-inside:avoid}
-      .table-wrap{max-height:none!important;overflow:visible!important;border:none!important}
-      .log-table{font-size:10pt!important}
-      .log-table th{background:#2563EB!important;-webkit-print-color-adjust:exact;color:#fff!important}
-      .log-table td{white-space:normal!important;word-break:break-all!important;padding:4px!important}
-      .log-table td.td-memo{-webkit-line-clamp:unset!important;max-height:none!important;display:block!important}
-      .photo-cell{width:60px!important;height:60px!important}
-      .photo-cell img{width:100%!important;height:100%!important;object-fit:cover!important}
+      .sec{box-shadow:none!important;border:none!important;padding:0!important;margin:0!important}
+      #secLog{padding:0!important}
+      .log-head{display:none!important}
+      .table-wrap{max-height:none!important;overflow:visible!important;border:none!important;border-radius:0!important;box-shadow:none!important}
+      /* 표 - 페이지 단위 반복 헤더 */
+      .log-table{font-size:9.5pt!important;table-layout:fixed!important;width:100%!important}
+      .log-table thead{display:table-header-group!important}
+      .log-table tr{page-break-inside:avoid!important}
+      .log-table th{background:#E2E8F0!important;color:#0F172A!important;border:1px solid #475569!important;font-weight:800!important;padding:6px 3px!important;position:static!important;font-size:9pt!important;text-align:center!important}
+      .log-table td{padding:5px 3px!important;border:1px solid #94A3B8!important;color:#0F172A!important;white-space:normal!important;word-break:break-word!important;text-align:center!important;vertical-align:middle!important;font-size:9pt!important;font-weight:500!important}
+      .log-table td.td-memo{text-align:left!important;-webkit-line-clamp:unset!important;max-height:none!important;display:table-cell!important;font-weight:600!important;padding:5px 6px!important}
+      .log-table tbody tr:nth-child(even){background:#F8FAFC!important}
+      /* 사진 셀 */
+      .photo-cell{width:62px!important;height:62px!important;padding:1px!important;background:#fff!important}
+      .photo-cell img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}
+      .photo-cell:not(.has-photo){background:#F1F5F9!important}
       .photo-cell .pc-empty,.photo-cell .pc-del{display:none!important}
-      @page{size:A4;margin:10mm}
+      @page{size:A4;margin:8mm}
     }
   </style>
 </head>
@@ -232,11 +243,11 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V20.9</div>
+      <div class="ver">V21.0</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
-    <div class="sec">
+    <div class="sec" id="sec-load">
       <div class="sec-head" style="justify-content:space-between">
         <div style="display:flex;align-items:center;gap:7px">
           <span class="sec-num">1</span>
@@ -247,7 +258,7 @@
       </div>
 
       <div id="appGuide" style="display:none;margin-bottom:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.58rem;line-height:1.6;color:var(--text-sub)">
-        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">메트로 R&S AI v20.1 사용설명서</div>
+        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">메트로 R&S AI v21.0 사용설명서</div>
         <b>최초 설정 (1회)</b><br>
         &middot; 좌측 상단 <i class="fa-solid fa-gear"></i> 설정 버튼 탭<br>
         &middot; Script URL / Sheet ID / 시트명은 자동 입력됨<br>
@@ -303,25 +314,24 @@
         <input type="hidden" id="fSite">
       </div>
       <!-- 동/호 필터 + 다음세대 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:5px;margin-bottom:6px;align-items:center">
+      <div class="no-print" style="display:grid;grid-template-columns:1fr 1fr auto;gap:5px;margin-bottom:6px;align-items:center">
         <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fDong" placeholder="동" inputmode="numeric" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micDong" onclick="App.startVoiceInput('fDong','micDong')" aria-label="동 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
         <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fHo" placeholder="호" inputmode="numeric" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micHo" onclick="App.startVoiceInput('fHo','micHo')" aria-label="호 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
         <button onclick="App.newEntry()" style="padding:7px 9px;font-size:.62rem;font-weight:800;font-family:'Noto Sans KR';border:1px solid var(--border);border-radius:var(--r);background:#fff;color:var(--text-sub);cursor:pointer;white-space:nowrap;letter-spacing:.2px" title="다음 세대 (필터 초기화)"><i class="fa-solid fa-rotate-right"></i> 다음</button>
       </div>
-      <!-- 새 하자 인라인 입력 (위치·유형·하자내용 음성) -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1.5fr auto;gap:4px;margin-bottom:8px;align-items:center;padding:8px 6px 6px;background:var(--accent-pale);border:1px solid var(--accent-light);border-radius:var(--r);position:relative">
+      <!-- 새 하자 인라인 입력 (위치·하자내용 음성) -->
+      <div class="no-print" style="display:grid;grid-template-columns:1fr 2fr auto;gap:4px;margin-bottom:8px;align-items:center;padding:8px 6px 6px;background:var(--accent-pale);border:1px solid var(--accent-light);border-radius:var(--r);position:relative">
         <span style="position:absolute;top:-7px;left:8px;font-size:.5rem;font-weight:800;color:var(--accent-dark);background:var(--surface);padding:1px 5px;border-radius:3px;letter-spacing:.3px">+ 새 하자</span>
         <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="addLoc" placeholder="위치" style="font-size:.7rem;padding:7px 26px 7px 7px"><button class="mic-btn" id="addMicLoc" onclick="App.startVoiceForField('addLoc','addMicLoc','text')" aria-label="위치 음성" style="width:22px;height:22px;font-size:.6rem;right:4px"><i class="fa-solid fa-microphone"></i></button></div>
-        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="addType" placeholder="유형" style="font-size:.7rem;padding:7px 26px 7px 7px"><button class="mic-btn" id="addMicType" onclick="App.startVoiceForField('addType','addMicType','text')" aria-label="유형 음성" style="width:22px;height:22px;font-size:.6rem;right:4px"><i class="fa-solid fa-microphone"></i></button></div>
         <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="addMemo" placeholder="하자내용" style="font-size:.7rem;padding:7px 26px 7px 7px"><button class="mic-btn" id="addMicMemo" onclick="App.startVoiceForField('addMemo','addMicMemo','text')" aria-label="내용 음성" style="width:22px;height:22px;font-size:.6rem;right:4px"><i class="fa-solid fa-microphone"></i></button></div>
         <button id="btnSaveNew" onclick="App.saveNewDefect()" style="padding:7px 9px;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';border:none;border-radius:var(--r);background:#0891B2;color:white;cursor:pointer;white-space:nowrap;letter-spacing:.2px;box-shadow:var(--shadow-3d)" title="구글시트에 추가"><i class="fa-solid fa-floppy-disk"></i></button>
       </div>
       <div class="table-wrap">
         <table class="log-table">
           <thead><tr>
-            <th style="width:20px">No</th><th style="width:24px">동</th><th style="width:30px">호</th><th style="width:30px">위치</th><th style="width:26px">유형</th><th>하자내용</th><th style="width:46px">수리전</th><th style="width:46px">수리후</th><th style="width:46px">확인서</th><th style="width:24px" title="행 삭제">🗑</th>
+            <th style="width:20px">No</th><th style="width:24px">동</th><th style="width:30px">호</th><th style="width:36px">위치</th><th>하자내용</th><th style="width:46px">수리전</th><th style="width:46px">수리후</th><th style="width:46px">확인서</th>
           </tr></thead>
-          <tbody id="logBody"><tr><td colspan="10" class="log-empty">구글시트에서 데이터를 불러오세요</td></tr></tbody>
+          <tbody id="logBody"><tr><td colspan="8" class="log-empty">구글시트에서 데이터를 불러오세요</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -599,7 +609,6 @@ var App={
       var no=this.gv(r,'no')||j+1;
       var dh=this.parseDH(r);
       var loc=this.gv(r,'loc')||'-';
-      var tp=this.gv(r,'type')||'-';
       var memo=this.gv(r,'memo')||'-';
       var done=this.gv(r,'done')||'';
       var isDone=done&&done!=='미완료'&&done!=='N';
@@ -609,12 +618,10 @@ var App={
         +'<td>'+dh.dong+'</td>'
         +'<td>'+dh.ho+'</td>'
         +'<td>'+loc+'</td>'
-        +'<td class="td-type">'+tp+'</td>'
-        +'<td class="td-memo" onclick="App.showMemo('+no+',\''+loc.replace(/'/g,"\\'")+'\',\''+tp.replace(/'/g,"\\'")+'\',this.textContent)">'+memo+'</td>'
+        +'<td class="td-memo" onclick="App.showMemo('+no+',\''+loc.replace(/'/g,"\\'")+'\',this.textContent)">'+memo+'</td>'
         +this._photoCell(rn,'before',ph.before)
         +this._photoCell(rn,'after',ph.after)
         +this._photoCell(rn,'confirm',ph.confirm)
-        +'<td style="text-align:center;padding:0"><button onclick="App.deleteRow('+rn+','+no+')" style="border:none;background:transparent;color:var(--danger);font-size:.85rem;cursor:pointer;padding:4px 6px" title="행 삭제">🗑</button></td>'
       +'</tr>';
     }
     document.getElementById('logBody').innerHTML=html;
@@ -772,9 +779,9 @@ var App={
   },
 
   // === 하자내용 팝업 ===
-  showMemo:function(no,loc,tp,memo){
+  showMemo:function(no,loc,memo){
     document.getElementById('mpTitle').textContent='No.'+no+' 하자내용';
-    document.getElementById('mpLoc').textContent=loc+' / '+tp;
+    document.getElementById('mpLoc').textContent=loc;
     document.getElementById('mpBody').textContent=memo;
     document.getElementById('memoPopup').classList.add('show');
   },
@@ -891,13 +898,12 @@ var App={
     try{rec.start();}catch(err){mic.classList.remove('listening');self.toast('음성 시작 실패','error');}
   },
 
-  // === 새 하자 GAS 시트에 인라인 추가 (v20.1) ===
+  // === 새 하자 GAS 시트에 인라인 추가 (v21.0) ===
   saveNewDefect:function(){
     // 동/호는 필터값에서 가져옴
     var dong=document.getElementById('fDong').value.trim();
     var ho=document.getElementById('fHo').value.trim();
     var loc=document.getElementById('addLoc').value.trim();
-    var tp=document.getElementById('addType').value.trim();
     var memo=document.getElementById('addMemo').value.trim();
     if(!dong||!ho){this.toast('동/호 필터를 먼저 입력하세요','error');return;}
     if(!memo){this.toast('하자내용을 입력하세요','error');return;}
@@ -919,7 +925,7 @@ var App={
       sheetId:sid,
       sheetName:sn,
       worker:this.getSetting('WORKER')||'',
-      data:{ dong:dong, ho:ho, loc:loc, type:tp, memo:memo }
+      data:{ dong:dong, ho:ho, loc:loc, memo:memo }
     };
 
     // v20.5: LockService 충돌 시 자동 2회 재시도 (백오프 1.5s, 3s)
@@ -939,7 +945,6 @@ var App={
           }
           self.toast('추가 완료! (No.'+d.no+')','success',2200);
           document.getElementById('addLoc').value='';
-          document.getElementById('addType').value='';
           document.getElementById('addMemo').value='';
           self.loadFromSheet();
           setTimeout(function(){document.getElementById('addLoc').focus();},400);
