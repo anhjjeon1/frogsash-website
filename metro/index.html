@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v21.7</title>
+  <title>(주)메트로 R & S AI v21.8</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -178,8 +178,17 @@
       .log-table td{padding:5px 3px!important;border:1px solid #94A3B8!important;color:#0F172A!important;white-space:normal!important;word-break:break-word!important;text-align:center!important;vertical-align:middle!important;font-size:9pt!important;font-weight:500!important}
       .log-table td.td-memo{text-align:left!important;-webkit-line-clamp:unset!important;max-height:none!important;display:table-cell!important;font-weight:600!important;padding:5px 6px!important}
       .log-table tbody tr:nth-child(even){background:#F8FAFC!important}
-      /* 사진 셀 */
-      .photo-cell{width:62px!important;height:62px!important;padding:1px!important;background:#fff!important}
+      /* v21.8: A4 컬럼 비율 재조정 (No/동/호 확대 + 하자내용 적정 + 사진 3컬럼 17%씩) */
+      .log-table th:nth-child(1),.log-table td:nth-child(1){width:5%!important}
+      .log-table th:nth-child(2),.log-table td:nth-child(2){width:6%!important}
+      .log-table th:nth-child(3),.log-table td:nth-child(3){width:7%!important}
+      .log-table th:nth-child(4),.log-table td:nth-child(4){width:9%!important}
+      .log-table th:nth-child(5),.log-table td:nth-child(5){width:22%!important}
+      .log-table th:nth-child(6),.log-table td:nth-child(6){width:17%!important}
+      .log-table th:nth-child(7),.log-table td:nth-child(7){width:17%!important}
+      .log-table th:nth-child(8),.log-table td:nth-child(8){width:17%!important}
+      /* 사진 셀 — height 2배 (62→124px) */
+      .photo-cell{width:auto!important;height:124px!important;padding:2px!important;background:#fff!important}
       .photo-cell img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}
       .photo-cell:not(.has-photo){background:#F1F5F9!important}
       .photo-cell .pc-empty,.photo-cell .pc-del{display:none!important}
@@ -243,7 +252,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V21.7</div>
+      <div class="ver">V21.8</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
