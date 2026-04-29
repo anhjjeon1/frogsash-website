@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v20.8 - Google Apps Script
+// (주)메트로 R&S AI v21.10 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto(v20.8), deleteRow(v20.8)
+// v21.10: 사진 업로드 행 높이 80 → 160 (시트에서 사진 2배 시각화)
 // ========================================
 
 // 권한 재승인 트리거용 — GAS 편집기에서 직접 실행
@@ -256,8 +257,8 @@ function doPost(e) {
       // 2) 이미지 열: =IMAGE("Drive URL") 수식 (시트 시각용)
       ws.getRange(rowNum, imgColIdx).setFormula('=IMAGE("' + uploaded.url + '")');
 
-      // 이미지 보이게 행 높이 조정
-      try { ws.setRowHeight(rowNum, 80); } catch(e) {}
+      // 이미지 보이게 행 높이 조정 (v21.10: 80 → 160, 사진 시각화 2배)
+      try { ws.setRowHeight(rowNum, 160); } catch(e) {}
 
       // v20.6: 확인서 사진 업로드 시 자동 완료 처리 (빈 셀일 때만 — 기존 데이터 보호)
       var autoDone = false;
@@ -354,7 +355,7 @@ function doPost(e) {
               var up = uploadPhotoToDrive(base64v, sheetId, ws.getName(), r, photoType2);
               ws.getRange(r, dataColIdx2).setValue(base64v);
               ws.getRange(r, imgColIdx2).setFormula('=IMAGE("' + up.url + '")');
-              try { ws.setRowHeight(r, 80); } catch(e) {}
+              try { ws.setRowHeight(r, 160); } catch(e) {}  // v21.10: 80 → 160
               migrated++;
             } catch(err2) {
               errors++;
