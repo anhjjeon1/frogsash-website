@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v21.8</title>
+  <title>(주)메트로 R & S AI v21.9</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,7 +12,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <style>
     :root{
@@ -252,7 +251,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V21.8</div>
+      <div class="ver">V21.9</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -285,7 +284,7 @@
         &middot; 촬영 즉시 Google Drive 업로드 + 구글시트 셀에 이미지 자동 표시<br>
         &middot; 다른 작업자는 '새로고침'으로 최신 사진 확인<br><br>
         <b>하단 버튼</b><br>
-        &middot; <i class="fa-solid fa-file-excel"></i> 엑셀저장: 사진 포함 엑셀 파일 폰에 다운로드<br>
+        &middot; <i class="fa-solid fa-table"></i> 시트열기: 구글시트를 새 탭으로 바로 열기<br>
         &middot; <i class="fa-solid fa-file-pdf"></i> PDF저장: 브라우저 인쇄 → 'PDF로 저장' 선택 (내 파일 → 다운로드)<br>
         &middot; <i class="fa-solid fa-rotate"></i> 새로고침: 구글시트에서 최신 데이터 동기화<br>
         &middot; 전체삭제: 로컬 모든 데이터 삭제 (확인 팝업 있음)<br><br>
@@ -345,7 +344,7 @@
   <!-- 하단 버튼 -->
   <div class="bottom-bar">
     <div class="btn-row">
-      <button class="btn-send" onclick="App.saveAndShare()" style="flex:1"><i class="fa-solid fa-file-excel"></i> 엑셀저장</button>
+      <button class="btn-send" onclick="App.openSheet()" style="flex:1"><i class="fa-solid fa-table"></i> 시트열기</button>
       <button onclick="App.savePdf()" style="flex:1;border:none;border-radius:var(--r);background:#0891B2;color:white;font-size:.74rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;padding:0 12px;letter-spacing:.3px;box-shadow:0 3px 0 rgba(0,0,0,.1),var(--shadow)"><i class="fa-solid fa-file-pdf"></i> PDF저장</button>
       <button class="btn-refresh" onclick="App.refresh()" style="flex:0 0 auto;padding:0 12px"><i class="fa-solid fa-rotate"></i> 새로고침</button>
       <button onclick="App.resetAll()" style="flex:0 0 auto;padding:0 12px;border:1.5px solid #FCA5A5;border-radius:var(--r);background:#fff;color:#DC2626;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer">전체삭제</button>
@@ -1010,183 +1009,12 @@ var App={
     this.toast('초기화 완료. 구글시트에서 다시 불러오세요','success');
   },
 
-  // === 엑셀 저장 (사진 포함) ===
-  saveAndShare:function(){this.saveAsXlsx();},
-  saveAsXlsx:function(){
-    if(!this.sourceData.length){this.toast('데이터가 없습니다','error');return;}
-    var keys=Object.keys(this.rowPhotos);
-    var hasPhotos=false;
-    for(var k=0;k<keys.length;k++){var p=this.rowPhotos[keys[k]];if(p&&(p.before||p.after||p.confirm)){hasPhotos=true;break;}}
-
-    var self=this;
-    this.showLoader('엑셀 파일 생성 중...');
-
-    // ExcelJS로 새 워크북 생성
-    var wb=new ExcelJS.Workbook();
-    var ws=wb.addWorksheet(this.sourceSheetName||'하자리스트');
-
-    // 헤더 작성
-    var colKeys=Object.keys(this.sourceData[0]).filter(function(k){return k.charAt(0)!=='_';});
-    ws.addRow(colKeys);
-    var headerRow=ws.getRow(1);
-    headerRow.font={bold:true};
-    headerRow.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF2563EB'}};
-    headerRow.font={bold:true,color:{argb:'FFFFFFFF'}};
-
-    // 데이터 행 추가
-    for(var i=0;i<this.sourceData.length;i++){
-      var row=this.sourceData[i];
-      var vals=colKeys.map(function(k){return row[k]||'';});
-      ws.addRow(vals);
-    }
-
-    // 사진 컬럼 인덱스 찾기
-    var photoColIdx={};
-    for(var ci=0;ci<colKeys.length;ci++){
-      var cn=colKeys[ci].replace(/\s/g,'');
-      if(cn==='수리전') photoColIdx.before=ci+1;
-      else if(cn==='수리후') photoColIdx.after=ci+1;
-      else if(cn==='완료확인서'||cn==='확인서') photoColIdx.confirm=ci+1;
-    }
-
-    // 로컬 사진(base64)만 엑셀에 삽입
-    var insertCount=0;
-    var shrinkPromises=[];
-    for(var rn in this.rowPhotos){
-      var ph=this.rowPhotos[rn];
-      if(!ph) continue;
-      var types=['before','after','confirm'];
-      for(var t=0;t<types.length;t++){
-        var tp=types[t];
-        var src=ph[tp];
-        if(src&&src.indexOf('data:image')===0&&photoColIdx[tp]){
-          (function(rowNum,photoType,imgData){
-            shrinkPromises.push(
-              self.shrinkPhoto(imgData,400,0.5).then(function(small){
-                return{_rowNum:parseInt(rowNum),type:photoType,data:small};
-              })
-            );
-          })(rn,tp,src);
-        }
-      }
-    }
-
-    Promise.all(shrinkPromises).then(function(items){
-      for(var j=0;j<items.length;j++){
-        var item=items[j];
-        if(!item.data) continue;
-        var targetRowNum=0;
-        // sourceData에서 _rowNum 매칭하여 실제 행 찾기
-        for(var s=0;s<self.sourceData.length;s++){
-          if(self.sourceData[s]._rowNum===item._rowNum){targetRowNum=s+2;break;}
-        }
-        if(!targetRowNum) continue;
-        try{
-          var b64=item.data.split(',')[1];
-          var ext=item.data.indexOf('png')>=0?'png':'jpeg';
-          var imgId=wb.addImage({base64:b64,extension:ext});
-          ws.addImage(imgId,{
-            tl:{col:photoColIdx[item.type]-1,row:targetRowNum-1},
-            br:{col:photoColIdx[item.type],row:targetRowNum},
-            editAs:'oneCell'
-          });
-          ws.getRow(targetRowNum).height=90;
-          insertCount++;
-        }catch(ie){}
-      }
-
-      // Drive URL 사진은 URL 텍스트로 삽입
-      for(var rn2 in self.rowPhotos){
-        var ph2=self.rowPhotos[rn2];
-        if(!ph2) continue;
-        var rowIdx2=0;
-        for(var s2=0;s2<self.sourceData.length;s2++){
-          if(self.sourceData[s2]._rowNum===parseInt(rn2)){rowIdx2=s2+2;break;}
-        }
-        if(!rowIdx2) continue;
-        var types2=['before','after','confirm'];
-        for(var t2=0;t2<types2.length;t2++){
-          var tp2=types2[t2];
-          var src2=ph2[tp2];
-          if(src2&&src2.indexOf('http')===0&&photoColIdx[tp2]){
-            ws.getRow(rowIdx2).getCell(photoColIdx[tp2]).value=src2;
-          }
-        }
-      }
-
-      // 컬럼 너비
-      if(photoColIdx.before) ws.getColumn(photoColIdx.before).width=18;
-      if(photoColIdx.after) ws.getColumn(photoColIdx.after).width=18;
-      if(photoColIdx.confirm) ws.getColumn(photoColIdx.confirm).width=18;
-
-      var fn=(self.sourceSheetName||'하자관리')+'_완료.xlsx';
-      return wb.xlsx.writeBuffer().then(function(buf){
-        var blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-        self._showSavePopup(blob,fn,insertCount);
-      });
-    }).catch(function(err){
-      self.toast('오류: '+err.message,'error');
-    }).finally(function(){
-      self.hideLoader();
-    });
-  },
-
-  _showSavePopup:function(blob,fn,photoCount){
-    var existing=document.getElementById('savePopup');
-    if(existing) existing.remove();
-    var self=this;
-    // v21.4: data URL → Blob URL (폰 다운로드 차단 우회) + Web Share API 통합
-    var file=null;
-    try{ file=new File([blob],fn,{type:blob.type}); }catch(e){}
-    var canShare=file && navigator.canShare && navigator.canShare({files:[file]});
-    var blobUrl=URL.createObjectURL(blob);
-
-    var overlay=document.createElement('div');
-    overlay.id='savePopup';
-    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-    var box=document.createElement('div');
-    box.style.cssText='background:#fff;border-radius:16px;padding:24px;max-width:340px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.3)';
-    var html='<div style="font-size:2rem;margin-bottom:12px">📁</div>'
-      +'<div style="font-size:1rem;font-weight:700;margin-bottom:8px">엑셀 파일 준비 완료</div>'
-      +'<div style="font-size:.8rem;color:#666;margin-bottom:16px">'+fn+'<br>('+photoCount+'건 사진 포함)</div>';
-    if(canShare){
-      html+='<button id="spShare" style="display:block;width:100%;padding:14px;border:none;border-radius:10px;background:#0891B2;color:#fff;font-size:.9rem;font-weight:700;margin-bottom:8px;cursor:pointer">📤 공유 (카톡/메일/드라이브)</button>';
-    }
-    html+='<a id="spDown" href="'+blobUrl+'" download="'+fn+'" style="display:block;width:100%;padding:14px;border:none;border-radius:10px;background:#2563EB;color:#fff;font-size:.9rem;font-weight:700;margin-bottom:8px;cursor:pointer;text-decoration:none;text-align:center">⬇ 다운로드</a>'
-      +'<button id="spClose" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;background:#fff;color:#666;font-size:.8rem;cursor:pointer">닫기</button>';
-    box.innerHTML=html;
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
-
-    var cleanup=function(){
-      if(overlay.parentNode) overlay.remove();
-      setTimeout(function(){try{URL.revokeObjectURL(blobUrl);}catch(e){}},1000);
-    };
-    if(canShare){
-      document.getElementById('spShare').onclick=function(){
-        navigator.share({files:[file],title:fn,text:'메트로 R&S 하자관리'})
-          .then(cleanup)
-          .catch(function(err){if(err.name!=='AbortError') self.toast('공유 실패: '+err.message,'error');});
-      };
-    }
-    document.getElementById('spDown').onclick=function(){setTimeout(cleanup,500);};
-    document.getElementById('spClose').onclick=cleanup;
-    overlay.onclick=function(e){if(e.target===overlay) cleanup();};
-  },
-
-  shrinkPhoto:function(dataUrl,maxW,quality){
-    return new Promise(function(resolve){
-      if(!dataUrl||dataUrl.indexOf('data:image')<0){resolve('');return;}
-      var img=new Image();
-      img.onload=function(){
-        var sc=img.width>maxW?maxW/img.width:1;
-        var c=document.createElement('canvas');c.width=img.width*sc;c.height=img.height*sc;
-        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-        resolve(c.toDataURL('image/jpeg',quality));
-      };
-      img.onerror=function(){resolve('');};
-      img.src=dataUrl;
-    });
+  // === 구글시트 새 탭 열기 (v21.9) ===
+  openSheet:function(){
+    var sid=this.getSetting('SHEET');
+    if(!sid){this.toast('시트 ID가 설정되지 않았습니다','error');return;}
+    var url='https://docs.google.com/spreadsheets/d/'+sid+'/edit';
+    window.open(url,'_blank');
   },
 
   // === 로컬 데이터 저장/복원 ===
