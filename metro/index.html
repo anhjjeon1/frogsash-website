@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v22.0</title>
+  <title>(주)메트로 R & S AI v23.0</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -251,7 +251,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V22.0</div>
+      <div class="ver">V23.0</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -266,17 +266,19 @@
       </div>
 
       <div id="appGuide" style="display:none;margin-bottom:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.58rem;line-height:1.6;color:var(--text-sub)">
-        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">메트로 R&S AI v21.0 사용설명서</div>
+        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">메트로 R&S AI v23.0 사용설명서</div>
         <b>최초 설정 (1회)</b><br>
         &middot; 좌측 상단 <i class="fa-solid fa-gear"></i> 설정 버튼 탭<br>
-        &middot; Script URL / Sheet ID / 시트명은 자동 입력됨<br>
+        &middot; Script URL / Sheet ID는 자동 입력됨 (워크북 1개 = 14개 현장)<br>
         &middot; 작업자 이름만 A / B / C 입력 후 저장<br><br>
-        <b>데이터 준비 (A 작업자, 최초 1회)</b><br>
-        &middot; <i class="fa-solid fa-folder-open"></i> '엑셀 파일 → 구글시트 업로드' 탭 → 원본 엑셀 선택<br>
-        &middot; 엑셀 데이터가 구글시트에 자동 업로드됨<br><br>
+        <b>현장 선택 (v23.0 신규)</b><br>
+        &middot; 섹션 ① 상단 <b>현장 선택</b> 드롭다운에서 시트 선택<br>
+        &middot; 군산미장 / 경산하양 / 광주중흥 / 동탄 / ... / 감일제일 (14개)<br>
+        &middot; 시트 변경 시 데이터·필터 자동 초기화 후 재로드<br><br>
         <b>데이터 불러오기 (A/B/C 작업자)</b><br>
         &middot; <i class="fa-solid fa-cloud-arrow-down"></i> '구글시트에서 불러오기' 탭 → 하자리스트 로드<br>
         &middot; 동/호 숫자 입력 → 해당 세대 하자 자동 필터<br>
+        &middot; 매칭 0건이면 아래 <b>+ 새 하자</b> 폼에서 음성으로 신규 추가<br>
         &middot; 우측 <i class="fa-solid fa-microphone"></i> 마이크 버튼: 음성으로 숫자 입력 가능<br>
         &middot; '210' 처럼 앞 0 없이 입력해도 '0210'과 일치<br><br>
         <b>사진 촬영 (자동 저장)</b><br>
@@ -291,6 +293,15 @@
         <b>마이그레이션 (v17 이하 이력 있는 경우)</b><br>
         &middot; 설정 패널 하단 '기존 사진 → Drive 이미지 마이그레이션' 버튼<br>
         &middot; 구버전에 base64로 저장된 사진을 Drive URL + =IMAGE() 수식으로 일괄 변환
+      </div>
+
+      <!-- 현장(시트) 선택 드롭다운 — v23.0 -->
+      <div id="siteSelectWrap" style="margin-bottom:8px">
+        <label style="display:block;font-size:.55rem;font-weight:700;color:var(--text-sub);margin-bottom:3px;letter-spacing:.3px">현장 선택</label>
+        <select id="siteSelect" onchange="App.changeSite(this.value)" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.78rem;font-family:'Noto Sans KR';font-weight:700;background:var(--surface);color:var(--text);outline:none;cursor:pointer;appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22%230891B2%22><path d=%22M7 10l5 5 5-5z%22/></svg>');background-repeat:no-repeat;background-position:right 8px center;padding-right:30px">
+          <option value="">시트 목록 불러오는 중...</option>
+        </select>
+        <div class="sf-hint" id="siteSelectHint" style="font-size:.5rem;color:var(--text-dim);margin-top:3px">현장을 선택하면 해당 시트가 자동 로드됩니다</div>
       </div>
 
       <!-- 로드된 상태 -->
@@ -360,9 +371,9 @@
 var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC'};
 var SETTINGS_KEYS={SCRIPT:'METRO_SCRIPT_URL',SHEET:'METRO_SHEET_ID',SHEET_NAME:'METRO_SHEET_NAME',WORKER:'METRO_WORKER'};
 var DEFAULTS={
-  SCRIPT:'https://script.google.com/macros/s/AKfycbwCmW1chT9DvFiyoBkc47N8Ubj46OwmoKn6Tmbpz75v6whfILlVjP-xoDlY_rKcPutxVQ/exec',
-  SHEET:'1PSqfp64GlSPwA-7_YEUZPW03v7pxYP1wl5WodfojvJs',
-  SHEET_NAME:'감일제일'
+  SCRIPT:'https://script.google.com/macros/s/AKfycbwaoevs3XgzvvTS1Pr9RKbX-tos4q_rGjCYQTewUuHp2pQ7iGbIcVm10xTXYWhq8L0m/exec',
+  SHEET:'1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4',
+  SHEET_NAME:'군산미장'
 };
 
 var App={
@@ -378,6 +389,8 @@ var App={
     this.renderLog();
     var w=this.getSetting('WORKER');
     if(w){document.getElementById('workerBadge').textContent=w;document.getElementById('workerBadge').style.display='inline-flex';}
+    // v23.0: 현장 시트 목록 자동 로딩 (1회)
+    this.loadSiteList();
     // 기본값이 있으므로 설정 패널 자동 열기 불필요
     // PWA 서비스워커 강제 업데이트 후 등록
     if('serviceWorker' in navigator){
@@ -442,6 +455,8 @@ var App={
           self.toast('설정 저장 완료','success');
           // v21.1: 옛 캐시 정리 + 새 시트 데이터로 자동 갱신
           self.sourceData=[];self.rowPhotos={};
+          // v23.0: 시트 목록도 다시 로드 (Sheet ID 바뀐 경우 대응)
+          self.loadSiteList();
           setTimeout(function(){App.closeSettings();self.loadFromSheet();},1500);
         }else{
           cs.textContent='오류: '+d.message;cs.className='conn-status err';
@@ -450,6 +465,54 @@ var App={
       .catch(function(err){
         cs.textContent='연결 실패: '+err.message;cs.className='conn-status err';
       });
+  },
+
+  // === v23.0: 현장 시트 목록 로딩 ===
+  loadSiteList:function(){
+    var url=this.getSetting('SCRIPT');
+    var sid=this.getSetting('SHEET');
+    var sel=document.getElementById('siteSelect');
+    if(!url||!sid){
+      sel.innerHTML='<option value="">설정에서 SCRIPT/SHEET ID 확인 필요</option>';
+      return;
+    }
+    var self=this;
+    var current=this.getSetting('SHEET_NAME');
+    fetch(url+'?action=listSheets&sheetId='+encodeURIComponent(sid))
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.status!=='ok'){
+          sel.innerHTML='<option value="">시트 목록 로드 실패: '+(d.message||'')+'</option>';
+          return;
+        }
+        var html='';
+        for(var i=0;i<d.sites.length;i++){
+          var s=d.sites[i];
+          var selAttr=(s.name===current)?' selected':'';
+          html+='<option value="'+s.name+'"'+selAttr+'>'+s.name+' ('+s.rowCount+'건)</option>';
+        }
+        sel.innerHTML=html||'<option value="">시트 없음</option>';
+        // 첫 로드 시 자동 데이터 호출
+        if(!self.sourceData.length && current){
+          self.loadFromSheet();
+        }
+      })
+      .catch(function(err){
+        sel.innerHTML='<option value="">연결 실패: '+err.message+'</option>';
+      });
+  },
+
+  changeSite:function(siteName){
+    if(!siteName) return;
+    var prev=this.getSetting('SHEET_NAME');
+    if(siteName===prev && this.sourceData.length) return; // 같은 시트면 재로드 안 함
+    this.setSetting('SHEET_NAME',siteName);
+    // 옛 데이터 정리 후 재로드
+    this.sourceData=[];this.rowPhotos={};
+    document.getElementById('fDong').value='';
+    document.getElementById('fHo').value='';
+    this.toast(siteName+' 시트 로딩 중...','info');
+    this.loadFromSheet();
   },
 
   // === 구글시트에서 불러오기 ===
@@ -607,7 +670,14 @@ var App={
       filtered.push(row);
     }
     document.getElementById('logCount').textContent='('+filtered.length+'/'+this.sourceData.length+'건)';
-    if(!filtered.length){document.getElementById('logBody').innerHTML='<tr><td colspan="10" class="log-empty">해당 동/호 데이터 없음</td></tr>';return;}
+    if(!filtered.length){
+      // v23.0: 동·호 입력했는데 매칭 0건 → 새 하자 폼 안내
+      var hint=(qD||qH)
+        ? '해당 동/호 하자 없음 — 위 <b>+ 새 하자</b> 폼에서 음성으로 추가하세요'
+        : '구글시트에서 데이터를 불러오세요';
+      document.getElementById('logBody').innerHTML='<tr><td colspan="10" class="log-empty" style="padding:14px 8px;line-height:1.5">'+hint+'</td></tr>';
+      return;
+    }
     var html='';
     for(var j=0;j<filtered.length;j++){
       var r=filtered[j];

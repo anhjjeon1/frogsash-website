@@ -1,9 +1,17 @@
 // ========================================
-// (주)메트로 R&S AI v21.10 - Google Apps Script
+// (주)메트로 R&S AI v23.0 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto(v20.8), deleteRow(v20.8)
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets(v23.0)
+// v23.0: listSheets 액션 추가 — 워크북의 현장 시트(14개) 동적 로딩 (시스템 시트 블랙리스트 제외)
 // v21.10: 사진 업로드 시 행 높이 + 컬럼 너비 모두 160px (시트에서 사진 가로·세로 2배 시각화)
 // ========================================
+
+// 시스템 시트 (드롭다운에서 제외) — 현장 시트는 이 목록 외 전체
+var SYSTEM_SHEETS = {
+  '대시보드': true, '일매출': true, '전체공정표': true,
+  '결제현황': true, '단가표': true,
+  '2025년매출': true, '2026년매출': true
+};
 
 // 권한 재승인 트리거용 — GAS 편집기에서 직접 실행
 function authorizeAll() {
@@ -153,7 +161,28 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v20.8 연결됨'});
+  // === 시트 목록 (현장 드롭다운용, v23.0) ===
+  if (action === 'listSheets') {
+    var sheetId = e.parameter.sheetId;
+    if (!sheetId) return makeRes({status:'error', message:'sheetId 필요'});
+    try {
+      var ss = SpreadsheetApp.openById(sheetId);
+      var all = ss.getSheets();
+      var sites = [];
+      for (var s = 0; s < all.length; s++) {
+        var nm = all[s].getName();
+        if (SYSTEM_SHEETS[nm]) continue;
+        // 행 수 (헤더 제외 추정치)
+        var lr = all[s].getLastRow();
+        sites.push({name: nm, rowCount: Math.max(0, lr - 1)});
+      }
+      return makeRes({status:'ok', sites:sites, count:sites.length});
+    } catch(err) {
+      return makeRes({status:'error', message:err.message});
+    }
+  }
+
+  return makeRes({status:'ok', message:'메트로 R&S v23.0 연결됨'});
 }
 
 // === POST 요청 ===
