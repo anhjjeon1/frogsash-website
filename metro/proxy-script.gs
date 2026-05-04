@@ -1,7 +1,9 @@
 // ========================================
-// (주)메트로 R&S AI v23.10 - Google Apps Script
+// (주)메트로 R&S AI v23.11 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns
+// v23.11: appendRow NO 채번 + 서식 복사 거꾸로 스캔 — lastRow가 빈 양식이어도 정상 행을 찾아 적용
+//         (이전 행이 깨져 있어도 새 행은 정상 양식으로 들어감 — 체인 깨짐 방지)
 // v23.10: appendRow NO 채번 A열 fallback — 헤더 매칭 실패 시 A열 마지막 값이 숫자면 A열을 NO로 가정
 //         (군산미장 A1='ㅡDUF' 같은 깨진 헤더에도 NO 자동 채번 동작하도록)
 // v23.9: appendRow에 이전 행 서식 복사 추가 (PASTE_FORMAT) — 새 하자 행 테두리·정렬 자동 적용
@@ -416,7 +418,7 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.10 연결됨'});
+  return makeRes({status:'ok', message:'메트로 R&S v23.11 연결됨'});
 }
 
 // === POST 요청 ===
@@ -722,11 +724,20 @@ function doPost(e) {
         var colDate  = findCol('순번','접수일','날짜');
         var colAdded = findCol('작업자','등록자','입력자');
 
-        // v23.10: NO 헤더가 깨졌거나 다른 이름일 때 A열 fallback
-        // (군산미장 A1='ㅡDUF' 등 의도하지 않은 헤더에도 NO 채번이 동작하도록)
+        // v23.10/11: NO 헤더 못 찾으면 A열 fallback. v23.11에선 lastRow가 빈 행이라도
+        // 거꾸로 올라가 숫자가 있는 행을 찾아 A열을 NO로 판정 (체인 깨짐 방지)
+        var srcRowForFmt = -1;
         if (colNo < 0 && lastRow >= 2) {
-          var firstColVal = String(ws.getRange(lastRow, 1).getValue() || '').trim();
-          if (/^\d+$/.test(firstColVal)) colNo = 1;
+          for (var fc = lastRow; fc >= 2; fc--) {
+            var v = String(ws.getRange(fc, 1).getValue() || '').trim();
+            if (/^\d+$/.test(v)) { colNo = 1; srcRowForFmt = fc; break; }
+          }
+        } else if (lastRow >= 2) {
+          // 헤더 매칭은 됐지만 서식 복사용으로 정상 행 따로 탐색 (마지막 행이 빈 양식일 수 있음)
+          for (var fc2 = lastRow; fc2 >= 2; fc2--) {
+            var v2 = String(ws.getRange(fc2, colNo > 0 ? colNo : 1).getValue() || '').trim();
+            if (v2) { srcRowForFmt = fc2; break; }
+          }
         }
 
         if (colDong < 0 || colHo < 0 || colMemo < 0) {
@@ -760,10 +771,12 @@ function doPost(e) {
         var insertRow = lastRow + 1;
         ws.getRange(insertRow, 1, 1, lastCol).setValues([newRow]);
 
-        // v23.9: 이전 행 서식(테두리·정렬·폰트·배경) 새 행에 복사 — 시트 양식 일관성 유지
-        if (lastRow >= 2) {
+        // v23.9/11: 정상 행의 서식(테두리·정렬·폰트·배경) 복사
+        // v23.11: lastRow가 빈 양식이면 거꾸로 스캔해 찾은 srcRowForFmt 사용 (양식 깨짐 체인 방지)
+        var fmtSrc = srcRowForFmt > 0 ? srcRowForFmt : (lastRow >= 2 ? lastRow : -1);
+        if (fmtSrc >= 2) {
           try {
-            ws.getRange(lastRow, 1, 1, lastCol).copyTo(
+            ws.getRange(fmtSrc, 1, 1, lastCol).copyTo(
               ws.getRange(insertRow, 1, 1, lastCol),
               SpreadsheetApp.CopyPasteType.PASTE_FORMAT,
               false
