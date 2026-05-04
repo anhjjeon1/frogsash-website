@@ -1,7 +1,9 @@
 // ========================================
-// (주)메트로 R&S AI v23.6 - Google Apps Script
+// (주)메트로 R&S AI v23.7 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns
+// v23.7: read API 객체 변환 첫 매칭 우선 — R열 통계 '완료'가 L열 행별 '완료'를 덮어쓰는 버그 수정
+//        클라이언트 완료 행 숨김 토글이 정상 동작하도록
 // v23.6: savePhoto 자동완료 + 진단 함수 모두 첫 매칭(가장 좌측) 우선 — 통계 표 '완료' 헤더 오인 버그 수정
 //        진단 함수가 모든 매칭 위치를 리스트로 반환 (행별 컬럼 vs 통계 헤더 구분)
 // v23.5: doGet에 checkCompleteColumns 액션 추가 — HTTP로 14시트 K/L 헤더 위치 진단 (재배포 1회 후 자동 호출 가능)
@@ -325,6 +327,9 @@ function doGet(e) {
       for (var i = 1; i < data.length; i++) {
         var obj = {};
         for (var j = 0; j < headers.length; j++) {
+          // v23.7: 첫 매칭 우선 — 같은 헤더 이름이 두 번 나오면(예: 행별 '완료' L열 + 통계 '완료' R열)
+          //         첫 번째(좌측) 값을 보존. 그래야 클라이언트가 행별 '완료'를 정확히 읽음
+          if (Object.prototype.hasOwnProperty.call(obj, headers[j])) continue;
           var isPhotoCol = false;
           for (var pt in photoImgCols) { if (photoImgCols[pt] === j) { isPhotoCol = true; break; } }
           for (var pt2 in photoDataCols) { if (photoDataCols[pt2] === j) { isPhotoCol = true; break; } }
@@ -406,7 +411,7 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.6 연결됨'});
+  return makeRes({status:'ok', message:'메트로 R&S v23.7 연결됨'});
 }
 
 // === POST 요청 ===
