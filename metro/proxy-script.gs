@@ -1,7 +1,9 @@
 // ========================================
-// (주)메트로 R&S AI v23.5 - Google Apps Script
+// (주)메트로 R&S AI v23.6 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns
+// v23.6: savePhoto 자동완료 + 진단 함수 모두 첫 매칭(가장 좌측) 우선 — 통계 표 '완료' 헤더 오인 버그 수정
+//        진단 함수가 모든 매칭 위치를 리스트로 반환 (행별 컬럼 vs 통계 헤더 구분)
 // v23.5: doGet에 checkCompleteColumns 액션 추가 — HTTP로 14시트 K/L 헤더 위치 진단 (재배포 1회 후 자동 호출 가능)
 // v23.4: M4 검증용 진단 함수 oneTimeCheckCompleteColumns 추가 — 14시트 K(완료일)/L(완료) 헤더 위치 일괄 점검
 // v23.2: 14개 시트 H~J 사진 컬럼(수리전/수리후/완료확인서) 일괄 추가 — oneTimeAddPhotoColumnsToAllSites
@@ -211,15 +213,16 @@ function oneTimeAddPhotoColumnsToAllSites() {
   return {processed:processed, skipped:skipped, errored:errored};
 }
 
-// === [v23.4 진단] 14시트의 "완료일"/"완료" 헤더 위치 일괄 점검 ===
-// 실행: GAS 편집기에서 oneTimeCheckCompleteColumns 직접 실행 (Logger에서 결과 확인)
-// M4 검증용 — savePhoto 자동완료가 14시트 모두에서 동작 가능한지 체크
+// === [v23.6 진단] 14시트의 "완료일"/"완료" 헤더 위치 일괄 점검 ===
+// 실행: GAS 편집기에서 oneTimeCheckCompleteColumns 직접 실행 또는 ?action=checkCompleteColumns
+// v23.6: 모든 매칭 위치를 리스트로 반환 (통계 표의 '완료' 헤더 vs 행별 '완료' 구분)
+//        + 첫 매칭(가장 좌측)을 진짜 행별 컬럼으로 판정
 function oneTimeCheckCompleteColumns() {
   var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
   var ss = SpreadsheetApp.openById(SHEET_ID);
   var allSheets = ss.getSheets();
 
-  var ok = [], missing = [], misplaced = [];
+  var sheets = [];
 
   for (var s = 0; s < allSheets.length; s++) {
     var ws = allSheets[s];
@@ -227,38 +230,38 @@ function oneTimeCheckCompleteColumns() {
     if (SYSTEM_SHEETS[name]) continue;
 
     var lastCol = ws.getLastColumn();
-    if (lastCol < 1) { missing.push(name + ' (빈 시트)'); continue; }
+    if (lastCol < 1) { sheets.push({name:name, error:'빈 시트'}); continue; }
     var headers = ws.getRange(1, 1, 1, lastCol).getValues()[0];
 
-    var doneDateIdx = -1, doneIdx = -1;
+    var doneDateAll = [], doneAll = [];
     for (var h = 0; h < headers.length; h++) {
       var hn = String(headers[h]).replace(/\s/g,'');
-      if (hn === '완료일') doneDateIdx = h + 1;
-      else if (hn === '완료') doneIdx = h + 1;
+      if (hn === '완료일') doneDateAll.push(h + 1);
+      else if (hn === '완료') doneAll.push(h + 1);
     }
 
-    if (doneDateIdx < 0 && doneIdx < 0) {
-      missing.push(name + ' (완료일·완료 모두 없음)');
-    } else if (doneDateIdx < 0) {
-      missing.push(name + ' (완료일 없음, 완료=' + _colLetter(doneIdx) + ')');
-    } else if (doneIdx < 0) {
-      missing.push(name + ' (완료 없음, 완료일=' + _colLetter(doneDateIdx) + ')');
-    } else if (doneDateIdx === 11 && doneIdx === 12) {
-      // K=11, L=12 (정상)
-      ok.push(name);
-    } else {
-      misplaced.push(name + ' (완료일=' + _colLetter(doneDateIdx) + ', 완료=' + _colLetter(doneIdx) + ')');
-    }
+    // 첫 매칭 = 행별 컬럼 (좌측이 데이터, 우측이 통계 표 헤더라는 가정)
+    var doneDateFirst = doneDateAll.length ? doneDateAll[0] : -1;
+    var doneFirst = doneAll.length ? doneAll[0] : -1;
+
+    sheets.push({
+      name: name,
+      doneDate: doneDateFirst > 0 ? _colLetter(doneDateFirst) : null,
+      done: doneFirst > 0 ? _colLetter(doneFirst) : null,
+      doneDateAll: doneDateAll.map(_colLetter),
+      doneAll: doneAll.map(_colLetter),
+      hasDup: doneDateAll.length > 1 || doneAll.length > 1
+    });
   }
 
-  Logger.log('=== M4 검증: 완료일/완료 컬럼 점검 ===');
-  Logger.log('✅ 정상 (K=완료일, L=완료): ' + ok.length + '개');
-  if (ok.length) Logger.log('  → ' + ok.join(', '));
-  Logger.log('⚠️ 위치 다름: ' + misplaced.length + '개');
-  if (misplaced.length) misplaced.forEach(function(m){ Logger.log('  → ' + m); });
-  Logger.log('❌ 컬럼 누락: ' + missing.length + '개');
-  if (missing.length) missing.forEach(function(m){ Logger.log('  → ' + m); });
-  return {ok:ok, misplaced:misplaced, missing:missing};
+  Logger.log('=== M4 검증 v23.6: 완료일/완료 컬럼 점검 ===');
+  sheets.forEach(function(s){
+    if (s.error) { Logger.log('❌ ' + s.name + ': ' + s.error); return; }
+    var dup = s.hasDup ? ' [중복!]' : '';
+    Logger.log(s.name + ': 완료일=' + s.doneDate + ' / 완료=' + s.done +
+      (s.hasDup ? ' (완료일 후보=' + s.doneDateAll.join(',') + ', 완료 후보=' + s.doneAll.join(',') + ')' : '') + dup);
+  });
+  return {sheets: sheets, count: sheets.length};
 }
 
 // 컬럼 인덱스(1-based) → 알파벳
@@ -389,23 +392,21 @@ function doGet(e) {
     }
   }
 
-  // === [v23.5] 14시트 완료일/완료 컬럼 진단 (M4 검증용, HTTP 호출 가능) ===
+  // === [v23.5+] 14시트 완료일/완료 컬럼 진단 (M4 검증용, HTTP 호출 가능) ===
   if (action === 'checkCompleteColumns') {
     try {
       var result = oneTimeCheckCompleteColumns();
       return makeRes({
         status:'ok',
-        ok: result.ok,
-        misplaced: result.misplaced,
-        missing: result.missing,
-        summary: 'ok=' + result.ok.length + ', misplaced=' + result.misplaced.length + ', missing=' + result.missing.length
+        sheets: result.sheets,
+        count: result.count
       });
     } catch(err) {
       return makeRes({status:'error', message:err.message});
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.5 연결됨'});
+  return makeRes({status:'ok', message:'메트로 R&S v23.6 연결됨'});
 }
 
 // === POST 요청 ===
@@ -544,13 +545,14 @@ function doPost(e) {
       try { ws.setColumnWidth(imgColIdx, 160); } catch(e) {}
 
       // v20.6: 확인서 사진 업로드 시 자동 완료 처리 (빈 셀일 때만 — 기존 데이터 보호)
+      // v23.6: 첫 매칭(가장 좌측) 우선 — 우측에 있는 통계 표의 '완료' 헤더가 잘못 잡히는 버그 수정
       var autoDone = false;
       if (photoType === 'confirm') {
         var doneDateIdx = -1, doneIdx = -1;
         for (var hd = 0; hd < headers.length; hd++) {
           var hnd = String(headers[hd]).replace(/\s/g,'');
-          if (hnd === '완료일') doneDateIdx = hd + 1;
-          else if (hnd === '완료') doneIdx = hd + 1;
+          if (hnd === '완료일' && doneDateIdx < 0) doneDateIdx = hd + 1;
+          else if (hnd === '완료' && doneIdx < 0) doneIdx = hd + 1;
         }
         if (doneDateIdx > 0) {
           var existDate = ws.getRange(rowNum, doneDateIdx).getValue();
