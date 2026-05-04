@@ -1,7 +1,9 @@
 // ========================================
-// (주)메트로 R&S AI v23.1 - Google Apps Script
+// (주)메트로 R&S AI v23.2 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets
+// v23.2: 14개 시트 H~J 사진 컬럼(수리전/수리후/완료확인서) 일괄 추가 — oneTimeAddPhotoColumnsToAllSites
+//        + savePhoto 안전망: 사진 컬럼 없으면 H~J 자동 삽입
 // v23.1(M3): 사진 저장 경로 변경 — A.메트로알엔에스(주)/{현장}/{동}-{호}/ (동·호 단위 분리)
 //           일회성 정리 함수 oneTimeOrganizeDriveFolders 추가
 // v23.0: listSheets 액션 추가 — 워크북의 현장 시트(14개) 동적 로딩
@@ -145,6 +147,66 @@ function oneTimeOrganizeDriveFolders() {
   Logger.log('=== 완료 — ' + result.summary);
   Logger.log('그대로 둔 폴더: ' + skipped.join(', '));
   return result;
+}
+
+// === [v23.2 일회성] 14개 시트 H~J에 사진 컬럼(수리전/수리후/완료확인서) 일괄 추가 ===
+// 실행: GAS 편집기에서 oneTimeAddPhotoColumnsToAllSites 직접 실행
+// 멱등 — 이미 있는 시트는 자동 스킵, 재실행 안전
+function oneTimeAddPhotoColumnsToAllSites() {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';  // _LIVE
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var allSheets = ss.getSheets();
+
+  var processed = [], skipped = [], errored = [];
+  var photoCols = ['수리전', '수리후', '완료확인서'];
+  var dataCols = ['수리전_data', '수리후_data', '완료확인서_data'];
+
+  for (var s = 0; s < allSheets.length; s++) {
+    var ws = allSheets[s];
+    var name = ws.getName();
+    if (SYSTEM_SHEETS[name]) { skipped.push(name + ' (시스템)'); continue; }
+
+    try {
+      var lastCol = ws.getLastColumn();
+      if (lastCol < 1) { skipped.push(name + ' (빈 시트)'); continue; }
+      var headers = ws.getRange(1, 1, 1, lastCol).getValues()[0];
+      var hasPhoto = false;
+      for (var h = 0; h < headers.length; h++) {
+        var hn = String(headers[h]).replace(/\s/g,'');
+        if (hn === '수리전' || hn === '수리후' || hn === '완료확인서' || hn === '확인서') {
+          hasPhoto = true; break;
+        }
+      }
+      if (hasPhoto) { skipped.push(name + ' (이미 있음)'); continue; }
+
+      // ① H 위치(8번째)에 3개 컬럼 삽입 → H/I/J = 수리전/수리후/완료확인서
+      ws.insertColumnsBefore(8, 3);
+      for (var p = 0; p < 3; p++) {
+        ws.getRange(1, 8 + p).setValue(photoCols[p]).setFontWeight('bold');
+        try { ws.setColumnWidth(8 + p, 160); } catch(e) {}
+      }
+
+      // ② 시트 끝에 _data 3개 추가 (숨김)
+      var endCol = ws.getLastColumn();
+      for (var d = 0; d < 3; d++) {
+        ws.getRange(1, endCol + 1 + d).setValue(dataCols[d]).setFontWeight('bold');
+      }
+      ws.hideColumns(endCol + 1, 3);
+
+      processed.push(name);
+      Logger.log('✅ ' + name + ': H~J 본 컬럼 + 끝 _data 3개 추가');
+    } catch(e) {
+      errored.push(name + ': ' + e.message);
+      Logger.log('❌ ' + name + ' 오류: ' + e.message);
+    }
+  }
+
+  SpreadsheetApp.flush();
+  Logger.log('=== 완료 — 처리: ' + processed.length + ', 스킵: ' + skipped.length + ', 에러: ' + errored.length);
+  Logger.log('처리: ' + processed.join(', '));
+  Logger.log('스킵: ' + skipped.join(', '));
+  if (errored.length) Logger.log('에러: ' + errored.join('; '));
+  return {processed:processed, skipped:skipped, errored:errored};
 }
 
 // 기존 이미지 셀의 =IMAGE("...") 수식에서 Drive 파일 ID 추출 후 삭제
@@ -338,7 +400,29 @@ function doPost(e) {
         }
         if (imgColIdx > 0) break;
       }
-      if (imgColIdx < 0) return makeRes({status:'error', message:aliases.join('/')+' 열 없음'});
+      // v23.2 안전망: 사진 컬럼 없으면 H~J에 자동 삽입 + 끝에 _data 3개 (oneTimeAddPhotoColumnsToAllSites와 동일 양식)
+      if (imgColIdx < 0) {
+        ws.insertColumnsBefore(8, 3);
+        ws.getRange(1, 8).setValue('수리전').setFontWeight('bold');
+        ws.getRange(1, 9).setValue('수리후').setFontWeight('bold');
+        ws.getRange(1, 10).setValue('완료확인서').setFontWeight('bold');
+        try { ws.setColumnWidth(8, 160); ws.setColumnWidth(9, 160); ws.setColumnWidth(10, 160); } catch(e) {}
+        var ec = ws.getLastColumn();
+        ws.getRange(1, ec + 1).setValue('수리전_data').setFontWeight('bold');
+        ws.getRange(1, ec + 2).setValue('수리후_data').setFontWeight('bold');
+        ws.getRange(1, ec + 3).setValue('완료확인서_data').setFontWeight('bold');
+        try { ws.hideColumns(ec + 1, 3); } catch(e) {}
+        // headers 다시 읽고 imgColIdx 재탐색
+        headers = ws.getRange(1, 1, 1, ws.getLastColumn()).getValues()[0];
+        for (var hh = 0; hh < headers.length; hh++) {
+          var hnh = String(headers[hh]).replace(/\s/g,'');
+          for (var aii = 0; aii < aliases.length; aii++) {
+            if (hnh === aliases[aii]) { imgColIdx = hh + 1; colName = aliases[aii]; break; }
+          }
+          if (imgColIdx > 0) break;
+        }
+        if (imgColIdx < 0) return makeRes({status:'error', message:'사진 컬럼 자동 생성 실패 — 시트 양식 점검 필요'});
+      }
 
       var dataColName = colName + '_data';
       var dataColIdx = -1;
