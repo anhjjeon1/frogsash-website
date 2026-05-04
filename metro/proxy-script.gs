@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.4 - Google Apps Script
+// (주)메트로 R&S AI v23.5 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns
+// v23.5: doGet에 checkCompleteColumns 액션 추가 — HTTP로 14시트 K/L 헤더 위치 진단 (재배포 1회 후 자동 호출 가능)
 // v23.4: M4 검증용 진단 함수 oneTimeCheckCompleteColumns 추가 — 14시트 K(완료일)/L(완료) 헤더 위치 일괄 점검
 // v23.2: 14개 시트 H~J 사진 컬럼(수리전/수리후/완료확인서) 일괄 추가 — oneTimeAddPhotoColumnsToAllSites
 //        + savePhoto 안전망: 사진 컬럼 없으면 H~J 자동 삽입
@@ -388,7 +389,23 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.0 연결됨'});
+  // === [v23.5] 14시트 완료일/완료 컬럼 진단 (M4 검증용, HTTP 호출 가능) ===
+  if (action === 'checkCompleteColumns') {
+    try {
+      var result = oneTimeCheckCompleteColumns();
+      return makeRes({
+        status:'ok',
+        ok: result.ok,
+        misplaced: result.misplaced,
+        missing: result.missing,
+        summary: 'ok=' + result.ok.length + ', misplaced=' + result.misplaced.length + ', missing=' + result.missing.length
+      });
+    } catch(err) {
+      return makeRes({status:'error', message:err.message});
+    }
+  }
+
+  return makeRes({status:'ok', message:'메트로 R&S v23.5 연결됨'});
 }
 
 // === POST 요청 ===
