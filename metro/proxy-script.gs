@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.2 - Google Apps Script
+// (주)메트로 R&S AI v23.4 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets
+// v23.4: M4 검증용 진단 함수 oneTimeCheckCompleteColumns 추가 — 14시트 K(완료일)/L(완료) 헤더 위치 일괄 점검
 // v23.2: 14개 시트 H~J 사진 컬럼(수리전/수리후/완료확인서) 일괄 추가 — oneTimeAddPhotoColumnsToAllSites
 //        + savePhoto 안전망: 사진 컬럼 없으면 H~J 자동 삽입
 // v23.1(M3): 사진 저장 경로 변경 — A.메트로알엔에스(주)/{현장}/{동}-{호}/ (동·호 단위 분리)
@@ -207,6 +208,67 @@ function oneTimeAddPhotoColumnsToAllSites() {
   Logger.log('스킵: ' + skipped.join(', '));
   if (errored.length) Logger.log('에러: ' + errored.join('; '));
   return {processed:processed, skipped:skipped, errored:errored};
+}
+
+// === [v23.4 진단] 14시트의 "완료일"/"완료" 헤더 위치 일괄 점검 ===
+// 실행: GAS 편집기에서 oneTimeCheckCompleteColumns 직접 실행 (Logger에서 결과 확인)
+// M4 검증용 — savePhoto 자동완료가 14시트 모두에서 동작 가능한지 체크
+function oneTimeCheckCompleteColumns() {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var allSheets = ss.getSheets();
+
+  var ok = [], missing = [], misplaced = [];
+
+  for (var s = 0; s < allSheets.length; s++) {
+    var ws = allSheets[s];
+    var name = ws.getName();
+    if (SYSTEM_SHEETS[name]) continue;
+
+    var lastCol = ws.getLastColumn();
+    if (lastCol < 1) { missing.push(name + ' (빈 시트)'); continue; }
+    var headers = ws.getRange(1, 1, 1, lastCol).getValues()[0];
+
+    var doneDateIdx = -1, doneIdx = -1;
+    for (var h = 0; h < headers.length; h++) {
+      var hn = String(headers[h]).replace(/\s/g,'');
+      if (hn === '완료일') doneDateIdx = h + 1;
+      else if (hn === '완료') doneIdx = h + 1;
+    }
+
+    if (doneDateIdx < 0 && doneIdx < 0) {
+      missing.push(name + ' (완료일·완료 모두 없음)');
+    } else if (doneDateIdx < 0) {
+      missing.push(name + ' (완료일 없음, 완료=' + _colLetter(doneIdx) + ')');
+    } else if (doneIdx < 0) {
+      missing.push(name + ' (완료 없음, 완료일=' + _colLetter(doneDateIdx) + ')');
+    } else if (doneDateIdx === 11 && doneIdx === 12) {
+      // K=11, L=12 (정상)
+      ok.push(name);
+    } else {
+      misplaced.push(name + ' (완료일=' + _colLetter(doneDateIdx) + ', 완료=' + _colLetter(doneIdx) + ')');
+    }
+  }
+
+  Logger.log('=== M4 검증: 완료일/완료 컬럼 점검 ===');
+  Logger.log('✅ 정상 (K=완료일, L=완료): ' + ok.length + '개');
+  if (ok.length) Logger.log('  → ' + ok.join(', '));
+  Logger.log('⚠️ 위치 다름: ' + misplaced.length + '개');
+  if (misplaced.length) misplaced.forEach(function(m){ Logger.log('  → ' + m); });
+  Logger.log('❌ 컬럼 누락: ' + missing.length + '개');
+  if (missing.length) missing.forEach(function(m){ Logger.log('  → ' + m); });
+  return {ok:ok, misplaced:misplaced, missing:missing};
+}
+
+// 컬럼 인덱스(1-based) → 알파벳
+function _colLetter(idx) {
+  var s = '';
+  while (idx > 0) {
+    var r = (idx - 1) % 26;
+    s = String.fromCharCode(65 + r) + s;
+    idx = Math.floor((idx - 1) / 26);
+  }
+  return s;
 }
 
 // 기존 이미지 셀의 =IMAGE("...") 수식에서 Drive 파일 ID 추출 후 삭제
