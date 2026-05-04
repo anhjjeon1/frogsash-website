@@ -1,7 +1,9 @@
 // ========================================
-// (주)메트로 R&S AI v23.9 - Google Apps Script
+// (주)메트로 R&S AI v23.10 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns
+// v23.10: appendRow NO 채번 A열 fallback — 헤더 매칭 실패 시 A열 마지막 값이 숫자면 A열을 NO로 가정
+//         (군산미장 A1='ㅡDUF' 같은 깨진 헤더에도 NO 자동 채번 동작하도록)
 // v23.9: appendRow에 이전 행 서식 복사 추가 (PASTE_FORMAT) — 새 하자 행 테두리·정렬 자동 적용
 // v23.8: savePhoto 자동완료 — L(완료) 컬럼은 '완료'가 아닌 모든 값을 '완료'로 덮어쓰기
 //        (기존 '미완료'/'N' 값이 그대로 남아 토글이 미완료로 인식하던 문제 수정)
@@ -414,7 +416,7 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.9 연결됨'});
+  return makeRes({status:'ok', message:'메트로 R&S v23.10 연결됨'});
 }
 
 // === POST 요청 ===
@@ -719,6 +721,13 @@ function doPost(e) {
         var colMemo  = findCol('하자내용','내용','상세내용');
         var colDate  = findCol('순번','접수일','날짜');
         var colAdded = findCol('작업자','등록자','입력자');
+
+        // v23.10: NO 헤더가 깨졌거나 다른 이름일 때 A열 fallback
+        // (군산미장 A1='ㅡDUF' 등 의도하지 않은 헤더에도 NO 채번이 동작하도록)
+        if (colNo < 0 && lastRow >= 2) {
+          var firstColVal = String(ws.getRange(lastRow, 1).getValue() || '').trim();
+          if (/^\d+$/.test(firstColVal)) colNo = 1;
+        }
 
         if (colDong < 0 || colHo < 0 || colMemo < 0) {
           return makeRes({status:'error', message:'필수 컬럼 누락 (동/호/하자내용)'});
