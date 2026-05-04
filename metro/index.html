@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v23.0</title>
+  <title>(주)메트로 R & S AI v23.1</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -251,7 +251,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V23.0</div>
+      <div class="ver">V23.1</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -266,12 +266,12 @@
       </div>
 
       <div id="appGuide" style="display:none;margin-bottom:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.58rem;line-height:1.6;color:var(--text-sub)">
-        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">메트로 R&S AI v23.0 사용설명서</div>
+        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">메트로 R&S AI v23.1 사용설명서</div>
         <b>최초 설정 (1회)</b><br>
         &middot; 좌측 상단 <i class="fa-solid fa-gear"></i> 설정 버튼 탭<br>
         &middot; Script URL / Sheet ID는 자동 입력됨 (워크북 1개 = 14개 현장)<br>
         &middot; 작업자 이름만 A / B / C 입력 후 저장<br><br>
-        <b>현장 선택 (v23.0 신규)</b><br>
+        <b>현장 선택 (v23.1 신규)</b><br>
         &middot; 섹션 ① 상단 <b>현장 선택</b> 드롭다운에서 시트 선택<br>
         &middot; 군산미장 / 경산하양 / 광주중흥 / 동탄 / ... / 감일제일 (14개)<br>
         &middot; 시트 변경 시 데이터·필터 자동 초기화 후 재로드<br><br>
@@ -281,9 +281,10 @@
         &middot; 매칭 0건이면 아래 <b>+ 새 하자</b> 폼에서 음성으로 신규 추가<br>
         &middot; 우측 <i class="fa-solid fa-microphone"></i> 마이크 버튼: 음성으로 숫자 입력 가능<br>
         &middot; '210' 처럼 앞 0 없이 입력해도 '0210'과 일치<br><br>
-        <b>사진 촬영 (자동 저장)</b><br>
+        <b>사진 촬영 (자동 저장, v23.1 경로 변경)</b><br>
         &middot; 수리전/수리후/확인서 <i class="fa-solid fa-camera"></i> 탭 → 사진 촬영<br>
         &middot; 촬영 즉시 Google Drive 업로드 + 구글시트 셀에 이미지 자동 표시<br>
+        &middot; 저장 경로: <b>A.메트로알엔에스(주) / {현장} / {동}-{호} /</b> (예: 군산미장/101-1405/)<br>
         &middot; 다른 작업자는 '새로고침'으로 최신 사진 확인<br><br>
         <b>하단 버튼</b><br>
         &middot; <i class="fa-solid fa-table"></i> 시트열기: 구글시트를 새 탭으로 바로 열기<br>
@@ -295,7 +296,7 @@
         &middot; 구버전에 base64로 저장된 사진을 Drive URL + =IMAGE() 수식으로 일괄 변환
       </div>
 
-      <!-- 현장(시트) 선택 드롭다운 — v23.0 -->
+      <!-- 현장(시트) 선택 드롭다운 — v23.1 -->
       <div id="siteSelectWrap" style="margin-bottom:8px">
         <label style="display:block;font-size:.55rem;font-weight:700;color:var(--text-sub);margin-bottom:3px;letter-spacing:.3px">현장 선택</label>
         <select id="siteSelect" onchange="App.changeSite(this.value)" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.78rem;font-family:'Noto Sans KR';font-weight:700;background:var(--surface);color:var(--text);outline:none;cursor:pointer;appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22%230891B2%22><path d=%22M7 10l5 5 5-5z%22/></svg>');background-repeat:no-repeat;background-position:right 8px center;padding-right:30px">
@@ -389,7 +390,7 @@ var App={
     this.renderLog();
     var w=this.getSetting('WORKER');
     if(w){document.getElementById('workerBadge').textContent=w;document.getElementById('workerBadge').style.display='inline-flex';}
-    // v23.0: 현장 시트 목록 자동 로딩 (1회)
+    // v23.1: 현장 시트 목록 자동 로딩 (1회)
     this.loadSiteList();
     // 기본값이 있으므로 설정 패널 자동 열기 불필요
     // PWA 서비스워커 강제 업데이트 후 등록
@@ -455,7 +456,7 @@ var App={
           self.toast('설정 저장 완료','success');
           // v21.1: 옛 캐시 정리 + 새 시트 데이터로 자동 갱신
           self.sourceData=[];self.rowPhotos={};
-          // v23.0: 시트 목록도 다시 로드 (Sheet ID 바뀐 경우 대응)
+          // v23.1: 시트 목록도 다시 로드 (Sheet ID 바뀐 경우 대응)
           self.loadSiteList();
           setTimeout(function(){App.closeSettings();self.loadFromSheet();},1500);
         }else{
@@ -467,7 +468,7 @@ var App={
       });
   },
 
-  // === v23.0: 현장 시트 목록 로딩 ===
+  // === v23.1: 현장 시트 목록 로딩 ===
   loadSiteList:function(){
     var url=this.getSetting('SCRIPT');
     var sid=this.getSetting('SHEET');
@@ -671,7 +672,7 @@ var App={
     }
     document.getElementById('logCount').textContent='('+filtered.length+'/'+this.sourceData.length+'건)';
     if(!filtered.length){
-      // v23.0: 동·호 입력했는데 매칭 0건 → 새 하자 폼 안내
+      // v23.1: 동·호 입력했는데 매칭 0건 → 새 하자 폼 안내
       var hint=(qD||qH)
         ? '해당 동/호 하자 없음 — 위 <b>+ 새 하자</b> 폼에서 음성으로 추가하세요'
         : '구글시트에서 데이터를 불러오세요';

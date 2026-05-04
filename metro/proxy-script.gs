@@ -1,10 +1,15 @@
 // ========================================
-// (주)메트로 R&S AI v23.0 - Google Apps Script
+// (주)메트로 R&S AI v23.1 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets(v23.0)
-// v23.0: listSheets 액션 추가 — 워크북의 현장 시트(14개) 동적 로딩 (시스템 시트 블랙리스트 제외)
-// v21.10: 사진 업로드 시 행 높이 + 컬럼 너비 모두 160px (시트에서 사진 가로·세로 2배 시각화)
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets
+// v23.1(M3): 사진 저장 경로 변경 — A.메트로알엔에스(주)/{현장}/{동}-{호}/ (동·호 단위 분리)
+//           일회성 정리 함수 oneTimeOrganizeDriveFolders 추가
+// v23.0: listSheets 액션 추가 — 워크북의 현장 시트(14개) 동적 로딩
+// v21.10: 사진 업로드 시 행 높이 + 컬럼 너비 모두 160px
 // ========================================
+
+// 사진 저장 루트 — Drive 내 폴더 이름 (v23.1)
+var DRIVE_PHOTO_ROOT = 'A.메트로알엔에스(주)';
 
 // 시스템 시트 (드롭다운에서 제외) — 현장 시트는 이 목록 외 전체
 var SYSTEM_SHEETS = {
@@ -35,18 +40,42 @@ function makeRes(data) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// Drive 내에 현장별 사진 폴더 확보
-function getOrCreatePhotoFolder(sheetId, sheetName) {
+// Drive 헬퍼: 자식 폴더 확보 (없으면 생성)
+function _getOrCreateSubFolder(parent, name) {
+  var subs = parent.getFoldersByName(name);
+  return subs.hasNext() ? subs.next() : parent.createFolder(name);
+}
+
+// Drive 사진 저장 루트 폴더 가져오기 (v23.1: A.메트로알엔에스(주))
+function _getPhotoRoot() {
+  var roots = DriveApp.getFoldersByName(DRIVE_PHOTO_ROOT);
+  if (!roots.hasNext()) {
+    // 없으면 새로 생성 (My Drive 직속)
+    return DriveApp.createFolder(DRIVE_PHOTO_ROOT);
+  }
+  return roots.next();
+}
+
+// v23.1: 동·호 있으면 새 경로 (A.메트로알엔에스(주)/{현장}/{동}-{호}/), 없으면 fallback (기존 METRO_PHOTOS)
+function getOrCreatePhotoFolder(sheetId, sheetName, dong, ho) {
+  var d = String(dong || '').trim();
+  var h = String(ho || '').trim();
+  if (d && h) {
+    var root = _getPhotoRoot();
+    var siteFolder = _getOrCreateSubFolder(root, String(sheetName || 'sheet'));
+    return _getOrCreateSubFolder(siteFolder, d + '-' + h);
+  }
+  // fallback (동·호 없을 때) — v23.0 이하 경로 유지
   var rootName = 'METRO_PHOTOS';
   var roots = DriveApp.getFoldersByName(rootName);
-  var root = roots.hasNext() ? roots.next() : DriveApp.createFolder(rootName);
+  var fbRoot = roots.hasNext() ? roots.next() : DriveApp.createFolder(rootName);
   var subName = (sheetName || 'sheet') + '_' + String(sheetId).substring(0, 8);
-  var subs = root.getFoldersByName(subName);
-  return subs.hasNext() ? subs.next() : root.createFolder(subName);
+  var subs = fbRoot.getFoldersByName(subName);
+  return subs.hasNext() ? subs.next() : fbRoot.createFolder(subName);
 }
 
 // base64 → Drive 업로드 + 공개 공유
-function uploadPhotoToDrive(base64, sheetId, sheetName, rowNum, photoType) {
+function uploadPhotoToDrive(base64, sheetId, sheetName, rowNum, photoType, dong, ho) {
   var match = base64.match(/data:(.*?);base64,(.*)/);
   if (!match) throw new Error('잘못된 base64 데이터');
   var mime = match[1];
@@ -54,7 +83,7 @@ function uploadPhotoToDrive(base64, sheetId, sheetName, rowNum, photoType) {
   var ext = (mime.split('/')[1] || 'jpg').split('+')[0];
   var fname = 'row' + rowNum + '_' + photoType + '_' + new Date().getTime() + '.' + ext;
   var blob = Utilities.newBlob(bytes, mime, fname);
-  var folder = getOrCreatePhotoFolder(sheetId, sheetName);
+  var folder = getOrCreatePhotoFolder(sheetId, sheetName, dong, ho);
   var file = folder.createFile(blob);
   try {
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
@@ -63,6 +92,59 @@ function uploadPhotoToDrive(base64, sheetId, sheetName, rowNum, photoType) {
     id: file.getId(),
     url: 'https://lh3.googleusercontent.com/d/' + file.getId()
   };
+}
+
+// === [v23.1 일회성 정리] Drive 폴더 시트명으로 통일 + 불필요 폴더 휴지통 ===
+// 실행 방법: GAS 편집기 좌상단 함수 선택 → oneTimeOrganizeDriveFolders → ▶ 실행
+// 한 번만 실행하면 됨 (멱등 — 재실행해도 부작용 없음)
+function oneTimeOrganizeDriveFolders() {
+  var roots = DriveApp.getFoldersByName(DRIVE_PHOTO_ROOT);
+  if (!roots.hasNext()) {
+    Logger.log('❌ 루트 폴더 없음: ' + DRIVE_PHOTO_ROOT);
+    return {error:'root not found'};
+  }
+  var root = roots.next();
+
+  var renameMap = {
+    '감일제일건설': '감일제일',
+    '검단제일건설': '검단제일',
+    '경산하양제일건설': '경산하양',
+    '광주중흥제일건설': '광주중흥',
+    '군산제일건설': '군산미장',
+    '동탄제일건설(41단지)': '동탄',
+    '양산제일건설': '양산',
+    '양주제일건설(1단지)': '양주',
+    '원주(무실)제일건설': '원주(무실)',
+    '원주(혁신)제일건설': '원주(혁신)',
+    '익산제일건설': '익산제일',
+    '충주호암제일건설': '충주호암',
+    '파주제일건설(1단지)': '파주1단지',
+    '파주제일제일(6단지)': '파주6단지'
+  };
+  var trashList = ['하자전후(루버편)'];
+
+  var renamed = [], trashed = [], skipped = [];
+  var sub = root.getFolders();
+  while (sub.hasNext()) {
+    var f = sub.next();
+    var nm = f.getName();
+    if (renameMap[nm]) {
+      f.setName(renameMap[nm]);
+      Logger.log('✏️ rename: ' + nm + ' → ' + renameMap[nm]);
+      renamed.push(nm + ' → ' + renameMap[nm]);
+    } else if (trashList.indexOf(nm) >= 0) {
+      f.setTrashed(true);
+      Logger.log('🗑️ trash: ' + nm);
+      trashed.push(nm);
+    } else {
+      skipped.push(nm);
+    }
+  }
+  var result = {renamed:renamed, trashed:trashed, skipped:skipped,
+    summary: 'rename=' + renamed.length + ', trash=' + trashed.length + ', skip=' + skipped.length};
+  Logger.log('=== 완료 — ' + result.summary);
+  Logger.log('그대로 둔 폴더: ' + skipped.join(', '));
+  return result;
 }
 
 // 기존 이미지 셀의 =IMAGE("...") 수식에서 Drive 파일 ID 추출 후 삭제
@@ -277,8 +359,16 @@ function doPost(e) {
       // 기존 Drive 파일 있으면 휴지통으로 이동
       tryTrashOldImageFile(ws, rowNum, imgColIdx);
 
+      // v23.1: 행에서 동·호 추출 → 사진 폴더 분기 (A.메트로알엔에스(주)/{현장}/{동}-{호}/)
+      var dongVal = '', hoVal = '';
+      for (var hd = 0; hd < headers.length; hd++) {
+        var hnd = String(headers[hd]).replace(/\s/g,'');
+        if (hnd === '동' && !dongVal) dongVal = String(ws.getRange(rowNum, hd+1).getValue() || '').trim();
+        else if ((hnd === '호' || hnd === '호수') && !hoVal) hoVal = String(ws.getRange(rowNum, hd+1).getValue() || '').trim();
+      }
+
       // Drive 업로드 + 공개 공유
-      var uploaded = uploadPhotoToDrive(base64, sheetId, ws.getName(), rowNum, photoType);
+      var uploaded = uploadPhotoToDrive(base64, sheetId, ws.getName(), rowNum, photoType, dongVal, hoVal);
 
       // 1) _data 열: base64 (앱/엑셀 읽기용)
       ws.getRange(rowNum, dataColIdx).setValue(base64);
