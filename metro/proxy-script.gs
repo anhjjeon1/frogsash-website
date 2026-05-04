@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.8 - Google Apps Script
+// (주)메트로 R&S AI v23.9 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns
+// v23.9: appendRow에 이전 행 서식 복사 추가 (PASTE_FORMAT) — 새 하자 행 테두리·정렬 자동 적용
 // v23.8: savePhoto 자동완료 — L(완료) 컬럼은 '완료'가 아닌 모든 값을 '완료'로 덮어쓰기
 //        (기존 '미완료'/'N' 값이 그대로 남아 토글이 미완료로 인식하던 문제 수정)
 // v23.7: read API 객체 변환 첫 매칭 우선 — R열 통계 '완료'가 L열 행별 '완료'를 덮어쓰는 버그 수정
@@ -413,7 +414,7 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.8 연결됨'});
+  return makeRes({status:'ok', message:'메트로 R&S v23.9 연결됨'});
 }
 
 // === POST 요청 ===
@@ -749,6 +750,18 @@ function doPost(e) {
 
         var insertRow = lastRow + 1;
         ws.getRange(insertRow, 1, 1, lastCol).setValues([newRow]);
+
+        // v23.9: 이전 행 서식(테두리·정렬·폰트·배경) 새 행에 복사 — 시트 양식 일관성 유지
+        if (lastRow >= 2) {
+          try {
+            ws.getRange(lastRow, 1, 1, lastCol).copyTo(
+              ws.getRange(insertRow, 1, 1, lastCol),
+              SpreadsheetApp.CopyPasteType.PASTE_FORMAT,
+              false
+            );
+          } catch(fe) { /* 서식 복사 실패해도 값은 들어갔으니 무시 */ }
+        }
+
         SpreadsheetApp.flush();
 
         return makeRes({
