@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v23.11</title>
+  <title>(주)메트로 R & S AI v23.12</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -251,7 +251,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V23.11</div>
+      <div class="ver">V23.12</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -266,7 +266,7 @@
       </div>
 
       <div id="appGuide" style="display:none;margin-bottom:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.58rem;line-height:1.6;color:var(--text-sub)">
-        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">메트로 R&S AI v23.11 사용설명서</div>
+        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">메트로 R&S AI v23.12 사용설명서</div>
         <b>최초 설정 (1회)</b><br>
         &middot; 좌측 상단 <i class="fa-solid fa-gear"></i> 설정 버튼 탭<br>
         &middot; Script URL / Sheet ID는 자동 입력됨 (워크북 1개 = 14개 현장)<br>
@@ -708,7 +708,9 @@ var App={
       var isDone=done&&done!=='미완료'&&done!=='N';
       var ph=this.rowPhotos[rn]||{};
       html+='<tr style="'+(isDone?'background:var(--success-light)':'')+'">'
-        +'<td>'+no+'</td>'
+        +'<td style="position:relative;padding-right:14px">'+no
+        +'<button onclick="event.stopPropagation();App.deleteRow('+rn+','+no+')" title="행 삭제" style="position:absolute;top:1px;right:1px;width:13px;height:13px;padding:0;border:none;background:transparent;color:#DC2626;font-size:.55rem;cursor:pointer;line-height:1" aria-label="행 삭제"><i class="fa-solid fa-trash"></i></button>'
+        +'</td>'
         +'<td>'+dh.dong+'</td>'
         +'<td>'+dh.ho+'</td>'
         +'<td>'+loc+'</td>'
