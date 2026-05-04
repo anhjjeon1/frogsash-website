@@ -1,7 +1,9 @@
 // ========================================
-// (주)메트로 R&S AI v23.7 - Google Apps Script
+// (주)메트로 R&S AI v23.8 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns
+// v23.8: savePhoto 자동완료 — L(완료) 컬럼은 '완료'가 아닌 모든 값을 '완료'로 덮어쓰기
+//        (기존 '미완료'/'N' 값이 그대로 남아 토글이 미완료로 인식하던 문제 수정)
 // v23.7: read API 객체 변환 첫 매칭 우선 — R열 통계 '완료'가 L열 행별 '완료'를 덮어쓰는 버그 수정
 //        클라이언트 완료 행 숨김 토글이 정상 동작하도록
 // v23.6: savePhoto 자동완료 + 진단 함수 모두 첫 매칭(가장 좌측) 우선 — 통계 표 '완료' 헤더 오인 버그 수정
@@ -411,7 +413,7 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.7 연결됨'});
+  return makeRes({status:'ok', message:'메트로 R&S v23.8 연결됨'});
 }
 
 // === POST 요청 ===
@@ -549,8 +551,10 @@ function doPost(e) {
       try { ws.setRowHeight(rowNum, 160); } catch(e) {}
       try { ws.setColumnWidth(imgColIdx, 160); } catch(e) {}
 
-      // v20.6: 확인서 사진 업로드 시 자동 완료 처리 (빈 셀일 때만 — 기존 데이터 보호)
-      // v23.6: 첫 매칭(가장 좌측) 우선 — 우측에 있는 통계 표의 '완료' 헤더가 잘못 잡히는 버그 수정
+      // v20.6: 확인서 사진 업로드 시 자동 완료 처리
+      // v23.6: 첫 매칭(가장 좌측) 우선 — 우측 통계 표의 '완료' 헤더가 잘못 잡히는 버그 수정
+      // v23.8: L(완료)은 '완료'가 아닌 모든 값(미완료/N/빈값)을 '완료'로 덮어쓰기 (토글 컬럼이라 보호 불필요)
+      //         K(완료일)은 기존 보호 유지 (사용자가 직접 채운 날짜를 덮지 않음)
       var autoDone = false;
       if (photoType === 'confirm') {
         var doneDateIdx = -1, doneIdx = -1;
@@ -569,8 +573,8 @@ function doPost(e) {
           }
         }
         if (doneIdx > 0) {
-          var existDone = ws.getRange(rowNum, doneIdx).getValue();
-          if (!existDone) {
+          var existDone = String(ws.getRange(rowNum, doneIdx).getValue() || '').trim();
+          if (existDone !== '완료') {
             ws.getRange(rowNum, doneIdx).setValue('완료');
             autoDone = true;
           }
