@@ -1,7 +1,9 @@
 // ========================================
-// (주)메트로 R&S AI v23.16 - Google Apps Script
+// (주)메트로 R&S AI v23.17 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan
+// v23.17: read 응답 _photos를 URL 우선으로 (IMAGE 수식의 Drive URL 1순위, base64 2순위)
+//         → Python xlsm 머지가 IMAGE 수식 작성 가능. 메트로앱은 URL/base64 둘 다 img src로 동작
 // v23.16: 군산미장 A1 헤더 'ㅡDUF'→'NO' 영구 수정 + NO 비어있는 깨진 행 일괄 NO 채번·서식 복사
 // v23.15: 13시트(군산미장 제외) H~J 사진 컬럼 일괄 추가 함수 + HTTP 액션 — M4.5 양식 통일
 // v23.11: appendRow NO 채번 + 서식 복사 거꾸로 스캔 — lastRow가 빈 양식이어도 정상 행을 찾아 적용
@@ -495,28 +497,34 @@ function doGet(e) {
 
         obj._photos = {};
 
-        // 1순위: _data 열 (base64 텍스트)
-        for (var pType in photoDataCols) {
-          var col = photoDataCols[pType];
-          var val = String(data[i][col] || '');
-          if (val.indexOf('data:image') === 0 || val.indexOf('http') === 0) {
-            obj._photos[pType] = val;
-          }
-        }
-
-        // 2순위: 이미지 열 수식에서 Drive URL 추출 (v18+ =IMAGE())
-        for (var pType2 in photoImgCols) {
-          if (obj._photos[pType2]) continue;
-          var colI = photoImgCols[pType2];
+        // v23.17: URL 우선 — Excel xlsm IMAGE 수식과 호환되도록 IMAGE() 수식 URL을 1순위로
+        // 1순위: 이미지 열 IMAGE 수식의 URL (Drive 공개 URL)
+        for (var pType in photoImgCols) {
+          var colI = photoImgCols[pType];
           var fm = (formulas[i] && formulas[i][colI]) ? String(formulas[i][colI]) : '';
           if (fm) {
             var um = fm.match(/"(https?:\/\/[^"]+)"/);
-            if (um) { obj._photos[pType2] = um[1]; continue; }
+            if (um) { obj._photos[pType] = um[1]; continue; }
           }
-          // 하위 호환: 이미지 열에 base64 텍스트가 그대로 있는 경우
-          var raw = String(data[i][colI] || '');
+        }
+
+        // 2순위: _data 열 base64 (URL이 없는 행만)
+        for (var pType2 in photoDataCols) {
+          if (obj._photos[pType2]) continue;
+          var col2 = photoDataCols[pType2];
+          var val = String(data[i][col2] || '');
+          if (val.indexOf('data:image') === 0 || val.indexOf('http') === 0) {
+            obj._photos[pType2] = val;
+          }
+        }
+
+        // 3순위: 이미지 열의 raw 값 (구 데이터, 수식 없이 base64나 URL이 직접 들어있는 경우)
+        for (var pType3 in photoImgCols) {
+          if (obj._photos[pType3]) continue;
+          var colI3 = photoImgCols[pType3];
+          var raw = String(data[i][colI3] || '');
           if (raw.indexOf('data:image') === 0 || raw.indexOf('http') === 0) {
-            obj._photos[pType2] = raw;
+            obj._photos[pType3] = raw;
           }
         }
 
@@ -599,7 +607,7 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.16 연결됨'});
+  return makeRes({status:'ok', message:'메트로 R&S v23.17 연결됨'});
 }
 
 // === POST 요청 ===
