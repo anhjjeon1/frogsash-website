@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v23.13</title>
+  <title>(주)메트로 R & S AI v23.14</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -251,7 +251,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V23.13</div>
+      <div class="ver">V23.14</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -266,7 +266,7 @@
       </div>
 
       <div id="appGuide" style="display:none;margin-bottom:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.58rem;line-height:1.6;color:var(--text-sub)">
-        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">메트로 R&S AI v23.13 사용설명서</div>
+        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">메트로 R&S AI v23.14 사용설명서</div>
         <b>최초 설정 (1회)</b><br>
         &middot; 좌측 상단 <i class="fa-solid fa-gear"></i> 설정 버튼 탭<br>
         &middot; Script URL / Sheet ID는 자동 입력됨 (워크북 1개 = 14개 현장)<br>
@@ -331,7 +331,7 @@
           <span class="log-count" id="logCount" style="font-size:.6rem;color:var(--text-dim);font-weight:600">(0건)</span>
         </h3>
         <button id="btnToggleDone" onclick="App.toggleHideCompleted()" style="font-size:.55rem;font-weight:700;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap">✅ 완료 숨김</button>
-        <button id="btnHistory" onclick="App.openHistory()" title="시트 버전 기록에서 삭제된 행·사진 복원" style="font-size:.55rem;font-weight:700;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap;margin-left:4px">↶ 복구</button>
+        <button id="btnRestore" onclick="App.restoreLast()" title="방금 삭제한 행 즉시 복구 (텍스트만, 사진은 Drive 휴지통에서 별도 복원)" style="font-size:.55rem;font-weight:700;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap;margin-left:4px">↶ 복구</button>
         <input type="hidden" id="fSite">
       </div>
       <!-- 동/호 필터 -->
@@ -388,6 +388,7 @@ var App={
   uploadingCells:{}, // {rowNum_type: true} 업로드 중인 셀 추적
   sourceSheetName:'',
   hideCompleted:true, // v23.3: 완료 행 숨김 (기본 true), 토글 시 false로
+  lastDeleted:null, // v23.14: 마지막 삭제 행 1건 보관 (복구용, 새로고침 시 휘발)
 
   // === 초기화 ===
   init:function(){
@@ -730,11 +731,41 @@ var App={
     this.renderLog();
   },
 
-  // v23.13: 시트 버전 기록 새 탭으로 열기 (실수 삭제 시 복구 경로)
-  openHistory:function(){
+  // v23.14: 마지막 삭제 행 즉시 복구 (메모리 1건, 사진은 Drive 휴지통 별도 복원)
+  restoreLast:function(){
+    if(!this.lastDeleted){
+      this.toast('복구할 항목 없음 (이전 삭제 후 새로고침했거나 기록 없음)','info',3500);
+      return;
+    }
+    var ld=this.lastDeleted;
+    if(!ld.data.dong||!ld.data.ho||!ld.data.memo){
+      this.toast('복구 데이터 부족 — 시트 버전 기록 사용 권장','error');
+      return;
+    }
+    var url=this.getSetting('SCRIPT');
     var sid=this.getSetting('SHEET');
-    if(!sid){this.toast('시트 ID 설정 필요','error');return;}
-    window.open('https://docs.google.com/spreadsheets/d/'+sid+'/edit?action=history','_blank');
+    var sn=this.getSetting('SHEET_NAME');
+    if(!url||!sid){this.toast('설정을 먼저 완료하세요','error');return;}
+    var self=this;
+    this.showLoader('복구 중...');
+    var payload={
+      action:'appendRow',
+      sheetId:sid, sheetName:sn,
+      worker:this.getSetting('WORKER')||'',
+      data:ld.data
+    };
+    fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.status!=='ok')throw new Error(d.message||'복구 실패');
+        var msg='복구 완료 (No.'+d.no+', 시트 끝에 추가)';
+        if(ld.hadPhotos)msg+=' · 사진은 Drive 휴지통에서 복원';
+        self.toast(msg,'success',4000);
+        self.lastDeleted=null;
+        self.loadFromSheet();
+      })
+      .catch(function(err){self.toast('복구 실패: '+err.message,'error',4000);})
+      .finally(function(){self.hideLoader();});
   },
 
   _photoCell:function(rn,type,src){
@@ -856,7 +887,27 @@ var App={
 
   // === 행 삭제 (v20.8) — 사진 일괄 trash + 행 통째 제거 ===
   deleteRow:function(rn,no){
-    if(!confirm('No.'+no+' 행을 삭제하시겠습니까?\n(사진 포함 모든 데이터 삭제)\n\n※ 실수 시 상단 ↶ 복구 버튼으로 시트 버전 기록에서 복원 가능')) return;
+    if(!confirm('No.'+no+' 행을 삭제하시겠습니까?\n(사진 포함 모든 데이터 삭제)\n\n※ 실수 시 상단 ↶ 복구 버튼으로 즉시 복구 가능 (텍스트만, 사진은 Drive 휴지통 수동)')) return;
+    // v23.14: 삭제 직전 행 데이터를 메모리에 보관 (복구용)
+    var srcRow=null;
+    for(var i=0;i<this.sourceData.length;i++){
+      if(this.sourceData[i]._rowNum===rn){srcRow=this.sourceData[i];break;}
+    }
+    if(srcRow){
+      var ph=srcRow._photos||{};
+      this.lastDeleted={
+        no:no,
+        data:{
+          dong:this.gv(srcRow,'dong'),
+          ho:this.gv(srcRow,'ho'),
+          loc:this.gv(srcRow,'loc'),
+          type:this.gv(srcRow,'type'),
+          memo:this.gv(srcRow,'memo')
+        },
+        hadPhotos:!!(ph.before||ph.after||ph.confirm),
+        deletedAt:Date.now()
+      };
+    }
     var url=this.getSetting('SCRIPT');
     var sid=this.getSetting('SHEET');
     var sn=this.getSetting('SHEET_NAME');
