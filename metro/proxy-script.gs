@@ -844,13 +844,27 @@ function generateDailySalesPdf(targetDateStrOrEvent) {
   var fileName = '메트로 당일 매출_' + today + '.pdf';
   var blob = resp.getBlob().setName(fileName);
 
-  // Drive 폴더 찾기
+  // Drive 폴더 찾기 — NFC 정규화 매칭 + 옛 이름 fallback + 자동 생성
   var rootIter = DriveApp.getFoldersByName(ROOT);
   if (!rootIter.hasNext()) throw new Error('루트 폴더 없음: ' + ROOT);
   var rootFolder = rootIter.next();
-  var dailyIter = rootFolder.getFoldersByName(FOLDER);
-  if (!dailyIter.hasNext()) throw new Error('대상 폴더 없음: ' + ROOT + '/' + FOLDER + ' — Google Drive에서 폴더 이름 변경 확인');
-  var dailyFolder = dailyIter.next();
+  var FOLDER_OLD = '메트로_매출_자료전송';
+  var dailyFolder = null;
+  var targetNFC = FOLDER.normalize('NFC');
+  var oldNFC = FOLDER_OLD.normalize('NFC');
+  var subs = rootFolder.getFolders();
+  while (subs.hasNext()) {
+    var sub = subs.next();
+    var nmNFC = String(sub.getName()).normalize('NFC');
+    if (nmNFC === targetNFC || nmNFC === oldNFC) {
+      dailyFolder = sub;
+      break;
+    }
+  }
+  if (!dailyFolder) {
+    // 둘 다 없으면 새로 생성
+    dailyFolder = rootFolder.createFolder(FOLDER);
+  }
 
   // 같은 이름 기존 PDF 휴지통 (덮어쓰기 효과)
   var existing = dailyFolder.getFilesByName(fileName);
