@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.11 - Google Apps Script
+// (주)메트로 R&S AI v23.15 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13
+// v23.15: 13시트(군산미장 제외) H~J 사진 컬럼 일괄 추가 함수 + HTTP 액션 — M4.5 양식 통일
 // v23.11: appendRow NO 채번 + 서식 복사 거꾸로 스캔 — lastRow가 빈 양식이어도 정상 행을 찾아 적용
 //         (이전 행이 깨져 있어도 새 행은 정상 양식으로 들어감 — 체인 깨짐 방지)
 // v23.10: appendRow NO 채번 A열 fallback — 헤더 매칭 실패 시 A열 마지막 값이 숫자면 A열을 NO로 가정
@@ -222,6 +223,66 @@ function oneTimeAddPhotoColumnsToAllSites() {
   return {processed:processed, skipped:skipped, errored:errored};
 }
 
+// === [v23.15 일회성] 13시트(군산미장 제외)에 H~J 사진 컬럼 추가 ===
+// 군산미장은 v23.2에서 이미 처리됨. 13시트만 양식 통일 (옵션 2: H 위치에 삽입)
+// 멱등 — 이미 사진 컬럼 있는 시트는 자동 스킵
+function oneTimeAddPhotoColumnsTo13Sheets() {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var allSheets = ss.getSheets();
+
+  var EXEMPT = {'군산미장': true}; // 이미 H~J 사진 컬럼 있음
+  var processed = [], skipped = [], errored = [];
+  var photoCols = ['수리전', '수리후', '완료확인서'];
+  var dataCols = ['수리전_data', '수리후_data', '완료확인서_data'];
+
+  for (var s = 0; s < allSheets.length; s++) {
+    var ws = allSheets[s];
+    var name = ws.getName();
+    if (SYSTEM_SHEETS[name]) { skipped.push(name + ' (시스템)'); continue; }
+    if (EXEMPT[name]) { skipped.push(name + ' (이미 적용됨)'); continue; }
+
+    try {
+      var lastCol = ws.getLastColumn();
+      if (lastCol < 1) { skipped.push(name + ' (빈 시트)'); continue; }
+      var headers = ws.getRange(1, 1, 1, lastCol).getValues()[0];
+
+      // 정확 매칭으로 사진 컬럼 존재 여부 체크
+      var hasPhoto = false;
+      for (var h = 0; h < headers.length; h++) {
+        var hn = String(headers[h]).replace(/\s/g,'');
+        if (hn === '수리전' || hn === '수리후' || hn === '완료확인서') { hasPhoto = true; break; }
+      }
+      if (hasPhoto) { skipped.push(name + ' (이미 사진 컬럼)'); continue; }
+
+      // ① H 위치(8번째)에 3개 컬럼 삽입
+      ws.insertColumnsBefore(8, 3);
+      for (var p = 0; p < 3; p++) {
+        ws.getRange(1, 8 + p).setValue(photoCols[p]).setFontWeight('bold');
+        try { ws.setColumnWidth(8 + p, 160); } catch(e) {}
+      }
+
+      // ② 시트 끝에 _data 3개 (숨김)
+      var endCol = ws.getLastColumn();
+      for (var d = 0; d < 3; d++) {
+        ws.getRange(1, endCol + 1 + d).setValue(dataCols[d]).setFontWeight('bold');
+      }
+      try { ws.hideColumns(endCol + 1, 3); } catch(e) {}
+
+      processed.push(name);
+      Logger.log('✅ ' + name);
+    } catch(e) {
+      errored.push(name + ': ' + e.message);
+      Logger.log('❌ ' + name + ': ' + e.message);
+    }
+  }
+
+  SpreadsheetApp.flush();
+  var summary = 'processed=' + processed.length + ', skipped=' + skipped.length + ', errored=' + errored.length;
+  Logger.log('=== ' + summary);
+  return {processed: processed, skipped: skipped, errored: errored, summary: summary};
+}
+
 // === [v23.6 진단] 14시트의 "완료일"/"완료" 헤더 위치 일괄 점검 ===
 // 실행: GAS 편집기에서 oneTimeCheckCompleteColumns 직접 실행 또는 ?action=checkCompleteColumns
 // v23.6: 모든 매칭 위치를 리스트로 반환 (통계 표의 '완료' 헤더 vs 행별 '완료' 구분)
@@ -404,6 +465,22 @@ function doGet(e) {
     }
   }
 
+  // === [v23.15] 13시트 H~J 사진 컬럼 일괄 추가 (M4.5, HTTP 호출 가능) ===
+  if (action === 'addPhotoCols13') {
+    try {
+      var result = oneTimeAddPhotoColumnsTo13Sheets();
+      return makeRes({
+        status:'ok',
+        processed: result.processed,
+        skipped: result.skipped,
+        errored: result.errored,
+        summary: result.summary
+      });
+    } catch(err) {
+      return makeRes({status:'error', message:err.message});
+    }
+  }
+
   // === [v23.5+] 14시트 완료일/완료 컬럼 진단 (M4 검증용, HTTP 호출 가능) ===
   if (action === 'checkCompleteColumns') {
     try {
@@ -418,7 +495,7 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.11 연결됨'});
+  return makeRes({status:'ok', message:'메트로 R&S v23.15 연결됨'});
 }
 
 // === POST 요청 ===
