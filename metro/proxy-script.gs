@@ -1,7 +1,9 @@
 // ========================================
-// (주)메트로 R&S AI v23.17 - Google Apps Script
+// (주)메트로 R&S AI v23.18 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell
+// v23.18: inspectCell 진단 액션 추가 — 특정 행(row 또는 NO 검색)의 사진 H/I/J + _data 컬럼 formula·value 일괄 반환
+//         M5.5 2단계 사진 IMAGE 수식 누락 원인 진단용 (savePhoto가 setFormula 호출했는지 확인)
 // v23.17: read 응답 _photos를 URL 우선으로 (IMAGE 수식의 Drive URL 1순위, base64 2순위)
 //         → Python xlsm 머지가 IMAGE 수식 작성 가능. 메트로앱은 URL/base64 둘 다 img src로 동작
 // v23.16: 군산미장 A1 헤더 'ㅡDUF'→'NO' 영구 수정 + NO 비어있는 깨진 행 일괄 NO 채번·서식 복사
@@ -607,7 +609,111 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.17 연결됨'});
+  // === [v23.18] 사진 IMAGE 수식 진단 — M5.5 2단계 ===
+  // 사용 예: ?action=inspectCell&sheetId=...&sheetName=경산하양&no=108
+  //         ?action=inspectCell&sheetId=...&sheetName=경산하양&row=110
+  if (action === 'inspectCell') {
+    var sheetId = e.parameter.sheetId;
+    var sheetName = e.parameter.sheetName || '';
+    var rowParam = e.parameter.row;
+    var noParam = e.parameter.no;
+    if (!sheetId || !sheetName) return makeRes({status:'error', message:'sheetId, sheetName 필요'});
+    try {
+      var ss = SpreadsheetApp.openById(sheetId);
+      var ws = ss.getSheetByName(sheetName);
+      if (!ws) return makeRes({status:'error', message:'시트 없음: '+sheetName});
+
+      var lastCol = ws.getLastColumn();
+      var lastRow = ws.getLastRow();
+      var headers = ws.getRange(1, 1, 1, lastCol).getValues()[0];
+
+      // NO 컬럼(첫 매칭) 찾기
+      var noCol = -1;
+      for (var hi = 0; hi < headers.length; hi++) {
+        if (String(headers[hi]).replace(/\s/g,'') === 'NO') { noCol = hi + 1; break; }
+      }
+
+      var rowNum = parseInt(rowParam || '0');
+      // NO 값으로 행 검색
+      if (!rowNum && noParam !== undefined && String(noParam) !== '') {
+        if (noCol < 0) return makeRes({status:'error', message:'NO 헤더를 찾을 수 없음'});
+        var noVals = ws.getRange(2, noCol, Math.max(1, lastRow - 1), 1).getValues();
+        for (var ri = 0; ri < noVals.length; ri++) {
+          if (String(noVals[ri][0]) === String(noParam)) { rowNum = ri + 2; break; }
+        }
+        if (!rowNum) return makeRes({status:'error', message:'NO '+noParam+' 행을 찾을 수 없음'});
+      }
+      if (!rowNum || rowNum < 2 || rowNum > lastRow) {
+        return makeRes({status:'error', message:'유효하지 않은 row: '+rowNum+' (lastRow='+lastRow+')'});
+      }
+
+      // 사진 컬럼 매핑 (첫 매칭 우선)
+      var photoMap = {};
+      var photoAliases = ['수리전','수리후','완료확인서','확인서','수리전_data','수리후_data','완료확인서_data','확인서_data'];
+      for (var hh = 0; hh < headers.length; hh++) {
+        var hnh = String(headers[hh]).replace(/\s/g,'');
+        for (var ai = 0; ai < photoAliases.length; ai++) {
+          if (hnh === photoAliases[ai] && !photoMap[photoAliases[ai]]) {
+            photoMap[photoAliases[ai]] = hh + 1;
+          }
+        }
+      }
+
+      var rowValues = ws.getRange(rowNum, 1, 1, lastCol).getValues()[0];
+      var rowFormulas = ws.getRange(rowNum, 1, 1, lastCol).getFormulas()[0];
+
+      // 사진 셀 요약
+      var photoSummary = {};
+      for (var pa = 0; pa < photoAliases.length; pa++) {
+        var key = photoAliases[pa];
+        if (!photoMap[key]) continue;
+        var col = photoMap[key];
+        var ci = col - 1;
+        var v = String(rowValues[ci] || '');
+        var f = String(rowFormulas[ci] || '');
+        var entry = {
+          col: col,
+          a1: ws.getRange(rowNum, col).getA1Notation(),
+          formula: f,
+          hasImageFormula: f.indexOf('IMAGE(') >= 0,
+          valueLength: v.length,
+          valuePreview: v.length > 80 ? v.substring(0, 80) + '...' : v
+        };
+        if (key.indexOf('_data') >= 0) {
+          entry.isBase64 = v.indexOf('data:image') === 0;
+        }
+        photoSummary[key] = entry;
+      }
+
+      // 핵심 헤더 요약
+      var rowSummary = {};
+      var keyHeaders = ['NO','동','호','호수','위치','하자내용','완료일','완료'];
+      for (var ki = 0; ki < keyHeaders.length; ki++) {
+        for (var hi2 = 0; hi2 < headers.length; hi2++) {
+          var hnk = String(headers[hi2]).replace(/\s/g,'');
+          if (hnk === keyHeaders[ki] && !Object.prototype.hasOwnProperty.call(rowSummary, keyHeaders[ki])) {
+            rowSummary[keyHeaders[ki]] = String(rowValues[hi2] || '');
+            break;
+          }
+        }
+      }
+
+      return makeRes({
+        status:'ok',
+        sheetName: ws.getName(),
+        rowNum: rowNum,
+        lastRow: lastRow,
+        lastCol: lastCol,
+        rowSummary: rowSummary,
+        photoColumns: photoMap,
+        photoSummary: photoSummary
+      });
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  return makeRes({status:'ok', message:'메트로 R&S v23.18 연결됨'});
 }
 
 // === POST 요청 ===
