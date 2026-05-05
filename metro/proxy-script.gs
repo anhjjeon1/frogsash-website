@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.19 - Google Apps Script
+// (주)메트로 R&S AI v23.20 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger
+// v23.20: 일매출 대시보드 PDF 자동 생성 — _LIVE 대시보드 시트를 PDF로 export 후 Drive 'A.메트로알엔에스(주)/메트로 당일 매출/' 저장. 매일 21:30 KST 시간 트리거
 // v23.19: readGrid 액션 추가 — 시트의 raw 2D 배열 그대로 반환 (METRO-APP/calendar_sync가 xlsm 대신 _LIVE 직접 사용)
 //         xlsm 머지 손상 사고 후 데이터 진본을 _LIVE 단일 관리로 전환하기 위한 핵심 API
 // v23.18: inspectCell 진단 액션 추가 — 특정 행(row 또는 NO 검색)의 사진 H/I/J + _data 컬럼 formula·value 일괄 반환
@@ -775,7 +776,109 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.19 연결됨'});
+  // === [v23.20] 일매출 대시보드 PDF 자동 생성 ===
+  // ?action=generateDailySalesPdf            (오늘 기준)
+  // ?action=generateDailySalesPdf&date=2026-05-05  (특정 날짜)
+  if (action === 'generateDailySalesPdf') {
+    var dateParam = e.parameter.date || '';
+    try {
+      var result = generateDailySalesPdf(dateParam);
+      return makeRes(Object.assign({status:'ok'}, result));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  // === [v23.20] 시간 트리거 등록 (매일 21:30 KST 자동 실행) — 일회성 ===
+  if (action === 'setupDailySalesPdfTrigger') {
+    try {
+      return makeRes(Object.assign({status:'ok'}, setupDailySalesPdfTrigger()));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message});
+    }
+  }
+
+  return makeRes({status:'ok', message:'메트로 R&S v23.20 연결됨'});
+}
+
+// === [v23.20] 일매출 대시보드 PDF 생성 함수 ===
+// _LIVE의 '대시보드' 시트를 PDF로 export → 'A.메트로알엔에스(주)/메트로 당일 매출/' 폴더에 저장
+// 파일명: '메트로 당일 매출_yyyy-MM-dd.pdf'
+// 시간 트리거에서도 호출됨 — 첫 인자가 event 객체일 수 있어 typeof 체크
+function generateDailySalesPdf(targetDateStrOrEvent) {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ROOT = 'A.메트로알엔에스(주)';
+  var FOLDER = '메트로 당일 매출';
+
+  var targetDateStr = (typeof targetDateStrOrEvent === 'string') ? targetDateStrOrEvent : '';
+  var today = targetDateStr || Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
+
+  // 대시보드 시트 GID 찾기
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var ws = ss.getSheetByName('대시보드');
+  if (!ws) throw new Error('대시보드 시트 없음');
+  var gid = ws.getSheetId();
+
+  // PDF export URL — Google Sheets 자체 export 엔진
+  var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?' +
+    'format=pdf' +
+    '&gid=' + gid +
+    '&size=A4' +
+    '&portrait=true' +
+    '&fitw=true' +
+    '&top_margin=0.5' +
+    '&bottom_margin=0.5' +
+    '&left_margin=0.4' +
+    '&right_margin=0.4' +
+    '&sheetnames=false' +
+    '&printtitle=false' +
+    '&pagenumbers=false' +
+    '&gridlines=false' +
+    '&fzr=false';
+
+  var resp = UrlFetchApp.fetch(url, {
+    headers: {Authorization: 'Bearer ' + ScriptApp.getOAuthToken()},
+    muteHttpExceptions: false
+  });
+
+  var fileName = '메트로 당일 매출_' + today + '.pdf';
+  var blob = resp.getBlob().setName(fileName);
+
+  // Drive 폴더 찾기
+  var rootIter = DriveApp.getFoldersByName(ROOT);
+  if (!rootIter.hasNext()) throw new Error('루트 폴더 없음: ' + ROOT);
+  var rootFolder = rootIter.next();
+  var dailyIter = rootFolder.getFoldersByName(FOLDER);
+  if (!dailyIter.hasNext()) throw new Error('대상 폴더 없음: ' + ROOT + '/' + FOLDER + ' — Google Drive에서 폴더 이름 변경 확인');
+  var dailyFolder = dailyIter.next();
+
+  // 같은 이름 기존 PDF 휴지통 (덮어쓰기 효과)
+  var existing = dailyFolder.getFilesByName(fileName);
+  while (existing.hasNext()) existing.next().setTrashed(true);
+
+  var file = dailyFolder.createFile(blob);
+  return {fileId: file.getId(), fileName: fileName, date: today, sizeKB: Math.round(blob.getBytes().length / 1024)};
+}
+
+// === [v23.20] 매일 21:30 KST 트리거 등록 (일회성) ===
+function setupDailySalesPdfTrigger() {
+  // 기존 generateDailySalesPdf 트리거 정리 (중복 방지)
+  var triggers = ScriptApp.getProjectTriggers();
+  var removed = 0;
+  for (var t = 0; t < triggers.length; t++) {
+    if (triggers[t].getHandlerFunction() === 'generateDailySalesPdf') {
+      ScriptApp.deleteTrigger(triggers[t]);
+      removed++;
+    }
+  }
+  ScriptApp.newTrigger('generateDailySalesPdf')
+    .timeBased()
+    .atHour(21)
+    .nearMinute(30)
+    .everyDays(1)
+    .inTimezone('Asia/Seoul')
+    .create();
+  return {message: '매일 21:30 KST generateDailySalesPdf 트리거 등록 완료', removedOld: removed};
 }
 
 // === POST 요청 ===
