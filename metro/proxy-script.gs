@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.15 - Google Apps Script
+// (주)메트로 R&S AI v23.16 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan
+// v23.16: 군산미장 A1 헤더 'ㅡDUF'→'NO' 영구 수정 + NO 비어있는 깨진 행 일괄 NO 채번·서식 복사
 // v23.15: 13시트(군산미장 제외) H~J 사진 컬럼 일괄 추가 함수 + HTTP 액션 — M4.5 양식 통일
 // v23.11: appendRow NO 채번 + 서식 복사 거꾸로 스캔 — lastRow가 빈 양식이어도 정상 행을 찾아 적용
 //         (이전 행이 깨져 있어도 새 행은 정상 양식으로 들어감 — 체인 깨짐 방지)
@@ -221,6 +222,89 @@ function oneTimeAddPhotoColumnsToAllSites() {
   Logger.log('스킵: ' + skipped.join(', '));
   if (errored.length) Logger.log('에러: ' + errored.join('; '));
   return {processed:processed, skipped:skipped, errored:errored};
+}
+
+// === [v23.16 일회성] 군산미장 A1 헤더 'ㅡDUF' → 'NO' 영구 수정 ===
+function oneTimeFixGunsanA1() {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var ws = ss.getSheetByName('군산미장');
+  if (!ws) return {error: '군산미장 시트 없음'};
+  var current = String(ws.getRange(1, 1).getValue() || '').trim();
+  if (current === 'NO') return {status: 'already_NO', before: current};
+  ws.getRange(1, 1).setValue('NO').setFontWeight('bold');
+  SpreadsheetApp.flush();
+  return {status: 'ok', before: current, after: 'NO'};
+}
+
+// === [v23.16 일회성] 군산미장에서 NO 비어 있고 데이터 있는 행 일괄 정리 ===
+// NO 자동 채번(max+1) + 정상 행의 서식 복사
+function oneTimeRepairBrokenRowsInGunsan() {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var ws = ss.getSheetByName('군산미장');
+  if (!ws) return {error: '군산미장 시트 없음'};
+
+  var lastRow = ws.getLastRow();
+  var lastCol = ws.getLastColumn();
+
+  // 헤더에서 NO 컬럼 찾기 (v23.16 후엔 A열='NO')
+  var headers = ws.getRange(1, 1, 1, lastCol).getValues()[0];
+  var colNo = -1, colDong = -1, colHo = -1;
+  for (var h = 0; h < headers.length; h++) {
+    var hn = String(headers[h] || '').replace(/\s/g,'');
+    if (hn === 'NO' || hn === '번호') colNo = h + 1;
+    if (hn === '동') colDong = h + 1;
+    if ((hn === '호수' || hn === '호') && colHo < 0) colHo = h + 1;
+  }
+  if (colNo < 0 && lastRow >= 2) {
+    // fallback: A열에 숫자 있는 행이 있으면 A열을 NO로
+    for (var fc = lastRow; fc >= 2; fc--) {
+      var v = String(ws.getRange(fc, 1).getValue() || '').trim();
+      if (/^\d+$/.test(v)) { colNo = 1; break; }
+    }
+  }
+  if (colNo < 0) return {error: 'NO 컬럼 못 찾음'};
+
+  // 1) max NO + 정상 행 (서식 source) 찾기
+  var maxNo = 0;
+  var srcFmtRow = -1;
+  var noVals = ws.getRange(2, colNo, lastRow - 1, 1).getValues();
+  for (var i = 0; i < noVals.length; i++) {
+    var n = parseInt(noVals[i][0], 10);
+    if (!isNaN(n)) {
+      if (n > maxNo) maxNo = n;
+      srcFmtRow = i + 2; // 가장 마지막 정상 행
+    }
+  }
+
+  // 2) NO 비어 있고 데이터 있는 행 찾기 + 정리
+  var fixed = [];
+  for (var r = 2; r <= lastRow; r++) {
+    var noVal = String(ws.getRange(r, colNo).getValue() || '').trim();
+    if (noVal) continue;
+    var hasData = false;
+    if (colDong > 0 && String(ws.getRange(r, colDong).getValue() || '').trim()) hasData = true;
+    if (!hasData && colHo > 0 && String(ws.getRange(r, colHo).getValue() || '').trim()) hasData = true;
+    if (!hasData) continue;
+    // NO 채번
+    maxNo++;
+    ws.getRange(r, colNo).setValue(maxNo);
+    // 서식 복사 (정상 행 1개만 source)
+    if (srcFmtRow > 0 && srcFmtRow !== r) {
+      try {
+        ws.getRange(srcFmtRow, 1, 1, lastCol).copyTo(
+          ws.getRange(r, 1, 1, lastCol),
+          SpreadsheetApp.CopyPasteType.PASTE_FORMAT,
+          false
+        );
+      } catch(e) {}
+    }
+    fixed.push({row: r, no: maxNo});
+  }
+
+  SpreadsheetApp.flush();
+  return {status: 'ok', fixedCount: fixed.length, fixed: fixed};
 }
 
 // === [v23.15 일회성] 13시트(군산미장 제외)에 H~J 사진 컬럼 추가 ===
@@ -465,6 +549,26 @@ function doGet(e) {
     }
   }
 
+  // === [v23.16] 군산미장 A1 헤더 ㅡDUF → NO ===
+  if (action === 'fixGunsanA1') {
+    try {
+      var r1 = oneTimeFixGunsanA1();
+      return makeRes(Object.assign({status:'ok'}, r1));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message});
+    }
+  }
+
+  // === [v23.16] 군산미장 NO 비어있는 행 일괄 정리 ===
+  if (action === 'repairBrokenRowsGunsan') {
+    try {
+      var r2 = oneTimeRepairBrokenRowsInGunsan();
+      return makeRes(Object.assign({status:'ok'}, r2));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message});
+    }
+  }
+
   // === [v23.15] 13시트 H~J 사진 컬럼 일괄 추가 (M4.5, HTTP 호출 가능) ===
   if (action === 'addPhotoCols13') {
     try {
@@ -495,7 +599,7 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.15 연결됨'});
+  return makeRes({status:'ok', message:'메트로 R&S v23.16 연결됨'});
 }
 
 // === POST 요청 ===
