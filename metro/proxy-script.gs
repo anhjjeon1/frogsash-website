@@ -1,7 +1,9 @@
 // ========================================
-// (주)메트로 R&S AI v23.18 - Google Apps Script
+// (주)메트로 R&S AI v23.19 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid
+// v23.19: readGrid 액션 추가 — 시트의 raw 2D 배열 그대로 반환 (METRO-APP/calendar_sync가 xlsm 대신 _LIVE 직접 사용)
+//         xlsm 머지 손상 사고 후 데이터 진본을 _LIVE 단일 관리로 전환하기 위한 핵심 API
 // v23.18: inspectCell 진단 액션 추가 — 특정 행(row 또는 NO 검색)의 사진 H/I/J + _data 컬럼 formula·value 일괄 반환
 //         M5.5 2단계 사진 IMAGE 수식 누락 원인 진단용 (savePhoto가 setFormula 호출했는지 확인)
 // v23.17: read 응답 _photos를 URL 우선으로 (IMAGE 수식의 Drive URL 1순위, base64 2순위)
@@ -713,7 +715,67 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.18 연결됨'});
+  // === [v23.19] readGrid — 시트의 raw 2D 배열 그대로 반환 (METRO-APP/calendar_sync용) ===
+  // 사용 예: ?action=readGrid&sheetId=...&sheetName=대시보드
+  //         ?action=readGrid&sheetId=...&sheetName=*  (모든 시스템 시트 + 14현장 한 번에)
+  if (action === 'readGrid') {
+    var sheetId = e.parameter.sheetId;
+    var sheetName = e.parameter.sheetName || '';
+    if (!sheetId) return makeRes({status:'error', message:'sheetId 필요'});
+    try {
+      var ss = SpreadsheetApp.openById(sheetId);
+
+      function gridOf(ws) {
+        var lr = ws.getLastRow();
+        var lc = ws.getLastColumn();
+        if (lr < 1 || lc < 1) return {name: ws.getName(), rows: 0, cols: 0, values: []};
+        // getDisplayValues로 가져오면 날짜·통화 형식이 표시값으로 그대로 옴 — 파이썬에서 cell()이 처리하기 쉬움
+        // 단 숫자 계산이 필요하면 getValues()로 받아야. _data 컬럼(base64) 통신 부담 줄이기 위해 H/I/J·_data는 비움
+        var vals = ws.getRange(1, 1, lr, lc).getValues();
+        var headers = vals[0];
+        var skipCols = {};
+        for (var h = 0; h < headers.length; h++) {
+          var hn = String(headers[h]).replace(/\s/g,'');
+          // 사진 컬럼·_data는 통신 부담 큼 — 빈 값으로 치환 (METRO-APP 대시보드는 사진 안 씀)
+          if (hn === '수리전' || hn === '수리후' || hn === '완료확인서' || hn === '확인서' ||
+              hn === '수리전_data' || hn === '수리후_data' || hn === '완료확인서_data' || hn === '확인서_data') {
+            skipCols[h] = true;
+          }
+        }
+        for (var r = 1; r < vals.length; r++) {
+          for (var c = 0; c < vals[r].length; c++) {
+            if (skipCols[c]) {
+              vals[r][c] = '';
+              continue;
+            }
+            var v = vals[r][c];
+            if (v instanceof Date) {
+              vals[r][c] = Utilities.formatDate(v, 'Asia/Seoul', 'yyyy-MM-dd');
+            }
+          }
+        }
+        return {name: ws.getName(), rows: lr, cols: lc, values: vals};
+      }
+
+      if (sheetName === '*') {
+        var all = ss.getSheets();
+        var sheets = {};
+        for (var s = 0; s < all.length; s++) {
+          var nm = all[s].getName();
+          sheets[nm] = gridOf(all[s]);
+        }
+        return makeRes({status:'ok', sheets: sheets, count: all.length});
+      } else {
+        var ws = ss.getSheetByName(sheetName);
+        if (!ws) return makeRes({status:'error', message:'시트 없음: '+sheetName});
+        return makeRes({status:'ok', sheet: gridOf(ws)});
+      }
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  return makeRes({status:'ok', message:'메트로 R&S v23.19 연결됨'});
 }
 
 // === POST 요청 ===
