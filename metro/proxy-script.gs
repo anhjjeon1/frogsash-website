@@ -2,7 +2,7 @@
 // (주)메트로 R&S AI v23.20 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger
-// v23.20: 일매출 대시보드 PDF 자동 생성 — _LIVE 대시보드 시트를 PDF로 export 후 Drive 'A.메트로알엔에스(주)/메트로 당일 매출/' 저장. 매일 21:30 KST 시간 트리거
+// v23.20: 일매출 대시보드 PDF 자동 생성 — _LIVE 대시보드 시트를 PDF로 export 후 Drive 'A.메트로알엔에스(주)/메트로 당일 매출 대시보드/' 저장. 매일 21:30 KST 시간 트리거 (폴더 NFC 정규화 + 옛 이름 fallback + 자동 생성)
 // v23.19: readGrid 액션 추가 — 시트의 raw 2D 배열 그대로 반환 (METRO-APP/calendar_sync가 xlsm 대신 _LIVE 직접 사용)
 //         xlsm 머지 손상 사고 후 데이터 진본을 _LIVE 단일 관리로 전환하기 위한 핵심 API
 // v23.18: inspectCell 진단 액션 추가 — 특정 행(row 또는 NO 검색)의 사진 H/I/J + _data 컬럼 formula·value 일괄 반환
@@ -808,7 +808,8 @@ function doGet(e) {
 function generateDailySalesPdf(targetDateStrOrEvent) {
   var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
   var ROOT = 'A.메트로알엔에스(주)';
-  var FOLDER = '메트로 당일 매출';
+  var FOLDER = '메트로 당일 매출 대시보드';
+  var FOLDER_ALIASES = ['메트로 당일 매출', '메트로_매출_자료전송']; // 옛 이름 fallback
 
   var targetDateStr = (typeof targetDateStrOrEvent === 'string') ? targetDateStrOrEvent : '';
   var today = targetDateStr || Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
@@ -844,25 +845,26 @@ function generateDailySalesPdf(targetDateStrOrEvent) {
   var fileName = '메트로 당일 매출_' + today + '.pdf';
   var blob = resp.getBlob().setName(fileName);
 
-  // Drive 폴더 찾기 — NFC 정규화 매칭 + 옛 이름 fallback + 자동 생성
+  // Drive 폴더 찾기 — NFC 정규화 매칭 + 옛 이름들 fallback + 자동 생성
   var rootIter = DriveApp.getFoldersByName(ROOT);
   if (!rootIter.hasNext()) throw new Error('루트 폴더 없음: ' + ROOT);
   var rootFolder = rootIter.next();
-  var FOLDER_OLD = '메트로_매출_자료전송';
   var dailyFolder = null;
-  var targetNFC = FOLDER.normalize('NFC');
-  var oldNFC = FOLDER_OLD.normalize('NFC');
+  var acceptNFC = {};
+  acceptNFC[FOLDER.normalize('NFC')] = true;
+  for (var ai = 0; ai < FOLDER_ALIASES.length; ai++) {
+    acceptNFC[FOLDER_ALIASES[ai].normalize('NFC')] = true;
+  }
   var subs = rootFolder.getFolders();
   while (subs.hasNext()) {
     var sub = subs.next();
     var nmNFC = String(sub.getName()).normalize('NFC');
-    if (nmNFC === targetNFC || nmNFC === oldNFC) {
+    if (acceptNFC[nmNFC]) {
       dailyFolder = sub;
       break;
     }
   }
   if (!dailyFolder) {
-    // 둘 다 없으면 새로 생성
     dailyFolder = rootFolder.createFolder(FOLDER);
   }
 
