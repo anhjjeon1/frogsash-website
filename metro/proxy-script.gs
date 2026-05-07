@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.22 - Google Apps Script
+// (주)메트로 R&S AI v23.23 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram
+// v23.23: 텔레그램 일일 보고 알림 추가 — generateDailySalesPdf 직후 비공개 채널에 요약+PDF링크 푸시. Script Properties (TG_TOKEN, TG_CHAT_ID) 필요. 미설정 시 알림만 건너뜀, PDF 생성은 정상.
 // v23.22: A3 헤더에 당일 매출 추가 — '📅 기준일: yyyy년 MM월 dd일   💰 당일 매출: N,NNN,NNN원'. financial M12·M14는 정수 반올림(부동소수점 .36 표시 제거).
 // v23.21: PDF 생성 직전 대시보드 시트 자동 동기화 — 기준일(A3) 갱신 + financial 영역(M12~M17)을 일매출 시트의 오늘 미지급 + 결제현황 입금 합계 기반으로 자동 갱신. 일매출 시트와 PDF의 미지급 잔액 항상 일치, 입금 횟수 자동 카운트.
 // v23.20: 일매출 대시보드 PDF 자동 생성 — _LIVE 대시보드 시트를 PDF로 export 후 Drive 'A.메트로알엔에스(주)/메트로 당일 매출 대시보드/' 저장. 매일 21:30 KST 시간 트리거 (폴더 NFC 정규화 + 옛 이름 fallback + 자동 생성)
@@ -803,6 +804,29 @@ function doGet(e) {
   // === [v23.21] 대시보드 동기화만 호출 (PDF 생성 없이) ===
   // ?action=syncDashboardBeforePdf            (오늘 기준)
   // ?action=syncDashboardBeforePdf&date=2026-05-07
+  // [v23.23] 텔레그램 알림 테스트 액션 — Properties에 토큰·chatId 등록 후 통신 확인용
+  // ?action=testTelegram&text=hello (text 생략 시 기본 메시지)
+  if (action === 'testTelegram') {
+    try {
+      var props = PropertiesService.getScriptProperties();
+      var token = props.getProperty('TG_TOKEN');
+      var chatId = props.getProperty('TG_CHAT_ID');
+      if (!token) return makeRes({status:'error', message:'TG_TOKEN 미설정 (Script Properties)'});
+      if (!chatId) return makeRes({status:'error', message:'TG_CHAT_ID 미설정 (Script Properties)'});
+      var text = e.parameter.text || ('🟢 메트로 알림 테스트 — ' +
+        Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss') + ' KST');
+      var resp = UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
+        method: 'post',
+        contentType: 'application/json',
+        payload: JSON.stringify({chat_id: chatId, text: text, disable_web_page_preview: true}),
+        muteHttpExceptions: true
+      });
+      return makeRes({status:'ok', httpCode: resp.getResponseCode(), body: resp.getContentText()});
+    } catch(err) {
+      return makeRes({status:'error', message:err.message});
+    }
+  }
+
   if (action === 'syncDashboardBeforePdf') {
     var dateParam = e.parameter.date || '';
     try {
@@ -897,11 +921,67 @@ function generateDailySalesPdf(targetDateStrOrEvent) {
   while (existing.hasNext()) existing.next().setTrashed(true);
 
   var file = dailyFolder.createFile(blob);
+
+  // [v23.23] 텔레그램 알림 — Script Properties 미설정이면 자동 skip (PDF는 이미 생성됨)
+  var tgResult = sendTelegramDailyReport(file, syncResult, today);
+
   return {
     fileId: file.getId(), fileName: fileName, date: today,
     sizeKB: Math.round(blob.getBytes().length / 1024),
-    sync: syncResult
+    sync: syncResult,
+    telegram: tgResult
   };
+}
+
+// === [v23.23] 텔레그램 일일 보고 알림 ===
+// generateDailySalesPdf 직후 호출. PropertiesService에 TG_TOKEN + TG_CHAT_ID 설정 필요.
+// 미설정/실패 시에도 PDF 생성은 영향 없음 (try-catch로 격리)
+function sendTelegramDailyReport(file, syncResult, today) {
+  try {
+    var props = PropertiesService.getScriptProperties();
+    var token = props.getProperty('TG_TOKEN');
+    var chatId = props.getProperty('TG_CHAT_ID');
+    if (!token || !chatId) {
+      Logger.log('[sendTelegramDailyReport] TG_TOKEN/TG_CHAT_ID 미설정 — 알림 건너뜀');
+      return {sent: false, reason: 'no_token_or_chatid'};
+    }
+
+    var sales = (syncResult && typeof syncResult.todaySales === 'number') ? syncResult.todaySales : 0;
+    var unpaid = (syncResult && typeof syncResult.todayUnpaid === 'number') ? syncResult.todayUnpaid : 0;
+    var depositCount = (syncResult && syncResult.depositCount) || 0;
+    var totalWork = (syncResult && syncResult.totalWork) || 0;
+    var payRatePct = syncResult && typeof syncResult.payRate === 'number'
+      ? Math.round(syncResult.payRate * 1000) / 10 : 0;
+    var todayKor = (syncResult && syncResult.baseDateKor) || today;
+    var pdfUrl = file.getUrl();
+
+    var msg = '📊 메트로 일일 보고\n';
+    msg += '📅 ' + todayKor + '\n\n';
+    msg += '💰 당일 매출: ' + sales.toLocaleString('ko-KR') + '원\n';
+    msg += '💸 미지급 잔액: ' + unpaid.toLocaleString('ko-KR') + '원\n';
+    msg += '🏗 총 작업비: ' + totalWork.toLocaleString('ko-KR') + '원\n';
+    msg += '🏦 입금: ' + depositCount + '회 (입금률 ' + payRatePct + '%)\n\n';
+    msg += '📄 PDF 보기:\n' + pdfUrl;
+
+    var url = 'https://api.telegram.org/bot' + token + '/sendMessage';
+    var resp = UrlFetchApp.fetch(url, {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({
+        chat_id: chatId,
+        text: msg,
+        disable_web_page_preview: true
+      }),
+      muteHttpExceptions: true
+    });
+    var rc = resp.getResponseCode();
+    var body = resp.getContentText().slice(0, 300);
+    Logger.log('[sendTelegramDailyReport] HTTP ' + rc + ' / ' + body);
+    return {sent: rc === 200, httpCode: rc, body: body};
+  } catch (e) {
+    Logger.log('[sendTelegramDailyReport] 실패: ' + e.message);
+    return {sent: false, error: e.message};
+  }
 }
 
 // === [v23.21] PDF 생성 직전 대시보드 시트 자동 동기화 ===
