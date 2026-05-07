@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.21 - Google Apps Script
+// (주)메트로 R&S AI v23.22 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf
+// v23.22: A3 헤더에 당일 매출 추가 — '📅 기준일: yyyy년 MM월 dd일   💰 당일 매출: N,NNN,NNN원'. financial M12·M14는 정수 반올림(부동소수점 .36 표시 제거).
 // v23.21: PDF 생성 직전 대시보드 시트 자동 동기화 — 기준일(A3) 갱신 + financial 영역(M12~M17)을 일매출 시트의 오늘 미지급 + 결제현황 입금 합계 기반으로 자동 갱신. 일매출 시트와 PDF의 미지급 잔액 항상 일치, 입금 횟수 자동 카운트.
 // v23.20: 일매출 대시보드 PDF 자동 생성 — _LIVE 대시보드 시트를 PDF로 export 후 Drive 'A.메트로알엔에스(주)/메트로 당일 매출 대시보드/' 저장. 매일 21:30 KST 시간 트리거 (폴더 NFC 정규화 + 옛 이름 fallback + 자동 생성)
 // v23.19: readGrid 액션 추가 — 시트의 raw 2D 배열 그대로 반환 (METRO-APP/calendar_sync가 xlsm 대신 _LIVE 직접 사용)
@@ -811,7 +812,7 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.21 연결됨'});
+  return makeRes({status:'ok', message:'메트로 R&S v23.22 연결됨'});
 }
 
 // === [v23.20] 일매출 대시보드 PDF 생성 함수 ===
@@ -927,19 +928,27 @@ function syncDashboardBeforePdf(targetDateStr) {
     Utilities.parseDate(todayStr, TZ, 'yyyy-MM-dd'), TZ, 'yyyy년 MM월 dd일'
   );
 
-  // 1) 일매출 시트에서 todayStr 이전(포함) 최근의 미지급잔액 찾기
-  //    A열=날짜, T열(20번째)=미지급잔액. 매출 0인 날도 미지급은 채워져 있음.
+  // 1) 일매출 시트에서 todayStr 이전(포함) 최근의 미지급잔액 + 오늘 정확 일치 행의 매출
+  //    A열=날짜, S열(19번째)=일매출합계, T열(20번째)=미지급잔액. 매출 0인 날도 미지급은 채워져 있음.
   var lastRow = sales.getLastRow();
   var rng = sales.getRange(2, 1, lastRow - 1, 20).getValues();
   var todayUnpaid = null;
+  var todaySales = 0;
   for (var i = rng.length - 1; i >= 0; i--) {
     var dCell = rng[i][0];
     var dStr = (dCell instanceof Date)
       ? Utilities.formatDate(dCell, TZ, 'yyyy-MM-dd')
       : String(dCell || '').slice(0, 10);
     if (!dStr || dStr > todayStr) continue;
-    var u = rng[i][19];
-    if (typeof u === 'number' && u > 0) { todayUnpaid = u; break; }
+    if (todayUnpaid === null) {
+      var u = rng[i][19];
+      if (typeof u === 'number' && u > 0) todayUnpaid = u;
+    }
+    if (dStr === todayStr) {
+      var s = rng[i][18];
+      if (typeof s === 'number') todaySales = s;
+    }
+    if (todayUnpaid !== null && (dStr === todayStr || todaySales > 0)) break;
   }
   if (todayUnpaid === null) throw new Error('일매출 시트에서 ' + todayStr + ' 이전의 미지급 잔액을 찾을 수 없음');
 
@@ -955,13 +964,18 @@ function syncDashboardBeforePdf(targetDateStr) {
       depositSumIn += amt;
     }
   }
-  var depositSumEx = depositSumIn / VAT;
+  // v23.22: 부동소수점 누적 오차 제거 — VAT별도 입금·작업비를 정수로 반올림
+  var depositSumEx = Math.round(depositSumIn / VAT);
   var totalWork = todayUnpaid + depositSumEx;
   var payRate = totalWork > 0 ? (depositSumEx / totalWork) : 0;
 
   // 3) 대시보드 갱신
-  //    A3 기준일 — 시트 그대로 PDF export되므로 직접 A3 셀에 한국어 날짜 박기
-  dash.getRange('A3').setValue('📅 기준일: ' + todayKor);
+  //    A3 기준일 + 당일 매출 (v23.22) — 시트 그대로 PDF export되므로 직접 A3 셀에 한국어 텍스트 박기
+  var headerText = '📅 기준일: ' + todayKor;
+  if (todaySales > 0) {
+    headerText += '   💰 당일 매출: ' + todaySales.toLocaleString('ko-KR') + '원';
+  }
+  dash.getRange('A3').setValue(headerText);
 
   //    financial 영역 (K~M열, 12~17행) — 라벨은 그대로 두고 M열 값만 갱신
   dash.getRange('M12').setValue(totalWork);          // 총 작업비 (VAT별도)
@@ -975,10 +989,11 @@ function syncDashboardBeforePdf(targetDateStr) {
     baseDate: todayStr,
     baseDateKor: todayKor,
     todayUnpaid: todayUnpaid,
+    todaySales: todaySales,
     totalWork: totalWork,
     depositCount: depositCount,
     depositSumIn: depositSumIn,
-    depositSumEx: Math.round(depositSumEx),
+    depositSumEx: depositSumEx,
     payRate: Math.round(payRate * 10000) / 10000
   };
 }
