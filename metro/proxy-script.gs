@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.20 - Google Apps Script
+// (주)메트로 R&S AI v23.21 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf
+// v23.21: PDF 생성 직전 대시보드 시트 자동 동기화 — 기준일(A3) 갱신 + financial 영역(M12~M17)을 일매출 시트의 오늘 미지급 + 결제현황 입금 합계 기반으로 자동 갱신. 일매출 시트와 PDF의 미지급 잔액 항상 일치, 입금 횟수 자동 카운트.
 // v23.20: 일매출 대시보드 PDF 자동 생성 — _LIVE 대시보드 시트를 PDF로 export 후 Drive 'A.메트로알엔에스(주)/메트로 당일 매출 대시보드/' 저장. 매일 21:30 KST 시간 트리거 (폴더 NFC 정규화 + 옛 이름 fallback + 자동 생성)
 // v23.19: readGrid 액션 추가 — 시트의 raw 2D 배열 그대로 반환 (METRO-APP/calendar_sync가 xlsm 대신 _LIVE 직접 사용)
 //         xlsm 머지 손상 사고 후 데이터 진본을 _LIVE 단일 관리로 전환하기 위한 핵심 API
@@ -798,7 +799,19 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.20 연결됨'});
+  // === [v23.21] 대시보드 동기화만 호출 (PDF 생성 없이) ===
+  // ?action=syncDashboardBeforePdf            (오늘 기준)
+  // ?action=syncDashboardBeforePdf&date=2026-05-07
+  if (action === 'syncDashboardBeforePdf') {
+    var dateParam = e.parameter.date || '';
+    try {
+      return makeRes(Object.assign({status:'ok'}, syncDashboardBeforePdf(dateParam)));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  return makeRes({status:'ok', message:'메트로 R&S v23.21 연결됨'});
 }
 
 // === [v23.20] 일매출 대시보드 PDF 생성 함수 ===
@@ -813,6 +826,16 @@ function generateDailySalesPdf(targetDateStrOrEvent) {
 
   var targetDateStr = (typeof targetDateStrOrEvent === 'string') ? targetDateStrOrEvent : '';
   var today = targetDateStr || Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
+
+  // [v23.21] PDF 생성 직전 대시보드 시트 동기화 — 기준일 + financial 영역 자동 갱신
+  // 동기화 실패해도 PDF는 옛 값으로 생성되도록 try-catch (재해 시 PDF 자체는 보존)
+  var syncResult = null;
+  try {
+    syncResult = syncDashboardBeforePdf(today);
+    SpreadsheetApp.flush();
+  } catch (syncErr) {
+    Logger.log('[generateDailySalesPdf] sync 실패 (계속 진행): ' + syncErr.message);
+  }
 
   // 대시보드 시트 GID 찾기
   var ss = SpreadsheetApp.openById(SHEET_ID);
@@ -873,7 +896,91 @@ function generateDailySalesPdf(targetDateStrOrEvent) {
   while (existing.hasNext()) existing.next().setTrashed(true);
 
   var file = dailyFolder.createFile(blob);
-  return {fileId: file.getId(), fileName: fileName, date: today, sizeKB: Math.round(blob.getBytes().length / 1024)};
+  return {
+    fileId: file.getId(), fileName: fileName, date: today,
+    sizeKB: Math.round(blob.getBytes().length / 1024),
+    sync: syncResult
+  };
+}
+
+// === [v23.21] PDF 생성 직전 대시보드 시트 자동 동기화 ===
+// - A3 기준일을 오늘 한국어 날짜로 갱신
+// - financial 영역(M12~M17)을 일매출 시트의 오늘 미지급 + 결제현황 입금 합계 기반으로 자동 갱신
+//   * 일매출 시트와 financial.미지급잔액 항상 일치 (5/6 PDF 1.6M 차이 사고 재발 방지)
+//   * 입금 횟수 자동 카운트 (4/13 30M 같은 신규 입금 즉시 반영)
+// - targetDateStr: yyyy-MM-dd (없으면 오늘 KST). 대시보드 시트는 날짜 무관하게 항상 최신 상태로 유지
+function syncDashboardBeforePdf(targetDateStr) {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var TZ = 'Asia/Seoul';
+  var VAT = 1.1;
+
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var dash  = ss.getSheetByName('대시보드');
+  var sales = ss.getSheetByName('일매출');
+  var pay   = ss.getSheetByName('결제현황');
+  if (!dash)  throw new Error('대시보드 시트 없음');
+  if (!sales) throw new Error('일매출 시트 없음');
+  if (!pay)   throw new Error('결제현황 시트 없음');
+
+  var todayStr = targetDateStr || Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
+  var todayKor = Utilities.formatDate(
+    Utilities.parseDate(todayStr, TZ, 'yyyy-MM-dd'), TZ, 'yyyy년 MM월 dd일'
+  );
+
+  // 1) 일매출 시트에서 todayStr 이전(포함) 최근의 미지급잔액 찾기
+  //    A열=날짜, T열(20번째)=미지급잔액. 매출 0인 날도 미지급은 채워져 있음.
+  var lastRow = sales.getLastRow();
+  var rng = sales.getRange(2, 1, lastRow - 1, 20).getValues();
+  var todayUnpaid = null;
+  for (var i = rng.length - 1; i >= 0; i--) {
+    var dCell = rng[i][0];
+    var dStr = (dCell instanceof Date)
+      ? Utilities.formatDate(dCell, TZ, 'yyyy-MM-dd')
+      : String(dCell || '').slice(0, 10);
+    if (!dStr || dStr > todayStr) continue;
+    var u = rng[i][19];
+    if (typeof u === 'number' && u > 0) { todayUnpaid = u; break; }
+  }
+  if (todayUnpaid === null) throw new Error('일매출 시트에서 ' + todayStr + ' 이전의 미지급 잔액을 찾을 수 없음');
+
+  // 2) 결제현황 R29~R45 입금 행 카운트 + 합계
+  //    C열(3번째) = 입금액(VAT포함), 1~17회까지 NO 부여된 행
+  var payRng = pay.getRange(29, 1, 17, 3).getValues(); // R29~R45
+  var depositCount = 0;
+  var depositSumIn = 0;
+  for (var j = 0; j < payRng.length; j++) {
+    var amt = payRng[j][2];
+    if (typeof amt === 'number' && amt > 0) {
+      depositCount++;
+      depositSumIn += amt;
+    }
+  }
+  var depositSumEx = depositSumIn / VAT;
+  var totalWork = todayUnpaid + depositSumEx;
+  var payRate = totalWork > 0 ? (depositSumEx / totalWork) : 0;
+
+  // 3) 대시보드 갱신
+  //    A3 기준일 — 시트 그대로 PDF export되므로 직접 A3 셀에 한국어 날짜 박기
+  dash.getRange('A3').setValue('📅 기준일: ' + todayKor);
+
+  //    financial 영역 (K~M열, 12~17행) — 라벨은 그대로 두고 M열 값만 갱신
+  dash.getRange('M12').setValue(totalWork);          // 총 작업비 (VAT별도)
+  dash.getRange('M13').setValue(depositSumIn);       // 총 입금액 (VAT포함)
+  dash.getRange('M14').setValue(depositSumEx);       // 총 입금액 (VAT별도)
+  dash.getRange('M15').setValue(todayUnpaid);        // 미지급 잔액 — 일매출 시트와 항상 동일
+  dash.getRange('M16').setValue(payRate);            // 입금률
+  dash.getRange('M17').setValue(depositCount + '회'); // 입금 횟수
+
+  return {
+    baseDate: todayStr,
+    baseDateKor: todayKor,
+    todayUnpaid: todayUnpaid,
+    totalWork: totalWork,
+    depositCount: depositCount,
+    depositSumIn: depositSumIn,
+    depositSumEx: Math.round(depositSumEx),
+    payRate: Math.round(payRate * 10000) / 10000
+  };
 }
 
 // === [v23.20] 매일 21:30 KST 트리거 등록 (일회성) ===
