@@ -251,7 +251,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V23.18</div>
+      <div class="ver">V23.23</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -793,10 +793,10 @@ var App={
     reader.onload=function(e){
       var img=new Image();
       img.onload=function(){
-        var mW=200,sc=img.width>mW?mW/img.width:1;
+        var mW=1280,sc=img.width>mW?mW/img.width:1;
         var c=document.createElement('canvas');c.width=img.width*sc;c.height=img.height*sc;
         c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-        var b=c.toDataURL('image/jpeg',0.4);
+        var b=c.toDataURL('image/jpeg',0.85);
         // 로컬에 즉시 표시
         if(!self.rowPhotos[rn]) self.rowPhotos[rn]={};
         self.rowPhotos[rn][type]=b;
