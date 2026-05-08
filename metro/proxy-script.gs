@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.23 - Google Apps Script
+// (주)메트로 R&S AI v23.24 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas
+// v23.24: 입출금 현황 요약 단일 진본화 — 대시보드 M12~M17을 결제현황 시트 자동 참조 수식으로 전환. syncDashboardBeforePdf는 더 이상 setValue로 덮어쓰지 않고 셀에서 계산된 값을 읽어 PDF·텔레그램에 사용. 신규 액션 setupDashboardFormulas로 셀 수식 6개 + 월별 매출 추이 차트(2026년만) 1회 셋업. 입금 횟수 R29:R1000 동적 카운트(R46 누락 버그 수정).
 // v23.23: 텔레그램 일일 보고 알림 추가 — generateDailySalesPdf 직후 비공개 채널에 요약+PDF링크 푸시. Script Properties (TG_TOKEN, TG_CHAT_ID) 필요. 미설정 시 알림만 건너뜀, PDF 생성은 정상.
 // v23.22: A3 헤더에 당일 매출 추가 — '📅 기준일: yyyy년 MM월 dd일   💰 당일 매출: N,NNN,NNN원'. financial M12·M14는 정수 반올림(부동소수점 .36 표시 제거).
 // v23.21: PDF 생성 직전 대시보드 시트 자동 동기화 — 기준일(A3) 갱신 + financial 영역(M12~M17)을 일매출 시트의 오늘 미지급 + 결제현황 입금 합계 기반으로 자동 갱신. 일매출 시트와 PDF의 미지급 잔액 항상 일치, 입금 횟수 자동 카운트.
@@ -836,7 +837,17 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.22 연결됨'});
+  // === [v23.24] 대시보드 financial 수식 + 월별 매출 추이 차트(2026만) 1회 셋업 ===
+  // ?action=setupDashboardFormulas
+  if (action === 'setupDashboardFormulas') {
+    try {
+      return makeRes(Object.assign({status:'ok'}, setupDashboardFormulas()));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  return makeRes({status:'ok', message:'메트로 R&S v23.24 연결됨'});
 }
 
 // === [v23.20] 일매출 대시보드 PDF 생성 함수 ===
@@ -984,86 +995,62 @@ function sendTelegramDailyReport(file, syncResult, today) {
   }
 }
 
-// === [v23.21] PDF 생성 직전 대시보드 시트 자동 동기화 ===
-// - A3 기준일을 오늘 한국어 날짜로 갱신
-// - financial 영역(M12~M17)을 일매출 시트의 오늘 미지급 + 결제현황 입금 합계 기반으로 자동 갱신
-//   * 일매출 시트와 financial.미지급잔액 항상 일치 (5/6 PDF 1.6M 차이 사고 재발 방지)
-//   * 입금 횟수 자동 카운트 (4/13 30M 같은 신규 입금 즉시 반영)
-// - targetDateStr: yyyy-MM-dd (없으면 오늘 KST). 대시보드 시트는 날짜 무관하게 항상 최신 상태로 유지
+// === [v23.24] PDF 생성 직전 대시보드 시트 자동 동기화 ===
+// - A3 기준일·당일 매출 텍스트 갱신 (PDF export용 — 텍스트라 수식 불가)
+// - financial 영역(M12~M17)은 결제현황 자동 참조 수식이 자동 계산하므로 setValue 안 함
+//   * setupDashboardFormulas 액션으로 1회 셋업된 수식이 결제현황 변경 즉시 반영
+//   * SpreadsheetApp.flush() 후 셀에서 계산된 최종값을 읽어 텔레그램·PDF 결과로 사용
+// - targetDateStr: yyyy-MM-dd (없으면 오늘 KST)
 function syncDashboardBeforePdf(targetDateStr) {
   var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
   var TZ = 'Asia/Seoul';
-  var VAT = 1.1;
 
   var ss = SpreadsheetApp.openById(SHEET_ID);
   var dash  = ss.getSheetByName('대시보드');
   var sales = ss.getSheetByName('일매출');
-  var pay   = ss.getSheetByName('결제현황');
   if (!dash)  throw new Error('대시보드 시트 없음');
   if (!sales) throw new Error('일매출 시트 없음');
-  if (!pay)   throw new Error('결제현황 시트 없음');
 
   var todayStr = targetDateStr || Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
   var todayKor = Utilities.formatDate(
     Utilities.parseDate(todayStr, TZ, 'yyyy-MM-dd'), TZ, 'yyyy년 MM월 dd일'
   );
 
-  // 1) 일매출 시트에서 todayStr 이전(포함) 최근의 미지급잔액 + 오늘 정확 일치 행의 매출
-  //    A열=날짜, S열(19번째)=일매출합계, T열(20번째)=미지급잔액. 매출 0인 날도 미지급은 채워져 있음.
+  // 1) 일매출 시트에서 오늘 매출 추출 (A3 헤더 텍스트 표시용)
   var lastRow = sales.getLastRow();
-  var rng = sales.getRange(2, 1, lastRow - 1, 20).getValues();
-  var todayUnpaid = null;
+  var rng = sales.getRange(2, 1, lastRow - 1, 19).getValues();
   var todaySales = 0;
   for (var i = rng.length - 1; i >= 0; i--) {
     var dCell = rng[i][0];
     var dStr = (dCell instanceof Date)
       ? Utilities.formatDate(dCell, TZ, 'yyyy-MM-dd')
       : String(dCell || '').slice(0, 10);
-    if (!dStr || dStr > todayStr) continue;
-    if (todayUnpaid === null) {
-      var u = rng[i][19];
-      if (typeof u === 'number' && u > 0) todayUnpaid = u;
-    }
     if (dStr === todayStr) {
       var s = rng[i][18];
       if (typeof s === 'number') todaySales = s;
+      break;
     }
-    if (todayUnpaid !== null && (dStr === todayStr || todaySales > 0)) break;
+    if (dStr && dStr < todayStr) break;
   }
-  if (todayUnpaid === null) throw new Error('일매출 시트에서 ' + todayStr + ' 이전의 미지급 잔액을 찾을 수 없음');
 
-  // 2) 결제현황 R29~R45 입금 행 카운트 + 합계
-  //    C열(3번째) = 입금액(VAT포함), 1~17회까지 NO 부여된 행
-  var payRng = pay.getRange(29, 1, 17, 3).getValues(); // R29~R45
-  var depositCount = 0;
-  var depositSumIn = 0;
-  for (var j = 0; j < payRng.length; j++) {
-    var amt = payRng[j][2];
-    if (typeof amt === 'number' && amt > 0) {
-      depositCount++;
-      depositSumIn += amt;
-    }
-  }
-  // v23.22: 부동소수점 누적 오차 제거 — VAT별도 입금·작업비를 정수로 반올림
-  var depositSumEx = Math.round(depositSumIn / VAT);
-  var totalWork = todayUnpaid + depositSumEx;
-  var payRate = totalWork > 0 ? (depositSumEx / totalWork) : 0;
-
-  // 3) 대시보드 갱신
-  //    A3 기준일 + 당일 매출 (v23.22) — 시트 그대로 PDF export되므로 직접 A3 셀에 한국어 텍스트 박기
+  // 2) A3 기준일·당일 매출 텍스트 갱신
   var headerText = '📅 기준일: ' + todayKor;
   if (todaySales > 0) {
     headerText += '   💰 당일 매출: ' + todaySales.toLocaleString('ko-KR') + '원';
   }
   dash.getRange('A3').setValue(headerText);
 
-  //    financial 영역 (K~M열, 12~17행) — 라벨은 그대로 두고 M열 값만 갱신
-  dash.getRange('M12').setValue(totalWork);          // 총 작업비 (VAT별도)
-  dash.getRange('M13').setValue(depositSumIn);       // 총 입금액 (VAT포함)
-  dash.getRange('M14').setValue(depositSumEx);       // 총 입금액 (VAT별도)
-  dash.getRange('M15').setValue(todayUnpaid);        // 미지급 잔액 — 일매출 시트와 항상 동일
-  dash.getRange('M16').setValue(payRate);            // 입금률
-  dash.getRange('M17').setValue(depositCount + '회'); // 입금 횟수
+  // 3) 시트 수식 즉시 평가 후 financial 셀에서 계산된 최종값 읽기
+  //    M12~M17은 결제현황 자동 참조 수식 (setupDashboardFormulas로 셋업됨)
+  SpreadsheetApp.flush();
+  var fin = dash.getRange('M12:M17').getValues();
+  var totalWork    = fin[0][0];  // M12 ='결제현황'!D56 (작업비 VAT별도)
+  var depositSumIn = fin[1][0];  // M13 ='결제현황'!C54 (입금 VAT포함)
+  var depositSumEx = fin[2][0];  // M14 ='결제현황'!D54 (입금 VAT별도)
+  var todayUnpaid  = fin[3][0];  // M15 =M12-M14
+  var payRate      = fin[4][0];  // M16 =IFERROR(M14/M12,0)
+  var depositCntStr = fin[5][0]; // M17 =COUNT('결제현황'!A29:A1000)&"회"
+  var depositCount = parseInt(String(depositCntStr || '').replace(/[^\d]/g, '') || '0', 10);
 
   return {
     baseDate: todayStr,
@@ -1074,7 +1061,70 @@ function syncDashboardBeforePdf(targetDateStr) {
     depositCount: depositCount,
     depositSumIn: depositSumIn,
     depositSumEx: depositSumEx,
-    payRate: Math.round(payRate * 10000) / 10000
+    payRate: typeof payRate === 'number' ? Math.round(payRate * 10000) / 10000 : payRate
+  };
+}
+
+// === [v23.24] 대시보드 1회성 셋업: financial 수식 + 월별 매출 추이 차트(2026만) ===
+// 결제현황 = 단일 진본 패러다임 적용. 한 번 호출하면:
+//  (1) M12~M17 = 결제현황 자동 참조 수식 6개 박기 (이후 결제현황 수정 즉시 반영)
+//  (2) M16에 % 형식 적용
+//  (3) 월별 매출 추이 차트(C29:C42 가까운 차트)에서 2025년 시리즈 제거하고 2026년만 남김
+// 멱등(idempotent) — 여러 번 호출해도 동일 결과
+function setupDashboardFormulas() {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var dash = ss.getSheetByName('대시보드');
+  if (!dash) throw new Error('대시보드 시트 없음');
+
+  // (1) financial 수식 6개 — 결제현황 자동 합계 셀 직접 참조
+  dash.getRange('M12').setFormula("='결제현황'!D56");                      // 작업비 (VAT별도)
+  dash.getRange('M13').setFormula("='결제현황'!C54");                      // 입금 (VAT포함)
+  dash.getRange('M14').setFormula("='결제현황'!D54");                      // 입금 (VAT별도)
+  dash.getRange('M15').setFormula("=M12-M14");                            // 미지급 잔액
+  dash.getRange('M16').setFormula("=IFERROR(M14/M12,0)");                  // 입금률
+  dash.getRange('M17').setFormula("=COUNT('결제현황'!A29:A1000)&\"회\"");  // 입금 횟수
+
+  // (2) M16 퍼센트 형식
+  dash.getRange('M16').setNumberFormat('0.0%');
+
+  // (3) 월별 매출 추이 차트에서 2025년 시리즈 제거
+  //    데이터: A29:C42 (A=월, B=2025년, C=2026년). 2025 시리즈를 빼려면 카테고리(A)+값(C)만 남기면 됨.
+  var charts = dash.getCharts();
+  var chartUpdated = false;
+  var chartTitle = '';
+  for (var i = 0; i < charts.length; i++) {
+    var ch = charts[i];
+    var ranges = ch.getRanges();
+    var hasMonthlyRange = false;
+    for (var r = 0; r < ranges.length; r++) {
+      var a1 = ranges[r].getA1Notation();
+      // A29:C42 또는 그 안에 포함된 월별 매출 추이 영역
+      if (/(?:A|B|C)2[89]/.test(a1) || /(?:A|B|C)3[0-9]/.test(a1) || /(?:A|B|C)4[0-2]/.test(a1)) {
+        hasMonthlyRange = true; break;
+      }
+    }
+    if (!hasMonthlyRange) continue;
+
+    var newChart = ch.modify()
+      .clearRanges()
+      .addRange(dash.getRange('A29:A42'))   // 카테고리 (월)
+      .addRange(dash.getRange('C29:C42'))   // 값 (2026년만)
+      .build();
+    dash.updateChart(newChart);
+    chartUpdated = true;
+    chartTitle = (ch.getOptions().get('title') || '월별 매출 추이') + '';
+    break;
+  }
+
+  SpreadsheetApp.flush();
+  return {
+    formulasSet: ['M12','M13','M14','M15','M16','M17'],
+    chartUpdated: chartUpdated,
+    chartTitle: chartTitle,
+    note: chartUpdated
+      ? '월별 매출 추이 차트 2025년 시리즈 제거 완료 (2026년만 표시)'
+      : '월별 매출 추이 차트를 자동 식별하지 못함 — 차트 편집기에서 직접 2025년 시리즈 삭제 필요'
   };
 }
 
