@@ -194,9 +194,10 @@ function handleAi(p) {
       if (img && img.data && img.mimeType)
         parts.push({ inline_data: { mime_type: img.mimeType, data: img.data } });
     });
+    const defaultConfig = { temperature: 0.3, maxOutputTokens: 1024 };
     const payload = {
       contents: [{ parts: parts }],
-      generationConfig: { temperature: 0.3, maxOutputTokens: 1024 }
+      generationConfig: Object.assign(defaultConfig, item.config || {})
     };
     try {
       const res = UrlFetchApp.fetch(url, {

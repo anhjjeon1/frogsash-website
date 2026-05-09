@@ -2159,8 +2159,8 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v32.10';
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwaGre5b025jL1of_znmu_EVg-CyqnrsAPXlc_nQkmuGHq-LZKhwJb9sDyQTdcUW4i9Pg/exec';
+const APP_VER = 'v33.0';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
 const LIMIT_PAID = 100;
@@ -3112,19 +3112,16 @@ async function runAI(){
 [JSON]
 {"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"■ 하자현상: ...\\n■ 판정근거: ...\\n■ 심각도: ...\\n■ 시정방법: ...\\n■ 비고: ..."}`;
 
-    const GEMINI_KEY=atob('QUl6YVN5Q2lTQjY5ZktZd21sVG8wajRXdElOd3NSNE9rU05jcWFZ');
-    const GEMINI_URL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key='+GEMINI_KEY;
-
-    /* ── 1차 분석 호출 ── */
-    const parts1=[{text:prompt1}];
-    images.forEach(img=>parts1.push({inline_data:{mime_type:img.mimeType,data:img.data}}));
-    const res1=await _geminiFetchRetry(GEMINI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:parts1}],generationConfig:{temperature:0.2,maxOutputTokens:1024,responseMimeType:'application/json'}}),signal:_ac.signal});
+    /* ── 1차 분석 호출 (GAS 프록시 경유, Gemini 키는 서버에만) ── */
+    const _aiBody1={action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt:prompt1,images:images,config:{temperature:0.2,maxOutputTokens:1024,responseMimeType:'application/json'}}]};
+    const res1=await _geminiFetchRetry(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(_aiBody1),signal:_ac.signal});
     if(_aiDone)return;
-    if(!res1.ok){const errBody=await res1.text().catch(()=>'');if(errBody.includes('RESOURCE_EXHAUSTED'))throw new Error('429');throw new Error('Gemini 응답 오류: '+res1.status);}
+    if(!res1.ok){throw new Error('AI 응답 오류: '+res1.status);}
     const data1=await res1.json();
     if(_aiDone)return;
+    if(data1.error){if(data1.error==='chat_limit')throw new Error('chat_limit');throw new Error(data1.message||data1.error);}
 
-    const txt1=data1?.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const txt1=data1.results?.[0]||'';
     let d1={};
     try{const c=txt1.replace(/```json/g,'').replace(/```/g,'').trim();let parsed=JSON.parse(c);if(Array.isArray(parsed))parsed=parsed[0]||{};d1=parsed;}
     catch{try{const mt=txt1.match(/\{[\s\S]*\}/);d1=mt?JSON.parse(mt[0]):{};}catch{d1={};}}
@@ -3159,17 +3156,18 @@ ${d1.detail||''}
 [JSON]
 {"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"■ 하자현상: ...\\n■ 판정근거: ...\\n■ 심각도: ...\\n■ 시정방법: ...\\n■ 비고: ..."}`;
 
-    const parts2=[{text:prompt2}];
-    images.forEach(img=>parts2.push({inline_data:{mime_type:img.mimeType,data:img.data}}));
-    const res2=await _geminiFetchRetry(GEMINI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:parts2}],generationConfig:{temperature:0.1,maxOutputTokens:1024,responseMimeType:'application/json'}}),signal:_ac.signal});
+    const _aiBody2={action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt:prompt2,images:images,config:{temperature:0.1,maxOutputTokens:1024,responseMimeType:'application/json'}}]};
+    const res2=await _geminiFetchRetry(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(_aiBody2),signal:_ac.signal});
     if(_aiDone)return;
 
     let d=d1; /* 2차 실패 시 1차 결과 사용 */
     if(res2.ok){
       const data2=await res2.json();
-      const txt2=data2?.candidates?.[0]?.content?.parts?.[0]?.text||'';
-      try{const c=txt2.replace(/```json/g,'').replace(/```/g,'').trim();let parsed=JSON.parse(c);if(Array.isArray(parsed))parsed=parsed[0]||{};if(parsed.work&&parsed.detail)d=parsed;}
-      catch{try{const mt=txt2.match(/\{[\s\S]*\}/);const p2=mt?JSON.parse(mt[0]):{};if(p2.work&&p2.detail)d=p2;}catch{}}
+      if(!data2.error){
+        const txt2=data2.results?.[0]||'';
+        try{const c=txt2.replace(/```json/g,'').replace(/```/g,'').trim();let parsed=JSON.parse(c);if(Array.isArray(parsed))parsed=parsed[0]||{};if(parsed.work&&parsed.detail)d=parsed;}
+        catch{try{const mt=txt2.match(/\{[\s\S]*\}/);const p2=mt?JSON.parse(mt[0]):{};if(p2.work&&p2.detail)d=p2;}catch{}}
+      }
     }
 
     const severity=d.severity||'';
