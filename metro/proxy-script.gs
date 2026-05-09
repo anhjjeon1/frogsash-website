@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.24 - Google Apps Script
+// (주)메트로 R&S AI v23.25 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges
+// v23.25: 일매출 시트 SUMPRODUCT 범위 확장 — extendDailySalesRanges 액션 추가. K/L/M/O 컬럼 :$X$NNN → :$X$2000 일괄 치환(시작 :$X$2 보호 + 단가표 Q/U 자동 보호). 시트별 hardcoded 행수(동탄 138, 광주중흥 154, 양주 N 등)가 시트 확장 페이스를 못 따라가던 정합성 누수 영구 해결. 5/8 동탄 25건 완료(NO 139~)가 일매출 0원으로 떨어졌던 사고 재발 방지.
 // v23.24: 입출금 현황 요약 단일 진본화 — 대시보드 M12~M17을 결제현황 시트 자동 참조 수식으로 전환. syncDashboardBeforePdf는 더 이상 setValue로 덮어쓰지 않고 셀에서 계산된 값을 읽어 PDF·텔레그램에 사용. 신규 액션 setupDashboardFormulas로 셀 수식 6개 + 월별 매출 추이 차트(2026년만) 1회 셋업. 입금 횟수 R29:R1000 동적 카운트(R46 누락 버그 수정).
 // v23.23: 텔레그램 일일 보고 알림 추가 — generateDailySalesPdf 직후 비공개 채널에 요약+PDF링크 푸시. Script Properties (TG_TOKEN, TG_CHAT_ID) 필요. 미설정 시 알림만 건너뜀, PDF 생성은 정상.
 // v23.22: A3 헤더에 당일 매출 추가 — '📅 기준일: yyyy년 MM월 dd일   💰 당일 매출: N,NNN,NNN원'. financial M12·M14는 정수 반올림(부동소수점 .36 표시 제거).
@@ -847,7 +848,17 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.24 연결됨'});
+  // === [v23.25] 일매출 SUMPRODUCT 범위 확장 (K/L/M/O 끝행 → 2000) ===
+  // ?action=extendDailySalesRanges
+  if (action === 'extendDailySalesRanges') {
+    try {
+      return makeRes(Object.assign({status:'ok'}, extendDailySalesRanges()));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  return makeRes({status:'ok', message:'메트로 R&S v23.25 연결됨'});
 }
 
 // === [v23.20] 일매출 대시보드 PDF 생성 함수 ===
@@ -1125,6 +1136,60 @@ function setupDashboardFormulas() {
     note: chartUpdated
       ? '월별 매출 추이 차트 2025년 시리즈 제거 완료 (2026년만 표시)'
       : '월별 매출 추이 차트를 자동 식별하지 못함 — 차트 편집기에서 직접 2025년 시리즈 삭제 필요'
+  };
+}
+
+// === [v23.25] 일매출 시트 SUMPRODUCT 범위 일괄 확장 ===
+// K/L/M/O 컬럼의 ':$X$NNN' 끝 행수만 → ':$X$2000' 으로 치환.
+// 시작 셀 ':$X$2'는 콜론 앞에 콜론 없으므로 매칭 안 됨 — 보호.
+// 단가표 Q/U는 컬럼 화이트리스트(KLMO)에 없어 자동 보호.
+// 시트별 hardcoded 행수가 다른 환경(동탄 138, 광주중흥 154, 양주 N 등)에서 모두 일괄 처리.
+// 멱등 — 이미 :$X$2000인 셀은 동일 결과로 다시 매칭(변경 없음).
+function extendDailySalesRanges() {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sales = ss.getSheetByName('일매출');
+  if (!sales) throw new Error('일매출 시트 없음');
+
+  var lastRow = sales.getLastRow();
+  if (lastRow < 2) return {cellsChanged: 0, note: '일매출 시트 비어있음'};
+
+  // E:R = 14현장 컬럼 (E2~R<lastRow>)
+  var range = sales.getRange(2, 5, lastRow - 1, 14);
+  var formulas = range.getFormulas();
+  var cellsChanged = 0;
+  var matchesByCol = {K: 0, L: 0, M: 0, O: 0};
+
+  for (var i = 0; i < formulas.length; i++) {
+    for (var j = 0; j < formulas[i].length; j++) {
+      var f = formulas[i][j];
+      if (!f) continue;
+      var newF = f;
+      ['K','L','M','O'].forEach(function(col) {
+        var re = new RegExp(':\\$' + col + '\\$\\d+', 'g');
+        var matches = newF.match(re);
+        if (matches) {
+          matchesByCol[col] += matches.length;
+          newF = newF.replace(re, ':$' + col + '$2000');
+        }
+      });
+      if (newF !== f) {
+        formulas[i][j] = newF;
+        cellsChanged++;
+      }
+    }
+  }
+
+  if (cellsChanged > 0) {
+    range.setFormulas(formulas);
+    SpreadsheetApp.flush();
+  }
+
+  return {
+    cellsChanged: cellsChanged,
+    matchesByColumn: matchesByCol,
+    rangeProcessed: range.getA1Notation(),
+    note: 'K/L/M/O 컬럼의 :$X$NNN → :$X$2000 (시작 :$X$2 보호 + 단가표 Q/U 자동 보호)'
   };
 }
 
