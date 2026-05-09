@@ -6,7 +6,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v23.28</title>
+  <title>(주)메트로 R & S AI v23.29</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -376,7 +376,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.28'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.29'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC',VERSION:'METRO_APP_VERSION'};
 var SETTINGS_KEYS={SCRIPT:'METRO_SCRIPT_URL',SHEET:'METRO_SHEET_ID',SHEET_NAME:'METRO_SHEET_NAME',WORKER:'METRO_WORKER'};
 var DEFAULTS={
@@ -810,14 +810,16 @@ var App={
     reader.onload=function(e){
       var img=new Image();
       img.onload=function(){
-        // v23.27: 셀당 50000자 한계 회피 — base64 길이가 안전선 미만이 될 때까지 점진 압축
-        var SAFETY=45000; // 50000자 한계 - 안전 여유 5000
+        // v23.29: 1920px·0.92 고화질 — GAS savePhoto가 Drive 업로드 흐름을 쓰므로 셀 50000자 한계 무관
+        // GAS가 base64 setValue로 회귀하면 fallback 점진 압축이 안전선까지 자동 축소
+        var SAFETY=45000; // base64 길이 안전 한계 (GAS 셀 setValue 폴백용)
         var attempts=[
+          {mW:1920,q:0.92}, // 고화질 — 사람 눈으로 원본과 구별 불가
+          {mW:1280,q:0.85}, // 표준
           {mW:1024,q:0.7},
           {mW:800,q:0.6},
           {mW:640,q:0.55},
-          {mW:480,q:0.5},
-          {mW:400,q:0.4}
+          {mW:480,q:0.5}
         ];
         var b='',used=null;
         for(var ai=0;ai<attempts.length;ai++){
@@ -827,16 +829,16 @@ var App={
           c.getContext('2d').drawImage(img,0,0,c.width,c.height);
           b=c.toDataURL('image/jpeg',a.q);
           used=a;
+          // 첫 시도(1920·0.92)는 무조건 통과 — GAS가 Drive 업로드 흐름이면 크기 무관
+          // 2번째 이후만 SAFETY 검사 (GAS가 옛 base64 setValue 흐름인 경우 폴백)
+          if(ai===0)break;
           if(b.length<=SAFETY)break;
-        }
-        if(b.length>SAFETY){
-          self.toast('사진 너무 큼('+Math.round(b.length/1000)+'KB) — 저장 실패 가능','error',4000);
         }
         // 로컬에 즉시 표시
         if(!self.rowPhotos[rn]) self.rowPhotos[rn]={};
         self.rowPhotos[rn][type]=b;
         self.renderLog();
-        // Drive에 업로드
+        // GAS 업로드
         self.uploadPhoto(rn,type,b);
       };img.src=e.target.result;
     };reader.readAsDataURL(file);
