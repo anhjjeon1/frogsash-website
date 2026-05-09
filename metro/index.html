@@ -2,8 +2,11 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v23.14</title>
+  <title>(주)메트로 R & S AI v23.26</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -373,7 +376,8 @@
 </div>
 
 <script>
-var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC'};
+var APP_VERSION='v23.26'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거
+var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC',VERSION:'METRO_APP_VERSION'};
 var SETTINGS_KEYS={SCRIPT:'METRO_SCRIPT_URL',SHEET:'METRO_SHEET_ID',SHEET_NAME:'METRO_SHEET_NAME',WORKER:'METRO_WORKER'};
 var DEFAULTS={
   SCRIPT:'https://script.google.com/macros/s/AKfycbwaoevs3XgzvvTS1Pr9RKbX-tos4q_rGjCYQTewUuHp2pQ7iGbIcVm10xTXYWhq8L0m/exec',
@@ -392,6 +396,16 @@ var App={
 
   // === 초기화 ===
   init:function(){
+    // v23.26: 앱 부팅 시 버전 체크 → 옛 SCRIPT URL 자동 갱신 (작업자 ⚙ 수동 갱신 불필요)
+    var savedVer=localStorage.getItem(STORAGE.VERSION);
+    if(savedVer!==APP_VERSION){
+      localStorage.setItem(SETTINGS_KEYS.SCRIPT,DEFAULTS.SCRIPT);
+      localStorage.setItem(STORAGE.VERSION,APP_VERSION);
+      if(savedVer){
+        var self=this;
+        setTimeout(function(){self.toast('새 버전 '+APP_VERSION+' 적용 ✓ (서버 URL 자동 갱신)','success',4000);},800);
+      }
+    }
     this.loadLocalData();
     this.renderLog();
     var w=this.getSetting('WORKER');
