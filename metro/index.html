@@ -6,7 +6,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v23.27</title>
+  <title>(주)메트로 R & S AI v23.28</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -254,7 +254,7 @@
     <header>
       <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
       <h1>메트로 현장관리앱</h1>
-      <div class="ver">V23.23</div>
+      <div class="ver" id="verBadge">V23.27</div>
     </header>
 
     <!-- 1. 하자 리스트 불러오기 -->
@@ -376,7 +376,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.27'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거
+var APP_VERSION='v23.28'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC',VERSION:'METRO_APP_VERSION'};
 var SETTINGS_KEYS={SCRIPT:'METRO_SCRIPT_URL',SHEET:'METRO_SHEET_ID',SHEET_NAME:'METRO_SHEET_NAME',WORKER:'METRO_WORKER'};
 var DEFAULTS={
@@ -396,6 +396,9 @@ var App={
 
   // === 초기화 ===
   init:function(){
+    // v23.28: 헤더 버전 배지를 APP_VERSION에 동적 바인딩 (하드코딩 누락 방지)
+    var vb=document.getElementById('verBadge');
+    if(vb) vb.textContent=APP_VERSION.toUpperCase();
     // v23.26: 앱 부팅 시 버전 체크 → 옛 SCRIPT URL 자동 갱신 (작업자 ⚙ 수동 갱신 불필요)
     var savedVer=localStorage.getItem(STORAGE.VERSION);
     if(savedVer!==APP_VERSION){
