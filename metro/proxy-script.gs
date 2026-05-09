@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.30 - Google Apps Script
+// (주)메트로 R&S AI v23.31 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger
+// v23.31: 메트로 관리자(구미영 대리, era999@naver.com)에게 매일 09:00 KST 일일 보고 메일 자동 발송. 어제 작업 사진(Drive 보기 링크) + claude현장관리(종합)_LIVE xlsx 사본(일매출 시트 제외) 첨부. xlsx는 'A.메트로알엔에스(주)/메트로 관리자전송/'에 일별 보관(감사 추적). 받은 사람은 xlsx 다운받아 자유 편집 가능하나 본사 원본 시트엔 영향 없음. Script Properties MANAGER_EMAIL 필요.
 // v23.30: savePhoto/migratePhotos에서 _data 열 저장 값을 base64 → Drive URL 로 변경. Google Sheets 셀당 50000자 한계로 인해 1280px·0.85 사진 base64(~200KB+ 텍스트)가 setValue throw되며 응답 실패하던 사고 영구 해결. 이미지 열은 이미 =IMAGE(URL) 수식이라 변경 무관, _data 열도 read 액션이 'http' 시작 매칭으로 그대로 처리. Drive 폴더 구조 (A.메트로알엔에스(주)/{현장}/{동}-{호}/) 그대로 유지. 결과: 사진 크기 무제한, 시트 용량 부담 급감, 클라이언트 1920px·0.92 고화질 풀 동작.
 // v23.25: 일매출 시트 SUMPRODUCT 범위 확장 — extendDailySalesRanges 액션 추가. K/L/M/O 컬럼 :$X$NNN → :$X$2000 일괄 치환(시작 :$X$2 보호 + 단가표 Q/U 자동 보호). 시트별 hardcoded 행수(동탄 138, 광주중흥 154, 양주 N 등)가 시트 확장 페이스를 못 따라가던 정합성 누수 영구 해결. 5/8 동탄 25건 완료(NO 139~)가 일매출 0원으로 떨어졌던 사고 재발 방지.
 // v23.24: 입출금 현황 요약 단일 진본화 — 대시보드 M12~M17을 결제현황 시트 자동 참조 수식으로 전환. syncDashboardBeforePdf는 더 이상 setValue로 덮어쓰지 않고 셀에서 계산된 값을 읽어 PDF·텔레그램에 사용. 신규 액션 setupDashboardFormulas로 셀 수식 6개 + 월별 매출 추이 차트(2026년만) 1회 셋업. 입금 횟수 R29:R1000 동적 카운트(R46 누락 버그 수정).
@@ -859,7 +860,28 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.30 연결됨'});
+  // === [v23.31] 메트로 관리자 일일 보고 메일 (수동 호출) ===
+  // ?action=sendDailyReportToManager        (어제 기준)
+  // ?action=sendDailyReportToManager&date=2026-05-08  (특정 날짜)
+  if (action === 'sendDailyReportToManager') {
+    try {
+      var dateParam = e.parameter.date || '';
+      return makeRes(Object.assign({status:'ok'}, sendDailyReportToManager(dateParam)));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  // === [v23.31] 매일 09:00 KST 메트로 관리자 메일 트리거 등록 ===
+  if (action === 'setupManagerReportTrigger') {
+    try {
+      return makeRes(Object.assign({status:'ok'}, setupManagerReportTrigger()));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message});
+    }
+  }
+
+  return makeRes({status:'ok', message:'메트로 R&S v23.31 연결됨'});
 }
 
 // === [v23.20] 일매출 대시보드 PDF 생성 함수 ===
@@ -1699,4 +1721,272 @@ function doPost(e) {
   } catch(err) {
     return makeRes({status:'error', message:err.message});
   }
+}
+
+// ========================================================================
+// === [v23.31] 메트로 관리자 일일 보고 메일 (매일 09:00 KST) ===
+// ========================================================================
+// 어제 작업분 사진 (Drive 보기 링크) + LIVE 시트 xlsx 사본 (일매출 제외)을
+// Script Properties MANAGER_EMAIL 주소로 자동 발송.
+// xlsx는 'A.메트로알엔에스(주)/메트로 관리자전송/'에 일별 보관(감사 추적).
+// 받는 사람은 다운받아 자유 편집 가능 — 본사 원본 시트엔 영향 없음.
+//
+// 실행:
+//   - GAS 편집기에서 sendDailyReportToManager() 직접 실행 (테스트)
+//   - HTTP: ?action=sendDailyReportToManager (어제 기준)
+//          ?action=sendDailyReportToManager&date=2026-05-08 (특정일)
+//   - 트리거: ?action=setupManagerReportTrigger (1회 등록)
+//
+// Script Properties 설정 (필수):
+//   GAS 편집기 → ⚙ 프로젝트 설정 → 스크립트 속성 → 추가
+//     키: MANAGER_EMAIL
+//     값: era999@naver.com
+function sendDailyReportToManager(targetDateStr) {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var TZ = 'Asia/Seoul';
+
+  var props = PropertiesService.getScriptProperties();
+  var mgrEmail = props.getProperty('MANAGER_EMAIL');
+  if (!mgrEmail) throw new Error('MANAGER_EMAIL Script Property 미설정 — GAS 편집기 ⚙ 프로젝트 설정 → 스크립트 속성에 등록 (예: era999@naver.com)');
+
+  // 트리거 호출 시 첫 인자가 event 객체일 수 있음 — 문자열만 채택
+  var explicitDate = (typeof targetDateStr === 'string' && targetDateStr) ? targetDateStr : '';
+
+  // 어제 KST 날짜
+  var now = new Date();
+  var yStr;
+  if (explicitDate) {
+    yStr = explicitDate;
+  } else {
+    var yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    yStr = Utilities.formatDate(yesterday, TZ, 'yyyy-MM-dd');
+  }
+  var yDate = Utilities.parseDate(yStr, TZ, 'yyyy-MM-dd');
+  var yDateKor = Utilities.formatDate(yDate, TZ, 'yyyy년 MM월 dd일');
+  var dayNames = ['일','월','화','수','목','금','토'];
+  var yDayOfWeek = dayNames[yDate.getDay()];
+  var todayDateKor = Utilities.formatDate(now, TZ, 'yyyy년 MM월 dd일');
+
+  // 1) 어제 작업 사진 수집 (Drive 폴더 createdDate 기준)
+  var photos = collectPhotosForDate(yStr);
+
+  // 2) LIVE xlsx 사본 생성 (일매출 제외) → 보관 폴더에 저장
+  var xlsxFile = exportLiveSheetExcluding(SHEET_ID, ['일매출'], yStr);
+
+  // 3) 메일 본문 (HTML)
+  var html = buildDailyReportEmail(photos, yStr, yDateKor, yDayOfWeek, todayDateKor);
+
+  // 4) 메일 발송
+  MailApp.sendEmail({
+    to: mgrEmail,
+    subject: '[메트로 R&S] ' + yDateKor + '(' + yDayOfWeek + ') 작업 보고',
+    htmlBody: html,
+    attachments: [xlsxFile.getBlob()],
+    name: '청개구리샤시 본사'
+  });
+
+  return {
+    sentTo: mgrEmail,
+    yesterdayDate: yStr,
+    photoCount: photos.totalCount,
+    siteCount: photos.sites.length,
+    archiveFileId: xlsxFile.getId(),
+    archiveFolderUrl: xlsxFile.getParents().next().getUrl()
+  };
+}
+
+// 어제 사진 수집: A.메트로알엔에스(주)/{현장}/{동-호}/ 폴더 내 createdDate가 어제인 파일
+// 시스템 폴더(PDF·관리자 전송 등) 자동 제외
+function collectPhotosForDate(targetYmd) {
+  var TZ = 'Asia/Seoul';
+  var roots = DriveApp.getFoldersByName(DRIVE_PHOTO_ROOT);
+  if (!roots.hasNext()) return {sites: [], totalCount: 0};
+  var root = roots.next();
+
+  // 작업 사진이 아닌 시스템 폴더 (현장 시트 폴더만 스캔)
+  var SKIP = {
+    '메트로 당일 매출 대시보드': true,
+    '메트로_매출_자료전송': true,
+    '메트로 당일 매출': true,
+    '메트로 관리자전송': true
+  };
+
+  var sites = [];
+  var totalCount = 0;
+
+  var siteFolders = root.getFolders();
+  while (siteFolders.hasNext()) {
+    var siteFolder = siteFolders.next();
+    var siteName = siteFolder.getName();
+    if (SKIP[siteName]) continue;
+
+    var unitFolders = siteFolder.getFolders();
+    var siteUnits = [];
+    while (unitFolders.hasNext()) {
+      var unitFolder = unitFolders.next();
+      var unitName = unitFolder.getName(); // '4111-302' 같은 동-호
+
+      var unitPhotos = {before: null, after: null, confirm: null};
+      var hasYesterday = false;
+
+      var files = unitFolder.getFiles();
+      while (files.hasNext()) {
+        var file = files.next();
+        var createdYmd = Utilities.formatDate(file.getDateCreated(), TZ, 'yyyy-MM-dd');
+        if (createdYmd !== targetYmd) continue;
+
+        hasYesterday = true;
+        var fname = file.getName();
+        // savePhoto 명명 규칙: row{N}_{type}_{ts}.{ext}
+        if (fname.indexOf('_before_') >= 0) unitPhotos.before = file;
+        else if (fname.indexOf('_after_') >= 0) unitPhotos.after = file;
+        else if (fname.indexOf('_confirm_') >= 0) unitPhotos.confirm = file;
+      }
+
+      if (hasYesterday) {
+        var c = 0;
+        if (unitPhotos.before) c++;
+        if (unitPhotos.after) c++;
+        if (unitPhotos.confirm) c++;
+        siteUnits.push({
+          unit: unitName,
+          before: unitPhotos.before,
+          after: unitPhotos.after,
+          confirm: unitPhotos.confirm,
+          count: c
+        });
+        totalCount += c;
+      }
+    }
+
+    if (siteUnits.length > 0) {
+      sites.push({siteName: siteName, units: siteUnits});
+    }
+  }
+
+  return {sites: sites, totalCount: totalCount};
+}
+
+// LIVE 시트 xlsx 사본 생성 (특정 시트 제외) → 'A.메트로알엔에스(주)/메트로 관리자전송/'에 보관
+// 반환: 보관된 xlsx 파일 (Blob 추출 가능)
+// idempotent — 같은 날짜 같은 이름 파일은 휴지통 후 새로 생성
+function exportLiveSheetExcluding(sheetId, excludeSheetNames, ymd) {
+  var ARCHIVE = '메트로 관리자전송';
+
+  // 보관 폴더 확보 (없으면 자동 생성)
+  var roots = DriveApp.getFoldersByName(DRIVE_PHOTO_ROOT);
+  if (!roots.hasNext()) throw new Error('루트 폴더 없음: ' + DRIVE_PHOTO_ROOT);
+  var rootFolder = roots.next();
+  var archives = rootFolder.getFoldersByName(ARCHIVE);
+  var archiveFolder = archives.hasNext() ? archives.next() : rootFolder.createFolder(ARCHIVE);
+
+  var copyName = 'claude현장관리_' + ymd;
+
+  // 같은 이름 기존 xlsx 휴지통 (중복 방지)
+  var existing = archiveFolder.getFilesByName(copyName + '.xlsx');
+  while (existing.hasNext()) existing.next().setTrashed(true);
+
+  // 1) 임시 Google Sheets 사본 (LIVE는 그대로 — 이게 핵심: 원본 보호)
+  var srcFile = DriveApp.getFileById(sheetId);
+  var tmpCopy = srcFile.makeCopy(copyName + '_tmp', archiveFolder);
+
+  try {
+    // 2) 사본에서 일매출 등 제외 시트 삭제
+    var copySS = SpreadsheetApp.openById(tmpCopy.getId());
+    excludeSheetNames.forEach(function(sn) {
+      var ws = copySS.getSheetByName(sn);
+      if (ws) copySS.deleteSheet(ws);
+    });
+    SpreadsheetApp.flush();
+
+    // 3) xlsx로 export
+    var url = 'https://docs.google.com/spreadsheets/d/' + tmpCopy.getId() + '/export?format=xlsx';
+    var resp = UrlFetchApp.fetch(url, {
+      headers: {Authorization: 'Bearer ' + ScriptApp.getOAuthToken()}
+    });
+    var xlsxBlob = resp.getBlob().setName(copyName + '.xlsx');
+
+    // 4) 보관 폴더에 xlsx 저장 (감사 추적용)
+    var savedFile = archiveFolder.createFile(xlsxBlob);
+    return savedFile;
+
+  } finally {
+    // 5) 임시 Google Sheets 사본은 휴지통 (보관 안 함, xlsx만 남김)
+    tmpCopy.setTrashed(true);
+  }
+}
+
+// HTML 메일 본문 생성
+function buildDailyReportEmail(photos, yStr, yDateKor, yDayOfWeek, todayDateKor) {
+  var html = '<div style="font-family:\'Noto Sans KR\',\'Malgun Gothic\',sans-serif;max-width:700px;color:#333;line-height:1.6;">';
+  html += '<p>안녕하세요, 구미영 대리님.</p>';
+  html += '<p><b>' + yDateKor + ' (' + yDayOfWeek + ')</b> 메트로 R&S 작업 보고 송부드립니다.</p>';
+
+  if (photos.sites.length === 0) {
+    html += '<p style="color:#999;background:#f5f5f5;padding:10px;border-radius:6px;">📷 어제 신규 등록된 작업 사진이 없습니다.</p>';
+  } else {
+    // 작업 요약
+    html += '<h3 style="color:#0F172A;border-bottom:2px solid #0891B2;padding-bottom:5px;margin-top:25px;">▶ 작업 요약</h3>';
+    html += '<ul>';
+    var totalUnits = 0;
+    photos.sites.forEach(function(s) {
+      html += '<li><b>' + s.siteName + '</b>: ' + s.units.length + '건</li>';
+      totalUnits += s.units.length;
+    });
+    html += '</ul>';
+    html += '<p style="background:#ECFEFF;padding:10px;border-left:3px solid #0891B2;margin:10px 0;"><b>총 ' + totalUnits + '건 (사진 ' + photos.totalCount + '장)</b></p>';
+
+    // 사진 링크 — 현장별 그룹
+    html += '<h3 style="color:#0F172A;border-bottom:2px solid #0891B2;padding-bottom:5px;margin-top:25px;">▶ 사진 링크 (클릭하면 큰 사진)</h3>';
+    photos.sites.forEach(function(s) {
+      html += '<h4 style="margin-top:18px;color:#334155;background:#F1F5F9;padding:6px 10px;border-radius:4px;">📍 ' + s.siteName + '</h4>';
+      s.units.forEach(function(u) {
+        html += '<p style="margin:6px 0 4px 20px;"><b>' + u.unit + '</b> &nbsp;';
+        if (u.before) html += '<a href="' + u.before.getUrl() + '" style="color:#0891B2;text-decoration:none;margin-right:8px;">[수리전]</a>';
+        if (u.after) html += '<a href="' + u.after.getUrl() + '" style="color:#0891B2;text-decoration:none;margin-right:8px;">[수리후]</a>';
+        if (u.confirm) html += '<a href="' + u.confirm.getUrl() + '" style="color:#0891B2;text-decoration:none;">[확인서]</a>';
+        html += '</p>';
+      });
+    });
+  }
+
+  // 첨부 안내
+  html += '<h3 style="color:#0F172A;border-bottom:2px solid #0891B2;padding-bottom:5px;margin-top:25px;">▶ 시트 첨부</h3>';
+  html += '<p><b>📎 claude현장관리_' + yStr + '.xlsx</b> <span style="color:#666;">(일매출 시트 제외)</span></p>';
+  html += '<p style="color:#666;font-size:13px;background:#FFF8E1;padding:10px;border-radius:4px;border-left:3px solid #F59E0B;margin-top:8px;">';
+  html += '※ 첨부 xlsx 파일은 어제 시점의 <b>스냅샷 사본</b>입니다. 다운로드 후 자유롭게 편집하셔도 본사 원본 시트에는 영향이 없습니다.';
+  html += '</p>';
+
+  // 푸터
+  html += '<hr style="margin-top:35px;border:none;border-top:1px solid #ddd;">';
+  html += '<p style="color:#666;font-size:12px;line-height:1.6;">';
+  html += todayDateKor + ' 09:00 자동 발송<br>';
+  html += '청개구리샤시 본사 (frogsash.co.kr)<br>';
+  html += '경기도 의왕시 시청로 42, 108동 1702호';
+  html += '</p>';
+  html += '</div>';
+  return html;
+}
+
+// 매일 09:00 KST 트리거 등록 (1회성 — 멱등)
+function setupManagerReportTrigger() {
+  var triggers = ScriptApp.getProjectTriggers();
+  var removed = 0;
+  for (var t = 0; t < triggers.length; t++) {
+    if (triggers[t].getHandlerFunction() === 'sendDailyReportToManager') {
+      ScriptApp.deleteTrigger(triggers[t]);
+      removed++;
+    }
+  }
+  ScriptApp.newTrigger('sendDailyReportToManager')
+    .timeBased()
+    .atHour(9)
+    .nearMinute(0)
+    .everyDays(1)
+    .inTimezone('Asia/Seoul')
+    .create();
+  return {
+    message: '매일 09:00 KST sendDailyReportToManager 트리거 등록 완료',
+    removedOld: removed
+  };
 }
