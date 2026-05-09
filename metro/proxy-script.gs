@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.25 - Google Apps Script
+// (주)메트로 R&S AI v23.30 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges
+// v23.30: savePhoto/migratePhotos에서 _data 열 저장 값을 base64 → Drive URL 로 변경. Google Sheets 셀당 50000자 한계로 인해 1280px·0.85 사진 base64(~200KB+ 텍스트)가 setValue throw되며 응답 실패하던 사고 영구 해결. 이미지 열은 이미 =IMAGE(URL) 수식이라 변경 무관, _data 열도 read 액션이 'http' 시작 매칭으로 그대로 처리. Drive 폴더 구조 (A.메트로알엔에스(주)/{현장}/{동}-{호}/) 그대로 유지. 결과: 사진 크기 무제한, 시트 용량 부담 급감, 클라이언트 1920px·0.92 고화질 풀 동작.
 // v23.25: 일매출 시트 SUMPRODUCT 범위 확장 — extendDailySalesRanges 액션 추가. K/L/M/O 컬럼 :$X$NNN → :$X$2000 일괄 치환(시작 :$X$2 보호 + 단가표 Q/U 자동 보호). 시트별 hardcoded 행수(동탄 138, 광주중흥 154, 양주 N 등)가 시트 확장 페이스를 못 따라가던 정합성 누수 영구 해결. 5/8 동탄 25건 완료(NO 139~)가 일매출 0원으로 떨어졌던 사고 재발 방지.
 // v23.24: 입출금 현황 요약 단일 진본화 — 대시보드 M12~M17을 결제현황 시트 자동 참조 수식으로 전환. syncDashboardBeforePdf는 더 이상 setValue로 덮어쓰지 않고 셀에서 계산된 값을 읽어 PDF·텔레그램에 사용. 신규 액션 setupDashboardFormulas로 셀 수식 6개 + 월별 매출 추이 차트(2026년만) 1회 셋업. 입금 횟수 R29:R1000 동적 카운트(R46 누락 버그 수정).
 // v23.23: 텔레그램 일일 보고 알림 추가 — generateDailySalesPdf 직후 비공개 채널에 요약+PDF링크 푸시. Script Properties (TG_TOKEN, TG_CHAT_ID) 필요. 미설정 시 알림만 건너뜀, PDF 생성은 정상.
@@ -858,7 +859,7 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.25 연결됨'});
+  return makeRes({status:'ok', message:'메트로 R&S v23.30 연결됨'});
 }
 
 // === [v23.20] 일매출 대시보드 PDF 생성 함수 ===
@@ -1254,7 +1255,7 @@ function doPost(e) {
       return makeRes({status:'ok', count:rows.length, sheetName:sheetName});
     }
 
-    // === 사진 저장: Drive 업로드 + =IMAGE() 수식 + _data 열(base64) ===
+    // === 사진 저장: Drive 업로드 + =IMAGE() 수식 + _data 열(URL, v23.30) ===
     if (action === 'savePhoto') {
       var sheetId = body.sheetId;
       var sheetName = body.sheetName || '';
@@ -1339,8 +1340,9 @@ function doPost(e) {
       // Drive 업로드 + 공개 공유
       var uploaded = uploadPhotoToDrive(base64, sheetId, ws.getName(), rowNum, photoType, dongVal, hoVal);
 
-      // 1) _data 열: base64 (앱/엑셀 읽기용)
-      ws.getRange(rowNum, dataColIdx).setValue(base64);
+      // 1) _data 열: Drive URL (v23.30 — 옛 코드는 base64. 셀당 50000자 한계 초과 회피)
+      //    read 액션이 'http' 시작 매칭으로 URL/base64 둘 다 처리하므로 호환됨
+      ws.getRange(rowNum, dataColIdx).setValue(uploaded.url);
 
       // 2) 이미지 열: =IMAGE("Drive URL") 수식 (시트 시각용)
       ws.getRange(rowNum, imgColIdx).setFormula('=IMAGE("' + uploaded.url + '")');
@@ -1445,7 +1447,8 @@ function doPost(e) {
           if (base64v) {
             try {
               var up = uploadPhotoToDrive(base64v, sheetId, ws.getName(), r, photoType2);
-              ws.getRange(r, dataColIdx2).setValue(base64v);
+              // v23.30: _data 열에 base64 대신 URL 저장 (셀당 50000자 한계 회피)
+              ws.getRange(r, dataColIdx2).setValue(up.url);
               ws.getRange(r, imgColIdx2).setFormula('=IMAGE("' + up.url + '")');
               try { ws.setRowHeight(r, 160); } catch(e) {}  // v21.10: 80 → 160
               try { ws.setColumnWidth(imgColIdx2, 160); } catch(e) {}  // v21.10: 가로 폭도 160
