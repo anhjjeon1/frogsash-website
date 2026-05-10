@@ -66,10 +66,10 @@
    - [UI] 하단 버튼 영역 정리, 푸터 간소화
    ============================================================ */
 :root{
-  --p:#0A6B5C;--pl:#12B89A;--pg:rgba(18,184,154,.12);
-  --ac:#FF6B35;--bg:#F4F6F9;--card:#FFF;
+  --p:#0A6B5C;--pl:#10B981;--pg:rgba(16,185,129,.12);
+  --ac:#F97316;--bg:#F5F5F4;--card:#FFF;
   --tx:#1A2332;--ts:#5A6B7F;--th:#94A3B8;
-  --bd:#E8ECF1;--bl:#F1F4F8;
+  --bd:#E7E5E4;--bl:#F5F5F4;
   --dn:#E74C3C;--dnb:#FFF5F5;--wr:#F39C12;--wrb:#FFFBE6;
   --pu:#7C3AED;--pub:#F5F0FF;
   --nv:#03C75A;--nvb:#E8FAF0;
@@ -86,14 +86,14 @@
 html{scroll-behavior:smooth}
 body{
   font-family:'Noto Sans KR',sans-serif;
-  background:#FAFBFC;color:var(--tx);
+  background:#FAFAF9;color:var(--tx);
   line-height:1.6;-webkit-font-smoothing:antialiased;
   display:flex;justify-content:center;
   overscroll-behavior:none;
 }
 .app{
   width:100%;max-width:480px;
-  background:#FAFBFC;position:relative;
+  background:#FAFAF9;position:relative;
   padding:0 0 calc(12px + var(--safe-bottom));
   overflow-x:hidden;
   box-sizing:border-box;
@@ -101,7 +101,7 @@ body{
 
 /* ── HEADER ── */
 .hd{
-  background:linear-gradient(135deg,#0A2E23 0%,#0A6B5C 35%,#12B89A 70%,#0A6B5C 100%);
+  background:linear-gradient(135deg,#064E3B 0%,#0A6B5C 45%,#10B981 100%);
   padding:0;
   position:relative;
   overflow:hidden;
@@ -124,7 +124,7 @@ body{
   left:0;
   right:0;
   height:10px;
-  background:#FAFBFC;
+  background:#FAFAF9;
   border-radius:10px 10px 0 0;
 }
 .hd-top{
@@ -524,7 +524,7 @@ body{
   font-size:.78rem;
   border:1.5px solid var(--bd);
   border-radius:10px;
-  background:#FAFBFC;
+  background:#FAFAF9;
   color:var(--tx);
   font-family:inherit;
   transition:var(--tr);
@@ -561,7 +561,7 @@ textarea.if{
 .row>*{flex:1}
 
 /* ── 하자입력 강조 스타일 (NEW v20.8) ── */
-#fUser{border-color:#D1D5DB;background:#FAFBFC}
+#fUser{border-color:#D1D5DB;background:#FAFAF9}
 #fUser:focus{border-color:var(--pl);box-shadow:0 0 0 3px var(--pg)}
 #fUser.has-value{
   border-color:#3B82F6;
@@ -610,7 +610,7 @@ textarea.if{
   font-size:.85rem;
   border:1.5px solid var(--bd);
   border-radius:10px;
-  background:#FAFBFC;
+  background:#FAFAF9;
   color:var(--tx);
   font-family:inherit;
   transition:var(--tr);
@@ -666,7 +666,7 @@ textarea.if{
   padding:6px 10px;
   border:1.5px solid var(--bd);
   border-radius:10px;
-  background:#FAFBFC;
+  background:#FAFAF9;
   cursor:pointer;
   transition:all .15s;
   user-select:none;
@@ -1351,7 +1351,7 @@ textarea.if{
   letter-spacing:3px;
   border:2px solid var(--bd);
   border-radius:12px;
-  background:#FAFBFC;
+  background:#FAFAF9;
   color:var(--tx);
   font-family:'Outfit';
   outline:none;
@@ -2167,7 +2167,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v33.5';
+const APP_VER = 'v33.6';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
