@@ -771,14 +771,32 @@ textarea.if{
 .ai-b{
   display:inline-flex;
   align-items:center;
-  gap:3px;
+  gap:5px;
   background:linear-gradient(135deg,var(--p),var(--pl));
   color:#fff;
-  padding:1px 7px;
-  border-radius:4px;
-  font-size:.68rem;
-  font-weight:700;
+  padding:8px 16px;
+  border-radius:10px;
+  font-size:.78rem;
+  font-weight:800;
+  letter-spacing:.3px;
+  box-shadow: 0 4px 0 #047857, 0 6px 12px rgba(5,150,105,.38);
+  transition: transform .12s ease, box-shadow .12s ease;
+  position:relative;
+  top:0;
 }
+.ai-b:hover{
+  box-shadow: 0 5px 0 #047857, 0 8px 16px rgba(5,150,105,.5);
+  top:-1px;
+}
+.ai-b:active{
+  box-shadow: 0 1px 0 #047857, 0 2px 5px rgba(5,150,105,.3);
+  top:3px;
+}
+@keyframes aiPulse{
+  0%,100%{ box-shadow: 0 4px 0 #047857, 0 6px 12px rgba(5,150,105,.38), 0 0 0 0 rgba(5,150,105,.55); }
+  50%   { box-shadow: 0 4px 0 #047857, 0 6px 12px rgba(5,150,105,.38), 0 0 0 12px rgba(5,150,105,0); }
+}
+.ai-b.attn{ animation: aiPulse 1.4s ease-out infinite; }
 .btn-reanalyze{
   display:inline-flex;align-items:center;gap:3px;
   background:#EF4444;color:#fff;border:none;border-radius:5px;
@@ -1922,7 +1940,7 @@ input[type="file"]{
   <div class="ig">
     <div class="il" style="justify-content:space-between">
       <div style="display:flex;align-items:center;gap:8px">
-        <button class="ai-b" id="btnRunAI" onclick="A.startAI()" style="border:none;cursor:pointer;padding:6px 10px;font-size:.72rem;white-space:nowrap;flex-shrink:0"><i class="fa-solid fa-robot"></i> AI분석</button>
+        <button class="ai-b" id="btnRunAI" onclick="this.classList.remove('attn');A.startAI()" style="border:none;cursor:pointer;white-space:nowrap;flex-shrink:0"><i class="fa-solid fa-robot"></i> AI분석</button>
         <span style="font-size:.62rem;color:var(--th)">국토부 기준 참조</span>
         <button class="btn-reanalyze" id="btnReanalyze" onclick="A.reanalyze()" style="display:none"><i class="fa-solid fa-rotate-right"></i> 수정 후 재분석</button>
       </div>
@@ -2163,7 +2181,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v33.1';
+const APP_VER = 'v33.2';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -2932,7 +2950,7 @@ function loadDraft(){try{const raw=ls(DRAFT_KEY);if(!raw)return;const d=JSON.par
 function clearItemDraft(){try{const raw=ls(DRAFT_KEY);if(!raw)return;const d=JSON.parse(raw);d.room=null;d.user=null;d.work=null;d.sub=null;d.type=null;d.detail=null;d.wImg=null;d.cImg=null;d.ts=Date.now();ls(DRAFT_KEY,JSON.stringify(d));}catch(e){}}
 let _draftTimer;
 function draftDebounce(){clearTimeout(_draftTimer);_draftTimer=setTimeout(saveDraft,500);}
-function initDraftListeners(){['fAddr','fDetail'].forEach(id=>$(id).addEventListener('input',draftDebounce));['fWork','fSub','fType'].forEach(id=>$(id).addEventListener('change',draftDebounce));window.addEventListener('beforeunload',()=>{saveDraft();});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveDraft();});window.addEventListener('blur',saveDraft);window.addEventListener('pagehide',saveDraft);}
+function initDraftListeners(){['fAddr','fDetail'].forEach(id=>$(id).addEventListener('input',draftDebounce));$('fDetail').addEventListener('input',()=>{const b=$('btnRunAI');if(b)b.classList.toggle('attn',$('fDetail').value.trim().length>=2);});['fWork','fSub','fType'].forEach(id=>$(id).addEventListener('change',draftDebounce));window.addEventListener('beforeunload',()=>{saveDraft();});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveDraft();});window.addEventListener('blur',saveDraft);window.addEventListener('pagehide',saveDraft);}
 
 /* ── 다중 탭 동기화 ── */
 window.addEventListener('storage',(e)=>{
