@@ -40,8 +40,8 @@ const FREE_LIMIT = 2;
 const PAID_LIMIT = 100;
 const ADMIN_LIMIT = 99999;
 const ADMIN_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
-const VERSION = 'v1.0';
-const GEMINI_MODEL = 'gemini-2.5-flash-lite';
+const VERSION = 'v1.1';
+const GEMINI_MODEL = 'gemini-3.1-flash-lite';
 
 // addCode() 임시 입력 (편집기에서 직접 실행 시 사용)
 const ADD_CODE_INPUT = {
