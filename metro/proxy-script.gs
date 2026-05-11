@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.32 - Google Apps Script
+// (주)메트로 R&S AI v23.33 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger
+// v23.33: 시스템 폴더에 '1.' prefix 적용 (매니저 공유 시 14현장만 깔끔히 다중 선택). 새 이름: '1.메트로 관리자전송', '1.메트로 당일 매출 대시보드', '1.A전체(현장관리)'. 모든 폴더 참조에 _findOrCreateSubFolder 헬퍼 도입 — 새 이름 우선 검색 → 없으면 옛 이름 fallback → 그래도 없으면 새 이름으로 생성. Drive UI 이름 변경 전·후 모두 정상 동작 (안전 전환). collectPhotosForDate SKIP 목록도 새+옛 이름 동시 등록.
 // v23.32: 매니저 일일 보고 메일에 어제 사진 통합 폴더 링크 추가. 'A.메트로알엔에스(주)/메트로 관리자전송/사진_yyyy-MM-dd/{현장명}/{동-호}/{수리전|수리후|확인서}.{ext}' 계층 구조로 어제 사진 사본 생성 후 ANYONE_WITH_LINK+VIEW 공유 → 폴더 링크 1개 클릭 → Drive 우상단 다운로드로 zip 한 방. 현장명·동호 폴더 트리로 자동 명기. 같은 날짜 재실행 시 휴지통 후 재생성(멱등). 원본 동호 폴더는 보존(사본만 추가).
 // v23.31: 메트로 관리자(구미영 대리, era999@naver.com)에게 매일 09:00 KST 일일 보고 메일 자동 발송. 어제 작업 사진(Drive 보기 링크) + claude현장관리(종합)_LIVE xlsx 사본(일매출 시트 제외) 첨부. xlsx는 'A.메트로알엔에스(주)/메트로 관리자전송/'에 일별 보관(감사 추적). 받은 사람은 xlsx 다운받아 자유 편집 가능하나 본사 원본 시트엔 영향 없음. Script Properties MANAGER_EMAIL 필요.
 // v23.30: savePhoto/migratePhotos에서 _data 열 저장 값을 base64 → Drive URL 로 변경. Google Sheets 셀당 50000자 한계로 인해 1280px·0.85 사진 base64(~200KB+ 텍스트)가 setValue throw되며 응답 실패하던 사고 영구 해결. 이미지 열은 이미 =IMAGE(URL) 수식이라 변경 무관, _data 열도 read 액션이 'http' 시작 매칭으로 그대로 처리. Drive 폴더 구조 (A.메트로알엔에스(주)/{현장}/{동}-{호}/) 그대로 유지. 결과: 사진 크기 무제한, 시트 용량 부담 급감, 클라이언트 1920px·0.92 고화질 풀 동작.
@@ -76,6 +77,21 @@ function makeRes(data) {
 function _getOrCreateSubFolder(parent, name) {
   var subs = parent.getFoldersByName(name);
   return subs.hasNext() ? subs.next() : parent.createFolder(name);
+}
+
+// [v23.33] 자식 폴더 확보 — 새 이름 우선, 옛 이름 fallback, 없으면 새 이름으로 생성
+// Drive UI에서 이름 변경 전·후 모두 정상 동작 (안전 전환)
+// 사용 예: _findOrCreateSubFolder(rootFolder, '1.메트로 관리자전송', ['메트로 관리자전송'])
+function _findOrCreateSubFolder(parent, primaryName, aliases) {
+  var iter = parent.getFoldersByName(primaryName);
+  if (iter.hasNext()) return iter.next();
+  if (aliases && aliases.length) {
+    for (var i = 0; i < aliases.length; i++) {
+      var fb = parent.getFoldersByName(aliases[i]);
+      if (fb.hasNext()) return fb.next();
+    }
+  }
+  return parent.createFolder(primaryName);
 }
 
 // Drive 사진 저장 루트 폴더 가져오기 (v23.1: A.메트로알엔에스(주))
@@ -882,7 +898,7 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.32 연결됨'});
+  return makeRes({status:'ok', message:'메트로 R&S v23.33 연결됨'});
 }
 
 // === [v23.20] 일매출 대시보드 PDF 생성 함수 ===
@@ -892,8 +908,8 @@ function doGet(e) {
 function generateDailySalesPdf(targetDateStrOrEvent) {
   var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
   var ROOT = 'A.메트로알엔에스(주)';
-  var FOLDER = '메트로 당일 매출 대시보드';
-  var FOLDER_ALIASES = ['메트로 당일 매출', '메트로_매출_자료전송']; // 옛 이름 fallback
+  var FOLDER = '1.메트로 당일 매출 대시보드';
+  var FOLDER_ALIASES = ['메트로 당일 매출 대시보드', '메트로 당일 매출', '메트로_매출_자료전송']; // 옛 이름 fallback (v23.32 → v23.33 prefix 전환 안전망 포함)
 
   var targetDateStr = (typeof targetDateStrOrEvent === 'string') ? targetDateStrOrEvent : '';
   var today = targetDateStr || Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
@@ -1810,11 +1826,19 @@ function collectPhotosForDate(targetYmd) {
   var root = roots.next();
 
   // 작업 사진이 아닌 시스템 폴더 (현장 시트 폴더만 스캔)
+  // [v23.33] 새 이름(1. prefix) + 옛 이름 모두 등록 — Drive UI 이름 변경 전·후 모두 안전
+  // 'A전체(현장관리)' / '1.A전체(현장관리)'도 포함 (claude현장관리(종합)_LIVE 진본 보호)
   var SKIP = {
+    // 새 이름 (v23.33+)
+    '1.메트로 당일 매출 대시보드': true,
+    '1.메트로 관리자전송': true,
+    '1.A전체(현장관리)': true,
+    // 옛 이름 (v23.32 이하 — Drive UI 이름 변경 전 안전망)
     '메트로 당일 매출 대시보드': true,
     '메트로_매출_자료전송': true,
     '메트로 당일 매출': true,
-    '메트로 관리자전송': true
+    '메트로 관리자전송': true,
+    'A전체(현장관리)': true
   };
 
   var sites = [];
@@ -1877,14 +1901,15 @@ function collectPhotosForDate(targetYmd) {
 // 반환: 보관된 xlsx 파일 (Blob 추출 가능)
 // idempotent — 같은 날짜 같은 이름 파일은 휴지통 후 새로 생성
 function exportLiveSheetExcluding(sheetId, excludeSheetNames, ymd) {
-  var ARCHIVE = '메트로 관리자전송';
+  // [v23.33] 새 이름 우선, 옛 이름 fallback (Drive UI 이름 변경 전·후 모두 정상 동작)
+  var ARCHIVE = '1.메트로 관리자전송';
+  var ARCHIVE_ALIASES = ['메트로 관리자전송'];
 
-  // 보관 폴더 확보 (없으면 자동 생성)
+  // 보관 폴더 확보 (새 이름 → 옛 이름 → 새 이름으로 자동 생성)
   var roots = DriveApp.getFoldersByName(DRIVE_PHOTO_ROOT);
   if (!roots.hasNext()) throw new Error('루트 폴더 없음: ' + DRIVE_PHOTO_ROOT);
   var rootFolder = roots.next();
-  var archives = rootFolder.getFoldersByName(ARCHIVE);
-  var archiveFolder = archives.hasNext() ? archives.next() : rootFolder.createFolder(ARCHIVE);
+  var archiveFolder = _findOrCreateSubFolder(rootFolder, ARCHIVE, ARCHIVE_ALIASES);
 
   var copyName = 'claude현장관리_' + ymd;
 
@@ -1930,12 +1955,14 @@ function exportLiveSheetExcluding(sheetId, excludeSheetNames, ymd) {
 function createDailyPhotoArchiveFolder(photos, ymd) {
   if (!photos || !photos.sites || photos.sites.length === 0) return null;
 
-  var ARCHIVE = '메트로 관리자전송';
+  // [v23.33] 새 이름 우선, 옛 이름 fallback (Drive UI 이름 변경 전·후 모두 정상 동작)
+  var ARCHIVE = '1.메트로 관리자전송';
+  var ARCHIVE_ALIASES = ['메트로 관리자전송'];
+
   var roots = DriveApp.getFoldersByName(DRIVE_PHOTO_ROOT);
   if (!roots.hasNext()) throw new Error('루트 폴더 없음: ' + DRIVE_PHOTO_ROOT);
   var rootFolder = roots.next();
-  var archives = rootFolder.getFoldersByName(ARCHIVE);
-  var archiveFolder = archives.hasNext() ? archives.next() : rootFolder.createFolder(ARCHIVE);
+  var archiveFolder = _findOrCreateSubFolder(rootFolder, ARCHIVE, ARCHIVE_ALIASES);
 
   var dailyFolderName = '사진_' + ymd;
 
