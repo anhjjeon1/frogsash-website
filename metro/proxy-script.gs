@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.31 - Google Apps Script
+// (주)메트로 R&S AI v23.32 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
 // 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger
+// v23.32: 매니저 일일 보고 메일에 어제 사진 통합 폴더 링크 추가. 'A.메트로알엔에스(주)/메트로 관리자전송/사진_yyyy-MM-dd/{현장명}/{동-호}/{수리전|수리후|확인서}.{ext}' 계층 구조로 어제 사진 사본 생성 후 ANYONE_WITH_LINK+VIEW 공유 → 폴더 링크 1개 클릭 → Drive 우상단 다운로드로 zip 한 방. 현장명·동호 폴더 트리로 자동 명기. 같은 날짜 재실행 시 휴지통 후 재생성(멱등). 원본 동호 폴더는 보존(사본만 추가).
 // v23.31: 메트로 관리자(구미영 대리, era999@naver.com)에게 매일 09:00 KST 일일 보고 메일 자동 발송. 어제 작업 사진(Drive 보기 링크) + claude현장관리(종합)_LIVE xlsx 사본(일매출 시트 제외) 첨부. xlsx는 'A.메트로알엔에스(주)/메트로 관리자전송/'에 일별 보관(감사 추적). 받은 사람은 xlsx 다운받아 자유 편집 가능하나 본사 원본 시트엔 영향 없음. Script Properties MANAGER_EMAIL 필요.
 // v23.30: savePhoto/migratePhotos에서 _data 열 저장 값을 base64 → Drive URL 로 변경. Google Sheets 셀당 50000자 한계로 인해 1280px·0.85 사진 base64(~200KB+ 텍스트)가 setValue throw되며 응답 실패하던 사고 영구 해결. 이미지 열은 이미 =IMAGE(URL) 수식이라 변경 무관, _data 열도 read 액션이 'http' 시작 매칭으로 그대로 처리. Drive 폴더 구조 (A.메트로알엔에스(주)/{현장}/{동}-{호}/) 그대로 유지. 결과: 사진 크기 무제한, 시트 용량 부담 급감, 클라이언트 1920px·0.92 고화질 풀 동작.
 // v23.25: 일매출 시트 SUMPRODUCT 범위 확장 — extendDailySalesRanges 액션 추가. K/L/M/O 컬럼 :$X$NNN → :$X$2000 일괄 치환(시작 :$X$2 보호 + 단가표 Q/U 자동 보호). 시트별 hardcoded 행수(동탄 138, 광주중흥 154, 양주 N 등)가 시트 확장 페이스를 못 따라가던 정합성 누수 영구 해결. 5/8 동탄 25건 완료(NO 139~)가 일매출 0원으로 떨어졌던 사고 재발 방지.
@@ -881,7 +882,7 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.31 연결됨'});
+  return makeRes({status:'ok', message:'메트로 R&S v23.32 연결됨'});
 }
 
 // === [v23.20] 일매출 대시보드 PDF 생성 함수 ===
@@ -1770,13 +1771,17 @@ function sendDailyReportToManager(targetDateStr) {
   // 1) 어제 작업 사진 수집 (Drive 폴더 createdDate 기준)
   var photos = collectPhotosForDate(yStr);
 
-  // 2) LIVE xlsx 사본 생성 (일매출 제외) → 보관 폴더에 저장
+  // 2) [v23.32] 어제 사진 통합 폴더 생성 (현장/동호 계층 사본)
+  var dailyPhotoFolder = createDailyPhotoArchiveFolder(photos, yStr);
+  var dailyPhotoFolderUrl = dailyPhotoFolder ? dailyPhotoFolder.getUrl() : '';
+
+  // 3) LIVE xlsx 사본 생성 (일매출 제외) → 보관 폴더에 저장
   var xlsxFile = exportLiveSheetExcluding(SHEET_ID, ['일매출'], yStr);
 
-  // 3) 메일 본문 (HTML)
-  var html = buildDailyReportEmail(photos, yStr, yDateKor, yDayOfWeek, todayDateKor);
+  // 4) 메일 본문 (HTML)
+  var html = buildDailyReportEmail(photos, yStr, yDateKor, yDayOfWeek, todayDateKor, dailyPhotoFolderUrl);
 
-  // 4) 메일 발송
+  // 5) 메일 발송
   MailApp.sendEmail({
     to: mgrEmail,
     subject: '[메트로 R&S] ' + yDateKor + '(' + yDayOfWeek + ') 작업 보고',
@@ -1790,6 +1795,7 @@ function sendDailyReportToManager(targetDateStr) {
     yesterdayDate: yStr,
     photoCount: photos.totalCount,
     siteCount: photos.sites.length,
+    dailyPhotoFolderUrl: dailyPhotoFolderUrl,
     archiveFileId: xlsxFile.getId(),
     archiveFolderUrl: xlsxFile.getParents().next().getUrl()
   };
@@ -1916,8 +1922,61 @@ function exportLiveSheetExcluding(sheetId, excludeSheetNames, ymd) {
   }
 }
 
+// [v23.32] 어제 사진을 통합 폴더에 사본 복사 → 매니저가 폴더 링크 1번으로 통째 다운로드
+// 구조: A.메트로알엔에스(주)/메트로 관리자전송/사진_yyyy-MM-dd/{현장명}/{동-호}/{수리전|수리후|확인서}.{ext}
+// 원본 동호 폴더는 보존 (사본만 추가). 같은 날짜 재실행 시 휴지통 후 재생성 (멱등).
+// 폴더에 ANYONE_WITH_LINK + VIEW 권한 → 링크 받은 사람 누구나 다운로드 가능 (편집 불가)
+// photos가 비어있으면 null 반환 (메일 본문에서 건너뜀)
+function createDailyPhotoArchiveFolder(photos, ymd) {
+  if (!photos || !photos.sites || photos.sites.length === 0) return null;
+
+  var ARCHIVE = '메트로 관리자전송';
+  var roots = DriveApp.getFoldersByName(DRIVE_PHOTO_ROOT);
+  if (!roots.hasNext()) throw new Error('루트 폴더 없음: ' + DRIVE_PHOTO_ROOT);
+  var rootFolder = roots.next();
+  var archives = rootFolder.getFoldersByName(ARCHIVE);
+  var archiveFolder = archives.hasNext() ? archives.next() : rootFolder.createFolder(ARCHIVE);
+
+  var dailyFolderName = '사진_' + ymd;
+
+  // 멱등: 같은 이름 폴더 있으면 휴지통 후 새로 생성
+  var existing = archiveFolder.getFoldersByName(dailyFolderName);
+  while (existing.hasNext()) existing.next().setTrashed(true);
+
+  var dailyFolder = archiveFolder.createFolder(dailyFolderName);
+
+  // 현장 → 동호 → 사진 사본
+  photos.sites.forEach(function(site) {
+    var siteSubFolder = dailyFolder.createFolder(site.siteName);
+    site.units.forEach(function(unit) {
+      var unitSubFolder = siteSubFolder.createFolder(unit.unit);
+      if (unit.before)  copyWithLabel_(unit.before,  '수리전',  unitSubFolder);
+      if (unit.after)   copyWithLabel_(unit.after,   '수리후',  unitSubFolder);
+      if (unit.confirm) copyWithLabel_(unit.confirm, '확인서',  unitSubFolder);
+    });
+  });
+
+  // 폴더 자체에 ANYONE_WITH_LINK + VIEW (Drive는 폴더 권한이 내부 파일에도 상속됨)
+  try {
+    dailyFolder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  } catch(e) {
+    // 일부 도메인 정책에서 ANYONE_WITH_LINK 차단 가능 — 그래도 폴더는 생성됨
+    Logger.log('폴더 공유 권한 설정 실패 (수동 공유 필요): ' + e.message);
+  }
+
+  return dailyFolder;
+}
+
+// 사본 파일 이름을 '수리전.jpg' 등 의미 있는 이름으로 (확장자 보존)
+function copyWithLabel_(srcFile, label, destFolder) {
+  var origName = srcFile.getName();
+  var dot = origName.lastIndexOf('.');
+  var ext = (dot >= 0) ? origName.substring(dot) : '.jpg';
+  srcFile.makeCopy(label + ext, destFolder);
+}
+
 // HTML 메일 본문 생성
-function buildDailyReportEmail(photos, yStr, yDateKor, yDayOfWeek, todayDateKor) {
+function buildDailyReportEmail(photos, yStr, yDateKor, yDayOfWeek, todayDateKor, dailyPhotoFolderUrl) {
   var html = '<div style="font-family:\'Noto Sans KR\',\'Malgun Gothic\',sans-serif;max-width:700px;color:#333;line-height:1.6;">';
   html += '<p>안녕하세요, 구미영 대리님.</p>';
   html += '<p><b>' + yDateKor + ' (' + yDayOfWeek + ')</b> 메트로 R&S 작업 보고 송부드립니다.</p>';
@@ -1925,6 +1984,15 @@ function buildDailyReportEmail(photos, yStr, yDateKor, yDayOfWeek, todayDateKor)
   if (photos.sites.length === 0) {
     html += '<p style="color:#999;background:#f5f5f5;padding:10px;border-radius:6px;">📷 어제 신규 등록된 작업 사진이 없습니다.</p>';
   } else {
+    // [v23.32] 사진 통합 폴더 링크 — 메일 최상단에 강조 박스
+    if (dailyPhotoFolderUrl) {
+      html += '<div style="background:#FFFBEB;border:2px solid #F59E0B;border-radius:8px;padding:14px 18px;margin:18px 0;">';
+      html += '<p style="margin:0 0 8px 0;font-size:15px;"><b>📁 어제 작업 사진 통합 폴더 (현장별 정리)</b></p>';
+      html += '<p style="margin:0 0 10px 0;color:#666;font-size:13px;">아래 링크를 클릭하시면 현장 → 동·호 폴더가 정리된 화면이 열립니다. 우측 상단 <b>다운로드</b> 버튼을 누르면 전체를 한번에 zip 파일로 받으실 수 있습니다.</p>';
+      html += '<p style="margin:0;"><a href="' + dailyPhotoFolderUrl + '" style="display:inline-block;background:#F59E0B;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:bold;">📥 사진 폴더 열기 / 다운로드</a></p>';
+      html += '</div>';
+    }
+
     // 작업 요약
     html += '<h3 style="color:#0F172A;border-bottom:2px solid #0891B2;padding-bottom:5px;margin-top:25px;">▶ 작업 요약</h3>';
     html += '<ul>';
