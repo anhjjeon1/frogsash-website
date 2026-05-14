@@ -1,51 +1,57 @@
 /**
- * 청개구리 사전점검 GAS Backend v1.0
+ * 청개구리 사전점검 GAS Backend v1.2
  * ================================================================
- * 사전점검 앱 (https://frogsash.co.kr/inspect/) 전용 백엔드.
- * 클라이언트(index.html) 변경 없이 GAS_URL만 새 배포 URL로 교체하면 작동.
+ * 사전점검 앱 (https://frogsash.co.kr/inspect/ + SPARE + frogcheck) 공통 백엔드.
+ *
+ * v1.2 보안 강화 (2026-05-15):
+ *  - handleAi에 mode 파라미터 추가 ('diag' 진단 / 'chat' 챗봇)
+ *  - mode='diag'에 서버 측 quota 강제 (FREE 2회 / PAID 100회) — 클라이언트 우회 불가
+ *  - prompts 배열 길이 제한 (diag 2, chat 1)
+ *  - 짧은 수명 nonce 토큰 흐름 (30초 TTL, 1회용, fp 바인딩, HMAC 서명)
+ *  - AiLog 시트에 호출 기록 + 의심 호출 추적
+ *  - getUserPaidMode_(fp): 오늘 유료 코드 활성화 여부로 free/paid 판별
  *
  * ── 1회 셋업 (5분) ────────────────────────────────────────────
  *  1. 새 Apps Script 프로젝트 생성: 이름 "청개구리-사전점검-Backend"
  *  2. 이 파일 전체를 Code.gs에 붙여넣기
  *  3. 좌측 ⚙️ "프로젝트 설정" → 하단 "스크립트 속성" → 다음 4개 추가:
- *       - SHEET_ID         : 코드/사용량 시트 문서 ID (아래 setup() 실행 후 자동 생성도 가능)
+ *       - SHEET_ID         : 코드/사용량 시트 문서 ID (setup() 실행 시 자동 생성)
  *       - GEMINI_API_KEY   : Google AI Studio 발급 진짜 Gemini 키
  *       - ADMIN_PASSWORD   : 관리자 모드 비밀번호 (자유 설정, 8자 이상 권장)
  *       - HMAC_SECRET      : 토큰 서명용 임의 문자열 (32자 이상 무작위)
- *  4. SHEET_ID를 비워두고 setup()을 한 번 실행 → 시트 자동 생성 + ID 자동 저장
- *  5. ▶ 실행 메뉴에서 setup() 한 번 실행해 권한 승인 (Spreadsheet, UrlFetch)
- *  6. 우상단 "배포" → "새 배포" → 유형: 웹 앱
- *       - 액세스: 모든 사용자
- *       - 다음 사용자 자격으로 실행: 나
- *     → 배포 → 웹 앱 URL 복사
- *  7. D:/github/inspect/index.html의 GAS_URL 상수를 새 URL로 교체 후 git push
+ *  4. setup() 한 번 실행 → 시트 자동 생성 + ID 자동 저장
+ *  5. "배포" → "새 배포" → 유형: 웹 앱 (모든 사용자 / 나로 실행)
+ *  6. 웹 앱 URL 복사 → index.html의 GAS_URL 상수 교체 후 git push
  *
- * ── 코드 발급 (사장님이 결제 받을 때마다) ──────────────────
- *  방법 A) GAS 편집기 → 함수 드롭다운 → addCode → 실행
- *           코드/금액/연락처/메모를 ADD_CODE_INPUT 상수에 임시 입력
+ * ── 코드 발급 ─────────────────────────────────────────────────
+ *  방법 A) addCode() 함수 직접 실행 (ADD_CODE_INPUT 채우기)
  *  방법 B) 시트 "Codes"에 직접 한 줄 추가 (code 열에 대문자 4~10자)
- *  방법 C) bulkAddCodes(20) 실행 → 미사용 코드 20개 미리 풀로 만들어두기
+ *  방법 C) bulkAddCodes(20) → 미사용 코드 20개 풀
  *
- *  발급된 코드를 카카오톡/문자로 구매자에게 전달하면 끝.
- *
- * ── 보안 ──────────────────────────────────────────────────────
- *  - Gemini 키는 서버에만 저장, 클라이언트에 노출 안됨
- *  - 관리자 토큰은 HMAC 서명 + 24시간 만료 (stateless)
- *  - 코드는 1회용 + 기기 fingerprint 바인딩 (다른 폰에서 재사용 불가)
+ * ── 보안 요약 ─────────────────────────────────────────────────
+ *  - Gemini 키 서버 보관 (클라이언트 노출 0)
+ *  - 관리자 토큰: HMAC 서명 + 24h TTL (stateless)
+ *  - nonce 토큰: HMAC 서명 + 30s TTL + 1회용 (fp 바인딩) — AI 무한 호출 차단
+ *  - 인증코드: 1회용 + 기기 fp 바인딩 + 당일 자정 만료
+ *  - AI 진단 quota 서버 강제: FREE 2회/일, PAID 100회/일
  * ================================================================
  */
 
 // ───── 상수 ─────
 const FREE_LIMIT = 2;
 const PAID_LIMIT = 100;
+const CHAT_LIMIT = 30;
 const ADMIN_LIMIT = 99999;
 const ADMIN_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
-const VERSION = 'v1.1';
+const NONCE_TTL_MS = 30 * 1000; // 30초
+const DIAG_MAX_PROMPTS = 2;
+const CHAT_MAX_PROMPTS = 1;
+const VERSION = 'v1.2';
 const GEMINI_MODEL = 'gemini-3.1-flash-lite';
 
 // addCode() 임시 입력 (편집기에서 직접 실행 시 사용)
 const ADD_CODE_INPUT = {
-  code: '',           // 예: 'A7K3X9' (비워두면 자동 생성)
+  code: '',           // 비워두면 자동 생성
   amount: 10000,
   phone: '',
   note: ''
@@ -73,12 +79,13 @@ function doPost(e) {
   const action = body.action || '';
   try {
     if (action === 'ping')        return jsonRes({ ok: true, version: VERSION });
+    if (action === 'nonce')       return jsonRes(handleNonce(body));
     if (action === 'use')         return jsonRes(handleUse(body));
     if (action === 'verify')      return jsonRes(handleVerify(body));
     if (action === 'usage')       return jsonRes(handleUsage(body));
     if (action === 'admin_auth')  return jsonRes(handleAdminAuth(body));
     if (action === 'ai')          return jsonRes(handleAi(body));
-    return jsonRes({ error: 'unknown_action', valid_actions: ['ping','use','verify','usage','admin_auth','ai'] });
+    return jsonRes({ error: 'unknown_action', valid_actions: ['ping','nonce','use','verify','usage','admin_auth','ai'] });
   } catch (err) {
     return jsonRes({ error: 'server_error', message: '서버 오류: ' + err.message });
   }
@@ -117,22 +124,27 @@ function handleVerify(p) {
         return { valid: false, message: '만료된 코드입니다 (당일만 사용 가능)' };
       if (usedFp && usedFp !== fp)
         return { valid: false, message: '다른 기기에서 사용된 코드입니다' };
-      // 같은 기기 + 같은 날 → 멱등 재인증
       return { valid: true, message: '재인증 성공' };
     }
 
     // active → 사용 처리
     const now = new Date();
-    sh.getRange(rowNum, 5).setValue(now);     // E: used_at
-    sh.getRange(rowNum, 6).setValue(fp);      // F: used_fp
-    sh.getRange(rowNum, 7).setValue('used');  // G: status
+    sh.getRange(rowNum, 5).setValue(now);
+    sh.getRange(rowNum, 6).setValue(fp);
+    sh.getRange(rowNum, 7).setValue('used');
     SpreadsheetApp.flush();
     return { valid: true, message: '인증 성공' };
   }
   return { valid: false, message: '존재하지 않는 코드입니다' };
 }
 
-// 사용량 조회
+// nonce 발급: 30초 TTL + fp 바인딩 + HMAC 서명 + 1회용 (Cache 추적)
+function handleNonce(p) {
+  const fp = String(p.fp || '').trim();
+  if (!fp) return { error: 'no_fp', message: '기기 정보 없음' };
+  return { nonce: makeNonce_(fp) };
+}
+
 function handleUsage(p) {
   const fp = String(p.fp || '').trim();
   const mode = String(p.mode || 'free');
@@ -142,7 +154,6 @@ function handleUsage(p) {
   return { count: row ? Number(row.count || 0) : 0 };
 }
 
-// 사용량 +1
 function handleUse(p) {
   const fp = String(p.fp || '').trim();
   const mode = String(p.mode || 'free');
@@ -153,7 +164,6 @@ function handleUse(p) {
   return { ok: true };
 }
 
-// 관리자 비밀번호 검증 → 24시간 HMAC 토큰 발급
 function handleAdminAuth(p) {
   const pwd = String(p.pwd || '');
   const fp = String(p.fp || '');
@@ -164,21 +174,55 @@ function handleAdminAuth(p) {
   return { success: true, token: token };
 }
 
-// 챗봇 AI 호출 (Gemini 프록시)
+// AI 호출 (Gemini 프록시) — v1.2 강화
 function handleAi(p) {
   const fp = String(p.fp || '').trim();
+  const mode = String(p.mode || 'chat').toLowerCase(); // 'diag' or 'chat'
+  const nonce = String(p.nonce || '');
   const adminToken = String(p.adminToken || '');
   const prompts = Array.isArray(p.prompts) ? p.prompts : [];
+
+  if (!fp) return { error: 'no_fp', message: '기기 정보 없음' };
   if (!prompts.length) return { error: 'no_prompts', message: '프롬프트 없음' };
+  if (mode !== 'diag' && mode !== 'chat')
+    return { error: 'bad_mode', message: '잘못된 mode (diag 또는 chat)' };
 
   const isAdmin = adminToken && verifyAdminToken_(adminToken);
-  // 챗봇 quota: 관리자 무제한, 그 외 일 30회
+
+  // nonce 검증 (관리자 면제) — AI 무한 호출 차단의 핵심
+  if (!isAdmin && !verifyNonce_(nonce, fp)) {
+    logAi_(fp, mode, prompts[0] && prompts[0].prompt, 0, 'invalid_nonce');
+    return { error: 'invalid_nonce', message: '인증이 만료됐습니다. 페이지를 새로고침해주세요' };
+  }
+
+  // 프롬프트 개수 제한 (DOS 방어)
+  const maxPrompts = (mode === 'diag') ? DIAG_MAX_PROMPTS : CHAT_MAX_PROMPTS;
+  if (prompts.length > maxPrompts) {
+    logAi_(fp, mode, prompts[0] && prompts[0].prompt, 0, 'too_many_prompts');
+    return { error: 'too_many_prompts', message: '한 번에 최대 ' + maxPrompts + '개까지 호출 가능' };
+  }
+
+  // quota 검증 (관리자 면제)
   const today = ymd_(new Date());
-  const CHAT_LIMIT = 30;
+  let userQuotaMode = '';
   if (!isAdmin) {
-    const u = findUsageRow_(fp, 'chat', today);
-    if (u && Number(u.count || 0) >= CHAT_LIMIT)
-      return { error: 'chat_limit', message: '챗봇 일일 한도 도달 (' + CHAT_LIMIT + '회)' };
+    if (mode === 'diag') {
+      userQuotaMode = getUserPaidMode_(fp); // 'paid' or 'free'
+      const u = findUsageRow_(fp, userQuotaMode, today);
+      const cur = u ? Number(u.count || 0) : 0;
+      const limit = (userQuotaMode === 'paid') ? PAID_LIMIT : FREE_LIMIT;
+      if (cur >= limit) {
+        logAi_(fp, mode, prompts[0] && prompts[0].prompt, 0, 'diag_limit');
+        return { error: 'diag_limit', message: '진단 일일 한도 도달 (' + cur + '/' + limit + ')', userMode: userQuotaMode };
+      }
+    } else {
+      const u = findUsageRow_(fp, 'chat', today);
+      const cur = u ? Number(u.count || 0) : 0;
+      if (cur >= CHAT_LIMIT) {
+        logAi_(fp, mode, prompts[0] && prompts[0].prompt, 0, 'chat_limit');
+        return { error: 'chat_limit', message: '챗봇 일일 한도 도달 (' + CHAT_LIMIT + '회)' };
+      }
+    }
   }
 
   const apiKey = props_().getProperty('GEMINI_API_KEY');
@@ -186,6 +230,7 @@ function handleAi(p) {
 
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + apiKey;
   const results = [];
+  let totalChars = 0;
   for (let i = 0; i < prompts.length; i++) {
     const item = prompts[i] || {};
     const parts = [{ text: String(item.prompt || '') }];
@@ -214,12 +259,41 @@ function handleAi(p) {
       const data = JSON.parse(res.getContentText('UTF-8'));
       const txt = (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '';
       results.push(txt);
+      totalChars += txt.length;
     } catch (err) {
       results.push('AI 호출 실패: ' + err.message);
     }
   }
-  if (!isAdmin) upsertUsage_(fp, 'chat', today, 1);
+
+  // 성공 시 quota +1 + 로깅
+  if (!isAdmin) {
+    if (mode === 'diag') {
+      upsertUsage_(fp, userQuotaMode, today, 1);
+    } else {
+      upsertUsage_(fp, 'chat', today, 1);
+    }
+    logAi_(fp, mode, prompts[0] && prompts[0].prompt, totalChars, 'ok');
+  }
   return { results: results };
+}
+
+// 코드/사용자 모드 판별: 오늘 paid 코드 활성화 여부
+function getUserPaidMode_(fp) {
+  const sh = sheet_('Codes');
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return 'free';
+  const today = ymd_(new Date());
+  const data = sh.getRange(2, 1, lastRow - 1, 8).getValues();
+  for (let i = 0; i < data.length; i++) {
+    const r = data[i];
+    const status = String(r[6] || '').toLowerCase();
+    if (status !== 'used') continue;
+    const usedFp = String(r[5] || '');
+    const usedAt = r[4] ? new Date(r[4]) : null;
+    const usedDay = usedAt ? ymd_(usedAt) : '';
+    if (usedFp === fp && usedDay === today) return 'paid';
+  }
+  return 'free';
 }
 
 // ───── 시트 헬퍼 ─────
@@ -282,7 +356,6 @@ function upsertUsage_(fp, mode, date, delta) {
   SpreadsheetApp.flush();
 }
 
-// 1000건 초과 시 오래된 기록부터 자동 삭제 (개인정보처리방침 명시 사항)
 function pruneOldUsage_() {
   const sh = sheet_('Usage');
   const lastRow = sh.getLastRow();
@@ -290,6 +363,16 @@ function pruneOldUsage_() {
   if (lastRow - 1 <= MAX) return;
   const excess = (lastRow - 1) - MAX;
   sh.deleteRows(2, excess);
+}
+
+// AI 호출 로깅 (1000건 자동 prune)
+function logAi_(fp, mode, promptText, resultChars, status) {
+  try {
+    const sh = sheet_('AiLog');
+    sh.appendRow([new Date(), fp, String(promptText || '').slice(0, 80), resultChars, mode + '|' + status]);
+    const lastRow = sh.getLastRow();
+    if (lastRow - 1 > 1000) sh.deleteRows(2, lastRow - 1 - 1000);
+  } catch (e) {}
 }
 
 // ───── 토큰 (HMAC) ─────
@@ -310,6 +393,36 @@ function verifyAdminToken_(token) {
     if (sigCheck !== parts[1]) return false;
     const exp = Number(payload.split('|')[1] || 0);
     return Date.now() < exp;
+  } catch (e) { return false; }
+}
+
+// nonce: fp 바인딩 + 30초 TTL + HMAC 서명 + 1회용 (Cache로 중복 차단)
+function makeNonce_(fp) {
+  const exp = Date.now() + NONCE_TTL_MS;
+  const r = Utilities.getUuid().replace(/-/g, '').slice(0, 16);
+  const payload = fp + '|' + exp + '|' + r;
+  const sig = hmac_(payload);
+  return Utilities.base64EncodeWebSafe(payload) + '.' + sig;
+}
+
+function verifyNonce_(token, fp) {
+  try {
+    if (!token) return false;
+    const parts = String(token).split('.');
+    if (parts.length !== 2) return false;
+    const payload = Utilities.newBlob(Utilities.base64DecodeWebSafe(parts[0])).getDataAsString();
+    const sigCheck = hmac_(payload);
+    if (sigCheck !== parts[1]) return false;
+    const segs = payload.split('|');
+    if (segs[0] !== fp) return false;
+    const exp = Number(segs[1] || 0);
+    if (Date.now() > exp) return false;
+    // 1회용: Cache로 중복 사용 차단 (60초간 nonce 추적)
+    const cache = CacheService.getScriptCache();
+    const key = 'nonce_' + Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, payload).map(b => (b < 0 ? b + 256 : b).toString(16).padStart(2, '0')).join('');
+    if (cache.get(key)) return false;
+    cache.put(key, '1', 60);
+    return true;
   } catch (e) { return false; }
 }
 
@@ -335,20 +448,18 @@ function ymd_(d) {
 
 function props_() { return PropertiesService.getScriptProperties(); }
 
-// ───── 셋업 / 운영 도구 (편집기에서 직접 실행) ─────
+// ───── 셋업 / 운영 도구 ─────
 
-// 1회 실행: 시트 + 헤더 자동 생성 + 권한 승인
 function setup() {
   sheet_('Codes');
   sheet_('Usage');
   sheet_('AiLog');
   const id = props_().getProperty('SHEET_ID');
   Logger.log('✅ Setup OK. SHEET_ID=' + id);
-  Logger.log('스크립트 속성에 GEMINI_API_KEY, ADMIN_PASSWORD, HMAC_SECRET 설정하세요.');
+  Logger.log('스크립트 속성: GEMINI_API_KEY, ADMIN_PASSWORD, HMAC_SECRET 설정 확인');
   return id;
 }
 
-// 단일 코드 발급: ADD_CODE_INPUT을 채우고 실행
 function addCode() {
   const code = (ADD_CODE_INPUT.code || randCode_(6)).toUpperCase();
   const sh = sheet_('Codes');
@@ -357,7 +468,6 @@ function addCode() {
   return code;
 }
 
-// 미사용 코드 풀 미리 만들기 (예: bulkAddCodes(20))
 function bulkAddCodes(n) {
   n = n || 10;
   const sh = sheet_('Codes');
@@ -371,7 +481,6 @@ function bulkAddCodes(n) {
   return codes;
 }
 
-// 코드 환불 처리 (편집기에서 실행: refundCode_apply 호출 전 REFUND_CODE 채우기)
 const REFUND_CODE = '';
 function refundCode() {
   const code = REFUND_CODE.toUpperCase();
@@ -390,7 +499,7 @@ function refundCode() {
 }
 
 function randCode_(len) {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 헷갈리는 0/O/1/I 제외
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let out = '';
   for (let i = 0; i < len; i++) out += chars.charAt(Math.floor(Math.random() * chars.length));
   return out;

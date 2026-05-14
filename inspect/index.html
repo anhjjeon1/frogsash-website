@@ -2223,6 +2223,21 @@ const LIMIT_PAID = 100;
 
 let list=[], wF=null, cF=null, devN=0, devT;
 
+/* ── nonce 헬퍼 (AI 호출 전 30초 1회용 토큰) ── v33.X 보안 강화 */
+async function _getNonce(){
+  /* 관리자 토큰 있으면 nonce 면제 (GAS handleAi에서 admin은 nonce 검증 skip) */
+  if(sessionStorage.getItem('admin_token'))return '';
+  try{
+    const ctrl=new AbortController();
+    const tid=setTimeout(()=>ctrl.abort(),8000);
+    const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'nonce',fp:FP}),signal:ctrl.signal});
+    clearTimeout(tid);
+    if(!res.ok)return '';
+    const data=await res.json();
+    return data.nonce||'';
+  }catch(e){console.warn('[nonce] fail',e.message);return '';}
+}
+
 /* ── 서버 장애 자동 감지 & SPARE 안내 ── */
 async function checkServerHealth(){
   try{
@@ -3168,8 +3183,9 @@ async function runAI(){
 [JSON]
 {"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"■ 하자현상: ...\\n■ 판정근거: ...\\n■ 심각도: ...\\n■ 시정방법: ...\\n■ 비고: ..."}`;
 
-    /* ── 1차 분석 호출 (GAS 프록시 경유, Gemini 키는 서버에만) ── */
-    const _aiBody1={action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt:prompt1,images:images,config:{temperature:0.2,maxOutputTokens:1024,responseMimeType:'application/json'}}]};
+    /* ── 1차 분석 호출 (GAS 프록시 경유, Gemini 키는 서버에만, mode:diag + nonce 1회용) ── */
+    const _nonce1=await _getNonce();
+    const _aiBody1={action:'ai',mode:'diag',fp:FP,nonce:_nonce1,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt:prompt1,images:images,config:{temperature:0.2,maxOutputTokens:1024,responseMimeType:'application/json'}}]};
     const res1=await _geminiFetchRetry(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(_aiBody1),signal:_ac.signal});
     if(_aiDone)return;
     if(!res1.ok){throw new Error('AI 응답 오류: '+res1.status);}
@@ -3212,7 +3228,8 @@ ${d1.detail||''}
 [JSON]
 {"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"■ 하자현상: ...\\n■ 판정근거: ...\\n■ 심각도: ...\\n■ 시정방법: ...\\n■ 비고: ..."}`;
 
-    const _aiBody2={action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt:prompt2,images:images,config:{temperature:0.1,maxOutputTokens:1024,responseMimeType:'application/json'}}]};
+    const _nonce2=await _getNonce();
+    const _aiBody2={action:'ai',mode:'diag',fp:FP,nonce:_nonce2,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt:prompt2,images:images,config:{temperature:0.1,maxOutputTokens:1024,responseMimeType:'application/json'}}]};
     const res2=await _geminiFetchRetry(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(_aiBody2),signal:_ac.signal});
     if(_aiDone)return;
 
@@ -3564,7 +3581,7 @@ A.cbAsk=key=>{const ans=CB_ANS[key];if(!ans)return;cbAddMsg(ans.q,'usr');setTime
 function cbAddMsg(html,type){const msgs=$('cbMsgs');const div=document.createElement('div');div.className=`cb-msg ${type}`;if(type==='bot'){div.innerHTML=`<div class="cb-avatar">🐸</div><div><div class="cb-bubble">${html}</div></div>`;}else{div.innerHTML=`<div class="cb-bubble">${html}</div>`;}msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
 function cbShowTyping(){const msgs=$('cbMsgs');const d=document.createElement('div');d.className='cb-msg bot';d.id='cbTyping';d.innerHTML=`<div class="cb-avatar">🐸</div><div><div class="cb-typing"><span></span><span></span><span></span></div></div>`;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;}
 function cbHideTyping(){const e=$('cbTyping');if(e)e.remove();}
-A.cbSend=async()=>{const input=$('cbInput'),q=input.value.trim();if(!q)return;input.value='';input.style.height='auto';$('cbSendBtn').disabled=true;cbAddMsg(esc(q),'usr');cbShowTyping();try{const prompt=`당신은 "청개구리 입주전" AI 앱의 친절한 상담 도우미입니다.\n[앱 정보]\n- 무료2회/1일이용권₩10,000 100회/수익50%세이브더칠드런기부/전문점검010-2322-0949\n- ${APP_VER} 신기능: 하자 내용 직접 입력 시 입력 기반 정밀 분석 제공\n- 분석 시작 흐름: 사진 → 하자내용 입력 → 화면 중앙의 [AI분석(클릭)] 버튼을 직접 눌러야 1차+2차 분석이 시작됩니다 (자동 시작 아님)\n[답변규칙] 4줄 이내, 친절하게, 앱외 질문은 "앱 관련 질문을 해주세요 😊"\n사용자 질문: "${q}"`;const gasRes=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',fp:FP,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt,images:[]}]})});const gasData=await gasRes.json();if(gasData.error)throw new Error(gasData.message||gasData.error);const txt=gasData.results[0]||'';cbHideTyping();cbAddMsg(txt.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>'),'bot');}catch(e){cbHideTyping();cbAddMsg('일시적 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.<br>📞 <b>010-2322-0949</b>','bot');}$('cbSendBtn').disabled=false;};
+A.cbSend=async()=>{const input=$('cbInput'),q=input.value.trim();if(!q)return;input.value='';input.style.height='auto';$('cbSendBtn').disabled=true;cbAddMsg(esc(q),'usr');cbShowTyping();try{const prompt=`당신은 "청개구리 입주전" AI 앱의 친절한 상담 도우미입니다.\n[앱 정보]\n- 무료2회/1일이용권₩10,000 100회/수익50%세이브더칠드런기부/전문점검010-2322-0949\n- ${APP_VER} 신기능: 하자 내용 직접 입력 시 입력 기반 정밀 분석 제공\n- 분석 시작 흐름: 사진 → 하자내용 입력 → 화면 중앙의 [AI분석(클릭)] 버튼을 직접 눌러야 1차+2차 분석이 시작됩니다 (자동 시작 아님)\n[답변규칙] 4줄 이내, 친절하게, 앱외 질문은 "앱 관련 질문을 해주세요 😊"\n사용자 질문: "${q}"`;const _nonceChat=await _getNonce();const gasRes=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',mode:'chat',fp:FP,nonce:_nonceChat,adminToken:sessionStorage.getItem('admin_token')||'',prompts:[{prompt,images:[]}]})});const gasData=await gasRes.json();if(gasData.error)throw new Error(gasData.message||gasData.error);const txt=gasData.results[0]||'';cbHideTyping();cbAddMsg(txt.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>'),'bot');}catch(e){cbHideTyping();cbAddMsg('일시적 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.<br>📞 <b>010-2322-0949</b>','bot');}$('cbSendBtn').disabled=false;};
 A.openChatBot=()=>{$('chatbotMo').classList.add('show');document.body.style.overflow='hidden';const firstTab=document.querySelector('.cb-tab');if(firstTab)A.cbTab(firstTab,'use');};
 A.closeChatBot=()=>{$('chatbotMo').classList.remove('show');document.body.style.overflow='';};
 A.chat=()=>A.openChatBot();
