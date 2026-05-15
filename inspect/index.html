@@ -2063,9 +2063,9 @@ input[type="file"]{
     <i class="fa-brands fa-naver"></i> 네이버페이로 구매하기
   </button>
   <div id="codeInputArea">
-    <div style="font-size:.78rem;font-weight:700;color:var(--ts);margin-bottom:8px;text-align:center"><i class="fa-solid fa-key" style="color:var(--gold)"></i> 이미 구매하셨나요? 코드를 입력하세요</div>
+    <div style="font-size:.78rem;font-weight:700;color:var(--ts);margin-bottom:8px;text-align:center"><i class="fa-solid fa-key" style="color:var(--gold)"></i> 결제 메일의 <b style="color:var(--p)">주문번호 16자리</b> 또는 <b style="color:var(--p)">받은 코드 6자리</b> 입력</div>
     <div class="code-input-wrap">
-      <input type="text" class="code-input" id="codeInput" placeholder="ABC123" maxlength="10" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')A.verifyCode()">
+      <input type="text" class="code-input" id="codeInput" placeholder="주문번호 16자리 또는 코드 6자리" maxlength="16" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')A.verifyCode()">
       <button class="btn-verify" id="btnVerify" onclick="A.verifyCode()">확인</button>
     </div>
     <div class="code-msg" id="codeMsg"></div>
