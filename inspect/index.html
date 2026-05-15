@@ -2594,6 +2594,15 @@ A.voiceInput = async (targetId) => {
     } : undefined
   );
   _currentRec = rec;
+  /* 안전망: 음성 종료 후 5초 후에도 listening 펄스 남아있으면 강제 정리 (onend 실패 대비) */
+  const _safetyMs = (cfg.maxDurationMs || 10000) + 5000;
+  setTimeout(() => {
+    if(_recActive === targetId && btn && btn.classList.contains('listening')){
+      if(_currentRec){ try{ _currentRec.abort(); }catch(e){} _currentRec = null; }
+      btn.classList.remove('listening');
+      _recActive = null;
+    }
+  }, _safetyMs);
   try{ rec.start(); if(longForm && rec._lfStart) rec._lfStart(); }catch(e){
     if(btn) btn.classList.remove('listening');
     _recActive = null; _currentRec = null;
