@@ -2815,6 +2815,14 @@ $('fType')&&$('fType').addEventListener('change',()=>{$('fType').classList.toggl
 /* ── ★ v20.8: 사용자 입력 실시간 UI 업데이트 ── */
 A.onUserInput=(el)=>{
   const hasVal=el.value.trim().length>0;
+  /* fix: 키보드 입력 시 음성 인식 자동 종료 — mic-btn 펄스 깜빡임 정지 */
+  if(hasVal){
+    if(_currentRec){
+      try{ _currentRec.abort(); }catch(e){}
+      _currentRec = null;
+    }
+    document.querySelectorAll('.mic-btn.listening').forEach(b=>b.classList.remove('listening'));
+  }
   const banner=$('inputHintBanner');
   const badge=$('inputModeBadge');
   if(hasVal){
