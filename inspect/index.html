@@ -2223,10 +2223,10 @@ const LIMIT_PAID = 100;
 
 let list=[], wF=null, cF=null, devN=0, devT;
 
-/* ── nonce 헬퍼 (AI 호출 전 30초 1회용 토큰) ── v33.X 보안 강화 */
+/* ── nonce 헬퍼 (AI 호출 전 30초 1회용 토큰) ── v33.X 보안 강화
+   admin_token 유무와 무관하게 항상 nonce 발급 — admin token이 만료/검증 실패해도 nonce로 자동 폴백
+   (GAS handleAi는 admin이면 nonce 무시, 일반이면 nonce 검증 → 양쪽 모두 안전) */
 async function _getNonce(){
-  /* 관리자 토큰 있으면 nonce 면제 (GAS handleAi에서 admin은 nonce 검증 skip) */
-  if(sessionStorage.getItem('admin_token'))return '';
   try{
     const ctrl=new AbortController();
     const tid=setTimeout(()=>ctrl.abort(),8000);
