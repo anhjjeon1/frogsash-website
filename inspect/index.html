@@ -2966,7 +2966,8 @@ window.addEventListener('DOMContentLoaded',()=>{
   });
 
   inW.addEventListener('change',(e)=>{const f=e.target.files[0];if(!f)return;processPhoto(f,'w');});
-  inC.addEventListener('change',async(e)=>{const f=e.target.files[0];if(!f)return;if(!await chkLim()){inC.value='';return;}processPhoto(f,'c');});
+  /* v33.X fix: chkLim() 제거 — 사진 입력은 quota와 무관 (멀리서 찍기와 동일하게). quota 검사는 startAI() 분석 단계에서 */
+  inC.addEventListener('change',(e)=>{const f=e.target.files[0];if(!f)return;processPhoto(f,'c');});
 });
 
 /* ── 미리보기용 리사이즈 (800px, JPEG 75%) ── */
@@ -3365,11 +3366,13 @@ async function _geminiFetchRetry(url, opts, maxRetries){
   throw new Error('Gemini 요청 실패');
 }
 /* ── AI 분석 시작 (버튼 클릭) ── */
-A.startAI=()=>{
+A.startAI=async()=>{
   clearTimeout(_voiceAITimer); /* v28.3: 자동 분석 타이머 취소 */
   if(_aiBusy){stat('⏳ 이미 분석 중입니다...',true);return;}
   if(!wF&&!cF){stat('⚠️ 사진을 먼저 촬영해주세요',true);toast('📷 멀리서 찍기 → 가까이 찍기를 먼저 촬영하세요',true);return;}
   if(!cF){stat('⚠️ 가까이 찍기를 촬영해주세요',true);return;}
+  /* v33.X fix: quota 검사를 사진 입력에서 AI 분석 단계로 이동 — 사진은 자유롭게 찍고 분석 시점에 결제 안내 */
+  if(!await chkLim())return;
   _aiBusy=true;
   $('btnRunAI').disabled=true;$('btnRunAI').style.opacity='0.5';
   runAI().finally(()=>{_aiBusy=false;});
