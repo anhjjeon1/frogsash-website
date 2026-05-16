@@ -3085,7 +3085,7 @@ A.cancelPwd=()=>{$('moPwd').classList.remove('show');};
 A.devTap=(()=>{let tc=0,tt=null;return()=>{tc++;clearTimeout(tt);if(tc>=3){tc=0;A.setMode('admin');}else{tt=setTimeout(()=>{tc=0;},800);}};})();
 
 /* ============================================================
-   🔊 음성안내 (v22.2)
+   🔊 음성안내 (v22.3)
    ============================================================ */
 const GUIDE_TEXT=[
   '안녕하세요. 청개구리 입주 사전점검 A I 앱 사용법을 안내해 드립니다.',
@@ -3100,13 +3100,17 @@ const GUIDE_TEXT=[
   '메일에 적힌 주문번호 16자리를 앱 하단의 코드 입력란에 그대로 붙여넣어 주세요. 결제 후 5분에서 15분 안에 자동으로 등록되어, 즉시 100회가 활성화되고 당일 자정까지 무제한으로 사용하실 수 있습니다.',
   '수익의 50 퍼센트는 세이브더칠드런에 기부됩니다. 감사합니다.'
 ];
-let _vIdx=0,_vPlaying=false;
+let _vIdx=0,_vPlaying=false,_kaTimer=null;
+/* v22.3: SpeechSynthesis 15초 끊김 버그 keep-alive — pause/resume 주기 호출로 onend 정상 발화 보장 */
+function _kaStop(){if(_kaTimer){clearInterval(_kaTimer);_kaTimer=null;}}
+function _kaStart(){_kaStop();_kaTimer=setInterval(()=>{const s=window.speechSynthesis;if(!_vPlaying){_kaStop();return;}if(s.speaking){s.pause();s.resume();}},10000);}
 A.voiceGuide=()=>{
   if(!('speechSynthesis' in window)){alert('이 브라우저에서는 음성안내를 지원하지 않습니다.');return;}
   const synth=window.speechSynthesis;
-  if(_vPlaying){synth.cancel();_vPlaying=false;$('btnVoice').classList.remove('playing');$('btnVoice').innerHTML='<i class="fa-solid fa-volume-high"></i> 음성안내';return;}
+  if(_vPlaying){synth.cancel();_vPlaying=false;_kaStop();$('btnVoice').classList.remove('playing');$('btnVoice').innerHTML='<i class="fa-solid fa-volume-high"></i> 음성안내';return;}
   _vIdx=0;_vPlaying=true;
   $('btnVoice').classList.add('playing');$('btnVoice').innerHTML='<i class="fa-solid fa-stop"></i> 중지';
+  _kaStart();
   _speakNext();
 };
 /* v30.9: 자연스러운 한국어 음성 선호 — 신경망/프리미엄 음성 우선 */
@@ -3127,7 +3131,7 @@ function _pickNaturalKoVoice(voices){
   return ko.slice().sort((a,b)=>score(b)-score(a))[0];
 }
 function _speakNext(){
-  if(_vIdx>=GUIDE_TEXT.length||!_vPlaying){_vPlaying=false;$('btnVoice').classList.remove('playing');$('btnVoice').innerHTML='<i class="fa-solid fa-volume-high"></i> 음성안내';return;}
+  if(_vIdx>=GUIDE_TEXT.length||!_vPlaying){_vPlaying=false;_kaStop();$('btnVoice').classList.remove('playing');$('btnVoice').innerHTML='<i class="fa-solid fa-volume-high"></i> 음성안내';return;}
   const synth=window.speechSynthesis;
   const utter=new SpeechSynthesisUtterance(GUIDE_TEXT[_vIdx]);
   utter.lang='ko-KR';
@@ -3135,7 +3139,7 @@ function _speakNext(){
   utter.rate=0.92;utter.pitch=1.0;utter.volume=1.0;
   const voices=synth.getVoices();const ko=_pickNaturalKoVoice(voices);if(ko)utter.voice=ko;
   utter.onend=()=>{_vIdx++;if(_vPlaying)setTimeout(_speakNext,600);};
-  utter.onerror=(e)=>{if(e.error!=='canceled'){_vPlaying=false;$('btnVoice').classList.remove('playing');$('btnVoice').innerHTML='<i class="fa-solid fa-volume-high"></i> 음성안내';}};
+  utter.onerror=(e)=>{if(e.error!=='canceled'){_vPlaying=false;_kaStop();$('btnVoice').classList.remove('playing');$('btnVoice').innerHTML='<i class="fa-solid fa-volume-high"></i> 음성안내';}};
   synth.speak(utter);
 }
 if('speechSynthesis' in window){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();}
