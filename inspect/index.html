@@ -2216,7 +2216,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v34.1';
+const APP_VER = 'v34.2';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3593,36 +3593,48 @@ img{max-width:100%;display:block}
 <body>${bodyHtml}</body></html>`;
 
   /* Web Share Level 2 + html2pdf 둘 다 지원되면 1탭 공유, 아니면 인쇄 흐름 */
-  const canShare=(()=>{
-    if(!navigator.share||!navigator.canShare||!window.html2pdf) return false;
-    try{return navigator.canShare({files:[new File([new Blob(['x'])],'t.pdf',{type:'application/pdf'})]});}catch(_){return false;}
-  })();
+  /* v34.2 진단: 분기점을 화면 toast로 표시 → 폰에서 막힌 단계 파악 */
+  const hasShare=typeof navigator.share==='function';
+  const hasCanShare=typeof navigator.canShare==='function';
+  const hasH2P=typeof window.html2pdf==='function';
+  let canShareFiles=false;
+  if(hasShare&&hasCanShare){
+    try{canShareFiles=navigator.canShare({files:[new File([new Blob(['x'])],'t.pdf',{type:'application/pdf'})]});}catch(_){canShareFiles=false;}
+  }
+  const diag=`[진단] share:${hasShare?'✓':'✗'} canShare:${hasCanShare?'✓':'✗'} h2p:${hasH2P?'✓':'✗'} files:${canShareFiles?'✓':'✗'}`;
+  toast(diag,false,5000);
 
-  if(canShare){
+  if(hasShare&&canShareFiles&&hasH2P){
     const wrap=document.createElement('div');
     wrap.style.cssText='position:absolute;left:-9999px;top:0;width:794px;background:#fff;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;color:#1A2332;padding:8px;line-height:1.5';
     wrap.innerHTML=bodyHtml;
     document.body.appendChild(wrap);
     stat('📄 PDF 생성 중…');
+    const t0=Date.now();
     try{
-      const blob=await window.html2pdf().set({margin:8,filename:pdfName+'.pdf',image:{type:'jpeg',quality:0.95},html2canvas:{scale:2,useCORS:true,backgroundColor:'#fff'},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(wrap).output('blob');
+      /* v34.2 경량화: scale 2→1.5, quality 0.95→0.85 (생성 시간 ↓ → user activation 보존 확률 ↑) */
+      const blob=await window.html2pdf().set({margin:8,filename:pdfName+'.pdf',image:{type:'jpeg',quality:0.85},html2canvas:{scale:1.5,useCORS:true,backgroundColor:'#fff',logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true}}).from(wrap).output('blob');
+      const dt=Date.now()-t0;
       const file=new File([blob],pdfName+'.pdf',{type:'application/pdf'});
+      stat(`📤 공유 시트 호출 (PDF ${(blob.size/1024).toFixed(0)}KB, ${dt}ms)`);
       try{
         await navigator.share({files:[file],title:'청개구리 사전점검 리포트',text:`${addr||'사전점검'} 결과`});
         stat('✅ 공유 완료');
         toast('<i class="fa-solid fa-share-nodes"></i> PDF 공유 완료',false,2500);
       }catch(e){
-        if(e.name!=='AbortError'){stat('⚠️ 공유 실패 — 인쇄 흐름으로 전환',true);_pdfFallbackPrint(html,pdfName);}
-        else stat('공유 취소됨');
+        if(e.name==='AbortError'){stat('공유 취소됨');return;}
+        toast(`⚠️ share 실패: ${e.name} (${dt}ms 소요 — activation 손실 의심) → 인쇄 fallback`,true,6000);
+        _pdfFallbackPrint(html,pdfName);
       }
     }catch(e){
       console.error('html2pdf 오류',e);
-      stat('⚠️ PDF 생성 실패 — 인쇄 흐름으로 전환',true);
+      toast(`⚠️ PDF 생성 실패: ${e.message||e} → 인쇄 fallback`,true,6000);
       _pdfFallbackPrint(html,pdfName);
     }finally{document.body.removeChild(wrap);}
     return;
   }
 
+  toast('ℹ️ Web Share 미지원 환경 → 인쇄 흐름',false,3000);
   _pdfFallbackPrint(html,pdfName);
 };
 
