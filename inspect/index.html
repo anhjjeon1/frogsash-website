@@ -1863,6 +1863,14 @@ input[type="file"]{
   </div>
 </div>
 
+<!-- ── v34.7: AI 자동 분류 칩 (사진 ↔ 하자 정보 사이로 이동) ── -->
+<div class="ai-tags" id="aiTags" style="display:none;margin:0 0 12px;padding:10px 12px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px">
+  <span style="font-size:.7rem;font-weight:700;color:#6B7280;margin-right:4px;white-space:nowrap">🤖 AI 자동 분류 :</span>
+  <span class="ai-tag work" id="tagWork"></span>
+  <span class="ai-tag sub" id="tagSub"></span>
+  <span class="ai-tag type" id="tagType"></span>
+</div>
+
 <!-- ── STEP 3: 하자 정보 ── -->
 <div class="sec">
   <div class="sec-t"><span class="n">3</span> 하자 정보</div>
@@ -1922,11 +1930,7 @@ input[type="file"]{
   <div style="display:none" id="wkBtn"></div><div style="display:none" id="subBtn"></div><div style="display:none" id="typeBtn"></div>
   <div style="display:none" id="wkGrid"></div><div style="display:none" id="subGrid"></div><div style="display:none" id="typeGrid"></div>
   <div style="display:none" id="wkLabel"></div><div style="display:none" id="subLabel"></div><div style="display:none" id="typeLabel"></div>
-  <div class="ai-tags" id="aiTags" style="display:none">
-    <span class="ai-tag work" id="tagWork"></span>
-    <span class="ai-tag sub" id="tagSub"></span>
-    <span class="ai-tag type" id="tagType"></span>
-  </div>
+  <!-- v34.7: aiTags 블록은 STEP 2와 STEP 3 사이로 이동 (사진 직후 노출) -->
   <div class="ig">
     <div class="il" style="justify-content:space-between">
       <div style="display:flex;align-items:center;gap:8px">
@@ -2219,7 +2223,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v34.6';
+const APP_VER = 'v34.7';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
