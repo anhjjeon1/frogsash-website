@@ -1737,6 +1737,9 @@ textarea.if{
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.warn{background:linear-gradient(135deg,#F39C12,#E67E22)}
+/* v34.5: 토스트 내부 링크/버튼은 클릭 가능 (pointer-events:none 우회) */
+.toast a,.toast button{pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:rgba(255,255,255,.3)}
+.toast a:active{transform:scale(.96);opacity:.85}
 
 .auto-save-banner{
   display:flex;
@@ -2216,7 +2219,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v34.4';
+const APP_VER = 'v34.5';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
