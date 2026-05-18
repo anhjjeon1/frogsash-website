@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.33 - Google Apps Script
+// (주)메트로 R&S AI v23.34 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger, fillNoSequence
+// v23.34: fillNoSequence 액션 추가 — 시트별 A열(NO) 빈 셀을 마지막 NO + 1부터 연속 채움. 새 하자 행 paste 후 NO 수동 입력/드래그 채우기 자동화. B~G 컬럼 중 하나라도 데이터 있으면 채움 대상으로 인식. lastNo+1부터 시퀀셜 — 멱등 안전(이미 채워진 셀은 건드리지 않음).
 // v23.33: 시스템 폴더에 '1.' prefix 적용 (매니저 공유 시 14현장만 깔끔히 다중 선택). 새 이름: '1.메트로 관리자전송', '1.메트로 당일 매출 대시보드', '1.A전체(현장관리)'. 모든 폴더 참조에 _findOrCreateSubFolder 헬퍼 도입 — 새 이름 우선 검색 → 없으면 옛 이름 fallback → 그래도 없으면 새 이름으로 생성. Drive UI 이름 변경 전·후 모두 정상 동작 (안전 전환). collectPhotosForDate SKIP 목록도 새+옛 이름 동시 등록.
 // v23.32: 매니저 일일 보고 메일에 어제 사진 통합 폴더 링크 추가. 'A.메트로알엔에스(주)/메트로 관리자전송/사진_yyyy-MM-dd/{현장명}/{동-호}/{수리전|수리후|확인서}.{ext}' 계층 구조로 어제 사진 사본 생성 후 ANYONE_WITH_LINK+VIEW 공유 → 폴더 링크 1개 클릭 → Drive 우상단 다운로드로 zip 한 방. 현장명·동호 폴더 트리로 자동 명기. 같은 날짜 재실행 시 휴지통 후 재생성(멱등). 원본 동호 폴더는 보존(사본만 추가).
 // v23.31: 메트로 관리자(구미영 대리, era999@naver.com)에게 매일 09:00 KST 일일 보고 메일 자동 발송. 어제 작업 사진(Drive 보기 링크) + claude현장관리(종합)_LIVE xlsx 사본(일매출 시트 제외) 첨부. xlsx는 'A.메트로알엔에스(주)/메트로 관리자전송/'에 일별 보관(감사 추적). 받은 사람은 xlsx 다운받아 자유 편집 가능하나 본사 원본 시트엔 영향 없음. Script Properties MANAGER_EMAIL 필요.
@@ -898,7 +899,21 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.33 연결됨'});
+  // === [v23.34] 시트 A열 NO 빈 셀 자동 채우기 ===
+  // ?action=fillNoSequence&sheetName=파주6단지
+  // ?action=fillNoSequence&sheetName=파주6단지&dryRun=1   (미리보기)
+  if (action === 'fillNoSequence') {
+    try {
+      var sn = e.parameter.sheetName || '';
+      var dry = (e.parameter.dryRun === '1' || e.parameter.dryRun === 'true');
+      if (!sn) return makeRes({status:'error', message:'sheetName 필요'});
+      return makeRes(Object.assign({status:'ok'}, fillNoSequence(sn, dry)));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  return makeRes({status:'ok', message:'메트로 R&S v23.34 연결됨'});
 }
 
 // === [v23.20] 일매출 대시보드 PDF 생성 함수 ===
@@ -1231,6 +1246,104 @@ function extendDailySalesRanges() {
     rangeProcessed: range.getA1Notation(),
     note: 'K/L/M/O 컬럼의 :$X$NNN → :$X$2000 (시작 :$X$2 보호 + 단가표 Q/U 자동 보호)'
   };
+}
+
+// === [v23.34] 시트 A열 NO 빈 셀 자동 채우기 ===
+// 사용 예: fillNoSequence('파주6단지')
+// - 마지막 숫자 NO 찾기 (A열 위에서 아래로)
+// - 그 아래 행 중 A는 비었고 B~G 중 하나라도 데이터 있는 행을 대상으로 lastNo+1부터 연속 입력
+// - 멱등: 이미 NO 채워진 행은 건너뜀
+function fillNoSequence(sheetName, dryRun) {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sh = ss.getSheetByName(sheetName);
+  if (!sh) throw new Error('시트 없음: ' + sheetName);
+
+  var lastRow = sh.getLastRow();
+  if (lastRow < 2) return {filled: 0, note: '빈 시트'};
+
+  // A:G 한 번에 읽기
+  var range = sh.getRange(1, 1, lastRow, 7);
+  var values = range.getValues();
+
+  // 마지막 숫자 NO 찾기
+  var lastNo = 0;
+  var lastNoRow = 0;
+  for (var i = 0; i < values.length; i++) {
+    var a = values[i][0];
+    if (typeof a === 'number' && !isNaN(a)) {
+      if (a > lastNo) { lastNo = a; lastNoRow = i + 1; }
+    } else if (typeof a === 'string' && a !== '' && a !== 'NO') {
+      var n = parseInt(a, 10);
+      if (!isNaN(n) && n > lastNo) { lastNo = n; lastNoRow = i + 1; }
+    }
+  }
+
+  if (lastNo === 0) return {filled: 0, note: 'A열에 숫자 NO 없음'};
+
+  // 채울 대상 행 수집
+  var targets = []; // {row, no}
+  var nextNo = lastNo + 1;
+  for (var j = 0; j < values.length; j++) {
+    var row1 = j + 1;
+    if (row1 <= lastNoRow) continue; // 마지막 NO 아래만
+    var a = values[j][0];
+    var hasA = (a !== '' && a !== null);
+    if (hasA) continue; // 이미 채워진 행은 보존(멱등)
+    // B~G 중 하나라도 데이터 있는 행만 대상
+    var hasData = false;
+    for (var c = 1; c <= 6; c++) {
+      var v = values[j][c];
+      if (v !== '' && v !== null) { hasData = true; break; }
+    }
+    if (!hasData) continue;
+    targets.push({row: row1, no: nextNo});
+    nextNo++;
+  }
+
+  if (targets.length === 0) {
+    return {
+      filled: 0,
+      lastNo: lastNo,
+      lastNoRow: lastNoRow,
+      note: '채울 빈 NO 행 없음 (모두 정상)'
+    };
+  }
+
+  // 연속 범위 묶기 (대부분 한 덩어리)
+  var firstRow = targets[0].row;
+  var lastTargetRow = targets[targets.length - 1].row;
+  var contiguous = (lastTargetRow - firstRow + 1 === targets.length);
+
+  var preview = {
+    sheetName: sheetName,
+    lastNo: lastNo,
+    lastNoRow: lastNoRow,
+    firstFillRow: firstRow,
+    lastFillRow: lastTargetRow,
+    firstFillNo: targets[0].no,
+    lastFillNo: targets[targets.length - 1].no,
+    filled: targets.length,
+    contiguous: contiguous
+  };
+
+  if (dryRun) {
+    preview.dryRun = true;
+    return preview;
+  }
+
+  if (contiguous) {
+    var seq = targets.map(function(t) { return [t.no]; });
+    sh.getRange(firstRow, 1, seq.length, 1).setValues(seq);
+  } else {
+    // 비연속이면 개별 setValue
+    for (var k = 0; k < targets.length; k++) {
+      sh.getRange(targets[k].row, 1).setValue(targets[k].no);
+    }
+  }
+  SpreadsheetApp.flush();
+
+  return preview;
 }
 
 // === [v23.20] 매일 21:30 KST 트리거 등록 (일회성) ===
