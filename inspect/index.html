@@ -2223,7 +2223,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v34.8';
+const APP_VER = 'v34.9';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -2880,7 +2880,7 @@ const _KW_MAP=[
   {kw:['분합창'],w:'PL창호공사',s:'분합창',t:'개폐불량'},
   {kw:['대피창'],w:'PL창호공사',s:'대피창',t:'개폐불량'},
   {kw:['방충망'],w:'PL창호공사',s:'PL방충망',t:'파손'},
-  {kw:['PL창호','창호','창문','샤시'],w:'PL창호공사',s:'PL창호',t:'고정불량'},
+  {kw:['PL창호','창호','창문','창틀','샤시','샷시','새시'],w:'PL창호공사',s:'PL창호',t:'고정불량'},
   {kw:['현관문'],w:'방화문공사',s:'현관문',t:'개폐불량'},
   {kw:['대피공간','대피문','방화문'],w:'방화문공사',s:'대피공간방화문',t:'개폐불량'},
   {kw:['실외기실문','실외기문'],w:'방화문공사',s:'실외기실문짝/틀',t:'개폐불량'},
@@ -2969,7 +2969,15 @@ function _autoMatchDebounce(text){clearTimeout(_matchTimer);_matchTimer=setTimeo
 function _autoMatch(text){
   if(!text||text.length<2)return;
   const m=_matchWorkSubType(text);
-  if(!m)return;
+  if(!m){
+    /* v34.9: 매칭 실패 시 이전 칩 자동 reset (잔존 칩 버그 방지) */
+    const tags=$('aiTags');
+    if(tags)tags.style.display='none';
+    $('fWork').value='';$('fSub').value='';$('fType').value='';
+    saveDraft();
+    stat(`🔍 "${text}" — 자동 분류 매칭 실패. 사진 + AI분석으로 분석하세요`);
+    return;
+  }
   /* 공종/세부/유형 자동 적용 */
   _applyAIResult(m.work,m.sub,m.type);
   saveDraft();
@@ -3212,9 +3220,10 @@ async function runAI(){
 
     const manWork=$('fWork').value, manSub=$('fSub').value, manType=$('fType').value;
     const hasManual=manWork||manSub||manType;
-    const manualBlock=hasManual?`\n[수동 선택 정보 — 최우선] 공종:${manWork||'미지정'} / 세부:${manSub||'미지정'} / 유형:${manType||'미지정'}`:'';
+    /* v34.9: 자동 매칭 결과를 "최우선"에서 "참고용, 사진/입력 우선"으로 완화 — 잘못된 1차 매칭이 AI 분석 왜곡하던 문제 해결 */
+    const manualBlock=hasManual?`\n[1차 자동 매칭 — 참고용, 사진/입력과 모순되면 무시하고 재분류] 공종:${manWork||'미지정'} / 세부:${manSub||'미지정'} / 유형:${manType||'미지정'}`:'';
     const userBlock=hasUserInput?`\n[사용자 입력 — 최우선 분석 근거] "${ui}"`:'';
-    const modeBlock=hasManual?'수동 선택 정보 우선, 사진으로 검증.':hasUserInput?'사용자 입력 우선, 사진은 보조 증거.':'사진1(Wide):공종파악, 사진2(Close):하자분석.';
+    const modeBlock=hasUserInput?'사용자 입력 우선, 사진으로 검증. 1차 매칭이 입력/사진과 다르면 무시하고 정확한 공종/유형으로 재분류.':hasManual?'사진 내용 최우선 판단. 1차 매칭은 참고용이며 사진과 모순되면 무시하고 재분류.':'사진1(Wide):공종파악, 사진2(Close):하자분석.';
 
     /* ── 1차 분석 프롬프트 ── */
     const prompt1=`당신은 아파트 사전점검 전문 하자진단 AI입니다. ${modeBlock}${proExtra}${manualBlock}${userBlock}
