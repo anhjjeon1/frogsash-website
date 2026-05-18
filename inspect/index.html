@@ -2216,7 +2216,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v34.3';
+const APP_VER = 'v34.4';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3593,7 +3593,7 @@ img{max-width:100%;display:block}
 <body>${bodyHtml}</body></html>`;
 
   /* Web Share Level 2 + html2pdf 둘 다 지원되면 1탭 공유, 아니면 인쇄 흐름 */
-  /* v34.3 통합 흐름: html2pdf로 PDF Blob 생성 → Web Share 가능 시 공유 시트 → 미지원/실패 시 download link로 자동 저장 (window.open 완전 제거 → 팝업 차단 회피) */
+  /* v34.4 통합 흐름: html2pdf로 PDF Blob 생성 → Web Share 가능 시 공유 시트 → 미지원/실패 시 자동 다운로드 시도 + 토스트에 수동 탭 버튼 (Samsung Internet display:none 무시 회피) */
   const hasShare=typeof navigator.share==='function';
   const hasCanShare=typeof navigator.canShare==='function';
   const hasH2P=typeof window.html2pdf==='function';
@@ -3642,15 +3642,20 @@ img{max-width:100%;display:block}
     }
   }
 
-  /* Fallback: download link로 PDF 저장 (팝업 차단 회피) */
+  /* v34.4 Fallback: 자동 다운로드 시도 + 토스트에 수동 탭 버튼 항상 표시 (Samsung Internet 호환) */
+  /* display:none이면 Samsung Internet이 click() 무시 → 오프스크린 위치 + dispatchEvent + 사용자 탭 가능한 수동 링크 백업 */
   const url=URL.createObjectURL(blob);
+  setTimeout(()=>URL.revokeObjectURL(url),300000); /* 5분간 유효 (사용자가 토스트 링크 탭할 시간) */
   const a=document.createElement('a');
-  a.href=url;a.download=pdfName+'.pdf';a.style.display='none';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url),30000);
-  stat(`✅ PDF 다운로드 완료 (${sizeKB}KB)`);
+  a.href=url;a.download=pdfName+'.pdf';
+  a.style.cssText='position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0';
+  document.body.appendChild(a);
+  a.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
+  setTimeout(()=>{try{document.body.removeChild(a);}catch(_){}}, 2000);
+  stat(`✅ PDF 다운로드 시도 (${sizeKB}KB)`);
   const reason=!hasShare?'Web Share 미지원':!canShareFiles?'PDF 공유 미지원':'공유 실패';
-  toast(`📥 <b>다운로드 폴더</b>에서 PDF를 확인하세요 (${reason})<br>카톡에 첨부하려면 폴더에서 선택 → 공유`,false,6000);
+  /* 자동 다운로드가 실패해도 사용자가 직접 탭하면 100% 작동 */
+  toast(`📥 다운로드 폴더 확인 (${reason})<br>안 보이면 👉 <a href="${url}" download="${pdfName}.pdf" target="_blank" rel="noopener" style="color:#fff;background:#0A6B5C;padding:6px 14px;border-radius:5px;text-decoration:none;font-weight:800;display:inline-block;margin-top:6px"><i class="fa-solid fa-download"></i> 여기 탭하여 저장</a>`,false,45000);
 };
 
 /* ── 모달 ── */
