@@ -2223,7 +2223,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v34.7';
+const APP_VER = 'v34.8';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -2620,13 +2620,23 @@ A.voiceInput = async (targetId) => {
 };
 
 /* v28.3: 하자내용 음성입력 후 AI 분석 자동 예약 (5초 후) */
-let _voiceAITimer;
+/* v34.8: 3초 후 마이크 펄스 강제 정리 + AI 버튼 깜빡임으로 클릭 유도 */
+let _voiceAITimer, _voiceMicTimer;
 function _scheduleVoiceAI(text){
   clearTimeout(_voiceAITimer);
+  clearTimeout(_voiceMicTimer);
   const det = $('fDetail');
   if(!det) return;
   const t = (text||'').trim();
   if(!t) return;
+  /* v34.8: 음성 입력 3초 후 펄스 강제 정리 + AI분석 버튼 깜빡임 시작 (클릭 유도) */
+  _voiceMicTimer = setTimeout(()=>{
+    document.querySelectorAll('.mic-btn.listening').forEach(b=>b.classList.remove('listening'));
+    const ai = document.getElementById('btnRunAI');
+    if(ai && !ai.disabled && ($('fUser')?.value||'').trim()){
+      ai.classList.add('attn');
+    }
+  }, 3000);
   const m = _matchWorkSubType(t);
   if(!m){
     det.value = `🔍 "${t}"\n\n카테고리 자동 매칭 실패.\n사진 촬영 후 AI분석 버튼을 눌러 정밀 분석을 실행하세요.`;
@@ -2639,6 +2649,8 @@ function _scheduleVoiceAI(text){
     if(typeof stat==='function') stat('⏱️ 5초 후 AI 정밀 분석이 시작됩니다 (AI분석 버튼 클릭 시 즉시 실행)');
     _voiceAITimer = setTimeout(() => {
       if(!$('btnRunAI').disabled && $('fUser').value.trim() === t){
+        const ai = document.getElementById('btnRunAI');
+        if(ai) ai.classList.remove('attn'); /* v34.8: 자동 분석 시작 시 깜빡임 제거 */
         A.startAI();
       }
     }, 5000);
