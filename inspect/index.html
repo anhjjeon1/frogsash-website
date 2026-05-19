@@ -2223,7 +2223,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v34.11';
+const APP_VER = 'v34.12';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3506,6 +3506,21 @@ function _applyAIResult(aiWork,aiSub,aiType){
   }
 }
 A.nextInput=()=>{
+  /* v34.12: detail+사진 있으면 자동 저장 후 폼 초기화 (AI 오류 fallback·1차 매칭만으로도 점검 리스트 추가 가능) */
+  const _det=($('fDetail')?.value||'').trim();
+  const _ws=$('pvW')?.src||'', _cs=$('pvC')?.src||'';
+  const _hasPhoto = _ws.startsWith('data:')||_cs.startsWith('data:');
+  /* 정상 AI 자동저장 후엔 detail이 비어있어 이 분기 안 탐 (중복 저장 방지) */
+  if(_det && _hasPhoto && (_det.includes('1차 자동 매칭')||_det.includes('AI 분석 오류')||_det.includes('자동 분류:'))){
+    const _savedRoom=$('fRoom').value, _savedAddr=$('fAddr').value;
+    const _savedLabel=$('cdLabel')?.textContent||'';
+    autoSave(_ws, _cs, _det);
+    /* autoSave 내부 reset()이 fRoom 비우므로 즉시 복원 (같은 방 연속 입력 UX 보존) */
+    $('fRoom').value=_savedRoom;
+    if($('fAddr'))$('fAddr').value=_savedAddr;
+    if(_savedRoom){const l=$('cdLabel');if(l){l.textContent=_savedLabel||('✔ '+_savedRoom);l.classList.remove('cd-placeholder');l.style.color='var(--p)';l.style.fontWeight='800';}}
+    return;
+  }
   /* v30.9: 다음입력 버튼 펄스 애니메이션 해제 */
   const nxt=$('btnNext');if(nxt)nxt.classList.remove('pulse-next');
   /* 위치(fRoom)와 주소(fAddr)는 유지, 나머지 초기화 */
