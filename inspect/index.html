@@ -2223,7 +2223,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v34.9';
+const APP_VER = 'v34.10';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -2621,7 +2621,7 @@ A.voiceInput = async (targetId) => {
 
 /* v28.3: 하자내용 음성입력 후 AI 분석 자동 예약 (5초 후) */
 /* v34.8: 3초 후 마이크 펄스 강제 정리 + AI 버튼 깜빡임으로 클릭 유도 */
-let _voiceAITimer, _voiceMicTimer;
+let _voiceAITimer, _voiceMicTimer, _textInputAttnTimer;
 function _scheduleVoiceAI(text){
   clearTimeout(_voiceAITimer);
   clearTimeout(_voiceMicTimer);
@@ -2870,7 +2870,18 @@ A.onUserInput=(el)=>{
   }
   draftDebounce();
   /* v25.2: 하자내용 입력 시 공종/세부/유형 자동 매칭 + AI 자동 실행 */
-  if(hasVal) _autoMatchDebounce(el.value.trim());
+  /* v34.10: 텍스트 입력 시에도 3초 후 AI분석 버튼 attn 깜빡임 (음성 입력과 동일 UX) */
+  clearTimeout(_textInputAttnTimer);
+  if(hasVal){
+    _autoMatchDebounce(el.value.trim());
+    _textInputAttnTimer = setTimeout(()=>{
+      const ai = document.getElementById('btnRunAI');
+      if(ai && !ai.disabled && el.value.trim()) ai.classList.add('attn');
+    }, 3000);
+  }else{
+    const ai = document.getElementById('btnRunAI');
+    if(ai) ai.classList.remove('attn');
+  }
 };
 
 /* ── v25.2: 키워드 기반 공종/세부/유형 자동 매칭 ── */
@@ -3220,10 +3231,10 @@ async function runAI(){
 
     const manWork=$('fWork').value, manSub=$('fSub').value, manType=$('fType').value;
     const hasManual=manWork||manSub||manType;
-    /* v34.9: 자동 매칭 결과를 "최우선"에서 "참고용, 사진/입력 우선"으로 완화 — 잘못된 1차 매칭이 AI 분석 왜곡하던 문제 해결 */
-    const manualBlock=hasManual?`\n[1차 자동 매칭 — 참고용, 사진/입력과 모순되면 무시하고 재분류] 공종:${manWork||'미지정'} / 세부:${manSub||'미지정'} / 유형:${manType||'미지정'}`:'';
-    const userBlock=hasUserInput?`\n[사용자 입력 — 최우선 분석 근거] "${ui}"`:'';
-    const modeBlock=hasUserInput?'사용자 입력 우선, 사진으로 검증. 1차 매칭이 입력/사진과 다르면 무시하고 정확한 공종/유형으로 재분류.':hasManual?'사진 내용 최우선 판단. 1차 매칭은 참고용이며 사진과 모순되면 무시하고 재분류.':'사진1(Wide):공종파악, 사진2(Close):하자분석.';
+    /* v34.10: 사용자 입력 키워드(창틀=PL창호, 문틀=목창호 등)를 AI가 임의 변경하지 못하도록 프롬프트 강화 */
+    const manualBlock=hasManual?`\n[1차 자동 매칭 — 사용자 입력에서 추출됨, 공종은 절대 변경 금지] 공종:${manWork||'미지정'} / 세부:${manSub||'미지정'} / 유형:${manType||'미지정'}`:'';
+    const userBlock=hasUserInput?`\n[사용자 입력 — 절대 우선 분석 근거] "${ui}"`:'';
+    const modeBlock=hasUserInput?'🚨 사용자 입력 절대 우선 원칙: 입력 키워드("창틀/창호/PL창호/샤시"→PL창호공사, "문틀/방문/목문"→목창호공사, "에어컨"→에어컨공사, "현관문"→방화문공사 등)의 공종은 절대 변경 금지. 사진은 사용자 의도 확인용 보조 증거일 뿐. 사진과 사용자 입력이 충돌하면 무조건 사용자 입력 따름. 1차 매칭이 사용자 입력에서 나왔으면 그 공종/세부 그대로 사용하고 사진으로 유형/심각도만 정밀화.':hasManual?'사진 내용 최우선 판단. 1차 매칭은 참고용이며 사진과 모순되면 무시하고 재분류.':'사진1(Wide):공종파악, 사진2(Close):하자분석.';
 
     /* ── 1차 분석 프롬프트 ── */
     const prompt1=`당신은 아파트 사전점검 전문 하자진단 AI입니다. ${modeBlock}${proExtra}${manualBlock}${userBlock}
