@@ -2223,7 +2223,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v34.10';
+const APP_VER = 'v34.11';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3208,8 +3208,25 @@ async function runAI(){
     if(!$('fWork').value)$('fWork').value='';
     if(!$('fSub').value)$('fSub').value='';
     if(!$('fType').value)$('fType').value='';
-    detEl.value='⚠️ '+reason+'\n\n➡️ AI 분석 버튼을 다시 눌러주세요.\n※ 하자내용을 입력하면 더 정확합니다.';
-    stat('⚠️ '+reason+' — AI 분석 버튼을 다시 눌러주세요',true);
+    /* v34.11: 1차 분류·입력이 있으면 fallback detail 자동 채움 → "다음 입력"으로 점검 리스트 추가 가능 */
+    const _w=$('fWork').value, _s=$('fSub').value, _ty=$('fType').value;
+    const _ui=($('fUser')?.value||'').trim();
+    const _room=$('fRoom')?.value||'';
+    if(_w||_s||_ty||_ui){
+      let msg = `⚠️ ${reason.replace(/^⚠️\s*/,'')}\n\n`;
+      msg += `■ 하자현상: ${_ui||'(하자내용 미입력)'}${_room?` (위치: ${_room})`:''}\n`;
+      msg += `■ 자동 분류: 공종 ${_w||'미지정'} / 세부 ${_s||'미지정'} / 유형 ${_ty||'미지정'}\n`;
+      msg += `■ 심각도: AI 미진단 (기록만 보존)\n`;
+      msg += `■ 시정방법: AI 정밀 분석 미완료 — 현장 확인 후 적정 조치\n`;
+      msg += `■ 비고: 사용자 입력 키워드 기반 자동 분류만 기록됨. 정밀 판정근거·심각도·시정방법은 추후 재분석 또는 전문가 확인 필요\n\n`;
+      msg += `➡️ 이대로 점검 리스트에 추가: "다음 입력" 버튼\n`;
+      msg += `➡️ AI 재시도: "수정 후 재분석" 버튼`;
+      detEl.value = msg;
+      stat(`⚠️ ${reason.replace(/^⚠️\s*/,'')} — "다음 입력"으로 1차 분류 기록 또는 재분석`,true);
+    } else {
+      detEl.value='⚠️ '+reason+'\n\n➡️ AI 분석 버튼을 다시 눌러주세요.\n※ 하자내용을 입력하면 더 정확합니다.';
+      stat('⚠️ '+reason+' — AI 분석 버튼을 다시 눌러주세요',true);
+    }
     $('btnReanalyze').style.display='inline-flex';
     $('btnRunAI').disabled=false;$('btnRunAI').style.opacity='1';
     saveDraft();
@@ -3231,10 +3248,10 @@ async function runAI(){
 
     const manWork=$('fWork').value, manSub=$('fSub').value, manType=$('fType').value;
     const hasManual=manWork||manSub||manType;
-    /* v34.10: 사용자 입력 키워드(창틀=PL창호, 문틀=목창호 등)를 AI가 임의 변경하지 못하도록 프롬프트 강화 */
-    const manualBlock=hasManual?`\n[1차 자동 매칭 — 사용자 입력에서 추출됨, 공종은 절대 변경 금지] 공종:${manWork||'미지정'} / 세부:${manSub||'미지정'} / 유형:${manType||'미지정'}`:'';
-    const userBlock=hasUserInput?`\n[사용자 입력 — 절대 우선 분석 근거] "${ui}"`:'';
-    const modeBlock=hasUserInput?'🚨 사용자 입력 절대 우선 원칙: 입력 키워드("창틀/창호/PL창호/샤시"→PL창호공사, "문틀/방문/목문"→목창호공사, "에어컨"→에어컨공사, "현관문"→방화문공사 등)의 공종은 절대 변경 금지. 사진은 사용자 의도 확인용 보조 증거일 뿐. 사진과 사용자 입력이 충돌하면 무조건 사용자 입력 따름. 1차 매칭이 사용자 입력에서 나왔으면 그 공종/세부 그대로 사용하고 사진으로 유형/심각도만 정밀화.':hasManual?'사진 내용 최우선 판단. 1차 매칭은 참고용이며 사진과 모순되면 무시하고 재분류.':'사진1(Wide):공종파악, 사진2(Close):하자분석.';
+    /* v34.11: 프롬프트 압축(Gemini 응답 안정화) — 핵심 원칙만 유지, 키워드 예시 제거 */
+    const manualBlock=hasManual?`\n[1차 자동 매칭 — 사용자 입력에서 추출됨, 공종 변경 금지] 공종:${manWork||'미지정'} / 세부:${manSub||'미지정'} / 유형:${manType||'미지정'}`:'';
+    const userBlock=hasUserInput?`\n[사용자 입력 — 절대 우선] "${ui}"`:'';
+    const modeBlock=hasUserInput?'🚨 사용자 입력 절대 우선: 1차 자동 매칭의 공종/세부는 사용자 입력 키워드에서 추출된 정답이므로 그대로 유지. 사진은 유형·심각도·세부 묘사 보조용. 사진이 1차 매칭과 달라 보여도 사용자 입력을 따르고 차이는 비고에 명시.':hasManual?'사진 내용 최우선 판단. 1차 매칭은 참고용이며 사진과 모순되면 무시하고 재분류.':'사진1(Wide):공종파악, 사진2(Close):하자분석.';
 
     /* ── 1차 분석 프롬프트 ── */
     const prompt1=`당신은 아파트 사전점검 전문 하자진단 AI입니다. ${modeBlock}${proExtra}${manualBlock}${userBlock}
