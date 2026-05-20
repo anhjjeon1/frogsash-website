@@ -1,7 +1,8 @@
 // ========================================
 // (주)메트로 R&S AI v23.34 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger, fillNoSequence
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger, fillNoSequence, inspectPaymentSheet, setupPaymentFormulas
+// v23.35: 결제현황 F열 자동집계 진단·자동화 액션 두 개 추가 — inspectPaymentSheet(F4~F23 + 일매출 SUMPRODUCT + 14현장 시트 헤더 dump), setupPaymentFormulas(dryRun 우선). 5/16~5/20 매출 4.54M(양주 1.94M + 파주6단지 2.6M)이 결제현황 D56·대시보드 미지급에 미반영되던 정합성 누수 영구 해결을 위한 1단계 진단 인프라.
 // v23.34: fillNoSequence 액션 추가 — 시트별 A열(NO) 빈 셀을 마지막 NO + 1부터 연속 채움. 새 하자 행 paste 후 NO 수동 입력/드래그 채우기 자동화. B~G 컬럼 중 하나라도 데이터 있으면 채움 대상으로 인식. lastNo+1부터 시퀀셜 — 멱등 안전(이미 채워진 셀은 건드리지 않음).
 // v23.33: 시스템 폴더에 '1.' prefix 적용 (매니저 공유 시 14현장만 깔끔히 다중 선택). 새 이름: '1.메트로 관리자전송', '1.메트로 당일 매출 대시보드', '1.A전체(현장관리)'. 모든 폴더 참조에 _findOrCreateSubFolder 헬퍼 도입 — 새 이름 우선 검색 → 없으면 옛 이름 fallback → 그래도 없으면 새 이름으로 생성. Drive UI 이름 변경 전·후 모두 정상 동작 (안전 전환). collectPhotosForDate SKIP 목록도 새+옛 이름 동시 등록.
 // v23.32: 매니저 일일 보고 메일에 어제 사진 통합 폴더 링크 추가. 'A.메트로알엔에스(주)/메트로 관리자전송/사진_yyyy-MM-dd/{현장명}/{동-호}/{수리전|수리후|확인서}.{ext}' 계층 구조로 어제 사진 사본 생성 후 ANYONE_WITH_LINK+VIEW 공유 → 폴더 링크 1개 클릭 → Drive 우상단 다운로드로 zip 한 방. 현장명·동호 폴더 트리로 자동 명기. 같은 날짜 재실행 시 휴지통 후 재생성(멱등). 원본 동호 폴더는 보존(사본만 추가).
@@ -913,7 +914,30 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.34 연결됨'});
+  // === [v23.35] 결제현황 F열 자동화 진단 ===
+  // ?action=inspectPaymentSheet
+  // 결제현황 F4~F23 (작업비 총액) 수식/값 + 일매출 한 행의 SUMPRODUCT 산식 + 14현장 시트 헤더
+  if (action === 'inspectPaymentSheet') {
+    try {
+      return makeRes(Object.assign({status:'ok'}, inspectPaymentSheet()));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  // === [v23.35] 결제현황 F열 자동집계 수식 일괄 적용 ===
+  // ?action=setupPaymentFormulas               (실 적용)
+  // ?action=setupPaymentFormulas&dryRun=1      (미리보기, F열 비변경)
+  if (action === 'setupPaymentFormulas') {
+    try {
+      var dry = (e.parameter.dryRun === '1' || e.parameter.dryRun === 'true');
+      return makeRes(Object.assign({status:'ok'}, setupPaymentFormulas(dry)));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  return makeRes({status:'ok', message:'메트로 R&S v23.35 연결됨'});
 }
 
 // === [v23.20] 일매출 대시보드 PDF 생성 함수 ===
@@ -1245,6 +1269,184 @@ function extendDailySalesRanges() {
     matchesByColumn: matchesByCol,
     rangeProcessed: range.getA1Notation(),
     note: 'K/L/M/O 컬럼의 :$X$NNN → :$X$2000 (시작 :$X$2 보호 + 단가표 Q/U 자동 보호)'
+  };
+}
+
+// === [v23.35] 결제현황 F열 자동화 진단 ===
+// 결제현황 F4~F23 21행을 분석:
+//   - 현재 F열이 수식인지 hardcoded 값인지
+//   - 각 행의 현장명/하자내용/수량 (split row 매핑 단서)
+//   - 일매출 시트의 한 데이터 행에서 14현장 컬럼 SUMPRODUCT 산식 dump (패턴 참조용)
+//   - 14현장 시트의 헤더 + 마지막 행 번호 (자동집계 SUMPRODUCT 작성 기반)
+function inspectPaymentSheet() {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var pay = ss.getSheetByName('결제현황');
+  var sales = ss.getSheetByName('일매출');
+  if (!pay) throw new Error('결제현황 시트 없음');
+  if (!sales) throw new Error('일매출 시트 없음');
+
+  // 1) 결제현황 A4:F23 — NO/현장/하자/수량/단가/작업비
+  var payRange = pay.getRange('A4:F23');
+  var payValues = payRange.getValues();
+  var payFormulas = payRange.getFormulas();
+  var paymentRows = [];
+  for (var i = 0; i < payValues.length; i++) {
+    paymentRows.push({
+      sheetRow: i + 4,
+      no: payValues[i][0],
+      site: payValues[i][1],
+      defect: payValues[i][2],
+      qty: payValues[i][3],
+      unit: payValues[i][4],
+      amount_value: payValues[i][5],
+      amount_formula: payFormulas[i][5]
+    });
+  }
+  // 합계 행 (24): 작업비 D24 또는 F24
+  var totalRow = pay.getRange('A24:F24').getValues()[0];
+  var totalRowFormulas = pay.getRange('A24:F24').getFormulas()[0];
+
+  // 2) 일매출 시트 — 헤더 (row 1) + 한 데이터 행 (row 2) 산식
+  var salesLastCol = sales.getLastColumn();
+  var salesHeaders = sales.getRange(1, 1, 1, salesLastCol).getValues()[0];
+  var salesRow2Values = sales.getRange(2, 1, 1, salesLastCol).getValues()[0];
+  var salesRow2Formulas = sales.getRange(2, 1, 1, salesLastCol).getFormulas()[0];
+  var salesCols = [];
+  for (var c = 0; c < salesHeaders.length; c++) {
+    salesCols.push({
+      col: c + 1,
+      colLetter: columnToLetter_(c + 1),
+      header: salesHeaders[c],
+      row2_value: salesRow2Values[c],
+      row2_formula: salesRow2Formulas[c]
+    });
+  }
+
+  // 3) 14현장 시트 — 헤더 + 마지막 행
+  var siteNames = ['경산하양','광주중흥','동탄','양산','양주','원주(무실)','원주(혁신)','충주호암','파주1단지','파주6단지','익산제일','검단제일','감일제일','군산미장'];
+  var siteSheets = {};
+  for (var si = 0; si < siteNames.length; si++) {
+    var sn = siteNames[si];
+    var sh = ss.getSheetByName(sn);
+    if (!sh) { siteSheets[sn] = {error: '시트 없음'}; continue; }
+    var lastRow = sh.getLastRow();
+    var lastCol = sh.getLastColumn();
+    var hdrs = sh.getRange(1, 1, 1, lastCol).getValues()[0];
+    siteSheets[sn] = { headers: hdrs, lastRow: lastRow, lastCol: lastCol };
+  }
+
+  return {
+    paymentRows: paymentRows,
+    totalRow24: { values: totalRow, formulas: totalRowFormulas },
+    salesCols: salesCols,
+    siteSheets: siteSheets,
+    note: '결제현황 F열 자동화 진단 — paymentRows.amount_formula 비었으면 hardcoded, salesCols 의 row2_formula 패턴을 그대로 사이트 단위 SUMPRODUCT로 포팅 가능'
+  };
+}
+
+// 컬럼 번호 → A1 알파벳
+function columnToLetter_(col) {
+  var s = '';
+  while (col > 0) {
+    var m = (col - 1) % 26;
+    s = String.fromCharCode(65 + m) + s;
+    col = Math.floor((col - 1) / 26);
+  }
+  return s;
+}
+
+// === [v23.35] 결제현황 F열 자동집계 수식 일괄 적용 ===
+// 21행 split 구조를 14현장 단위로 통합:
+//   - 한 현장에 split row가 있으면 첫 번째 row에만 사이트 시트 전체 SUMPRODUCT 박고
+//   - 나머지 split row의 F열은 0(또는 ""(빈값))으로 명시
+//   - 합계 D56 자체는 그대로 SUM(F4:F23) 유지 (이미 그렇게 됨)
+//   - dryRun=true 시 변경 안 하고 계획만 반환
+function setupPaymentFormulas(dryRun) {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var pay = ss.getSheetByName('결제현황');
+  var sales = ss.getSheetByName('일매출');
+  if (!pay) throw new Error('결제현황 시트 없음');
+  if (!sales) throw new Error('일매출 시트 없음');
+
+  // 일매출 시트의 row 2 데이터 행에서 14현장 컬럼의 SUMPRODUCT 산식 추출
+  var salesHeaders = sales.getRange(1, 1, 1, sales.getLastColumn()).getValues()[0];
+  var salesRow2Formulas = sales.getRange(2, 1, 1, sales.getLastColumn()).getFormulas()[0];
+
+  // 헤더명 → 산식 매핑 (14현장)
+  var siteFormulaMap = {};
+  for (var c = 0; c < salesHeaders.length; c++) {
+    var hn = String(salesHeaders[c] || '').replace(/\s/g, '');
+    var f = salesRow2Formulas[c];
+    if (f && hn) siteFormulaMap[hn] = f;
+  }
+
+  // 결제현황 A4:B23 읽어 현장명별 첫 행 찾기
+  var payRange = pay.getRange('A4:F23');
+  var payValues = payRange.getValues();
+  var payFormulas = payRange.getFormulas();
+
+  // 같은 현장의 첫 row만 자동 SUMPRODUCT, 같은 현장의 둘째/셋째 row는 빈 값
+  var seenSites = {};
+  var plan = [];
+  for (var i = 0; i < payValues.length; i++) {
+    var sheetRow = i + 4;
+    var site = String(payValues[i][1] || '').trim();
+    if (!site) continue;
+    var siteKey = site.replace(/\s/g, '');
+
+    // 일매출 산식에서 시트 참조를 ROW 무관 형태로 변환
+    var rawFormula = siteFormulaMap[siteKey] || null;
+    if (!rawFormula) {
+      plan.push({sheetRow: sheetRow, site: site, action: 'skip', reason: '일매출 산식 없음', oldFormula: payFormulas[i][5], oldValue: payValues[i][5]});
+      continue;
+    }
+
+    if (!seenSites[siteKey]) {
+      // 일매출 산식의 ROW($A2), $A2 등 행 참조를 제거 — '연도/월 일치' 조건 빼고 전체 합산
+      // 일매출 row2 SUMPRODUCT는 보통: =SUMPRODUCT(('시트'!K:K=ROW관련조건)*('시트'!L:L=조건)*'시트'!M:M)
+      // 우리는 전체 누계가 필요하므로 SUMPRODUCT 그대로 두면 일치 0건 → 0. 따라서 시트 SUM 방식으로 새로 작성.
+      // 안전한 대안: =SUM('시트명'!M2:M)  ← M이 금액 컬럼이라 가정. 진단 결과 봐야 확정.
+      // 일단은 진단 단계라 newFormula은 일매출 산식 그대로 — 사용자 검토 단계에서 결정
+      plan.push({
+        sheetRow: sheetRow,
+        site: site,
+        action: 'set-primary',
+        oldFormula: payFormulas[i][5],
+        oldValue: payValues[i][5],
+        newFormula_proposed: rawFormula,
+        siteKey: siteKey
+      });
+      seenSites[siteKey] = true;
+    } else {
+      plan.push({
+        sheetRow: sheetRow,
+        site: site,
+        action: 'clear-secondary',
+        oldFormula: payFormulas[i][5],
+        oldValue: payValues[i][5],
+        newValue_proposed: 0,
+        siteKey: siteKey
+      });
+    }
+  }
+
+  // dryRun이면 적용 안 함
+  if (dryRun) {
+    return {
+      dryRun: true,
+      cellsToChange: plan.filter(function(p){return p.action !== 'skip';}).length,
+      plan: plan,
+      note: '실 적용 전 plan 검토 — newFormula_proposed가 시트 전체 누계가 되는지 확인 필요. 일매출 산식이 ROW 조건 포함이면 다른 산식으로 교체해야 함.'
+    };
+  }
+
+  // 실 적용은 plan 검토 후 다음 단계에서 별도 함수로 진행
+  return {
+    dryRun: false,
+    note: 'plan 검토 단계 — 실 적용은 별도 진행. 현재는 dryRun=1로만 호출 권장.',
+    plan: plan
   };
 }
 
