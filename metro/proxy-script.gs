@@ -1323,7 +1323,7 @@ function inspectPaymentSheet() {
     });
   }
 
-  // 3) 14현장 시트 — 헤더 + 마지막 행
+  // 3) 14현장 시트 — 헤더 + 마지막 행 + paymentRows의 산식에서 참조한 셀(V21 등)의 formula·value 추적
   var siteNames = ['경산하양','광주중흥','동탄','양산','양주','원주(무실)','원주(혁신)','충주호암','파주1단지','파주6단지','익산제일','검단제일','감일제일','군산미장'];
   var siteSheets = {};
   for (var si = 0; si < siteNames.length; si++) {
@@ -1336,12 +1336,46 @@ function inspectPaymentSheet() {
     siteSheets[sn] = { headers: hdrs, lastRow: lastRow, lastCol: lastCol };
   }
 
+  // 4) paymentRows의 amount_formula에서 참조된 셀(예: ='양주'!V21*1)을 파싱해 그 셀의 formula+value 가져오기
+  var refCellTrace = [];
+  for (var pi = 0; pi < paymentRows.length; pi++) {
+    var pr = paymentRows[pi];
+    var f = pr.amount_formula || '';
+    // 패턴: ='시트명'!컬럼행 (예: ='양주'!V21*1, ='파주6단지'!V22*1, ='군산미장'!U16*1)
+    var m = f.match(/=\s*'([^']+)'!\s*\$?([A-Z]+)\$?(\d+)/);
+    if (m) {
+      var refSheet = m[1];
+      var refColLetter = m[2];
+      var refRow = parseInt(m[3]);
+      var rsh = ss.getSheetByName(refSheet);
+      if (rsh) {
+        try {
+          var rng = rsh.getRange(refColLetter + refRow);
+          refCellTrace.push({
+            paymentSheetRow: pr.sheetRow,
+            site: pr.site,
+            paymentFormula: f,
+            refSheet: refSheet,
+            refCell: refColLetter + refRow,
+            refValue: rng.getValue(),
+            refFormula: rng.getFormula()
+          });
+        } catch(e) {
+          refCellTrace.push({paymentSheetRow: pr.sheetRow, site: pr.site, refSheet: refSheet, refCell: refColLetter + refRow, error: e.message});
+        }
+      } else {
+        refCellTrace.push({paymentSheetRow: pr.sheetRow, site: pr.site, refSheet: refSheet, error: '참조 시트 없음'});
+      }
+    }
+  }
+
   return {
     paymentRows: paymentRows,
     totalRow24: { values: totalRow, formulas: totalRowFormulas },
     salesCols: salesCols,
     siteSheets: siteSheets,
-    note: '결제현황 F열 자동화 진단 — paymentRows.amount_formula 비었으면 hardcoded, salesCols 의 row2_formula 패턴을 그대로 사이트 단위 SUMPRODUCT로 포팅 가능'
+    refCellTrace: refCellTrace,
+    note: '결제현황 F열 자동화 진단 — refCellTrace에 각 사이트 합계 셀(V21 등)의 실제 산식 포함. 산식이 hardcoded면 그게 정합성 누수 원인.'
   };
 }
 
