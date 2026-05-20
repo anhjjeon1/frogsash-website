@@ -1,8 +1,8 @@
 // ========================================
 // (주)메트로 R&S AI v23.34 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger, fillNoSequence, inspectPaymentSheet, setupPaymentFormulas
-// v23.35: 결제현황 F열 자동집계 진단·자동화 액션 두 개 추가 — inspectPaymentSheet(F4~F23 + 일매출 SUMPRODUCT + 14현장 시트 헤더 dump), setupPaymentFormulas(dryRun 우선). 5/16~5/20 매출 4.54M(양주 1.94M + 파주6단지 2.6M)이 결제현황 D56·대시보드 미지급에 미반영되던 정합성 누수 영구 해결을 위한 1단계 진단 인프라.
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger, fillNoSequence, inspectPaymentSheet, setupPaymentFormulas, fixSiteTotalRanges
+// v23.35: 결제현황 F열 자동집계 진단·자동화 + 사이트 합계 셀 SUM 범위 무한 확장 — inspectPaymentSheet(refCellTrace로 사이트 합계 셀 산식 추적), fixSiteTotalRanges(합계 셀 자신만 제외 + 1999행까지 확장). 진짜 정합성 누수의 근원은 각 사이트 V21 등의 `=SUM(V2:V20)` hardcoded 범위 — 합계 행 아래 새 작업 누락. 일매출 v23.25 :$X$2000 확장과 동일 철학.
 // v23.34: fillNoSequence 액션 추가 — 시트별 A열(NO) 빈 셀을 마지막 NO + 1부터 연속 채움. 새 하자 행 paste 후 NO 수동 입력/드래그 채우기 자동화. B~G 컬럼 중 하나라도 데이터 있으면 채움 대상으로 인식. lastNo+1부터 시퀀셜 — 멱등 안전(이미 채워진 셀은 건드리지 않음).
 // v23.33: 시스템 폴더에 '1.' prefix 적용 (매니저 공유 시 14현장만 깔끔히 다중 선택). 새 이름: '1.메트로 관리자전송', '1.메트로 당일 매출 대시보드', '1.A전체(현장관리)'. 모든 폴더 참조에 _findOrCreateSubFolder 헬퍼 도입 — 새 이름 우선 검색 → 없으면 옛 이름 fallback → 그래도 없으면 새 이름으로 생성. Drive UI 이름 변경 전·후 모두 정상 동작 (안전 전환). collectPhotosForDate SKIP 목록도 새+옛 이름 동시 등록.
 // v23.32: 매니저 일일 보고 메일에 어제 사진 통합 폴더 링크 추가. 'A.메트로알엔에스(주)/메트로 관리자전송/사진_yyyy-MM-dd/{현장명}/{동-호}/{수리전|수리후|확인서}.{ext}' 계층 구조로 어제 사진 사본 생성 후 ANYONE_WITH_LINK+VIEW 공유 → 폴더 링크 1개 클릭 → Drive 우상단 다운로드로 zip 한 방. 현장명·동호 폴더 트리로 자동 명기. 같은 날짜 재실행 시 휴지통 후 재생성(멱등). 원본 동호 폴더는 보존(사본만 추가).
@@ -937,6 +937,20 @@ function doGet(e) {
     }
   }
 
+  // === [v23.35] 사이트 시트 합계 셀 SUM 범위 무한 확장 (진짜 fix) ===
+  // ?action=fixSiteTotalRanges               (실 적용)
+  // ?action=fixSiteTotalRanges&dryRun=1      (미리보기)
+  // 각 사이트 시트의 합계 셀(V21=SUM(V2:V20) 등)을 자기 자신 제외 전체 컬럼 합으로 교체.
+  // 합계 행 아래로 새 작업이 추가돼도 자동 누계 — 일매출 SUMPRODUCT v23.25 :$X$2000 확장과 동일 철학.
+  if (action === 'fixSiteTotalRanges') {
+    try {
+      var dry = (e.parameter.dryRun === '1' || e.parameter.dryRun === 'true');
+      return makeRes(Object.assign({status:'ok'}, fixSiteTotalRanges(dry)));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
   return makeRes({status:'ok', message:'메트로 R&S v23.35 연결됨'});
 }
 
@@ -1481,6 +1495,115 @@ function setupPaymentFormulas(dryRun) {
     dryRun: false,
     note: 'plan 검토 단계 — 실 적용은 별도 진행. 현재는 dryRun=1로만 호출 권장.',
     plan: plan
+  };
+}
+
+// === [v23.35] 각 사이트 시트의 합계 셀 SUM 범위 무한 확장 ===
+// 진단 결과: 양주!V21=`=SUM(V2:V20)`, 파주6단지!V22=`=SUM(V2:V21)` 등 14현장 모두
+// 합계 행 위쪽까지만 합산하는 hardcoded 범위. 합계 행 아래로 새 작업이 들어가면 누락.
+// 자기 자신 제외 + 1999행까지 무한 확장으로 영구 해결.
+//   양주!V21:  =SUM(V2:V20)              → =SUM($V$2:V20)+SUM($V$22:$V$1999)
+//   파주6!V22: =SUM(V2:V21)              → =SUM($V$2:V21)+SUM($V$23:$V$1999)
+//   익산!V14:  =SUBTOTAL(9,V2:V13)       → =SUBTOTAL(9,$V$2:V13)+SUBTOTAL(9,$V$15:$V$1999)
+//   군산!U16:  =SUM(U2:U15)              → =SUM($U$2:U15)+SUM($U$17:$U$1999)
+// 멱등 — 이미 확장된 패턴은 다시 변경하지 않음.
+function fixSiteTotalRanges(dryRun) {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var pay = ss.getSheetByName('결제현황');
+  if (!pay) throw new Error('결제현황 시트 없음');
+
+  var payFormulas = pay.getRange('F4:F23').getFormulas();
+  var results = [];
+
+  for (var i = 0; i < payFormulas.length; i++) {
+    var f = payFormulas[i][0] || '';
+    var m = f.match(/=\s*'([^']+)'!\s*\$?([A-Z]+)\$?(\d+)/);
+    if (!m) continue;
+
+    var refSheet = m[1];
+    var refColLetter = m[2];
+    var refRow = parseInt(m[3]);
+    var rsh = ss.getSheetByName(refSheet);
+    if (!rsh) {
+      results.push({site: refSheet, status: 'skip', reason: '시트 없음'});
+      continue;
+    }
+
+    var cell = rsh.getRange(refColLetter + refRow);
+    var cur = cell.getFormula();
+    if (!cur) {
+      results.push({site: refSheet, cell: refColLetter + refRow, status: 'skip', reason: '합계 셀이 hardcoded 값'});
+      continue;
+    }
+
+    // 이미 fix된 패턴 감지 (1999 들어있으면 skip)
+    if (/1999\)/.test(cur)) {
+      results.push({site: refSheet, cell: refColLetter + refRow, status: 'already-fixed', current: cur});
+      continue;
+    }
+
+    var sumMatch = cur.match(/^=\s*SUM\s*\(\s*\$?([A-Z]+)\$?(\d+)\s*:\s*\$?([A-Z]+)\$?(\d+)\s*\)\s*$/i);
+    var subMatch = cur.match(/^=\s*SUBTOTAL\s*\(\s*9\s*,\s*\$?([A-Z]+)\$?(\d+)\s*:\s*\$?([A-Z]+)\$?(\d+)\s*\)\s*$/i);
+
+    var newFormula = null;
+    var kind = '';
+    if (sumMatch) {
+      kind = 'SUM';
+      var sc = sumMatch[1].toUpperCase(), sr = parseInt(sumMatch[2]);
+      newFormula = '=SUM($' + sc + '$' + sr + ':' + sc + (refRow - 1) + ')+SUM($' + sc + '$' + (refRow + 1) + ':$' + sc + '$1999)';
+    } else if (subMatch) {
+      kind = 'SUBTOTAL';
+      var sc2 = subMatch[1].toUpperCase(), sr2 = parseInt(subMatch[2]);
+      newFormula = '=SUBTOTAL(9,$' + sc2 + '$' + sr2 + ':' + sc2 + (refRow - 1) + ')+SUBTOTAL(9,$' + sc2 + '$' + (refRow + 1) + ':$' + sc2 + '$1999)';
+    } else {
+      results.push({site: refSheet, cell: refColLetter + refRow, status: 'skip', reason: '미인식 패턴', current: cur});
+      continue;
+    }
+
+    // 예상 값 = 자기 자신 0으로 가정한 전체 컬럼 합 (검증용)
+    var preview = null;
+    try {
+      var fullRange = rsh.getRange(refColLetter + '1:' + refColLetter);
+      var colValues = fullRange.getValues();
+      var totalNum = 0;
+      var curRow = refRow;
+      for (var rr = 0; rr < colValues.length; rr++) {
+        if (rr + 1 === curRow) continue;
+        var vv = colValues[rr][0];
+        if (typeof vv === 'number') totalNum += vv;
+      }
+      preview = totalNum;
+    } catch(e) {}
+
+    var oldVal = cell.getValue();
+    results.push({
+      site: refSheet,
+      cell: refColLetter + refRow,
+      kind: kind,
+      oldFormula: cur,
+      oldValue: oldVal,
+      newFormula: newFormula,
+      previewSum: preview,
+      delta: (preview != null && typeof oldVal === 'number') ? (preview - oldVal) : null,
+      status: dryRun ? 'planned' : 'applied'
+    });
+
+    if (!dryRun) {
+      cell.setFormula(newFormula);
+    }
+  }
+
+  if (!dryRun) SpreadsheetApp.flush();
+
+  return {
+    dryRun: dryRun,
+    count: results.length,
+    appliedCount: results.filter(function(r){return r.status === 'applied';}).length,
+    plannedCount: results.filter(function(r){return r.status === 'planned';}).length,
+    alreadyFixedCount: results.filter(function(r){return r.status === 'already-fixed';}).length,
+    skippedCount: results.filter(function(r){return r.status === 'skip';}).length,
+    results: results
   };
 }
 
