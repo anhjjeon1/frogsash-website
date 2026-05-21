@@ -987,6 +987,17 @@ function doGet(e) {
     }
   }
 
+  // === [v23.35] 양산 시트 월별 매출 SUMPRODUCT 원본 복구 (긴급) ===
+  // ?action=revertYangsanMonthlySales
+  // autoFillMonthlySales로 SUMIFS 박힌 양산 R31~AC31, R36~AC36를 원본 SUMPRODUCT로 복원
+  if (action === 'revertYangsanMonthlySales') {
+    try {
+      return makeRes(Object.assign({status:'ok'}, revertYangsanMonthlySales()));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
   return makeRes({status:'ok', message:'메트로 R&S v23.35 연결됨'});
 }
 
@@ -2008,6 +2019,47 @@ function autoFillMonthlySales(siteName, dryRun) {
 
   if (!dryRun) SpreadsheetApp.flush();
   return {dryRun: dryRun, sites: siteResults};
+}
+
+// === [v23.35] 양산 시트 월별 매출 SUMPRODUCT 원본 복구 (긴급 fix) ===
+// autoFillMonthlySales가 0짜리 SUMIFS를 박아 덮어쓴 양산 R31~AC31, R36~AC36를
+// 원본 패턴 산식으로 재생성:
+//   row 31: YEAR=2025, MONTH=1~12 (R31=1월, ..., AC31=12월)
+//   row 36: YEAR=2026, MONTH=1~12 (R36=1월, ..., AC36=12월)
+function revertYangsanMonthlySales() {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sh = ss.getSheetByName('양산');
+  if (!sh) throw new Error('양산 시트 없음');
+
+  var cols = ['R','S','T','U','V','W','X','Y','Z','AA','AB','AC'];
+  var results = [];
+
+  for (var m = 1; m <= 12; m++) {
+    var colL = cols[m-1];
+    var formula31 = '=ARRAY_CONSTRAIN(ARRAYFORMULA(SUMPRODUCT(' +
+      '(MONTH(IF(ISNUMBER(L2:L500),L2:L500,0))=' + m + ')*' +
+      '(YEAR(IF(ISNUMBER(L2:L500),L2:L500,0))=2025)*' +
+      '(M2:M500="완료")*' +
+      '(ISNUMBER(L2:L500))*' +
+      'O2:O500*U2' +
+      ')), 1, 1)';
+    sh.getRange(colL + '31').setFormula(formula31);
+    results.push({cell: colL+'31', year: 2025, month: m});
+
+    var formula36 = '=ARRAY_CONSTRAIN(ARRAYFORMULA(SUMPRODUCT(' +
+      '(MONTH(IF(ISNUMBER(L2:L500),L2:L500,0))=' + m + ')*' +
+      '(YEAR(IF(ISNUMBER(L2:L500),L2:L500,0))=2026)*' +
+      '(M2:M500="완료")*' +
+      '(ISNUMBER(L2:L500))*' +
+      'O2:O500*U2' +
+      ')), 1, 1)';
+    sh.getRange(colL + '36').setFormula(formula36);
+    results.push({cell: colL+'36', year: 2026, month: m});
+  }
+
+  SpreadsheetApp.flush();
+  return {restored: results.length, results: results, note: '양산 시트 R31~AC31, R36~AC36 24셀에 원본 SUMPRODUCT 산식 복원 완료'};
 }
 
 // === [v23.34] 시트 A열 NO 빈 셀 자동 채우기 ===
