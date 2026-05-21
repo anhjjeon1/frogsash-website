@@ -1683,13 +1683,24 @@ function inspectSiteMemoConsistency() {
     var sumBelowTotal = 0;
     var excludeCols = { 'N': true, 'U': true, 'O': true };  // 단가, 수량 컬럼
 
+    // 컬럼 범위 제한: 합계 셀 컬럼 ±7 범위만 스캔 (B/C/D 같은 코드성 컬럼 자동 제외)
+    var refColIdx_ = 0;
+    var rcl = refColLetter;
+    if (rcl.length === 1) refColIdx_ = rcl.charCodeAt(0) - 65;
+    else refColIdx_ = (rcl.charCodeAt(0) - 65 + 1) * 26 + (rcl.charCodeAt(1) - 65);
+    var minScanCol = Math.max(0, refColIdx_ - 7);
+    var maxScanCol = refColIdx_ + 7;
+
     for (var r = 0; r < values.length; r++) {
-      for (var c = 0; c < values[r].length; c++) {
+      for (var c = minScanCol; c <= maxScanCol && c < values[r].length; c++) {
         var val = values[r][c];
         // typeof number 체크 필수 — Date 객체도 isFinite true이므로 number 강제
         if (typeof val !== 'number' || !isFinite(val) || val < 10000) continue;
         var colL = (c < 26) ? String.fromCharCode(65 + c) : 'A' + String.fromCharCode(65 + c - 26);
         if (excludeCols[colL]) continue;
+        // 사진 데이터 컬럼 (_data) 제외
+        var headerName = values[0] && values[0][c];
+        if (typeof headerName === 'string' && headerName.indexOf('_data') >= 0) continue;
         // 인접 셀 컨텍스트 — string만 추출 (Date·number 제외)
         var aboveCell = (r > 0 && values[r-1] && values[r-1][c] !== undefined) ? values[r-1][c] : '';
         var leftCell  = (c > 0 && values[r] && values[r][c-1] !== undefined) ? values[r][c-1] : '';
