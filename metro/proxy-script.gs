@@ -963,6 +963,30 @@ function doGet(e) {
     }
   }
 
+  // === [v23.35] 14현장 월별 매출 블록 위치 진단 ===
+  // ?action=inspectMonthlySalesBlocks
+  if (action === 'inspectMonthlySalesBlocks') {
+    try {
+      return makeRes(Object.assign({status:'ok'}, inspectMonthlySalesBlocks()));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  // === [v23.35] 월별 매출 SUMIFS 자동 채움 ===
+  // ?action=autoFillMonthlySales                              (14현장 일괄 실 적용)
+  // ?action=autoFillMonthlySales&dryRun=1                     (전체 dryRun)
+  // ?action=autoFillMonthlySales&siteName=양산&dryRun=1       (특정 사이트 dryRun)
+  if (action === 'autoFillMonthlySales') {
+    try {
+      var sn = e.parameter.siteName || '';
+      var dry = (e.parameter.dryRun === '1' || e.parameter.dryRun === 'true');
+      return makeRes(Object.assign({status:'ok'}, autoFillMonthlySales(sn, dry)));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
   return makeRes({status:'ok', message:'메트로 R&S v23.35 연결됨'});
 }
 
@@ -1753,6 +1777,204 @@ function inspectSiteMemoConsistency() {
     siteReports: siteReports,
     note: '각 사이트 V21 등 합계 셀 기준 위(sumAbove)·아래(sumBelow) 분류 메모 합을 비교. aboveVsTotal_delta가 0이면 위쪽 분류 정합, belowVsTotal_delta가 0이면 아래쪽 분류 정합. 둘 다 0이면 완벽 정합. 0이 아닌 사이트 = 사장님 직접 확인·정정 후보.'
   };
+}
+
+// === [v23.35] 14현장 월별 매출 블록 위치 진단 ===
+// 각 사이트 시트의 "▣ 월별 매출 현황" 라벨을 검색해 1차·2차 블록의
+// 라벨행/월라벨행/데이터행 + 월별 컬럼 매핑 + 현재 값 dump.
+function inspectMonthlySalesBlocks() {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var pay = ss.getSheetByName('결제현황');
+  if (!pay) throw new Error('결제현황 시트 없음');
+
+  var payFormulas = pay.getRange('F4:F23').getFormulas();
+  var siteNames = [];
+  var seen = {};
+  for (var i = 0; i < payFormulas.length; i++) {
+    var m = (payFormulas[i][0] || '').match(/=\s*'([^']+)'!/);
+    if (m && !seen[m[1]]) { siteNames.push(m[1]); seen[m[1]] = true; }
+  }
+
+  var reports = [];
+  for (var si = 0; si < siteNames.length; si++) {
+    var sn = siteNames[si];
+    var sh = ss.getSheetByName(sn);
+    if (!sh) { reports.push({site: sn, error: '시트 없음'}); continue; }
+    var lastRow = sh.getLastRow();
+    var lastCol = sh.getLastColumn();
+    var values = sh.getRange(1, 1, lastRow, lastCol).getValues();
+
+    var blocks = [];
+    for (var r = 0; r < values.length; r++) {
+      for (var c = 0; c < values[r].length; c++) {
+        var v = values[r][c];
+        if (typeof v === 'string' && v.indexOf('월별 매출') >= 0) {
+          var monthRowIdx = r + 1;
+          var dataRowIdx = r + 2;
+          var monthCols = {};
+          if (monthRowIdx < values.length) {
+            for (var cc = c; cc < values[monthRowIdx].length; cc++) {
+              var mv = String(values[monthRowIdx][cc] || '');
+              var mm = mv.match(/^(\d+)월$/);
+              if (mm) monthCols[parseInt(mm[1])] = cc;
+            }
+          }
+          var dataCells = [];
+          var blockSum = 0;
+          if (dataRowIdx < values.length) {
+            for (var mn = 1; mn <= 12; mn++) {
+              if (monthCols[mn] !== undefined) {
+                var dc = monthCols[mn];
+                var dv = values[dataRowIdx][dc];
+                var dvNum = (typeof dv === 'number') ? dv : 0;
+                blockSum += dvNum;
+                var dcL = (dc < 26) ? String.fromCharCode(65 + dc) : 'A' + String.fromCharCode(65 + dc - 26);
+                dataCells.push({month: mn, cell: dcL + (dataRowIdx + 1), value: dvNum});
+              }
+            }
+          }
+          var labelCell = ((c < 26) ? String.fromCharCode(65 + c) : 'A' + String.fromCharCode(65 + c - 26)) + (r + 1);
+          var dataRowNO = (dataRowIdx < values.length && values[dataRowIdx][0] !== undefined) ? values[dataRowIdx][0] : null;
+          blocks.push({
+            labelCell: labelCell,
+            labelText: v,
+            monthRow: monthRowIdx + 1,
+            dataRow: dataRowIdx + 1,
+            dataRowNO: dataRowNO,
+            monthCols: monthCols,
+            dataCells: dataCells,
+            blockSum: blockSum
+          });
+        }
+      }
+    }
+    reports.push({site: sn, blockCount: blocks.length, blocks: blocks});
+  }
+  return {siteCount: reports.length, reports: reports};
+}
+
+// === [v23.35] 월별 매출 SUMIFS 자동 채움 ===
+// 각 사이트의 1차/2차 월별 매출 블록 데이터 행에 SUMIFS 산식 자동 박음.
+// 첫번째 블록 = 2025년, 두번째 = 2026년 가정 (사이트별 블록 순서 기준).
+// 일매출 시트 사이트 컬럼 매핑(헤더명 기준)을 통해 자동 산식.
+// siteName 지정하면 그 사이트만, 비우면 14현장 일괄.
+function autoFillMonthlySales(siteName, dryRun) {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+
+  var sales = ss.getSheetByName('일매출');
+  if (!sales) throw new Error('일매출 시트 없음');
+  var salesHeaders = sales.getRange(1, 1, 1, sales.getLastColumn()).getValues()[0];
+
+  // 일매출 시트 사이트명 → 컬럼 인덱스 매핑
+  var siteColMap = {};
+  for (var c = 0; c < salesHeaders.length; c++) {
+    var h = String(salesHeaders[c] || '').replace(/\s/g, '');
+    if (h) siteColMap[h] = c + 1;
+  }
+
+  var pay = ss.getSheetByName('결제현황');
+  var payFormulas = pay.getRange('F4:F23').getFormulas();
+  var siteNames = [];
+  var seen = {};
+  for (var i = 0; i < payFormulas.length; i++) {
+    var m = (payFormulas[i][0] || '').match(/=\s*'([^']+)'!/);
+    if (m && !seen[m[1]]) { siteNames.push(m[1]); seen[m[1]] = true; }
+  }
+
+  if (siteName) siteNames = siteNames.filter(function(s){return s === siteName;});
+
+  var yearMap = ['2025', '2026'];
+  var siteResults = [];
+
+  for (var si = 0; si < siteNames.length; si++) {
+    var sn = siteNames[si];
+    var sh = ss.getSheetByName(sn);
+    if (!sh) { siteResults.push({site: sn, status: 'skip', reason: '시트 없음'}); continue; }
+
+    var snKey = sn.replace(/\s/g, '');
+    var salesColNum = siteColMap[snKey];
+    if (!salesColNum) {
+      siteResults.push({site: sn, status: 'skip', reason: '일매출 헤더에 사이트 컬럼 없음 (snKey=' + snKey + ')'});
+      continue;
+    }
+    var salesColLetter = (salesColNum - 1 < 26) ? String.fromCharCode(65 + salesColNum - 1) : 'A' + String.fromCharCode(65 + salesColNum - 1 - 26);
+
+    var lastRow = sh.getLastRow();
+    var lastCol = sh.getLastColumn();
+    var values = sh.getRange(1, 1, lastRow, lastCol).getValues();
+
+    // 월별 매출 블록 찾기
+    var blocks = [];
+    for (var r = 0; r < values.length; r++) {
+      for (var c = 0; c < values[r].length; c++) {
+        var v = values[r][c];
+        if (typeof v === 'string' && v.indexOf('월별 매출') >= 0) {
+          var monthRowIdx = r + 1;
+          var dataRowIdx = r + 2;
+          var monthCols = {};
+          if (monthRowIdx < values.length) {
+            for (var cc = c; cc < values[monthRowIdx].length; cc++) {
+              var mv = String(values[monthRowIdx][cc] || '');
+              var mm = mv.match(/^(\d+)월$/);
+              if (mm) monthCols[parseInt(mm[1])] = cc;
+            }
+          }
+          blocks.push({labelRow: r + 1, monthRow: monthRowIdx + 1, dataRow: dataRowIdx + 1, monthCols: monthCols});
+        }
+      }
+    }
+
+    if (blocks.length === 0) {
+      siteResults.push({site: sn, status: 'skip', reason: '월별 매출 블록 없음'});
+      continue;
+    }
+
+    var cellResults = [];
+    for (var bi = 0; bi < blocks.length; bi++) {
+      var blk = blocks[bi];
+      var year = yearMap[bi] || ('20' + (25 + bi));
+      for (var mn = 1; mn <= 12; mn++) {
+        var dc2 = blk.monthCols[mn];
+        if (dc2 === undefined) continue;
+        var dcLetter = (dc2 < 26) ? String.fromCharCode(65 + dc2) : 'A' + String.fromCharCode(65 + dc2 - 26);
+        var cellA1 = dcLetter + blk.dataRow;
+        var newFormula = "=SUMIFS('일매출'!" + salesColLetter + ":" + salesColLetter +
+          ", '일매출'!B:B, " + year +
+          ", '일매출'!C:C, " + mn + ")";
+
+        var oldVal = sh.getRange(cellA1).getValue();
+        var oldFormula = sh.getRange(cellA1).getFormula();
+
+        cellResults.push({
+          blockIdx: bi,
+          year: year,
+          month: mn,
+          cell: cellA1,
+          oldValue: (typeof oldVal === 'number') ? oldVal : 0,
+          oldFormula: oldFormula,
+          newFormula: newFormula
+        });
+
+        if (!dryRun) {
+          sh.getRange(cellA1).setFormula(newFormula);
+        }
+      }
+    }
+
+    siteResults.push({
+      site: sn,
+      salesColumn: salesColLetter,
+      blockCount: blocks.length,
+      cellsToFill: cellResults.length,
+      cells: cellResults,
+      status: dryRun ? 'planned' : 'applied'
+    });
+  }
+
+  if (!dryRun) SpreadsheetApp.flush();
+  return {dryRun: dryRun, sites: siteResults};
 }
 
 // === [v23.34] 시트 A열 NO 빈 셀 자동 채우기 ===
