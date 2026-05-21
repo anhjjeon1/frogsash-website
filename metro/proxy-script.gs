@@ -998,6 +998,18 @@ function doGet(e) {
     }
   }
 
+  // === [v23.36] 14현장 L/M/K 컬럼 type 진단 ===
+  // ?action=inspectSiteColumnTypes
+  // 일매출 SUMPRODUCT가 ISNUMBER(L:L) 조건 사용. Text면 false → 결과 0.
+  // 8개 비작동 사이트의 L열이 Date인지 Text인지 type 차이 확인.
+  if (action === 'inspectSiteColumnTypes') {
+    try {
+      return makeRes(Object.assign({status:'ok'}, inspectSiteColumnTypes()));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
   return makeRes({status:'ok', message:'메트로 R&S v23.35 연결됨'});
 }
 
@@ -2060,6 +2072,62 @@ function revertYangsanMonthlySales() {
 
   SpreadsheetApp.flush();
   return {restored: results.length, results: results, note: '양산 시트 R31~AC31, R36~AC36 24셀에 원본 SUMPRODUCT 산식 복원 완료'};
+}
+
+// === [v23.36] 14현장 L/M/K/O 컬럼 셀 type 진단 ===
+// 일매출 SUMPRODUCT의 ISNUMBER(L:L) 첫 조건이 false면 결과 0.
+// 작동 사이트(동탄 등)와 비작동(경산하양 등)의 L열 type 비교로 근본 원인 추적.
+function inspectSiteColumnTypes() {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var siteNames = ['경산하양','광주중흥','동탄','양산','양주','원주(무실)','원주(혁신)','충주호암','파주1단지','파주6단지','익산제일','검단제일','감일제일','군산미장'];
+  var workingSet = {'동탄':1,'양주':1,'원주(혁신)':1,'파주6단지':1,'감일제일':1,'군산미장':1};
+  var reports = [];
+
+  for (var si = 0; si < siteNames.length; si++) {
+    var sn = siteNames[si];
+    var sh = ss.getSheetByName(sn);
+    if (!sh) { reports.push({site: sn, error: '시트 없음'}); continue; }
+
+    // L2:L8 + M2:M8 + K2:K8 + O2:O8 type/value 샘플
+    var range = sh.getRange(2, 11, 7, 5); // K~O (col 11-15)
+    var values = range.getValues();
+    var samples = [];
+    for (var r = 0; r < values.length; r++) {
+      var rowVals = values[r];
+      var K = rowVals[0], L = rowVals[1], M = rowVals[2], N = rowVals[3], O = rowVals[4];
+      samples.push({
+        row: r + 2,
+        K: { type: (K instanceof Date) ? 'Date' : typeof K, valStr: String(K).substring(0, 30) },
+        L: { type: (L instanceof Date) ? 'Date' : typeof L, valStr: String(L).substring(0, 30), isNumber: (typeof L === 'number'), isDate: (L instanceof Date) },
+        M: { type: (M instanceof Date) ? 'Date' : typeof M, valStr: String(M).substring(0, 30) },
+        O: { type: (O instanceof Date) ? 'Date' : typeof O, valStr: String(O).substring(0, 30) }
+      });
+    }
+
+    // ISNUMBER(L) 통과 행 수 추정 (L이 Date 또는 number만 통과)
+    var lPassCount = 0;
+    var lFailCount = 0;
+    var lastRow = sh.getLastRow();
+    if (lastRow > 1) {
+      var allL = sh.getRange(2, 12, lastRow - 1, 1).getValues();
+      for (var rr = 0; rr < allL.length; rr++) {
+        var lv = allL[rr][0];
+        if (lv instanceof Date || typeof lv === 'number') lPassCount++;
+        else if (lv !== '' && lv !== null) lFailCount++;
+      }
+    }
+
+    reports.push({
+      site: sn,
+      isWorking: workingSet[sn] ? true : false,
+      lastRow: lastRow,
+      ISNUMBER_L_passCount: lPassCount,
+      ISNUMBER_L_failCount: lFailCount,
+      samples: samples
+    });
+  }
+  return {reports: reports, note: 'ISNUMBER_L_passCount > 0면 산식 작동 가능. = 0면 L열이 모두 Text 또는 빈값 → SUMPRODUCT 결과 0의 원인.'};
 }
 
 // === [v23.34] 시트 A열 NO 빈 셀 자동 채우기 ===
