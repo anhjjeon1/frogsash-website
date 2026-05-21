@@ -937,15 +937,27 @@ function doGet(e) {
     }
   }
 
-  // === [v23.35] 사이트 시트 합계 셀 SUM 범위 무한 확장 (진짜 fix) ===
-  // ?action=fixSiteTotalRanges               (실 적용)
-  // ?action=fixSiteTotalRanges&dryRun=1      (미리보기)
-  // 각 사이트 시트의 합계 셀(V21=SUM(V2:V20) 등)을 자기 자신 제외 전체 컬럼 합으로 교체.
-  // 합계 행 아래로 새 작업이 추가돼도 자동 누계 — 일매출 SUMPRODUCT v23.25 :$X$2000 확장과 동일 철학.
+  // === [v23.35] 사이트 시트 합계 셀 SUM 범위 무한 확장 (보류) ===
+  // ⚠️ 적용 금지: 사이트 V열이 단순 누계가 아니라 분류 메모 운영 방식임이 확인됨.
+  // SUM 범위 확장 시 분류 메모 중복 합산 부풀림 위험.
+  // ?action=fixSiteTotalRanges               (실 적용 — 사용 금지)
+  // ?action=fixSiteTotalRanges&dryRun=1      (미리보기 진단용으로만)
   if (action === 'fixSiteTotalRanges') {
     try {
       var dry = (e.parameter.dryRun === '1' || e.parameter.dryRun === 'true');
       return makeRes(Object.assign({status:'ok'}, fixSiteTotalRanges(dry)));
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  // === [v23.35] 14현장 분류 메모 정합성 점검 (V21 vs 분해 메모 합산 비교) ===
+  // ?action=inspectSiteMemoConsistency
+  // 각 사이트의 1만원 이상 모든 숫자 셀 dump + V21(합계 셀) vs 그 외 메모 셀 합 비교.
+  // 사장님이 양산 0.28M 같은 누수를 14현장 모두에서 한 번에 찾을 수 있도록 시각화.
+  if (action === 'inspectSiteMemoConsistency') {
+    try {
+      return makeRes(Object.assign({status:'ok'}, inspectSiteMemoConsistency()));
     } catch(err) {
       return makeRes({status:'error', message:err.message, stack:err.stack || ''});
     }
@@ -1604,6 +1616,92 @@ function fixSiteTotalRanges(dryRun) {
     alreadyFixedCount: results.filter(function(r){return r.status === 'already-fixed';}).length,
     skippedCount: results.filter(function(r){return r.status === 'skip';}).length,
     results: results
+  };
+}
+
+// === [v23.35] 14현장 분류 메모 정합성 점검 ===
+// 각 사이트 시트의 1만원 이상 모든 숫자 셀을 위치별로 dump. 결제현황 F열이 참조한 합계 셀(V21 등)을
+// 기준으로, 그 위(V2~V[N-1]) 메모 합과 그 아래 모든 메모 합을 각각 계산해 비교.
+// 양산처럼 위·아래가 같은 값을 표현하면 정확. 둘이 다르면 시트 입력 누수 후보.
+function inspectSiteMemoConsistency() {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var pay = ss.getSheetByName('결제현황');
+  if (!pay) throw new Error('결제현황 시트 없음');
+
+  // 결제현황 F4:F23 자동참조 산식에서 사이트별 합계 셀 추출
+  var payFormulas = pay.getRange('F4:F23').getFormulas();
+  var payValues = pay.getRange('F4:F23').getValues();
+  var paySiteNames = pay.getRange('B4:B23').getValues();
+
+  var siteReports = [];
+  var seenSites = {};
+
+  for (var i = 0; i < payFormulas.length; i++) {
+    var f = payFormulas[i][0] || '';
+    var m = f.match(/=\s*'([^']+)'!\s*\$?([A-Z]+)\$?(\d+)/);
+    if (!m) continue;
+    var refSheet = m[1];
+    if (seenSites[refSheet]) continue;
+    seenSites[refSheet] = true;
+    var refColLetter = m[2];
+    var refRow = parseInt(m[3]);
+
+    var rsh = ss.getSheetByName(refSheet);
+    if (!rsh) continue;
+
+    var lastRow = rsh.getLastRow();
+    var lastCol = rsh.getLastColumn();
+    var values = rsh.getRange(1, 1, lastRow, lastCol).getValues();
+
+    // 1만원 이상 모든 숫자 셀 수집 (단가성 추정 컬럼 N/U 제외)
+    var memoCells = [];
+    var totalCellValue = null;
+    var sumAboveTotal = 0;
+    var sumBelowTotal = 0;
+    var excludeCols = { 'N': true, 'U': true, 'O': true };  // 단가, 수량 컬럼
+
+    for (var r = 0; r < values.length; r++) {
+      for (var c = 0; c < values[r].length; c++) {
+        var val = values[r][c];
+        if (!isFinite(val) || val < 10000) continue;
+        var colL = (c < 26) ? String.fromCharCode(65 + c) : 'A' + String.fromCharCode(65 + c - 26);
+        if (excludeCols[colL]) continue;
+        memoCells.push({
+          cell: colL + (r + 1),
+          col: colL,
+          row: r + 1,
+          value: val,
+          A: values[r][0],
+          K: values[r][10] || ''
+        });
+        if ((r + 1) === refRow && colL === refColLetter) {
+          totalCellValue = val;
+        } else if ((r + 1) < refRow) {
+          sumAboveTotal += val;
+        } else if ((r + 1) > refRow) {
+          sumBelowTotal += val;
+        }
+      }
+    }
+
+    siteReports.push({
+      site: refSheet,
+      totalCell: refColLetter + refRow,
+      totalValue: totalCellValue,
+      sumAbove: sumAboveTotal,
+      sumBelow: sumBelowTotal,
+      aboveVsTotal_delta: (totalCellValue != null) ? (sumAboveTotal - totalCellValue) : null,
+      belowVsTotal_delta: (totalCellValue != null) ? (sumBelowTotal - totalCellValue) : null,
+      memoCells: memoCells,
+      cellCount: memoCells.length
+    });
+  }
+
+  return {
+    siteCount: siteReports.length,
+    siteReports: siteReports,
+    note: '각 사이트 V21 등 합계 셀 기준 위(sumAbove)·아래(sumBelow) 분류 메모 합을 비교. aboveVsTotal_delta가 0이면 위쪽 분류 정합, belowVsTotal_delta가 0이면 아래쪽 분류 정합. 둘 다 0이면 완벽 정합. 0이 아닌 사이트 = 사장님 직접 확인·정정 후보.'
   };
 }
 
