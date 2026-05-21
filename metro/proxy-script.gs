@@ -1932,9 +1932,40 @@ function autoFillMonthlySales(siteName, dryRun) {
     }
 
     var cellResults = [];
+    var realBlockIdx = 0;  // 빈 블록 skip 후 데이터 블록 카운트
+    var skippedBlocks = [];
+
     for (var bi = 0; bi < blocks.length; bi++) {
       var blk = blocks[bi];
-      var year = yearMap[bi] || ('20' + (25 + bi));
+
+      // (1) 기존 산식에서 YEAR 자동 추출 시도
+      var detectedYear = null;
+      var hasFormulaOrValue = false;
+      for (var mn0 = 1; mn0 <= 12; mn0++) {
+        var dc0 = blk.monthCols[mn0];
+        if (dc0 === undefined) continue;
+        var dcL0 = (dc0 < 26) ? String.fromCharCode(65 + dc0) : 'A' + String.fromCharCode(65 + dc0 - 26);
+        var existingRange = sh.getRange(dcL0 + blk.dataRow);
+        var existingFormula = existingRange.getFormula();
+        var existingValue = existingRange.getValue();
+        if (existingFormula) {
+          hasFormulaOrValue = true;
+          var ym = existingFormula.match(/YEAR\([^)]*\)\s*=\s*(\d{4})/);
+          if (ym) { detectedYear = ym[1]; break; }
+        }
+        if (typeof existingValue === 'number' && existingValue !== 0) hasFormulaOrValue = true;
+      }
+
+      // (2) 빈 블록 (산식·값 모두 없음) skip
+      if (!hasFormulaOrValue) {
+        skippedBlocks.push({blockIdx: bi, labelRow: blk.labelRow, dataRow: blk.dataRow, reason: 'empty block'});
+        continue;
+      }
+
+      // (3) 년도 결정: 산식 추출값 우선, 없으면 빈 블록 skip한 yearMap fallback
+      var year = detectedYear || yearMap[realBlockIdx] || ('20' + (25 + realBlockIdx));
+      realBlockIdx++;
+
       for (var mn = 1; mn <= 12; mn++) {
         var dc2 = blk.monthCols[mn];
         if (dc2 === undefined) continue;
@@ -1950,10 +1981,11 @@ function autoFillMonthlySales(siteName, dryRun) {
         cellResults.push({
           blockIdx: bi,
           year: year,
+          yearSource: detectedYear ? 'detected' : 'fallback',
           month: mn,
           cell: cellA1,
           oldValue: (typeof oldVal === 'number') ? oldVal : 0,
-          oldFormula: oldFormula,
+          oldFormula: (oldFormula || '').substring(0, 80),
           newFormula: newFormula
         });
 
@@ -1968,6 +2000,7 @@ function autoFillMonthlySales(siteName, dryRun) {
       salesColumn: salesColLetter,
       blockCount: blocks.length,
       cellsToFill: cellResults.length,
+      skippedBlocks: skippedBlocks,
       cells: cellResults,
       status: dryRun ? 'planned' : 'applied'
     });
