@@ -1619,10 +1619,32 @@ function fixSiteTotalRanges(dryRun) {
   };
 }
 
+// === [v23.35] 메모 셀 주변 라벨 텍스트 자동 검출 ===
+// 메모 셀 (r, c) 기준 반경 2칸 이내에서 라벨 키워드 매칭 텍스트 찾기.
+// 키워드: 월/년/분기/누적/합계/분류/시즌
+function findNearbyLabels_(values, r, c, radius) {
+  var labelKw = /(월|년|분기|누적|합계|분류|시즌|입주)/;
+  var found = [];
+  for (var dr = -radius; dr <= radius; dr++) {
+    for (var dc = -radius; dc <= radius; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      var rr = r + dr, cc = c + dc;
+      if (rr < 0 || cc < 0 || !values[rr] || values[rr][cc] === undefined) continue;
+      var vv = values[rr][cc];
+      if (typeof vv === 'string' && labelKw.test(vv)) {
+        var colL = (cc < 26) ? String.fromCharCode(65 + cc) : 'A' + String.fromCharCode(65 + cc - 26);
+        found.push(colL + (rr + 1) + ':"' + vv.slice(0, 20) + '"');
+      }
+    }
+  }
+  return found.join(' / ');
+}
+
 // === [v23.35] 14현장 분류 메모 정합성 점검 ===
 // 각 사이트 시트의 1만원 이상 모든 숫자 셀을 위치별로 dump. 결제현황 F열이 참조한 합계 셀(V21 등)을
 // 기준으로, 그 위(V2~V[N-1]) 메모 합과 그 아래 모든 메모 합을 각각 계산해 비교.
 // 양산처럼 위·아래가 같은 값을 표현하면 정확. 둘이 다르면 시트 입력 누수 후보.
+// 각 메모 셀에 주변 라벨 텍스트(5월/12월/2025년 등) 자동 매칭으로 의미 라벨링.
 function inspectSiteMemoConsistency() {
   var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
   var ss = SpreadsheetApp.openById(SHEET_ID);
@@ -1667,13 +1689,24 @@ function inspectSiteMemoConsistency() {
         if (!isFinite(val) || val < 10000) continue;
         var colL = (c < 26) ? String.fromCharCode(65 + c) : 'A' + String.fromCharCode(65 + c - 26);
         if (excludeCols[colL]) continue;
+        // 인접 셀 컨텍스트
+        var aboveCell = (r > 0 && values[r-1] && values[r-1][c] !== undefined) ? values[r-1][c] : '';
+        var leftCell  = (c > 0 && values[r] && values[r][c-1] !== undefined) ? values[r][c-1] : '';
+        var aboveLeft = (r > 0 && c > 0 && values[r-1] && values[r-1][c-1] !== undefined) ? values[r-1][c-1] : '';
+        // 반경 2 내 라벨 키워드 매칭
+        var nearbyLabels = findNearbyLabels_(values, r, c, 2);
+
         memoCells.push({
           cell: colL + (r + 1),
           col: colL,
           row: r + 1,
           value: val,
           A: values[r][0],
-          K: values[r][10] || ''
+          K: values[r][10] || '',
+          contextAbove: (typeof aboveCell === 'string' && aboveCell) ? aboveCell.slice(0, 20) : (isFinite(aboveCell) ? aboveCell : ''),
+          contextLeft:  (typeof leftCell === 'string' && leftCell)  ? leftCell.slice(0, 20)  : (isFinite(leftCell)  ? leftCell  : ''),
+          contextAboveLeft: (typeof aboveLeft === 'string' && aboveLeft) ? aboveLeft.slice(0, 20) : (isFinite(aboveLeft) ? aboveLeft : ''),
+          nearbyLabels: nearbyLabels
         });
         if ((r + 1) === refRow && colL === refColLetter) {
           totalCellValue = val;
