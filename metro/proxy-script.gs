@@ -1686,26 +1686,32 @@ function inspectSiteMemoConsistency() {
     for (var r = 0; r < values.length; r++) {
       for (var c = 0; c < values[r].length; c++) {
         var val = values[r][c];
-        if (!isFinite(val) || val < 10000) continue;
+        // typeof number 체크 필수 — Date 객체도 isFinite true이므로 number 강제
+        if (typeof val !== 'number' || !isFinite(val) || val < 10000) continue;
         var colL = (c < 26) ? String.fromCharCode(65 + c) : 'A' + String.fromCharCode(65 + c - 26);
         if (excludeCols[colL]) continue;
-        // 인접 셀 컨텍스트
+        // 인접 셀 컨텍스트 — string만 추출 (Date·number 제외)
         var aboveCell = (r > 0 && values[r-1] && values[r-1][c] !== undefined) ? values[r-1][c] : '';
         var leftCell  = (c > 0 && values[r] && values[r][c-1] !== undefined) ? values[r][c-1] : '';
-        var aboveLeft = (r > 0 && c > 0 && values[r-1] && values[r-1][c-1] !== undefined) ? values[r-1][c-1] : '';
-        // 반경 2 내 라벨 키워드 매칭
+        var contextAbove = (typeof aboveCell === 'string' && aboveCell) ? aboveCell.slice(0, 20) : '';
+        var contextLeft  = (typeof leftCell === 'string' && leftCell)   ? leftCell.slice(0, 20)  : '';
         var nearbyLabels = findNearbyLabels_(values, r, c, 2);
+        // K(분류) 컬럼만 짧게
+        var Kval = values[r][10];
+        var K_short = (typeof Kval === 'string') ? Kval.slice(0, 15) : '';
+        // A(NO)도 number 또는 string
+        var Aval = values[r][0];
+        var A_safe = (typeof Aval === 'number' || typeof Aval === 'string') ? Aval : '';
 
         memoCells.push({
           cell: colL + (r + 1),
           col: colL,
           row: r + 1,
           value: val,
-          A: values[r][0],
-          K: values[r][10] || '',
-          contextAbove: (typeof aboveCell === 'string' && aboveCell) ? aboveCell.slice(0, 20) : (isFinite(aboveCell) ? aboveCell : ''),
-          contextLeft:  (typeof leftCell === 'string' && leftCell)  ? leftCell.slice(0, 20)  : (isFinite(leftCell)  ? leftCell  : ''),
-          contextAboveLeft: (typeof aboveLeft === 'string' && aboveLeft) ? aboveLeft.slice(0, 20) : (isFinite(aboveLeft) ? aboveLeft : ''),
+          A: A_safe,
+          K: K_short,
+          contextAbove: contextAbove,
+          contextLeft: contextLeft,
           nearbyLabels: nearbyLabels
         });
         if ((r + 1) === refRow && colL === refColLetter) {
