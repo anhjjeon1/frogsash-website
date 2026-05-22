@@ -6,7 +6,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v23.30</title>
+  <title>(주)메트로 R & S AI v23.31</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -339,8 +339,8 @@
       </div>
       <!-- 동/호 필터 -->
       <div class="no-print" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px;align-items:center">
-        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fDong" placeholder="동" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micDong" onclick="App.startVoiceInput('fDong','micDong')" aria-label="동 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
-        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fHo" placeholder="호" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micHo" onclick="App.startVoiceInput('fHo','micHo')" aria-label="호 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
+        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fDong" placeholder="동" inputmode="numeric" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micDong" onclick="App.startVoiceInput('fDong','micDong')" aria-label="동 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
+        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fHo" placeholder="호" inputmode="numeric" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micHo" onclick="App.startVoiceInput('fHo','micHo')" aria-label="호 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
       </div>
       <!-- 새 하자 인라인 입력 (위치·하자내용 음성) -->
       <div class="no-print" style="display:grid;grid-template-columns:1fr 2fr auto;gap:4px;margin-bottom:8px;align-items:center;padding:8px 6px 6px;background:var(--accent-pale);border:1px solid var(--accent-light);border-radius:var(--r);position:relative">
@@ -376,7 +376,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.30'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.31'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC',VERSION:'METRO_APP_VERSION'};
 var SETTINGS_KEYS={SCRIPT:'METRO_SCRIPT_URL',SHEET:'METRO_SHEET_ID',SHEET_NAME:'METRO_SHEET_NAME',WORKER:'METRO_WORKER'};
 var DEFAULTS={
