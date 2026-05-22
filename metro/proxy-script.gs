@@ -1,8 +1,9 @@
 // ========================================
-// (주)메트로 R&S AI v23.37 - Google Apps Script
+// (주)메트로 R&S AI v23.38 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger, fillNoSequence, inspectPaymentSheet, setupPaymentFormulas, fixSiteTotalRanges, stripLeadingZeroInColD, inspectColumnValidation, clearColumnValidation
-// v23.37: C/D열 데이터 검증 규칙 제거 액션 추가 — inspectColumnValidation(셀별 검증 종류·샘플 진단), clearColumnValidation(데이터 검증만 제거, 값·서식·수식 보존). sheetName='*'로 SYSTEM_SHEETS 제외 모든 시트(14현장) 일괄. cols=C,D 기본(임의 컬럼 지정 가능). dryRun 옵션. 멱등 안전. 사용 케이스: 동(C)·호수(D) 등에 'B동', '201호' 같은 문자 포함 입력 허용.
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger, fillNoSequence, inspectPaymentSheet, setupPaymentFormulas, fixSiteTotalRanges, stripLeadingZeroInColD, inspectColumnValidation, clearColumnValidation, setColumnFormatText
+// v23.38: C/D열 셀 형식 텍스트(@) 강제 액션 추가 — setColumnFormatText. 'B동', '102호' 같은 문자 포함 입력 허용. Google Sheets 기본 형식이 숫자로 자동 변환하던 동작 차단. 값·데이터 검증·수식은 그대로 보존. sheetName='*' 14현장 일괄 + cols 임의 지정 + dryRun + 멱등 안전.
+// v23.37: C/D열 데이터 검증 규칙 제거 액션 추가 — inspectColumnValidation(셀별 검증 종류·샘플 진단), clearColumnValidation(데이터 검증만 제거, 값·서식·수식 보존). sheetName='*'로 SYSTEM_SHEETS 제외 모든 시트(14현장) 일괄. cols=C,D 기본(임의 컬럼 지정 가능). dryRun 옵션. 멱등 안전. 진단 결과 감일제일 C/D 검증 규칙 0건 — 실제 원인은 셀 형식 문제로 v23.38에서 추가 처리.
 // v23.36: 호수(D열) leading 0 제거 액션 추가 — stripLeadingZeroInColD. 옛 4자리 패딩 형식('0210') → 자연수 형식('210') 일괄 변환. sheetName='*'로 옛 형식 잔존 3시트(감일제일·광주중흥·양산) 일괄 처리. /^0\d+$/ 매칭 셀만 strip + 텍스트 형식(@) 강제 + dryRun 옵션. 멱등 안전(재실행 0건). Drive 사진 폴더는 그대로 유지(옛 사진 끊김 없음).
 // v23.35: 결제현황 F열 자동집계 진단·자동화 + 사이트 합계 셀 SUM 범위 무한 확장 — inspectPaymentSheet(refCellTrace로 사이트 합계 셀 산식 추적), fixSiteTotalRanges(합계 셀 자신만 제외 + 1999행까지 확장). 진짜 정합성 누수의 근원은 각 사이트 V21 등의 `=SUM(V2:V20)` hardcoded 범위 — 합계 행 아래 새 작업 누락. 일매출 v23.25 :$X$2000 확장과 동일 철학.
 // v23.34: fillNoSequence 액션 추가 — 시트별 A열(NO) 빈 셀을 마지막 NO + 1부터 연속 채움. 새 하자 행 paste 후 NO 수동 입력/드래그 채우기 자동화. B~G 컬럼 중 하나라도 데이터 있으면 채움 대상으로 인식. lastNo+1부터 시퀀셜 — 멱등 안전(이미 채워진 셀은 건드리지 않음).
@@ -1212,7 +1213,80 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.37 연결됨'});
+  // === [v23.38] C/D열 셀 형식 텍스트(@) 강제 — 문자 포함 입력 허용 ===
+  // ?action=setColumnFormatText&sheetId=...&sheetName=감일제일&cols=C,D&dryRun=1   (미리보기)
+  // ?action=setColumnFormatText&sheetId=...&sheetName=감일제일&cols=C,D             (실 실행)
+  // sheetName='*' 호출 시 SYSTEM_SHEETS 제외 모든 시트(=14현장 일괄)
+  // 셀 형식만 '@'로 변경. 값·데이터 검증·수식은 그대로 보존.
+  // 멱등 안전: 재실행 시 이미 텍스트 형식인 셀은 변동 없음
+  if (action === 'setColumnFormatText') {
+    var sheetId = e.parameter.sheetId;
+    var sheetName = e.parameter.sheetName || '';
+    var colsParam = (e.parameter.cols || 'C,D').toUpperCase();
+    var dryRun = e.parameter.dryRun === '1';
+    if (!sheetId) return makeRes({status:'error', message:'sheetId 필요'});
+    if (!sheetName) return makeRes({status:'error', message:'sheetName 필요 (단일 시트명 또는 *)'});
+    try {
+      var ss = SpreadsheetApp.openById(sheetId);
+      var TARGETS = [];
+      if (sheetName === '*') {
+        var all = ss.getSheets();
+        for (var s = 0; s < all.length; s++) {
+          var nm = all[s].getName();
+          if (SYSTEM_SHEETS[nm]) continue;
+          TARGETS.push(nm);
+        }
+      } else {
+        TARGETS = [sheetName];
+      }
+      var colLetters = colsParam.split(',').map(function(s){return s.trim();}).filter(function(s){return s;});
+      var report = [];
+      var totalPlanned = 0, totalApplied = 0;
+      for (var t = 0; t < TARGETS.length; t++) {
+        var nm3 = TARGETS[t];
+        var ws3 = ss.getSheetByName(nm3);
+        if (!ws3) { report.push({sheet:nm3, error:'시트 없음'}); continue; }
+        var lr3 = ws3.getLastRow();
+        if (lr3 < 2) { report.push({sheet:nm3, planned:0, applied:0, note:'빈 시트'}); continue; }
+        var sheetPlanned3 = 0, sheetApplied3 = 0;
+        var colDetail3 = {};
+        for (var ci2 = 0; ci2 < colLetters.length; ci2++) {
+          var letter3 = colLetters[ci2];
+          var colIdx3 = letter3.charCodeAt(0) - 64;
+          if (colIdx3 < 1 || colIdx3 > 26) { colDetail3[letter3] = {error:'잘못된 컬럼'}; continue; }
+          var rng3 = ws3.getRange(2, colIdx3, lr3 - 1, 1);
+          var formats = rng3.getNumberFormats();
+          var planned3 = 0;
+          for (var r3 = 0; r3 < formats.length; r3++) {
+            if (formats[r3][0] !== '@') planned3++;
+          }
+          sheetPlanned3 += planned3;
+          if (!dryRun && planned3 > 0) {
+            rng3.setNumberFormat('@');
+            sheetApplied3 += planned3;
+          }
+          colDetail3[letter3] = {planned: planned3, applied: dryRun ? 0 : planned3};
+        }
+        totalPlanned += sheetPlanned3;
+        totalApplied += sheetApplied3;
+        report.push({sheet: nm3, planned: sheetPlanned3, applied: dryRun ? 0 : sheetApplied3, cols: colDetail3});
+      }
+      return makeRes({
+        status: 'ok',
+        version: 'v23.38',
+        dryRun: dryRun,
+        targets: TARGETS,
+        cols: colLetters,
+        totalPlanned: totalPlanned,
+        totalApplied: totalApplied,
+        report: report
+      });
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  return makeRes({status:'ok', message:'메트로 R&S v23.38 연결됨'});
 }
 
 // === [v23.20] 일매출 대시보드 PDF 생성 함수 ===
