@@ -6,7 +6,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v23.29</title>
+  <title>(주)메트로 R & S AI v23.30</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -339,8 +339,8 @@
       </div>
       <!-- 동/호 필터 -->
       <div class="no-print" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px;align-items:center">
-        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fDong" placeholder="동" inputmode="numeric" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micDong" onclick="App.startVoiceInput('fDong','micDong')" aria-label="동 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
-        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fHo" placeholder="호" inputmode="numeric" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micHo" onclick="App.startVoiceInput('fHo','micHo')" aria-label="호 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
+        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fDong" placeholder="동" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micDong" onclick="App.startVoiceInput('fDong','micDong')" aria-label="동 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
+        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fHo" placeholder="호" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micHo" onclick="App.startVoiceInput('fHo','micHo')" aria-label="호 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
       </div>
       <!-- 새 하자 인라인 입력 (위치·하자내용 음성) -->
       <div class="no-print" style="display:grid;grid-template-columns:1fr 2fr auto;gap:4px;margin-bottom:8px;align-items:center;padding:8px 6px 6px;background:var(--accent-pale);border:1px solid var(--accent-light);border-radius:var(--r);position:relative">
@@ -376,7 +376,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.29'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.30'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC',VERSION:'METRO_APP_VERSION'};
 var SETTINGS_KEYS={SCRIPT:'METRO_SCRIPT_URL',SHEET:'METRO_SHEET_ID',SHEET_NAME:'METRO_SHEET_NAME',WORKER:'METRO_WORKER'};
 var DEFAULTS={
@@ -669,7 +669,7 @@ var App={
   parseDH:function(row){
     var d=this.gv(row,'dong'),h=this.gv(row,'ho');
     if(!d&&!h){var u=this.gv(row,'unit');var m=u.match(/(\d+)\s*동?\s*[-\/]?\s*(\d+)\s*호?/);if(m){d=m[1];h=m[2];}}
-    return{dong:d.replace(/[^0-9]/g,''),ho:h.replace(/[^0-9]/g,'')};
+    return{dong:d,ho:h}; // v23.30: 시트 값 그대로 (옛 숫자 외 제거 정규식 폐기 — '1BF', 'B동', '201호' 정상 표시)
   },
 
   // === 하자 리스트 렌더링 ===
@@ -679,18 +679,17 @@ var App={
       document.getElementById('logBody').innerHTML='<tr><td colspan="10" class="log-empty">구글시트에서 데이터를 불러오세요</td></tr>';
       return;
     }
-    var qD=document.getElementById('fDong').value.trim();
-    var qH=document.getElementById('fHo').value.trim();
-    var nD=parseInt(qD.replace(/[^0-9]/g,'')||'-1',10);
-    var nH=parseInt(qH.replace(/[^0-9]/g,'')||'-1',10);
+    // v23.30: 문자열 부분 일치 검색 (옛 parseInt 비교 폐기 — '1'로 검색해도 '1BF' 매칭)
+    var qD=document.getElementById('fDong').value.trim().toLowerCase();
+    var qH=document.getElementById('fHo').value.trim().toLowerCase();
     var filtered=[],doneHidden=0;
     for(var i=0;i<this.sourceData.length;i++){
       var row=this.sourceData[i];
       var dh=this.parseDH(row);
-      var rD=parseInt(dh.dong||'-1',10);
-      var rH=parseInt(dh.ho||'-1',10);
-      if(qD&&rD!==nD)continue;
-      if(qH&&rH!==nH)continue;
+      var rD=String(dh.dong||'').toLowerCase();
+      var rH=String(dh.ho||'').toLowerCase();
+      if(qD&&rD.indexOf(qD)===-1)continue;
+      if(qH&&rH.indexOf(qH)===-1)continue;
       // v23.3: 완료 행 숨김
       var rowDone=this.gv(row,'done')||'';
       var rowIsDone=rowDone&&rowDone!=='미완료'&&rowDone!=='N';
