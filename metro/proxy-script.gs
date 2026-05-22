@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.36 - Google Apps Script
+// (주)메트로 R&S AI v23.37 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger, fillNoSequence, inspectPaymentSheet, setupPaymentFormulas, fixSiteTotalRanges, stripLeadingZeroInColD
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger, fillNoSequence, inspectPaymentSheet, setupPaymentFormulas, fixSiteTotalRanges, stripLeadingZeroInColD, inspectColumnValidation, clearColumnValidation
+// v23.37: C/D열 데이터 검증 규칙 제거 액션 추가 — inspectColumnValidation(셀별 검증 종류·샘플 진단), clearColumnValidation(데이터 검증만 제거, 값·서식·수식 보존). sheetName='*'로 SYSTEM_SHEETS 제외 모든 시트(14현장) 일괄. cols=C,D 기본(임의 컬럼 지정 가능). dryRun 옵션. 멱등 안전. 사용 케이스: 동(C)·호수(D) 등에 'B동', '201호' 같은 문자 포함 입력 허용.
 // v23.36: 호수(D열) leading 0 제거 액션 추가 — stripLeadingZeroInColD. 옛 4자리 패딩 형식('0210') → 자연수 형식('210') 일괄 변환. sheetName='*'로 옛 형식 잔존 3시트(감일제일·광주중흥·양산) 일괄 처리. /^0\d+$/ 매칭 셀만 strip + 텍스트 형식(@) 강제 + dryRun 옵션. 멱등 안전(재실행 0건). Drive 사진 폴더는 그대로 유지(옛 사진 끊김 없음).
 // v23.35: 결제현황 F열 자동집계 진단·자동화 + 사이트 합계 셀 SUM 범위 무한 확장 — inspectPaymentSheet(refCellTrace로 사이트 합계 셀 산식 추적), fixSiteTotalRanges(합계 셀 자신만 제외 + 1999행까지 확장). 진짜 정합성 누수의 근원은 각 사이트 V21 등의 `=SUM(V2:V20)` hardcoded 범위 — 합계 행 아래 새 작업 누락. 일매출 v23.25 :$X$2000 확장과 동일 철학.
 // v23.34: fillNoSequence 액션 추가 — 시트별 A열(NO) 빈 셀을 마지막 NO + 1부터 연속 채움. 새 하자 행 paste 후 NO 수동 입력/드래그 채우기 자동화. B~G 컬럼 중 하나라도 데이터 있으면 채움 대상으로 인식. lastNo+1부터 시퀀셜 — 멱등 안전(이미 채워진 셀은 건드리지 않음).
@@ -1080,7 +1081,138 @@ function doGet(e) {
     }
   }
 
-  return makeRes({status:'ok', message:'메트로 R&S v23.36 연결됨'});
+  // === [v23.37] C/D열 데이터 검증 규칙 진단 ===
+  // ?action=inspectColumnValidation&sheetId=...&sheetName=감일제일&cols=C,D
+  // 셀별 데이터 검증 종류 (NUMBER_BETWEEN, NUMBER_GREATER, etc) + 샘플 5건 반환
+  if (action === 'inspectColumnValidation') {
+    var sheetId = e.parameter.sheetId;
+    var sheetName = e.parameter.sheetName || '';
+    var colsParam = (e.parameter.cols || 'C,D').toUpperCase();
+    if (!sheetId) return makeRes({status:'error', message:'sheetId 필요'});
+    if (!sheetName) return makeRes({status:'error', message:'sheetName 필요'});
+    try {
+      var ss = SpreadsheetApp.openById(sheetId);
+      var ws = ss.getSheetByName(sheetName);
+      if (!ws) return makeRes({status:'error', message:'시트 없음: '+sheetName});
+      var lr = ws.getLastRow();
+      if (lr < 2) return makeRes({status:'ok', message:'빈 시트', rows:0});
+      var colLetters = colsParam.split(',').map(function(s){return s.trim();}).filter(function(s){return s;});
+      var report = {};
+      for (var i = 0; i < colLetters.length; i++) {
+        var letter = colLetters[i];
+        var colIdx = letter.charCodeAt(0) - 64;
+        if (colIdx < 1 || colIdx > 26) { report[letter] = {error:'잘못된 컬럼'}; continue; }
+        var rng = ws.getRange(2, colIdx, lr - 1, 1);
+        var validations = rng.getDataValidations();
+        var samples = [];
+        var withValidation = 0;
+        var typeCount = {};
+        for (var r = 0; r < validations.length; r++) {
+          var v = validations[r][0];
+          if (v) {
+            withValidation++;
+            var t = String(v.getCriteriaType());
+            typeCount[t] = (typeCount[t] || 0) + 1;
+            if (samples.length < 5) {
+              samples.push({
+                row: r + 2,
+                type: t,
+                values: (v.getCriteriaValues() || []).map(function(x){return String(x);}),
+                allowInvalid: v.getAllowInvalid(),
+                help: v.getHelpText() || ''
+              });
+            }
+          }
+        }
+        report[letter] = {
+          column: colIdx,
+          rowsScanned: validations.length,
+          withValidation: withValidation,
+          typeCount: typeCount,
+          samples: samples,
+          headerValue: ws.getRange(1, colIdx).getDisplayValue()
+        };
+      }
+      return makeRes({status:'ok', version:'v23.37', sheet:sheetName, report:report});
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  // === [v23.37] C/D열 데이터 검증 규칙 제거 (문자 입력 허용) ===
+  // ?action=clearColumnValidation&sheetId=...&sheetName=감일제일&cols=C,D&dryRun=1   (미리보기)
+  // ?action=clearColumnValidation&sheetId=...&sheetName=감일제일&cols=C,D             (실 실행)
+  // sheetName='*' 호출 시 SYSTEM_SHEETS 제외 모든 시트(=14현장 일괄)
+  // 데이터 검증(data validation)만 제거. 셀 값·서식·수식은 그대로 보존.
+  // 멱등 안전: 재실행 시 이미 제거된 셀은 0건 처리
+  if (action === 'clearColumnValidation') {
+    var sheetId = e.parameter.sheetId;
+    var sheetName = e.parameter.sheetName || '';
+    var colsParam = (e.parameter.cols || 'C,D').toUpperCase();
+    var dryRun = e.parameter.dryRun === '1';
+    if (!sheetId) return makeRes({status:'error', message:'sheetId 필요'});
+    if (!sheetName) return makeRes({status:'error', message:'sheetName 필요 (단일 시트명 또는 *)'});
+    try {
+      var ss = SpreadsheetApp.openById(sheetId);
+      var TARGETS = [];
+      if (sheetName === '*') {
+        var all = ss.getSheets();
+        for (var s = 0; s < all.length; s++) {
+          var nm = all[s].getName();
+          if (SYSTEM_SHEETS[nm]) continue;
+          TARGETS.push(nm);
+        }
+      } else {
+        TARGETS = [sheetName];
+      }
+      var colLetters = colsParam.split(',').map(function(s){return s.trim();}).filter(function(s){return s;});
+      var report = [];
+      var totalPlanned = 0, totalApplied = 0;
+      for (var t = 0; t < TARGETS.length; t++) {
+        var nm2 = TARGETS[t];
+        var ws2 = ss.getSheetByName(nm2);
+        if (!ws2) { report.push({sheet:nm2, error:'시트 없음'}); continue; }
+        var lr2 = ws2.getLastRow();
+        if (lr2 < 2) { report.push({sheet:nm2, planned:0, applied:0, note:'빈 시트'}); continue; }
+        var sheetPlanned = 0, sheetApplied = 0;
+        var colDetail = {};
+        for (var ci = 0; ci < colLetters.length; ci++) {
+          var letter2 = colLetters[ci];
+          var colIdx2 = letter2.charCodeAt(0) - 64;
+          if (colIdx2 < 1 || colIdx2 > 26) { colDetail[letter2] = {error:'잘못된 컬럼'}; continue; }
+          var rng2 = ws2.getRange(2, colIdx2, lr2 - 1, 1);
+          var validations2 = rng2.getDataValidations();
+          var planned2 = 0;
+          for (var r2 = 0; r2 < validations2.length; r2++) {
+            if (validations2[r2][0]) planned2++;
+          }
+          sheetPlanned += planned2;
+          if (!dryRun && planned2 > 0) {
+            rng2.clearDataValidations();
+            sheetApplied += planned2;
+          }
+          colDetail[letter2] = {planned: planned2, applied: dryRun ? 0 : planned2};
+        }
+        totalPlanned += sheetPlanned;
+        totalApplied += sheetApplied;
+        report.push({sheet: nm2, planned: sheetPlanned, applied: dryRun ? 0 : sheetApplied, cols: colDetail});
+      }
+      return makeRes({
+        status: 'ok',
+        version: 'v23.37',
+        dryRun: dryRun,
+        targets: TARGETS,
+        cols: colLetters,
+        totalPlanned: totalPlanned,
+        totalApplied: totalApplied,
+        report: report
+      });
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  return makeRes({status:'ok', message:'메트로 R&S v23.37 연결됨'});
 }
 
 // === [v23.20] 일매출 대시보드 PDF 생성 함수 ===
