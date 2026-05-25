@@ -1,0 +1,555 @@
+{
+  "_comment": "Phase 2 long-form. 16:9 1920x1080, 300s (5min), 7 sections. Each section has own TTS audio. Text and TTS sources injected via modifications.",
+  "output_format": "mp4",
+  "width": 1920,
+  "height": 1080,
+  "frame_rate": 30,
+  "duration": 300,
+  "elements": [
+    {
+      "type": "composition",
+      "name": "Intro",
+      "track": 1,
+      "time": 0,
+      "duration": 15,
+      "animations": [
+        {"time": 0, "duration": 0.5, "type": "fade", "fade_direction": "in"}
+      ],
+      "elements": [
+        {
+          "type": "image",
+          "name": "Intro-Background",
+          "source": "https://anhjjeon1.github.io/frogsash-website/longform-bg/bg1.png",
+          "fit": "cover",
+          "duration": 15
+        },
+        {
+          "type": "text",
+          "name": "Intro-Brand",
+          "text": "청개구리AI 사전점검",
+          "x": "50%",
+          "y": "26%",
+          "width": "80%",
+          "height": "8%",
+          "x_alignment": "50%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "3.5 vmin",
+          "font_weight": "600",
+          "fill_color": "#BAE6FD",
+          "duration": 15
+        },
+        {
+          "type": "text",
+          "name": "Intro-Title",
+          "text": "{{INTRO_TITLE}}",
+          "x": "50%",
+          "y": "46%",
+          "width": "85%",
+          "height": "22%",
+          "x_alignment": "50%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "7 vmin",
+          "font_weight": "900",
+          "line_height": "120%",
+          "fill_color": "#FFFFFF",
+          "shadow_color": "rgba(0, 0, 0, 0.4)",
+          "shadow_blur": "1.5 vmin",
+          "shadow_y": "0.5 vmin",
+          "duration": 15
+        },
+        {
+          "type": "text",
+          "name": "Intro-Subtitle",
+          "text": "{{INTRO_SUBTITLE}}",
+          "x": "50%",
+          "y": "70%",
+          "width": "75%",
+          "height": "10%",
+          "x_alignment": "50%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "3.2 vmin",
+          "font_weight": "400",
+          "fill_color": "#E0F2FE",
+          "duration": 15
+        },
+        {
+          "type": "audio",
+          "name": "Intro-Narration",
+          "source": "{{INTRO_TTS}}",
+          "duration": 15,
+          "audio_fade_in": 0.3,
+          "audio_fade_out": 0.4
+        }
+      ]
+    },
+
+    {
+      "type": "composition",
+      "name": "Section1",
+      "track": 1,
+      "time": 15,
+      "duration": 60,
+      "animations": [
+        {"time": 0, "duration": 0.5, "type": "fade", "fade_direction": "in"}
+      ],
+      "elements": [
+        {
+          "type": "image",
+          "name": "Section1-Background",
+          "source": "https://anhjjeon1.github.io/frogsash-website/longform-bg/bg2.png",
+          "fit": "cover",
+          "duration": 60
+        },
+        {
+          "type": "text",
+          "name": "Section1-Label",
+          "text": "문제 01",
+          "x": "16%",
+          "y": "13%",
+          "width": "20%",
+          "height": "5%",
+          "x_alignment": "0%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "2.4 vmin",
+          "font_weight": "700",
+          "fill_color": "#DC2626",
+          "duration": 60
+        },
+        {
+          "type": "text",
+          "name": "Section1-Headline",
+          "text": "{{SECTION1_HEADLINE}}",
+          "x": "16%",
+          "y": "28%",
+          "width": "72%",
+          "height": "14%",
+          "x_alignment": "0%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "5.5 vmin",
+          "font_weight": "900",
+          "line_height": "115%",
+          "fill_color": "#0F172A",
+          "duration": 60
+        },
+        {
+          "type": "text",
+          "name": "Section1-Body",
+          "text": "{{SECTION1_BODY}}",
+          "x": "16%",
+          "y": "60%",
+          "width": "72%",
+          "height": "32%",
+          "x_alignment": "0%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "2.8 vmin",
+          "font_weight": "500",
+          "line_height": "165%",
+          "fill_color": "#334155",
+          "duration": 60
+        },
+        {
+          "type": "audio",
+          "name": "Section1-Narration",
+          "source": "{{SECTION1_TTS}}",
+          "duration": 60,
+          "audio_fade_in": 0.3,
+          "audio_fade_out": 0.4
+        }
+      ]
+    },
+
+    {
+      "type": "composition",
+      "name": "Section2",
+      "track": 1,
+      "time": 75,
+      "duration": 60,
+      "animations": [
+        {"time": 0, "duration": 0.5, "type": "fade", "fade_direction": "in"}
+      ],
+      "elements": [
+        {
+          "type": "image",
+          "name": "Section2-Background",
+          "source": "https://anhjjeon1.github.io/frogsash-website/longform-bg/bg3.png",
+          "fit": "cover",
+          "duration": 60
+        },
+        {
+          "type": "text",
+          "name": "Section2-Label",
+          "text": "문제 02",
+          "x": "16%",
+          "y": "13%",
+          "width": "20%",
+          "height": "5%",
+          "x_alignment": "0%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "2.4 vmin",
+          "font_weight": "700",
+          "fill_color": "#EA580C",
+          "duration": 60
+        },
+        {
+          "type": "text",
+          "name": "Section2-Headline",
+          "text": "{{SECTION2_HEADLINE}}",
+          "x": "16%",
+          "y": "28%",
+          "width": "72%",
+          "height": "14%",
+          "x_alignment": "0%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "5.5 vmin",
+          "font_weight": "900",
+          "line_height": "115%",
+          "fill_color": "#0F172A",
+          "duration": 60
+        },
+        {
+          "type": "text",
+          "name": "Section2-Body",
+          "text": "{{SECTION2_BODY}}",
+          "x": "16%",
+          "y": "60%",
+          "width": "72%",
+          "height": "32%",
+          "x_alignment": "0%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "2.8 vmin",
+          "font_weight": "500",
+          "line_height": "165%",
+          "fill_color": "#334155",
+          "duration": 60
+        },
+        {
+          "type": "audio",
+          "name": "Section2-Narration",
+          "source": "{{SECTION2_TTS}}",
+          "duration": 60,
+          "audio_fade_in": 0.3,
+          "audio_fade_out": 0.4
+        }
+      ]
+    },
+
+    {
+      "type": "composition",
+      "name": "Section3",
+      "track": 1,
+      "time": 135,
+      "duration": 60,
+      "animations": [
+        {"time": 0, "duration": 0.5, "type": "fade", "fade_direction": "in"}
+      ],
+      "elements": [
+        {
+          "type": "image",
+          "name": "Section3-Background",
+          "source": "https://anhjjeon1.github.io/frogsash-website/longform-bg/bg4.png",
+          "fit": "cover",
+          "duration": 60
+        },
+        {
+          "type": "text",
+          "name": "Section3-Label",
+          "text": "문제 03",
+          "x": "16%",
+          "y": "13%",
+          "width": "20%",
+          "height": "5%",
+          "x_alignment": "0%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "2.4 vmin",
+          "font_weight": "700",
+          "fill_color": "#CA8A04",
+          "duration": 60
+        },
+        {
+          "type": "text",
+          "name": "Section3-Headline",
+          "text": "{{SECTION3_HEADLINE}}",
+          "x": "16%",
+          "y": "28%",
+          "width": "72%",
+          "height": "14%",
+          "x_alignment": "0%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "5.5 vmin",
+          "font_weight": "900",
+          "line_height": "115%",
+          "fill_color": "#0F172A",
+          "duration": 60
+        },
+        {
+          "type": "text",
+          "name": "Section3-Body",
+          "text": "{{SECTION3_BODY}}",
+          "x": "16%",
+          "y": "60%",
+          "width": "72%",
+          "height": "32%",
+          "x_alignment": "0%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "2.8 vmin",
+          "font_weight": "500",
+          "line_height": "165%",
+          "fill_color": "#334155",
+          "duration": 60
+        },
+        {
+          "type": "audio",
+          "name": "Section3-Narration",
+          "source": "{{SECTION3_TTS}}",
+          "duration": 60,
+          "audio_fade_in": 0.3,
+          "audio_fade_out": 0.4
+        }
+      ]
+    },
+
+    {
+      "type": "composition",
+      "name": "Section4",
+      "track": 1,
+      "time": 195,
+      "duration": 60,
+      "animations": [
+        {"time": 0, "duration": 0.5, "type": "fade", "fade_direction": "in"}
+      ],
+      "elements": [
+        {
+          "type": "image",
+          "name": "Section4-Background",
+          "source": "https://anhjjeon1.github.io/frogsash-website/longform-bg/bg5.png",
+          "fit": "cover",
+          "duration": 60
+        },
+        {
+          "type": "text",
+          "name": "Section4-Label",
+          "text": "해결책",
+          "x": "16%",
+          "y": "13%",
+          "width": "22%",
+          "height": "5%",
+          "x_alignment": "0%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "2.4 vmin",
+          "font_weight": "700",
+          "fill_color": "#0EA5E9",
+          "duration": 60
+        },
+        {
+          "type": "text",
+          "name": "Section4-Headline",
+          "text": "{{SECTION4_HEADLINE}}",
+          "x": "16%",
+          "y": "28%",
+          "width": "72%",
+          "height": "14%",
+          "x_alignment": "0%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "5.5 vmin",
+          "font_weight": "900",
+          "line_height": "115%",
+          "fill_color": "#0C4A6E",
+          "duration": 60
+        },
+        {
+          "type": "text",
+          "name": "Section4-Body",
+          "text": "{{SECTION4_BODY}}",
+          "x": "16%",
+          "y": "60%",
+          "width": "72%",
+          "height": "32%",
+          "x_alignment": "0%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "2.8 vmin",
+          "font_weight": "500",
+          "line_height": "165%",
+          "fill_color": "#0F172A",
+          "duration": 60
+        },
+        {
+          "type": "audio",
+          "name": "Section4-Narration",
+          "source": "{{SECTION4_TTS}}",
+          "duration": 60,
+          "audio_fade_in": 0.3,
+          "audio_fade_out": 0.4
+        }
+      ]
+    },
+
+    {
+      "type": "composition",
+      "name": "Data",
+      "track": 1,
+      "time": 255,
+      "duration": 30,
+      "animations": [
+        {"time": 0, "duration": 0.5, "type": "fade", "fade_direction": "in"}
+      ],
+      "elements": [
+        {
+          "type": "image",
+          "name": "Data-Background",
+          "source": "https://anhjjeon1.github.io/frogsash-website/longform-bg/bg6.png",
+          "fit": "cover",
+          "duration": 30
+        },
+        {
+          "type": "text",
+          "name": "Data-Label",
+          "text": "한눈에 비교",
+          "x": "50%",
+          "y": "16%",
+          "width": "60%",
+          "height": "5%",
+          "x_alignment": "50%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "2.6 vmin",
+          "font_weight": "700",
+          "fill_color": "#15803D",
+          "duration": 30
+        },
+        {
+          "type": "text",
+          "name": "Data-Headline",
+          "text": "{{DATA_HEADLINE}}",
+          "x": "50%",
+          "y": "36%",
+          "width": "88%",
+          "height": "20%",
+          "x_alignment": "50%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "6.5 vmin",
+          "font_weight": "900",
+          "line_height": "120%",
+          "fill_color": "#0F172A",
+          "duration": 30
+        },
+        {
+          "type": "text",
+          "name": "Data-Body",
+          "text": "{{DATA_BODY}}",
+          "x": "50%",
+          "y": "72%",
+          "width": "82%",
+          "height": "26%",
+          "x_alignment": "50%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "3 vmin",
+          "font_weight": "500",
+          "line_height": "160%",
+          "fill_color": "#334155",
+          "duration": 30
+        },
+        {
+          "type": "audio",
+          "name": "Data-Narration",
+          "source": "{{DATA_TTS}}",
+          "duration": 30,
+          "audio_fade_in": 0.3,
+          "audio_fade_out": 0.4
+        }
+      ]
+    },
+
+    {
+      "type": "composition",
+      "name": "CTA",
+      "track": 1,
+      "time": 285,
+      "duration": 15,
+      "animations": [
+        {"time": 0, "duration": 0.4, "type": "fade", "fade_direction": "in"}
+      ],
+      "elements": [
+        {
+          "type": "image",
+          "name": "CTA-Background",
+          "source": "https://anhjjeon1.github.io/frogsash-website/longform-bg/bg7.png",
+          "fit": "cover",
+          "duration": 15
+        },
+        {
+          "type": "text",
+          "name": "CTA-Brand",
+          "text": "청개구리AI 사전점검",
+          "x": "50%",
+          "y": "38%",
+          "width": "85%",
+          "height": "16%",
+          "x_alignment": "50%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "7 vmin",
+          "font_weight": "900",
+          "fill_color": "#FFFFFF",
+          "duration": 15
+        },
+        {
+          "type": "text",
+          "name": "CTA-Search",
+          "text": "지금 검색하세요",
+          "x": "50%",
+          "y": "62%",
+          "width": "65%",
+          "height": "8%",
+          "x_alignment": "50%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "3.5 vmin",
+          "font_weight": "600",
+          "fill_color": "#BAE6FD",
+          "duration": 15
+        },
+        {
+          "type": "text",
+          "name": "CTA-Price",
+          "text": "1일 이용권 ₩10,000",
+          "x": "50%",
+          "y": "76%",
+          "width": "55%",
+          "height": "6%",
+          "x_alignment": "50%",
+          "y_alignment": "50%",
+          "font_family": "Noto Sans KR",
+          "font_size": "2.8 vmin",
+          "font_weight": "400",
+          "fill_color": "#CBD5E1",
+          "duration": 15
+        },
+        {
+          "type": "audio",
+          "name": "CTA-Narration",
+          "source": "{{CTA_TTS}}",
+          "duration": 15,
+          "audio_fade_in": 0.3,
+          "audio_fade_out": 0.5
+        }
+      ]
+    }
+  ]
+}
