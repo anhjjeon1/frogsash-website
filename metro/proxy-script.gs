@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.39 - Google Apps Script
+// (주)메트로 R&S AI v23.40 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger, fillNoSequence, inspectPaymentSheet, setupPaymentFormulas, fixSiteTotalRanges, stripLeadingZeroInColD, inspectColumnValidation, clearColumnValidation, setColumnFormatText, setRange
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger, fillNoSequence, inspectPaymentSheet, setupPaymentFormulas, fixSiteTotalRanges, stripLeadingZeroInColD, inspectColumnValidation, clearColumnValidation, setColumnFormatText, setRange, setupMonitorTriggers, monitorPaymentHourly
+// v23.40: 미지급 비정상 감소 모니터링 — monitorPaymentHourly (매시간 트리거, 작업비·입금·미지급 스냅샷 + 입금 없이 미지급 감소 발견 시 즉시 텔레그램 경고) + 일일 21:30 정합성 검증 메시지 자동 발송 (어제 대비 작업비·입금·미지급 변동 + 정상/경고 판정). setupMonitorTriggers 액션으로 매시간 트리거 1회 등록. 시트 정리·행 삭제 등 의도치 않은 미지급 감소 자동 감지.
 // v23.39: 임의 셀 범위 수정 액션 추가 — setRange. range(예: Q15:V15)와 values('|'구분 문자열)로 셀 값/산식 일괄 입력. 산식은 '=' prefix로 setFormula, 숫자는 자동 인식 setValue, 텍스트는 setValue. before/after 값 반환. 단가표 행 복원·임의 셀 수정에 사용.
 // v23.38: C/D열 셀 형식 텍스트(@) 강제 액션 추가 — setColumnFormatText. 'B동', '102호' 같은 문자 포함 입력 허용. Google Sheets 기본 형식이 숫자로 자동 변환하던 동작 차단. 값·데이터 검증·수식은 그대로 보존. sheetName='*' 14현장 일괄 + cols 임의 지정 + dryRun + 멱등 안전.
 // v23.37: C/D열 데이터 검증 규칙 제거 액션 추가 — inspectColumnValidation(셀별 검증 종류·샘플 진단), clearColumnValidation(데이터 검증만 제거, 값·서식·수식 보존). sheetName='*'로 SYSTEM_SHEETS 제외 모든 시트(14현장) 일괄. cols=C,D 기본(임의 컬럼 지정 가능). dryRun 옵션. 멱등 안전. 진단 결과 감일제일 C/D 검증 규칙 0건 — 실제 원인은 셀 형식 문제로 v23.38에서 추가 처리.
@@ -915,6 +916,28 @@ function doGet(e) {
       return makeRes(Object.assign({status:'ok'}, fillNoSequence(sn, dry)));
     } catch(err) {
       return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  // === [v23.40] 미지급 비정상 감소 모니터링 트리거 등록 ===
+  // ?action=setupMonitorTriggers
+  // 매시간 monitorPaymentHourly 트리거 1회 등록 (사장님 한 번 호출)
+  if (action === 'setupMonitorTriggers') {
+    try {
+      return makeRes(setupMonitorTriggers());
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack||''});
+    }
+  }
+
+  // === [v23.40] 모니터링 수동 실행 (테스트용) ===
+  // ?action=monitorPaymentHourly
+  if (action === 'monitorPaymentHourly') {
+    try {
+      var result = monitorPaymentHourly();
+      return makeRes({status:'ok', result: result});
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack||''});
     }
   }
 
@@ -3399,6 +3422,191 @@ function setupManagerReportTrigger() {
     .create();
   return {
     message: '매일 09:00 KST sendDailyReportToManager 트리거 등록 완료',
+    removedOld: removed
+  };
+}
+
+
+// =================================================================
+// [v23.40] 미지급 비정상 감소 모니터링
+// monitorPaymentHourly: 매시간 트리거. 작업비·입금·미지급 스냅샷 저장
+//                       + 입금 변동 없이 미지급 감소 발견 시 텔레그램 즉시 경고
+//                       + 21:30~21:59 시간대 실행 시 일일 정합성 검증 메시지 발송
+// setupMonitorTriggers: 매시간 트리거 1회 등록
+// =================================================================
+function monitorPaymentHourly() {
+  var SHEET_ID = '1xyAXLOINOVpTLhw21qO0I6IHqVzBhQHfutDN4QNa2Q4';
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var pay = ss.getSheetByName('결제현황');
+  if (!pay) return {error: '결제현황 시트 없음'};
+
+  var amount = pay.getRange('D57').getValue();    // 작업비 총액 (VAT별도)
+  var paidInc = pay.getRange('C55').getValue();   // 입금 합계 (VAT포함)
+  var paid = pay.getRange('D58').getValue();      // 입금 합계 (VAT별도)
+  var unpaid = pay.getRange('D59').getValue();    // 미지급 총액
+
+  var props = PropertiesService.getScriptProperties();
+  var now = new Date();
+  var nowStr = Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd HH:mm');
+
+  // 직전 스냅샷과 비교
+  var prevSnap = props.getProperty('PAYMENT_SNAPSHOT');
+  var alerted = false;
+  if (prevSnap) {
+    try {
+      var prev = JSON.parse(prevSnap);
+      var amountDiff = amount - prev.amount;
+      var paidIncDiff = paidInc - prev.paidInc;
+      var unpaidDiff = unpaid - prev.unpaid;
+
+      // 비정상 감소 검출: 미지급 감소 + 입금 변동 0 + 작업비 감소
+      if (unpaidDiff < 0 && paidIncDiff === 0 && amountDiff < 0) {
+        _v40SendTelegram(
+          '⚠️ 메트로 미지급 비정상 감소 감지\n\n' +
+          '시각: ' + nowStr + ' (직전: ' + prev.timestamp + ')\n\n' +
+          '🏗️ 작업비: ' + prev.amount.toLocaleString() + '원\n' +
+          '         → ' + amount.toLocaleString() + '원 (' + (amountDiff >= 0 ? '+' : '') + amountDiff.toLocaleString() + '원)\n' +
+          '🏦 입금(VAT포함): 변동 없음\n' +
+          '💰 미지급: ' + prev.unpaid.toLocaleString() + '원\n' +
+          '         → ' + unpaid.toLocaleString() + '원 (' + (unpaidDiff >= 0 ? '+' : '') + unpaidDiff.toLocaleString() + '원)\n\n' +
+          '⚠️ 입금 없이 작업비·미지급 감소.\n시트 변경(행 삭제·단가표 수정·합계 산식 변경 등) 의심 — 확인 필요'
+        );
+        alerted = true;
+      }
+    } catch(e) {
+      Logger.log('snapshot parse error: ' + e.message);
+    }
+  }
+
+  // 새 스냅샷 저장
+  props.setProperty('PAYMENT_SNAPSHOT', JSON.stringify({
+    timestamp: nowStr,
+    amount: amount,
+    paidInc: paidInc,
+    paid: paid,
+    unpaid: unpaid
+  }));
+
+  // 일일 정합성 검증 (21:30~21:59 사이 1회)
+  var hour = now.getHours();
+  var minute = now.getMinutes();
+  var dailyCheckSent = false;
+  if (hour === 21 && minute >= 30 && minute < 60) {
+    var today = Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd');
+    var lastDailyCheck = props.getProperty('LAST_DAILY_CHECK_DATE');
+    if (lastDailyCheck !== today) {
+      _v40SendDailyComplianceCheck(amount, paidInc, paid, unpaid);
+      props.setProperty('LAST_DAILY_CHECK_DATE', today);
+      dailyCheckSent = true;
+    }
+  }
+
+  return {
+    timestamp: nowStr,
+    amount: amount,
+    paidInc: paidInc,
+    paid: paid,
+    unpaid: unpaid,
+    alerted: alerted,
+    dailyCheckSent: dailyCheckSent
+  };
+}
+
+function _v40SendTelegram(text) {
+  var props = PropertiesService.getScriptProperties();
+  var token = props.getProperty('TG_TOKEN');
+  var chatId = props.getProperty('TG_CHAT_ID');
+  if (!token || !chatId) {
+    Logger.log('텔레그램 미설정 (TG_TOKEN, TG_CHAT_ID)');
+    return false;
+  }
+  try {
+    UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({chat_id: chatId, text: text, disable_web_page_preview: true}),
+      muteHttpExceptions: true
+    });
+    return true;
+  } catch(e) {
+    Logger.log('텔레그램 발송 실패: ' + e.message);
+    return false;
+  }
+}
+
+function _v40SendDailyComplianceCheck(amount, paidInc, paid, unpaid) {
+  var props = PropertiesService.getScriptProperties();
+  var prevDailySnap = props.getProperty('DAILY_BASELINE');
+
+  var msg = '✅ 메트로 일일 정합성 검증\n\n';
+  msg += '🏗️ 작업비(VAT별도): ' + amount.toLocaleString() + '원\n';
+  msg += '🏦 입금(VAT포함): ' + paidInc.toLocaleString() + '원\n';
+  msg += '💰 미지급 잔액: ' + unpaid.toLocaleString() + '원\n';
+
+  if (prevDailySnap) {
+    try {
+      var prev = JSON.parse(prevDailySnap);
+      var amountDiff = amount - prev.amount;
+      var paidIncDiff = paidInc - prev.paidInc;
+      var unpaidDiff = unpaid - prev.unpaid;
+
+      msg += '\n📊 어제(' + prev.date + ') 대비 변동:\n';
+      msg += '- 작업비: ' + (amountDiff >= 0 ? '+' : '') + amountDiff.toLocaleString() + '원\n';
+      msg += '- 입금: ' + (paidIncDiff >= 0 ? '+' : '') + paidIncDiff.toLocaleString() + '원\n';
+      msg += '- 미지급: ' + (unpaidDiff >= 0 ? '+' : '') + unpaidDiff.toLocaleString() + '원\n';
+
+      // 정합성 판정
+      msg += '\n';
+      if (unpaidDiff < 0 && paidIncDiff === 0) {
+        msg += '⚠️ 경고: 입금 없이 미지급 감소.\n시트 변경 의심 — 확인 필요';
+      } else if (unpaidDiff > 0 && paidIncDiff === 0) {
+        msg += '✅ 정상: 매출 증가만 반영 (입금 없음)';
+      } else if (paidIncDiff > 0 && unpaidDiff <= 0) {
+        msg += '✅ 정상: 입금 발생으로 미지급 감소';
+      } else if (paidIncDiff > 0 && unpaidDiff > 0) {
+        msg += '✅ 정상: 입금 + 신규 매출 모두 반영';
+      } else if (amountDiff === 0 && paidIncDiff === 0 && unpaidDiff === 0) {
+        msg += 'ℹ️ 변동 없음';
+      } else {
+        msg += '✅ 일반 변동';
+      }
+    } catch(e) {
+      msg += '\n(어제 베이스라인 파싱 오류)';
+    }
+  } else {
+    msg += '\n(첫 실행 — 어제 베이스라인 없음. 내일부터 비교 시작)';
+  }
+
+  _v40SendTelegram(msg);
+
+  // 새 일일 베이스라인 저장
+  props.setProperty('DAILY_BASELINE', JSON.stringify({
+    date: Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd'),
+    amount: amount,
+    paidInc: paidInc,
+    paid: paid,
+    unpaid: unpaid
+  }));
+}
+
+function setupMonitorTriggers() {
+  // 기존 monitorPaymentHourly 트리거 제거
+  var triggers = ScriptApp.getProjectTriggers();
+  var removed = 0;
+  for (var t = 0; t < triggers.length; t++) {
+    if (triggers[t].getHandlerFunction() === 'monitorPaymentHourly') {
+      ScriptApp.deleteTrigger(triggers[t]);
+      removed++;
+    }
+  }
+  // 매시간 트리거 등록
+  ScriptApp.newTrigger('monitorPaymentHourly')
+    .timeBased()
+    .everyHours(1)
+    .create();
+  return {
+    status: 'ok',
+    message: '매시간 monitorPaymentHourly 트리거 등록 완료',
     removedOld: removed
   };
 }
