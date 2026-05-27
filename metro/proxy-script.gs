@@ -3440,10 +3440,24 @@ function monitorPaymentHourly() {
   var pay = ss.getSheetByName('결제현황');
   if (!pay) return {error: '결제현황 시트 없음'};
 
-  var amount = pay.getRange('D57').getValue();    // 작업비 총액 (VAT별도)
-  var paidInc = pay.getRange('C55').getValue();   // 입금 합계 (VAT포함)
-  var paid = pay.getRange('D58').getValue();      // 입금 합계 (VAT별도)
-  var unpaid = pay.getRange('D59').getValue();    // 미지급 총액
+  // 동적 라벨 검색 (시트 행 위치 변경에 강건)
+  var lastRow = pay.getLastRow();
+  var data = pay.getRange(1, 2, lastRow, 3).getValues(); // B, C, D 컬럼만
+  var amount = 0, paidInc = 0, paid = 0, unpaid = 0;
+  for (var i = 0; i < data.length; i++) {
+    var b = String(data[i][0] || '');
+    var c = String(data[i][1] || '');
+    if (b.indexOf('입금 합계') >= 0) {
+      paidInc = Number(data[i][1]) || 0;  // C열 = VAT포함
+      paid = Number(data[i][2]) || 0;     // D열 = VAT별도
+    }
+    if (c.indexOf('작업비 총액') >= 0) {
+      amount = Number(data[i][2]) || 0;   // D열
+    }
+    if (c.indexOf('미지급') >= 0) {
+      unpaid = Number(data[i][2]) || 0;   // D열
+    }
+  }
 
   var props = PropertiesService.getScriptProperties();
   var now = new Date();
