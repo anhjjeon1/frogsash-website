@@ -1,7 +1,8 @@
 // ========================================
-// (주)메트로 R&S AI v23.38 - Google Apps Script
+// (주)메트로 R&S AI v23.39 - Google Apps Script
 // 구글시트 협업 + Drive 사진 업로드/삭제 + 행 추가/삭제 + =IMAGE() 수식 표시
-// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger, fillNoSequence, inspectPaymentSheet, setupPaymentFormulas, fixSiteTotalRanges, stripLeadingZeroInColD, inspectColumnValidation, clearColumnValidation, setColumnFormatText
+// 액션: read, upload, savePhoto, migratePhotos, appendRow, deletePhoto, deleteRow, listSheets, checkCompleteColumns, addPhotoCols13, fixGunsanA1, repairBrokenRowsGunsan, inspectCell, readGrid, generateDailySalesPdf, setupDailySalesPdfTrigger, syncDashboardBeforePdf, testTelegram, setupDashboardFormulas, extendDailySalesRanges, sendDailyReportToManager, setupManagerReportTrigger, fillNoSequence, inspectPaymentSheet, setupPaymentFormulas, fixSiteTotalRanges, stripLeadingZeroInColD, inspectColumnValidation, clearColumnValidation, setColumnFormatText, setRange
+// v23.39: 임의 셀 범위 수정 액션 추가 — setRange. range(예: Q15:V15)와 values('|'구분 문자열)로 셀 값/산식 일괄 입력. 산식은 '=' prefix로 setFormula, 숫자는 자동 인식 setValue, 텍스트는 setValue. before/after 값 반환. 단가표 행 복원·임의 셀 수정에 사용.
 // v23.38: C/D열 셀 형식 텍스트(@) 강제 액션 추가 — setColumnFormatText. 'B동', '102호' 같은 문자 포함 입력 허용. Google Sheets 기본 형식이 숫자로 자동 변환하던 동작 차단. 값·데이터 검증·수식은 그대로 보존. sheetName='*' 14현장 일괄 + cols 임의 지정 + dryRun + 멱등 안전.
 // v23.37: C/D열 데이터 검증 규칙 제거 액션 추가 — inspectColumnValidation(셀별 검증 종류·샘플 진단), clearColumnValidation(데이터 검증만 제거, 값·서식·수식 보존). sheetName='*'로 SYSTEM_SHEETS 제외 모든 시트(14현장) 일괄. cols=C,D 기본(임의 컬럼 지정 가능). dryRun 옵션. 멱등 안전. 진단 결과 감일제일 C/D 검증 규칙 0건 — 실제 원인은 셀 형식 문제로 v23.38에서 추가 처리.
 // v23.36: 호수(D열) leading 0 제거 액션 추가 — stripLeadingZeroInColD. 옛 4자리 패딩 형식('0210') → 자연수 형식('210') 일괄 변환. sheetName='*'로 옛 형식 잔존 3시트(감일제일·광주중흥·양산) 일괄 처리. /^0\d+$/ 매칭 셀만 strip + 텍스트 형식(@) 강제 + dryRun 옵션. 멱등 안전(재실행 0건). Drive 사진 폴더는 그대로 유지(옛 사진 끊김 없음).
@@ -914,6 +915,51 @@ function doGet(e) {
       return makeRes(Object.assign({status:'ok'}, fillNoSequence(sn, dry)));
     } catch(err) {
       return makeRes({status:'error', message:err.message, stack:err.stack || ''});
+    }
+  }
+
+  // === [v23.39] 임의 셀 범위 수정 ===
+  // ?action=setRange&sheetId=...&sheetName=양주&range=Q15:V15&values=협의(배연창)|1|1|0|1000000|=S15*U15
+  // values는 '|' 구분, 산식은 '=' prefix, 숫자는 자동 인식
+  // 단가표 행 복원·임의 셀 수정용. before/after 값 반환으로 검증 가능
+  if (action === 'setRange') {
+    var sheetId_sR = e.parameter.sheetId;
+    var sheetName_sR = e.parameter.sheetName;
+    var range_sR = e.parameter.range;
+    var valuesStr_sR = e.parameter.values || '';
+    if (!sheetId_sR || !sheetName_sR || !range_sR) {
+      return makeRes({status:'error', message:'sheetId, sheetName, range 필요'});
+    }
+    try {
+      var ss_sR = SpreadsheetApp.openById(sheetId_sR);
+      var ws_sR = ss_sR.getSheetByName(sheetName_sR);
+      if (!ws_sR) return makeRes({status:'error', message:'시트 없음: '+sheetName_sR});
+      var rng_sR = ws_sR.getRange(range_sR);
+      var rows_sR = rng_sR.getNumRows();
+      var cols_sR = rng_sR.getNumColumns();
+      var flat_sR = valuesStr_sR.split('|');
+      if (flat_sR.length !== rows_sR * cols_sR) {
+        return makeRes({status:'error', message:'값 개수 불일치: range='+rows_sR+'x'+cols_sR+'='+(rows_sR*cols_sR)+', values='+flat_sR.length});
+      }
+      var beforeValues_sR = rng_sR.getValues();
+      for (var i_sR = 0; i_sR < flat_sR.length; i_sR++) {
+        var r_sR = Math.floor(i_sR / cols_sR);
+        var c_sR = i_sR % cols_sR;
+        var cell_sR = rng_sR.getCell(r_sR+1, c_sR+1);
+        var v_sR = flat_sR[i_sR];
+        if (typeof v_sR === 'string' && v_sR.charAt(0) === '=') {
+          cell_sR.setFormula(v_sR);
+        } else if (v_sR === '' || isNaN(Number(v_sR))) {
+          cell_sR.setValue(v_sR);
+        } else {
+          cell_sR.setValue(Number(v_sR));
+        }
+      }
+      SpreadsheetApp.flush();
+      var afterValues_sR = rng_sR.getValues();
+      return makeRes({status:'ok', range:range_sR, before:beforeValues_sR, after:afterValues_sR});
+    } catch(err) {
+      return makeRes({status:'error', message:err.message, stack:err.stack||''});
     }
   }
 
