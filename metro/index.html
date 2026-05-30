@@ -6,7 +6,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>(주)메트로 R & S AI v23.31</title>
+  <title>(주)메트로 R & S AI v23.32</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1F2937">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -112,6 +112,9 @@
     .photo-cell.uploading::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;z-index:6}
     .log-table tbody tr:nth-child(even){background:var(--surface-alt)}
     .log-table .order-num{font-weight:800;color:var(--primary);font-size:.55rem;font-family:'JetBrains Mono'}
+    /* v23.32: 완료/미완료 글자색 구분 (폰 스크롤 중 한눈에 식별) — 완료=초록 / 미완료=빨강 */
+    .log-table tbody tr.row-done td{color:#059669!important}
+    .log-table tbody tr.row-pending td{color:#DC2626!important}
     .log-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;min-height:22px;padding:0 10px}
     .log-head h3{font-size:.8rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px;margin:0}
     .log-count{font-size:.56rem;font-weight:400;color:var(--text-dim)}
@@ -376,7 +379,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.31'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.32'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC',VERSION:'METRO_APP_VERSION'};
 var SETTINGS_KEYS={SCRIPT:'METRO_SCRIPT_URL',SHEET:'METRO_SHEET_ID',SHEET_NAME:'METRO_SHEET_NAME',WORKER:'METRO_WORKER'};
 var DEFAULTS={
@@ -725,7 +728,7 @@ var App={
       var done=this.gv(r,'done')||'';
       var isDone=done&&done!=='미완료'&&done!=='N';
       var ph=this.rowPhotos[rn]||{};
-      html+='<tr style="'+(isDone?'background:var(--success-light)':'')+'">'
+      html+='<tr class="'+(isDone?'row-done':'row-pending')+'" style="'+(isDone?'background:var(--success-light)':'')+'">'
         +'<td style="position:relative;padding-right:14px">'+no
         +'<button onclick="event.stopPropagation();App.deleteRow('+rn+','+no+')" title="행 삭제" style="position:absolute;top:1px;right:1px;width:13px;height:13px;padding:0;border:none;background:transparent;color:#DC2626;font-size:.55rem;cursor:pointer;line-height:1" aria-label="행 삭제"><i class="fa-solid fa-trash"></i></button>'
         +'</td>'
