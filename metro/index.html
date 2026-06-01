@@ -369,7 +369,7 @@
       <button class="btn-send" onclick="App.openSheet()" style="flex:1"><i class="fa-solid fa-table"></i> 시트열기</button>
       <button onclick="App.savePdf()" style="flex:1;border:none;border-radius:var(--r);background:#0891B2;color:white;font-size:.74rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;padding:0 12px;letter-spacing:.3px;box-shadow:0 3px 0 rgba(0,0,0,.1),var(--shadow)"><i class="fa-solid fa-file-pdf"></i> PDF저장</button>
       <button class="btn-refresh" onclick="App.refresh()" style="flex:0 0 auto;padding:0 12px"><i class="fa-solid fa-rotate"></i> 새로고침</button>
-      <button onclick="App.resetAll()" style="flex:0 0 auto;padding:0 12px;border:1.5px solid #FCA5A5;border-radius:var(--r);background:#fff;color:#DC2626;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer">전체삭제</button>
+      <button id="btnResetAll" onclick="App.resetAll()" style="flex:0 0 auto;padding:0 12px;border:1.5px solid #FCA5A5;border-radius:var(--r);background:#fff;color:#DC2626;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer">전체삭제</button>
     </div>
   </div>
 </div>
@@ -379,8 +379,11 @@
 </div>
 
 <script>
-var APP_VERSION='v23.32'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
-var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC',VERSION:'METRO_APP_VERSION'};
+var APP_VERSION='v23.40'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC',VERSION:'METRO_APP_VERSION',ADMIN:'METRO_ADMIN'};
+// v23.40: 관리자 모드 키. 관리자 PC에서 1회 frogsash.co.kr/metro?admin=mrns2026 접속 시 그 브라우저에 영구 저장.
+//         폰(작업자)은 일반 URL → 삭제 버튼 숨김(추가·사진교체만). ?admin=off 로 해제.
+var ADMIN_KEY='mrns2026';
 var SETTINGS_KEYS={SCRIPT:'METRO_SCRIPT_URL',SHEET:'METRO_SHEET_ID',SHEET_NAME:'METRO_SHEET_NAME',WORKER:'METRO_WORKER'};
 var DEFAULTS={
   SCRIPT:'https://script.google.com/macros/s/AKfycbwaoevs3XgzvvTS1Pr9RKbX-tos4q_rGjCYQTewUuHp2pQ7iGbIcVm10xTXYWhq8L0m/exec',
@@ -398,10 +401,23 @@ var App={
   lastDeleted:null, // v23.14: 마지막 삭제 행 1건 보관 (복구용, 새로고침 시 휘발)
 
   // === 초기화 ===
+  isAdmin:false, // v23.40: 관리자(삭제 전권) 여부 — _resolveAdmin에서 판정
   init:function(){
+    // v23.40: 관리자 모드 게이트 — URL ?admin=KEY → localStorage 영구 / ?admin=off 해제
+    try{
+      var qs=new URLSearchParams(location.search);
+      if(qs.has('admin')){
+        var a=qs.get('admin');
+        if(a===ADMIN_KEY){ localStorage.setItem(STORAGE.ADMIN,'1'); }
+        else if(a==='off'||a==='0'){ localStorage.removeItem(STORAGE.ADMIN); }
+      }
+    }catch(e){}
+    this.isAdmin=(localStorage.getItem(STORAGE.ADMIN)==='1');
     // v23.28: 헤더 버전 배지를 APP_VERSION에 동적 바인딩 (하드코딩 누락 방지)
     var vb=document.getElementById('verBadge');
-    if(vb) vb.textContent=APP_VERSION.toUpperCase();
+    if(vb) vb.textContent=APP_VERSION.toUpperCase()+(this.isAdmin?' 🔧':'');
+    // 관리자 아니면 전체삭제 버튼 숨김 (작업자 삭제 차단)
+    if(!this.isAdmin){ var rb=document.getElementById('btnResetAll'); if(rb) rb.style.display='none'; }
     // v23.26: 앱 부팅 시 버전 체크 → 옛 SCRIPT URL 자동 갱신 (작업자 ⚙ 수동 갱신 불필요)
     var savedVer=localStorage.getItem(STORAGE.VERSION);
     if(savedVer!==APP_VERSION){
@@ -729,8 +745,8 @@ var App={
       var isDone=done&&done!=='미완료'&&done!=='N';
       var ph=this.rowPhotos[rn]||{};
       html+='<tr class="'+(isDone?'row-done':'row-pending')+'" style="'+(isDone?'background:var(--success-light)':'')+'">'
-        +'<td style="position:relative;padding-right:14px">'+no
-        +'<button onclick="event.stopPropagation();App.deleteRow('+rn+','+no+')" title="행 삭제" style="position:absolute;top:1px;right:1px;width:13px;height:13px;padding:0;border:none;background:transparent;color:#DC2626;font-size:.55rem;cursor:pointer;line-height:1" aria-label="행 삭제"><i class="fa-solid fa-trash"></i></button>'
+        +'<td style="position:relative;padding-right:'+(this.isAdmin?'14px':'4px')+'">'+no
+        +(this.isAdmin?'<button onclick="event.stopPropagation();App.deleteRow('+rn+','+no+')" title="행 삭제" style="position:absolute;top:1px;right:1px;width:13px;height:13px;padding:0;border:none;background:transparent;color:#DC2626;font-size:.55rem;cursor:pointer;line-height:1" aria-label="행 삭제"><i class="fa-solid fa-trash"></i></button>':'')
         +'</td>'
         +'<td>'+dh.dong+'</td>'
         +'<td>'+dh.ho+'</td>'
@@ -794,7 +810,8 @@ var App={
     var delHandler="event.stopPropagation();event.preventDefault();App.delRowPhoto("+rn+",'"+type+"');return false;";
     return '<td class="photo-cell '+has+' '+uploading+'" onclick="App.takeRowPhoto('+rn+',\''+type+'\')">'
       +(src?'<img src="'+src+'">':'<div class="pc-empty"><i class="fa-solid fa-camera"></i><span>촬영</span></div>')
-      +'<button class="pc-del" ontouchend="'+delHandler+'" onclick="'+delHandler+'">&#10005;</button>'
+      // v23.40: 사진 삭제 X는 관리자만. 작업자는 셀 탭으로 재촬영(덮어쓰기)만 가능 — 삭제 차단
+      +(this.isAdmin?'<button class="pc-del" ontouchend="'+delHandler+'" onclick="'+delHandler+'">&#10005;</button>':'')
     +'</td>';
   },
 
