@@ -26,9 +26,9 @@
 const VERSION = 'v3.0';
 const SHEET_NAME = 'Inspections';
 // AI 비전 모델 (사전점검 앱과 동일 키 재사용 가능)
-// 사진 분석 품질 우선 → 정식 flash 사용. 최고 정확도가 필요하면 'gemini-3.1-pro',
-// 비용 최소화가 필요하면 'gemini-3.1-flash-lite'로 교체
-const GEMINI_MODEL = 'gemini-3.1-flash';
+// ⚠️ 'gemini-3.1-flash'는 존재하지 않음(404). 비전 가능한 3.1 = flash-lite / pro-preview.
+// 최고 품질 → pro-preview. 비용 최소화가 필요하면 'gemini-3.1-flash-lite'로 교체
+const GEMINI_MODEL = 'gemini-3.1-pro-preview';
 
 // 시트 헤더 (record 키 순서와 일치)
 const HEADERS = [
