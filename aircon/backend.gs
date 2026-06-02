@@ -37,7 +37,7 @@ const HEADERS = [
   'leakA','leakB','leakC','leakD','leakE','leakF','leakCount','repair',
   'aiLocations','aiSummary',
   'pStart','pEnd','pHold','vac','vacRise','dtIn','dtOut','chargeActual',
-  'pdrop','vacV','dtV','chgV','grade','findings','note','photoCount'
+  'pdrop','vacV','dtV','chgV','grade','findings','note','photoCount','photoLocs'
 ];
 
 // ───── 진입점 ─────
@@ -101,12 +101,16 @@ function handleAi(body) {
 
   const images = Array.isArray(body.images) ? body.images : [];
   if (!images.length) return { error:'no_image', message:'사진이 없습니다' };
-  if (images.length > 4) return { error:'too_many', message:'한 번에 최대 4장' };
+  if (images.length > 10) return { error:'too_many', message:'한 번에 최대 10장' };
 
   const ctx = body.context || {};
   const parts = [{ text: buildAiPrompt_(ctx) }];
   images.forEach(img => {
-    if (img && img.data && img.mimeType) parts.push({ inline_data:{ mime_type:img.mimeType, data:img.data } });
+    if (img && img.data && img.mimeType) {
+      // 각 사진의 촬영 위치(실외기/거실/안방 등)를 AI에 함께 전달
+      if (img.label) parts.push({ text: '【촬영 위치: ' + img.label + '】 — 다음 사진:' });
+      parts.push({ inline_data:{ mime_type:img.mimeType, data:img.data } });
+    }
   });
 
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + apiKey;
@@ -143,9 +147,13 @@ function buildAiPrompt_(ctx) {
     'F 부가 (드레인·응축수·배관 결로)',
     '설비 정보: 냉매 ' + ref + ', 모델 ' + model + '.',
     '',
+    '여러 장의 사진이 올 수 있으며, 각 사진 앞에 【촬영 위치: ...】(실외기/배관/거실 에어컨/안방 등)이 표시됩니다.',
+    '어느 촬영 위치에서 핫스팟(누출)이 보이는지 반드시 구분해서 분석하고, name·reason·summary에 그 촬영 위치를 명시하세요',
+    '(예: name "거실 에어컨 실내기 연결부", reason "거실 에어컨 플레어 너트에 강한 핫스팟"). 누출 위치가 여러 곳이면 locations 배열에 모두 담으세요.',
+    '',
     '반드시 아래 JSON 형식 하나로만 답하세요. 코드블록·설명·서론 금지:',
-    '{"leakDetected":true,"locations":[{"code":"A","name":"실내기 연결부","confidence":"높음","reason":"핫스팟 근거"}],"severity":"중대","repair":["가장 권장되는 수리방법부터 순서대로"],"summary":"2~3문장 한국어 분석 요약"}',
-    'confidence 는 높음/보통/낮음, severity 는 중대/주의/양호 중 하나.',
+    '{"leakDetected":true,"locations":[{"code":"A","name":"거실 에어컨 실내기 연결부","confidence":"높음","reason":"촬영 위치+핫스팟 근거"}],"severity":"중대","repair":["가장 권장되는 수리방법부터 순서대로"],"summary":"어느 촬영 위치에 누출이 있는지 포함한 2~3문장 한국어 요약"}',
+    'confidence 는 높음/보통/낮음, severity 는 중대/주의/양호 중 하나. code 는 누출 유형 A~F.',
     '핫스팟이 불명확하거나 누출 근거가 약하면 leakDetected:false, locations:[], severity:"양호" 로 답하세요.'
   ].join('\n');
 }

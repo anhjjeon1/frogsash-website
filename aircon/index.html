@@ -256,7 +256,7 @@ function blankRec(){
     id:'AC'+Date.now(), site:'', addr:'', dong:'', ho:'', date:today(), inspector:'',
     maker:'', model:'', refrigerant:'R410A', indoorN:'', pipeLen:'', nameplateCharge:'',
     leak,
-    flirPhotos:[],          // AI가 분석할 FLIR 초음파 사진
+    flirSlots: defaultSlots(),  // 위치별 FLIR 사진 슬롯 [{label, photos:[]}]
     ai:null,                // AI 분석 결과 {leakDetected, locations[], severity, repair[], summary, raw}
     aiState:'',             // '', 'loading', 'done', 'error'
     m:{ pStart:'', pEnd:'', pHold:'', vac:'', vacRise:'', dtIn:'', dtOut:'', chargeActual:'' },
@@ -264,6 +264,16 @@ function blankRec(){
   };
 }
 function today(){ const d=new Date(),z=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate()); }
+// 기본 촬영 위치 슬롯 (위치 추가·이름 변경 가능)
+function defaultSlots(){ return [
+  {label:'실외기', photos:[]},
+  {label:'배관', photos:[]},
+  {label:'거실 에어컨', photos:[]},
+  {label:'안방 에어컨', photos:[]},
+  {label:'침실1', photos:[]},
+  {label:'침실2', photos:[]},
+]; }
+function totalFlir(){ return rec.flirSlots.reduce((n,s)=>n+(s.photos?s.photos.length:0),0); }
 
 /* ===================== 로그인 게이트 ===================== */
 function isUnlocked(){ return sessionStorage.getItem('aircon_unlocked')==='1'; }
@@ -377,14 +387,23 @@ function render(){
       `<p class="muted">명판 충전량 입력 시 측정 단계에서 실측 충전량을 자동 비교합니다.</p>`);
   }
   else if(step===2){
-    h=card('3','AI 누출 분석 (FLIR 초음파)','초음파 사진 첨부 → AI가 누출 위치·최선 수리방법 분석',
-      `<label class="ph-add" for="flirIn"><i class="fa-solid fa-camera"></i> FLIR 초음파 사진 첨부 ${rec.flirPhotos.length?'('+rec.flirPhotos.length+')':''}</label>
-       <input id="flirIn" type="file" accept="image/*" multiple class="hide" onchange="addFlir(event)">
-       ${rec.flirPhotos.length?`<div class="ph-grid">${rec.flirPhotos.map((p,i)=>`<div class="ph-item"><img src="${p}"><button class="del" onclick="delFlir(${i})"><i class="fa-solid fa-xmark"></i></button></div>`).join('')}</div>`:''}
-       <button class="btn btn-p btn-full" style="margin-top:11px;${rec.flirPhotos.length?'':'opacity:.45;pointer-events:none'}" onclick="aiAnalyze()">
-         ${rec.aiState==='loading'?'<i class="fa-solid fa-spinner fa-spin"></i> AI 분석 중...':'<i class="fa-solid fa-wand-magic-sparkles"></i> AI 누출 분석'}
+    h=card('3','AI 누출 분석 (FLIR 초음파)','위치별로 초음파 사진을 촬영·첨부 → AI가 누출 위치·수리방법 분석',
+      `<p class="muted" style="margin-top:0;margin-bottom:10px">실외기·배관·각 방 에어컨을 위치별로 촬영하세요. 위치는 이름 변경·추가·삭제할 수 있습니다.</p>
+       ${rec.flirSlots.map((s,i)=>`
+         <div class="loc" style="padding:11px;margin-bottom:10px">
+           <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+             <input value="${esc(s.label)}" placeholder="촬영 위치 (예: 침실3)" oninput="rec.flirSlots[${i}].label=this.value" style="flex:1;padding:8px 10px;font-weight:700;font-size:13px">
+             <button class="mini danger" onclick="delSlot(${i})"><i class="fa-solid fa-trash"></i></button>
+           </div>
+           <label class="ph-add" for="flir_${i}" style="padding:11px"><i class="fa-solid fa-camera"></i> 사진 ${s.photos.length?'('+s.photos.length+'장)':'첨부'}</label>
+           <input id="flir_${i}" type="file" accept="image/*" multiple class="hide" onchange="addSlotPhoto(${i},event)">
+           ${s.photos.length?`<div class="ph-grid">${s.photos.map((p,j)=>`<div class="ph-item"><img src="${p}"><button class="del" onclick="delSlotPhoto(${i},${j})"><i class="fa-solid fa-xmark"></i></button></div>`).join('')}</div>`:''}
+         </div>`).join('')}
+       <button class="mini" onclick="addSlot()" style="margin-bottom:12px;padding:9px 13px"><i class="fa-solid fa-plus"></i> 촬영 위치 추가</button>
+       <button class="btn btn-p btn-full" style="${totalFlir()?'':'opacity:.45;pointer-events:none'}" onclick="aiAnalyze()">
+         ${rec.aiState==='loading'?'<i class="fa-solid fa-spinner fa-spin"></i> AI 분석 중...':'<i class="fa-solid fa-wand-magic-sparkles"></i> AI 누출 분석'+(totalFlir()?' ('+totalFlir()+'장)':'')}
        </button>
-       <p class="muted">${GAS_URL?'초음파 핫스팟 위치를 AI가 읽어 누출 위치·심각도·수리방법을 제안합니다. 결과는 아래에서 직접 보정할 수 있습니다.':'⚠️ AI 분석은 GAS 백엔드(Gemini 키) 배포 후 동작합니다. 그 전엔 아래에서 수동 선택하세요.'}</p>`)
+       <p class="muted">${GAS_URL?'각 사진의 촬영 위치까지 AI가 함께 분석해 어느 위치 누출인지 알려줍니다. 결과는 아래에서 직접 보정할 수 있습니다.':'⚠️ AI 분석은 GAS 백엔드 배포 후 동작합니다.'}</p>`)
       + aiResultCard()
       + card('','누출 위치 확정 (AI 결과 보정)','AI 제안을 확인하고 필요 시 수정하세요',
         LOCS.map(l=>{
@@ -503,14 +522,20 @@ function delLeakPhoto(g,i){ rec.leak[g].photos.splice(i,1); render(); }
 function resetNew(){ if(!confirm('새 점검을 시작할까요? 저장하지 않은 내용은 사라집니다.')) return; rec=blankRec(); step=0; window.scrollTo(0,0); render(); }
 
 /* ===================== AI 누출 분석 (FLIR 사진 → Gemini Vision) ===================== */
-function addFlir(ev){
+function addSlot(){ rec.flirSlots.push({label:'', photos:[]}); render(); }
+function delSlot(i){
+  const s=rec.flirSlots[i];
+  if(s.photos.length && !confirm('"'+(s.label||'이 위치')+'" 슬롯과 사진 '+s.photos.length+'장을 삭제할까요?')) return;
+  rec.flirSlots.splice(i,1); render();
+}
+function addSlotPhoto(i,ev){
   const files=[...ev.target.files]; let pending=files.length;
   files.forEach(f=>{ const r=new FileReader();
-    r.onload=e=> compress(e.target.result, data=>{ rec.flirPhotos.push(data); if(--pending===0) render(); });
+    r.onload=e=> compress(e.target.result, data=>{ rec.flirSlots[i].photos.push(data); if(--pending===0) render(); });
     r.readAsDataURL(f); });
   ev.target.value='';
 }
-function delFlir(i){ rec.flirPhotos.splice(i,1); render(); }
+function delSlotPhoto(i,j){ rec.flirSlots[i].photos.splice(j,1); render(); }
 
 function aiResultCard(){
   if(rec.aiState==='loading') return card('','AI 분석 결과','초음파 핫스팟 분석 중...',`<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i> 분석 중입니다 (10~20초)</div>`);
@@ -529,11 +554,13 @@ function aiResultCard(){
 }
 
 async function aiAnalyze(){
-  if(!rec.flirPhotos.length){ toast('FLIR 사진을 먼저 첨부하세요'); return; }
+  if(!totalFlir()){ toast('FLIR 사진을 먼저 첨부하세요'); return; }
   if(!GAS_URL){ toast('GAS 백엔드(Gemini 키) 배포 후 사용 가능'); return; }
   rec.aiState='loading'; render();
   try{
-    const images=rec.flirPhotos.map(d=>({ mimeType:'image/jpeg', data:d.split(',')[1] }));
+    const images=[];
+    rec.flirSlots.forEach(s=> s.photos.forEach(d=> images.push({ mimeType:'image/jpeg', data:d.split(',')[1], label:(s.label||'위치미상') })));
+    if(images.length>10){ toast('AI 분석은 한 번에 최대 10장 — 사진 수를 줄여주세요'); rec.aiState=''; render(); return; }
     const res=await fetch(GAS_URL,{ method:'post', headers:{'Content-Type':'text/plain;charset=utf-8'},
       body:JSON.stringify({ action:'ai', secret:ADMIN_PW, images, context:{ refrigerant:rec.refrigerant, model:rec.model } }) });
     const json=await res.json();
@@ -604,7 +631,8 @@ function recToRow(){
     aiSummary:(rec.ai&&!rec.ai.error)?(rec.ai.summary||''):'',
     aiLocations:(rec.ai&&Array.isArray(rec.ai.locations))?rec.ai.locations.map(x=>x.code+(x.confidence?'('+x.confidence+')':'')).join(','):'',
     findings:findings.map(f=>f.t).join(' / '), note:rec.note,
-    photoCount:rec.flirPhotos.length
+    photoCount:totalFlir(),
+    photoLocs:rec.flirSlots.filter(s=>s.photos.length).map(s=>(s.label||'위치미상')+'×'+s.photos.length).join(', ')
   };
 }
 async function sendSheet(){
@@ -628,7 +656,7 @@ function genPDF(){
     const c=r.state==='pass'?'#10B981':r.state==='warn'?'#F59E0B':r.state==='fail'?'#E74C3C':'#94A3B8';
     return `<tr><td>${m.label}</td><td style="color:${c};font-weight:700">${t}</td></tr>`; }).join('');
   const ng=leakLocs();
-  const allPhotos=rec.flirPhotos.map(p=>({g:'',name:'FLIR 초음파',p}));
+  const allPhotos=[]; rec.flirSlots.forEach(s=> s.photos.forEach(p=> allPhotos.push({name:(s.label||'위치미상'), p})));
   const a=(rec.ai&&!rec.ai.error)?rec.ai:null;
   const aiBlock=a?`<div style="font-weight:800;color:#7C3AED;margin:14px 0 6px">■ AI 분석 (Gemini Vision · 초음파)</div>
     <div style="border:1px solid #E2E8F0;border-left:4px solid #7C3AED;border-radius:8px;padding:10px 12px;font-size:12px">
