@@ -472,10 +472,13 @@ function renderNav(){
   let h='';
   if(step>0) h+=`<button class="btn btn-g" onclick="go(${step-1})"><i class="fa-solid fa-chevron-left"></i> 이전</button>`;
   if(step<STEPS.length-1){
-    const blocked=step===0&&!rec.site.trim();
-    h+=`<button class="btn btn-p" ${blocked?'disabled':''} onclick="go(${step+1})">다음 <i class="fa-solid fa-chevron-right"></i></button>`;
+    h+=`<button class="btn btn-p" onclick="nextStep()">다음 <i class="fa-solid fa-chevron-right"></i></button>`;
   } else h+=`<button class="btn btn-p" onclick="resetNew()"><i class="fa-solid fa-plus"></i> 새 점검 시작</button>`;
   nav.innerHTML=h;
+}
+function nextStep(){
+  if(step===0 && !rec.site.trim()){ toast('현장명을 입력해주세요'); return; }
+  go(step+1);
 }
 
 /* ===================== 이벤트 ===================== */
