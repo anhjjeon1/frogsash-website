@@ -110,7 +110,8 @@ function handleAi(body) {
   });
 
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + apiKey;
-  const payload = { contents:[{ parts:parts }], generationConfig:{ temperature:0.2, maxOutputTokens:1200 } };
+  // pro-preview는 사고(thinking) 모델 → maxOutputTokens 충분히(4096) + thinkingLevel:low (비용 절감, 잘림 방지)
+  const payload = { contents:[{ parts:parts }], generationConfig:{ temperature:0.2, maxOutputTokens:4096, thinkingConfig:{ thinkingLevel:'low' } } };
   try {
     const res = UrlFetchApp.fetch(url, { method:'post', contentType:'application/json',
       payload:JSON.stringify(payload), muteHttpExceptions:true });
