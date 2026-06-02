@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0E7490">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>청개구리 에어컨 냉매누출 진단</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+/* ============================================================
+   청개구리 에어컨 냉매누출 진단 점검 앱 v2.0
+   - 관리자(사장님) 전용 — 로그인 잠금
+   - FLIR 초음파(음향) 카메라 사진 입력 → 누출 위치 선택 → 위치별 수리방법 자동 출력
+   - AI/결제 없음. 측정값은 보조 자동 판정. 점검 1건 = 시트 1행
+   ============================================================ */
+:root{
+  --p:#0E7490;--pl:#06B6D4;--pg:rgba(6,182,212,.10);
+  --ac:#0891B2;--bg:#F5F7FA;--card:#FFF;
+  --tx:#0F2230;--ts:#52677A;--th:#94A3B8;
+  --bd:#E2E8F0;--bl:#F1F5F9;
+  --dn:#E74C3C;--dnb:#FEF2F2;--wr:#F59E0B;--wrb:#FFFBEB;
+  --ok:#10B981;--okb:#ECFDF5;
+  --r:14px;--tr:all .2s ease;
+  --safe-bottom:env(safe-area-inset-bottom, 0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',sans-serif;background:#EEF2F6;color:var(--tx);line-height:1.6;-webkit-font-smoothing:antialiased;display:flex;justify-content:center;overscroll-behavior:none}
+.app{width:100%;max-width:480px;background:#F5F7FA;position:relative;padding:0 0 calc(80px + var(--safe-bottom));overflow-x:hidden;min-height:100vh}
+
+/* LOGIN GATE */
+.gate{position:fixed;inset:0;z-index:200;background:linear-gradient(150deg,#0C4A6E,#0E7490 60%,#06B6D4);display:flex;align-items:center;justify-content:center;padding:24px}
+.gate-box{width:100%;max-width:340px;background:#fff;border-radius:18px;padding:28px 22px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.gate-ic{width:58px;height:58px;border-radius:16px;background:var(--pg);color:var(--p);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px}
+.gate-tt{font-weight:900;font-size:18px}
+.gate-sb{font-size:12.5px;color:var(--ts);margin:4px 0 18px}
+.gate input{width:100%;border:1.5px solid var(--bd);border-radius:11px;padding:13px;font-size:16px;text-align:center;letter-spacing:2px}
+.gate input:focus{outline:none;border-color:var(--pl);box-shadow:0 0 0 3px var(--pg)}
+.gate-btn{width:100%;margin-top:12px;border:none;border-radius:11px;padding:13px;font-size:15px;font-weight:800;background:var(--p);color:#fff;cursor:pointer}
+.gate-err{color:var(--dn);font-size:12px;font-weight:700;margin-top:9px;min-height:16px}
+
+/* HEADER */
+.hd{background:linear-gradient(135deg,#0C4A6E 0%,#0E7490 50%,#06B6D4 100%);padding:16px 18px 14px;position:relative;overflow:hidden}
+.hd::before{content:'';position:absolute;top:-50%;left:-40%;width:180%;height:180%;background:radial-gradient(circle at 30% 40%,rgba(6,182,212,.3) 0%,transparent 50%);animation:hdBg 8s ease-in-out infinite alternate}
+@keyframes hdBg{0%{transform:translate(0,0)}100%{transform:translate(-3%,3%)}}
+.hd-row{position:relative;display:flex;align-items:center;gap:10px}
+.hd-ic{width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0}
+.hd-tt{color:#fff;font-weight:900;font-size:17px;letter-spacing:-.4px;line-height:1.25}
+.hd-sb{color:rgba(255,255,255,.82);font-size:11.5px;font-weight:600;margin-top:1px}
+.hd-meta{position:absolute;top:0;right:0;display:flex;align-items:center;gap:8px}
+.hd-ver{color:rgba(255,255,255,.6);font-size:10px;font-weight:700}
+.hd-lock{color:rgba(255,255,255,.7);font-size:11px;cursor:pointer}
+
+/* PROGRESS */
+.prog{display:flex;gap:4px;padding:10px 16px;background:#fff;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:30}
+.prog-seg{flex:1;height:5px;border-radius:3px;background:var(--bd);transition:var(--tr)}
+.prog-seg.on{background:var(--pl)}
+.prog-seg.done{background:var(--p)}
+
+/* CARDS */
+.wrap{padding:14px 14px 0}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:0 1px 2px rgba(15,34,48,.04)}
+.step-tt{display:flex;align-items:center;gap:8px;font-weight:900;font-size:15px;margin-bottom:3px}
+.step-tt .n{width:24px;height:24px;border-radius:8px;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.step-sb{font-size:12px;color:var(--ts);margin:0 0 14px 32px}
+
+label.fl{display:block;font-size:12.5px;font-weight:700;color:var(--ts);margin:12px 0 6px}
+label.fl:first-of-type{margin-top:0}
+.req{color:var(--dn);font-weight:800}
+input,select,textarea{width:100%;border:1.5px solid var(--bd);border-radius:10px;padding:11px 12px;font-size:14.5px;font-family:inherit;color:var(--tx);background:#fff;transition:var(--tr)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pl);box-shadow:0 0 0 3px var(--pg)}
+textarea{resize:vertical;min-height:60px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.unit-row{display:flex;align-items:center;gap:8px}
+.unit-row input{flex:1}
+.unit-row .u{font-size:12.5px;font-weight:700;color:var(--ts);white-space:nowrap;min-width:42px}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{padding:8px 13px;border:1.5px solid var(--bd);border-radius:20px;font-size:13px;font-weight:700;color:var(--ts);background:#fff;cursor:pointer;transition:var(--tr)}
+.chip.on{background:var(--p);color:#fff;border-color:var(--p)}
+
+/* leak location block */
+.loc{border:1.5px solid var(--bd);border-radius:13px;padding:13px;margin-bottom:12px;transition:var(--tr)}
+.loc.ng{border-color:var(--dn);background:var(--dnb)}
+.loc.ok{border-color:var(--ok);background:var(--okb)}
+.loc-h{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.loc-tag{width:24px;height:24px;border-radius:7px;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.loc-nm{font-weight:800;font-size:14.5px}
+.loc-pt{font-size:11px;color:var(--th);margin:0 0 10px 32px;line-height:1.4}
+.seg{display:flex;border:1.5px solid var(--bd);border-radius:9px;overflow:hidden;margin-bottom:10px}
+.seg button{flex:1;border:none;background:#fff;padding:9px 6px;font-size:12.5px;font-weight:800;color:var(--th);cursor:pointer;border-left:1px solid var(--bd)}
+.seg button:first-child{border-left:none}
+.seg button.ok.on{background:var(--ok);color:#fff}
+.seg button.ng.on{background:var(--dn);color:#fff}
+.seg button.na.on{background:var(--ts);color:#fff}
+
+.ph-add{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:13px;border:2px dashed var(--bd);border-radius:10px;background:rgba(255,255,255,.6);color:var(--ts);font-weight:700;font-size:12.5px;cursor:pointer}
+.ph-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:9px}
+.ph-item{position:relative;aspect-ratio:1;border-radius:9px;overflow:hidden;border:1px solid var(--bd)}
+.ph-item img{width:100%;height:100%;object-fit:cover}
+.ph-item .del{position:absolute;top:3px;right:3px;width:21px;height:21px;border-radius:50%;background:rgba(231,76,60,.92);color:#fff;border:none;font-size:10px;cursor:pointer}
+
+/* repair box (shown when 누출) */
+.repair{margin-top:10px;background:#fff;border:1.5px solid var(--dn);border-radius:10px;padding:11px}
+.repair-h{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:var(--dn);margin-bottom:7px}
+.repair ul{margin:0;padding-left:18px}
+.repair li{font-size:12.5px;line-height:1.6;margin-bottom:2px}
+.repair textarea{margin-top:8px;min-height:46px;font-size:13px}
+
+/* measurement auto-verdict */
+.mz{padding:13px;border:1.5px solid var(--bd);border-radius:11px;margin-bottom:11px;transition:var(--tr)}
+.mz.pass{border-color:var(--ok);background:var(--okb)}
+.mz.warn{border-color:var(--wr);background:var(--wrb)}
+.mz.fail{border-color:var(--dn);background:var(--dnb)}
+.mz-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.mz-nm{font-size:13.5px;font-weight:800}
+.mz-v{font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:7px;background:var(--bl);color:var(--th)}
+.mz.pass .mz-v{background:var(--ok);color:#fff}
+.mz.warn .mz-v{background:var(--wr);color:#fff}
+.mz.fail .mz-v{background:var(--dn);color:#fff}
+.mz-hint{font-size:11px;color:var(--ts);margin-top:6px;line-height:1.45}
+
+/* verdict summary */
+.verdict{text-align:center;padding:22px 16px;border-radius:14px;margin-bottom:14px}
+.verdict.g-ok{background:var(--okb);border:1.5px solid var(--ok)}
+.verdict.g-wr{background:var(--wrb);border:1.5px solid var(--wr)}
+.verdict.g-ng{background:var(--dnb);border:1.5px solid var(--dn)}
+.verdict .ic{font-size:42px;margin-bottom:6px}
+.verdict.g-ok .ic{color:var(--ok)}
+.verdict.g-wr .ic{color:var(--wr)}
+.verdict.g-ng .ic{color:var(--dn)}
+.verdict .gd{font-size:22px;font-weight:900;letter-spacing:-.5px}
+.verdict .ds{font-size:12.5px;color:var(--ts);margin-top:4px}
+
+/* repair plan list */
+.rp{background:#fff;border:1px solid var(--bd);border-left:4px solid var(--dn);border-radius:10px;padding:12px;margin-bottom:10px;text-align:left}
+.rp-h{font-weight:800;font-size:13.5px;margin-bottom:6px;color:var(--dn)}
+.rp ul{margin:0;padding-left:18px}
+.rp li{font-size:12.5px;line-height:1.6}
+.rp .memo{font-size:11.5px;color:var(--ts);margin-top:6px;background:var(--bl);border-radius:7px;padding:6px 9px}
+
+/* buttons / nav */
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;gap:8px;padding:12px 14px calc(12px + var(--safe-bottom));background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--bd);z-index:40}
+.btn{flex:1;border:none;border-radius:12px;padding:14px;font-size:14.5px;font-weight:800;font-family:inherit;cursor:pointer;transition:var(--tr);display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-p{background:var(--p);color:#fff}
+.btn-p:active{background:#0C5E73}
+.btn-g{background:var(--bl);color:var(--ts);flex:0 0 110px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-full{width:100%;flex:none}
+
+/* saved list */
+.saved-it{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--bd)}
+.saved-it:last-child{border-bottom:none}
+.saved-badge{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.saved-info{flex:1;min-width:0}
+.saved-nm{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.saved-mt{font-size:11px;color:var(--th)}
+.saved-act{display:flex;gap:6px}
+.mini{border:1px solid var(--bd);background:#fff;border-radius:8px;padding:6px 9px;font-size:11.5px;font-weight:700;color:var(--ts);cursor:pointer}
+.mini.danger{color:var(--dn);border-color:var(--dnb)}
+
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#0F2230;color:#fff;padding:11px 18px;border-radius:24px;font-size:13px;font-weight:700;z-index:90;opacity:0;pointer-events:none;transition:opacity .25s;max-width:90%;text-align:center}
+.toast.show{opacity:1}
+.empty{text-align:center;padding:30px 10px;color:var(--th);font-size:13px}
+.hide{display:none!important}
+.muted{font-size:11px;color:var(--th);margin-top:8px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<!-- 로그인 게이트 (관리자 전용) -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <div class="gate-ic"><i class="fa-solid fa-lock"></i></div>
+    <div class="gate-tt">관리자 전용</div>
+    <div class="gate-sb">에어컨 냉매누출 진단 앱</div>
+    <input id="gatePw" type="password" placeholder="비밀번호" autocomplete="off"
+      onkeydown="if(event.key==='Enter')tryUnlock()">
+    <button class="gate-btn" onclick="tryUnlock()">잠금 해제</button>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+</div>
+
+<div class="app hide" id="appRoot">
+  <div class="hd">
+    <div class="hd-meta">
+      <span class="hd-ver">v3.0</span>
+      <span class="hd-lock" onclick="lockApp()"><i class="fa-solid fa-lock"></i></span>
+    </div>
+    <div class="hd-row">
+      <div class="hd-ic"><i class="fa-solid fa-wave-square"></i></div>
+      <div>
+        <div class="hd-tt">에어컨 냉매누출 진단</div>
+        <div class="hd-sb">FLIR 초음파 · AI 누출 분석 보고서</div>
+      </div>
+    </div>
+  </div>
+  <div class="prog" id="prog"></div>
+  <div class="wrap" id="wrap"></div>
+</div>
+
+<div class="nav hide" id="nav"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== 설정 ===================== */
+// ⚠️ 관리자 비밀번호 — 이 값만 바꾸면 됩니다 (사장님 전용)
+const ADMIN_PW = 'anhjeon100#';
+
+// GAS 웹앱 배포 후 URL 교체
+const GAS_URL = '';
+
+// 측정 자동판정 기준 (현장 표준에 맞춰 조정 가능)
+const STD = {
+  pressureDrop: { tolerance: 0, unit:'bar', label:'질소 가압 압력강하',
+    hint:'규정 유지시간 동안 압력 강하 0 = 정상. 강하 발생 시 누출.' },
+  vacuum:       { max: 500, riseMax: 200, unit:'micron', label:'진공도',
+    hint:'500 micron 이하 도달 + 유지 후 상승 200 micron 이내 = 정상.' },
+  deltaT:       { min: 8, max: 12, unit:'℃', label:'냉방 토출 ΔT',
+    hint:'흡입–토출 온도차 8~12℃ = 정상. 낮으면 냉매 부족 의심.' },
+  charge:       { tolPct: 5, unit:'g', label:'냉매 충전량(명판 대비)',
+    hint:'명판 대비 ±5% 이내 = 정상.' }
+};
+const REFRIGERANTS = ['R410A','R32','R22','R134a','R407C','기타'];
+
+// 누출 위치 + 위치별 수리방법 (FLIR 초음파 카메라로 누출 위치 확인 → 자동 출력)
+const LOCS = [
+  { g:'A', name:'실내기 연결부', pt:'플레어 너트 체결·플레어 가공(균열/편심)·단열 마감',
+    repair:['플레어 너트 규정 토크로 재체결 (토크렌치 사용)','편심·균열 시 배관 절단 후 플레어 재가공','연결부 단열재 재마감 후 재누출 검사'] },
+  { g:'B', name:'실외기 연결부', pt:'서비스밸브 체결·캡·누유(오일) 흔적',
+    repair:['서비스밸브 패킹 / 밸브코어 교체','밸브 캡 가스켓 점검 후 재체결','누유 심하면 밸브 어셈블리 교체'] },
+  { g:'C', name:'분배기·용접부', pt:'브레이징 핀홀·분배기 헤더 누출',
+    repair:['질소 치환 후 핀홀 부위 재브레이징','용접 비드 재시공 (산소·질소 퍼징)','손상 심하면 분배기 교체'] },
+  { g:'D', name:'매립 배관', pt:'구간 압력강하 (질소가압 게이지)',
+    repair:['누출 구간 정밀 탐지 후 부분 교체','매립 불가 시 우회 배관 신설 검토','관통부/슬리브 보수 후 재가압'] },
+  { g:'E', name:'시스템 전체', pt:'질소 시험압·진공 유지·냉매 충전량',
+    repair:['냉매 회수 후 진공 재시행 (수분 제거)','규정 냉매량으로 재충전 (저울 계량)','시험압 재가압 후 규정시간 유지 확인'] },
+  { g:'F', name:'부가 (드레인·결로)', pt:'드레인 구배·응축수 고임·배관 결로',
+    repair:['드레인 배관 구배 재시공','배관 단열재 보강 (이격·노출부)','결로 부위 단열 마감 보수'] },
+];
+
+/* ===================== 상태 ===================== */
+const STEPS = ['현장','설비','누출검사','측정값','판정·수리','리포트'];
+let step = 0;
+let rec = blankRec();
+
+function blankRec(){
+  const leak = {};
+  LOCS.forEach(l=> leak[l.g] = { status:'', photos:[], memo:'' });
+  return {
+    id:'AC'+Date.now(), site:'', addr:'', dong:'', ho:'', date:today(), inspector:'',
+    maker:'', model:'', refrigerant:'R410A', indoorN:'', pipeLen:'', nameplateCharge:'',
+    leak,
+    flirPhotos:[],          // AI가 분석할 FLIR 초음파 사진
+    ai:null,                // AI 분석 결과 {leakDetected, locations[], severity, repair[], summary, raw}
+    aiState:'',             // '', 'loading', 'done', 'error'
+    m:{ pStart:'', pEnd:'', pHold:'', vac:'', vacRise:'', dtIn:'', dtOut:'', chargeActual:'' },
+    overrideGrade:'', note:''
+  };
+}
+function today(){ const d=new Date(),z=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate()); }
+
+/* ===================== 로그인 게이트 ===================== */
+function isUnlocked(){ return sessionStorage.getItem('aircon_unlocked')==='1'; }
+function tryUnlock(){
+  const pw = document.getElementById('gatePw').value;
+  if(pw === ADMIN_PW){
+    sessionStorage.setItem('aircon_unlocked','1');
+    showApp();
+  } else {
+    document.getElementById('gateErr').textContent = '비밀번호가 올바르지 않습니다';
+    document.getElementById('gatePw').value='';
+  }
+}
+function lockApp(){
+  sessionStorage.removeItem('aircon_unlocked');
+  location.reload();
+}
+function showApp(){
+  document.getElementById('gate').classList.add('hide');
+  document.getElementById('appRoot').classList.remove('hide');
+  document.getElementById('nav').classList.remove('hide');
+  render();
+}
+
+/* ===================== 측정 자동판정 ===================== */
+function vPressureDrop(){
+  const a=parseFloat(rec.m.pStart),b=parseFloat(rec.m.pEnd);
+  if(isNaN(a)||isNaN(b)) return {state:'none'};
+  const drop=+(a-b).toFixed(3), pass=drop<=STD.pressureDrop.tolerance;
+  return { state:pass?'pass':'fail', val:(drop<=0?'0':drop)+' '+STD.pressureDrop.unit+' 강하',
+    extra:pass?'유지 정상 (누출 無)':'누출 의심 (강하 발생)' };
+}
+function vVacuum(){
+  const v=parseFloat(rec.m.vac);
+  if(isNaN(v)) return {state:'none'};
+  const rise=parseFloat(rec.m.vacRise), okR=v<=STD.vacuum.max, okH=isNaN(rise)?true:rise<=STD.vacuum.riseMax, pass=okR&&okH;
+  let extra = !okR?'진공 도달 미달 (수분·누출 의심)':!okH?'진공 유지 실패 (상승 '+rise+' micron)':'진공 양호';
+  return { state:pass?'pass':'fail', val:v+' micron', extra };
+}
+function vDeltaT(){
+  const i=parseFloat(rec.m.dtIn),o=parseFloat(rec.m.dtOut);
+  if(isNaN(i)||isNaN(o)) return {state:'none'};
+  const dt=+(i-o).toFixed(1); let state,extra;
+  if(dt>=STD.deltaT.min&&dt<=STD.deltaT.max){state='pass';extra='적정 냉방 능력';}
+  else if(dt<STD.deltaT.min){state='warn';extra='ΔT 낮음 — 냉매 부족/누출 의심';}
+  else{state='warn';extra='ΔT 높음 — 풍량/필터 점검 권장';}
+  return { state, val:dt+' ℃', extra };
+}
+function vCharge(){
+  const a=parseFloat(rec.m.chargeActual),n=parseFloat(rec.nameplateCharge);
+  if(isNaN(a)) return {state:'none'};
+  if(isNaN(n)||n<=0) return {state:'warn',val:a+' g',extra:'명판 충전량 미입력 — 비교 불가'};
+  const d=Math.abs(a-n)/n*100, pass=d<=STD.charge.tolPct;
+  return { state:pass?'pass':'warn', val:a+' g ('+(a>=n?'+':'')+(a-n)+'g)', extra:pass?'적정 충전량':'명판 대비 '+d.toFixed(1)+'% 편차' };
+}
+function measurements(){ return [
+  {key:'pdrop',label:STD.pressureDrop.label,hint:STD.pressureDrop.hint,fn:vPressureDrop},
+  {key:'vac',label:STD.vacuum.label,hint:STD.vacuum.hint,fn:vVacuum},
+  {key:'dt',label:STD.deltaT.label,hint:STD.deltaT.hint,fn:vDeltaT},
+  {key:'chg',label:STD.charge.label,hint:STD.charge.hint,fn:vCharge},
+]; }
+
+/* ===================== 종합 판정 ===================== */
+function leakLocs(){ return LOCS.filter(l=> rec.leak[l.g].status==='ng'); }
+function computeGrade(){
+  const findings=[];
+  leakLocs().forEach(l=> findings.push({sev:'ng', t:'['+l.g+'] '+l.name+' 누출'}));
+  measurements().forEach(m=>{ const r=m.fn();
+    if(r.state==='fail') findings.push({sev:'ng',t:m.label+' — '+r.extra});
+    else if(r.state==='warn') findings.push({sev:'wr',t:m.label+' — '+r.extra});
+  });
+  let grade = findings.some(f=>f.sev==='ng')?'중대':findings.some(f=>f.sev==='wr')?'주의':'양호';
+  if(rec.overrideGrade) grade=rec.overrideGrade;
+  return { grade, findings };
+}
+function gradeMeta(g){
+  if(g==='중대') return {cls:'g-ng',ic:'fa-triangle-exclamation',ds:'냉매 누출 확인 — 수리 필요',dot:'var(--dn)'};
+  if(g==='주의') return {cls:'g-wr',ic:'fa-circle-exclamation',ds:'경계값 — 재점검/모니터링 권장',dot:'var(--wr)'};
+  return {cls:'g-ok',ic:'fa-circle-check',ds:'전 위치 정상 — 누출 없음',dot:'var(--ok)'};
+}
+
+/* ===================== 렌더 ===================== */
+const wrap=document.getElementById('wrap');
+const nav=document.getElementById('nav');
+function esc(s){ return String(s).replace(/"/g,'&quot;'); }
+function renderProg(){ document.getElementById('prog').innerHTML = STEPS.map((_,i)=>`<div class="prog-seg ${i<step?'done':i===step?'on':''}"></div>`).join(''); }
+
+function field(label,key,opts={}){
+  const v=rec[key]||'', t=opts.type||'text';
+  const ph=opts.ph?`placeholder="${opts.ph}"`:'', im=opts.inputmode?`inputmode="${opts.inputmode}"`:'';
+  return `<label class="fl">${label}${opts.req?' <span class="req">*</span>':''}</label>
+    <input type="${t}" ${im} ${ph} value="${esc(v)}" oninput="rec['${key}']=this.value">`;
+}
+
+function render(){
+  renderProg();
+  let h='';
+  if(step===0){
+    h=card('1','현장 정보','점검 현장·일시·점검자',
+      field('현장명','site',{req:1,ph:'예: 파주 OO아파트'})+
+      field('주소','addr',{ph:'동·호수 제외 주소'})+
+      `<div class="grid2"><div>`+field('동','dong',{ph:'101'})+`</div><div>`+field('호수','ho',{ph:'1502'})+`</div></div>`+
+      `<div class="grid2"><div>`+field('점검일','date',{type:'date'})+`</div><div>`+field('점검자','inspector',{ph:'성명'})+`</div></div>`);
+  }
+  else if(step===1){
+    h=card('2','설비 정보','에어컨·냉매·배관 정보',
+      `<div class="grid2"><div>`+field('제조사','maker',{ph:'삼성/LG'})+`</div><div>`+field('모델명','model',{ph:'명판 모델'})+`</div></div>`+
+      `<label class="fl">냉매 종류</label><div class="chips">`+REFRIGERANTS.map(r=>`<div class="chip ${rec.refrigerant===r?'on':''}" onclick="rec.refrigerant='${r}';render()">${r}</div>`).join('')+`</div>`+
+      `<div class="grid2"><div>`+field('실내기 대수','indoorN',{inputmode:'numeric',ph:'대'})+`</div><div>`+field('배관 총길이','pipeLen',{inputmode:'decimal',ph:'m'})+`</div></div>`+
+      field('명판 냉매 충전량','nameplateCharge',{inputmode:'numeric',ph:'g (충전량 판정 기준)'})+
+      `<p class="muted">명판 충전량 입력 시 측정 단계에서 실측 충전량을 자동 비교합니다.</p>`);
+  }
+  else if(step===2){
+    h=card('3','AI 누출 분석 (FLIR 초음파)','초음파 사진 첨부 → AI가 누출 위치·최선 수리방법 분석',
+      `<label class="ph-add" for="flirIn"><i class="fa-solid fa-camera"></i> FLIR 초음파 사진 첨부 ${rec.flirPhotos.length?'('+rec.flirPhotos.length+')':''}</label>
+       <input id="flirIn" type="file" accept="image/*" multiple class="hide" onchange="addFlir(event)">
+       ${rec.flirPhotos.length?`<div class="ph-grid">${rec.flirPhotos.map((p,i)=>`<div class="ph-item"><img src="${p}"><button class="del" onclick="delFlir(${i})"><i class="fa-solid fa-xmark"></i></button></div>`).join('')}</div>`:''}
+       <button class="btn btn-p btn-full" style="margin-top:11px;${rec.flirPhotos.length?'':'opacity:.45;pointer-events:none'}" onclick="aiAnalyze()">
+         ${rec.aiState==='loading'?'<i class="fa-solid fa-spinner fa-spin"></i> AI 분석 중...':'<i class="fa-solid fa-wand-magic-sparkles"></i> AI 누출 분석'}
+       </button>
+       <p class="muted">${GAS_URL?'초음파 핫스팟 위치를 AI가 읽어 누출 위치·심각도·수리방법을 제안합니다. 결과는 아래에서 직접 보정할 수 있습니다.':'⚠️ AI 분석은 GAS 백엔드(Gemini 키) 배포 후 동작합니다. 그 전엔 아래에서 수동 선택하세요.'}</p>`)
+      + aiResultCard()
+      + card('','누출 위치 확정 (AI 결과 보정)','AI 제안을 확인하고 필요 시 수정하세요',
+        LOCS.map(l=>{
+          const st=rec.leak[l.g];
+          const cls=st.status==='ng'?'ng':st.status==='ok'?'ok':'';
+          const aiHit=rec.ai&&Array.isArray(rec.ai.locations)&&rec.ai.locations.find(x=>x.code===l.g);
+          return `<div class="loc ${cls}">
+            <div class="loc-h"><span class="loc-tag">${l.g}</span><span class="loc-nm">${l.name}</span>${aiHit?`<span style="font-size:10px;background:var(--dnb);color:var(--dn);padding:2px 7px;border-radius:6px;font-weight:800">AI: ${aiHit.confidence||''}</span>`:''}</div>
+            <div class="loc-pt">${l.pt}</div>
+            <div class="seg">
+              <button class="ok ${st.status==='ok'?'on':''}" onclick="setLeak('${l.g}','ok')"><i class="fa-solid fa-check"></i> 정상</button>
+              <button class="ng ${st.status==='ng'?'on':''}" onclick="setLeak('${l.g}','ng')"><i class="fa-solid fa-droplet"></i> 누출</button>
+              <button class="na ${st.status==='na'?'on':''}" onclick="setLeak('${l.g}','na')">미검사</button>
+            </div>
+            ${st.status==='ng'?`<div class="repair">
+              <div class="repair-h"><i class="fa-solid fa-screwdriver-wrench"></i> 수리방법 — ${l.name}</div>
+              <ul>${(aiHit&&Array.isArray(rec.ai.repair)&&rec.ai.repair.length?rec.ai.repair:l.repair).map(r=>`<li>${esc(r)}</li>`).join('')}</ul>
+              <textarea placeholder="현장 추가 메모 (선택)" oninput="rec.leak['${l.g}'].memo=this.value">${esc(st.memo)}</textarea>
+            </div>`:''}
+          </div>`;
+        }).join(''));
+  }
+  else if(step===3){
+    h=card('4','측정값 (보조 확인)','누출 확인을 위한 압력·진공·냉방 측정 — 자동 판정',
+      `<label class="fl">A. 질소 가압 압력 (시작 → 종료 / 유지분)</label>
+       <div class="grid3">
+         <input inputmode="decimal" placeholder="시작압" value="${esc(rec.m.pStart)}" oninput="setM('pStart',this.value)">
+         <input inputmode="decimal" placeholder="종료압" value="${esc(rec.m.pEnd)}" oninput="setM('pEnd',this.value)">
+         <input inputmode="numeric" placeholder="유지(분)" value="${esc(rec.m.pHold)}" oninput="setM('pHold',this.value)">
+       </div>
+       <label class="fl">B. 진공도 / 유지 후 상승</label>
+       <div class="grid2">
+         <div class="unit-row"><input inputmode="numeric" placeholder="도달" value="${esc(rec.m.vac)}" oninput="setM('vac',this.value)"><span class="u">micron</span></div>
+         <div class="unit-row"><input inputmode="numeric" placeholder="상승" value="${esc(rec.m.vacRise)}" oninput="setM('vacRise',this.value)"><span class="u">micron</span></div>
+       </div>
+       <label class="fl">C. 냉방 토출 ΔT (흡입 / 토출)</label>
+       <div class="grid2">
+         <div class="unit-row"><input inputmode="decimal" placeholder="흡입" value="${esc(rec.m.dtIn)}" oninput="setM('dtIn',this.value)"><span class="u">℃</span></div>
+         <div class="unit-row"><input inputmode="decimal" placeholder="토출" value="${esc(rec.m.dtOut)}" oninput="setM('dtOut',this.value)"><span class="u">℃</span></div>
+       </div>
+       <label class="fl">D. 냉매 실측 충전량</label>
+       <div class="unit-row"><input inputmode="numeric" placeholder="명판 ${rec.nameplateCharge||'미입력'}" value="${esc(rec.m.chargeActual)}" oninput="setM('chargeActual',this.value)"><span class="u">g</span></div>`)
+      + `<div class="card"><div class="step-tt" style="font-size:14px"><i class="fa-solid fa-gauge-high" style="color:var(--p)"></i> 자동 판정</div>`
+      + measurements().map(m=>{ const r=m.fn();
+          const cls=r.state==='pass'?'pass':r.state==='warn'?'warn':r.state==='fail'?'fail':'';
+          const vl=r.state==='none'?'미입력':r.state==='pass'?'정상':r.state==='warn'?'주의':'하자';
+          return `<div class="mz ${cls}"><div class="mz-h"><span class="mz-nm">${m.label}</span><span class="mz-v">${vl}</span></div>
+            <div style="font-size:13px;font-weight:700">${r.state==='none'?'<span style="color:var(--th)">값을 입력하세요</span>':r.val+' · '+r.extra}</div>
+            <div class="mz-hint">${m.hint}</div></div>`;
+        }).join('') + `</div>`;
+  }
+  else if(step===4){
+    const {grade,findings}=computeGrade(); const gm=gradeMeta(grade); const ng=leakLocs();
+    h=card('5','판정 · 수리계획','누출 위치별 수리방법 종합',
+      `<div class="verdict ${gm.cls}">
+        <div class="ic"><i class="fa-solid ${gm.ic}"></i></div>
+        <div class="gd">${grade}</div>
+        <div class="ds">${gm.ds}</div>
+      </div>
+      ${ng.length?`<div style="font-weight:800;font-size:13px;color:var(--p);margin:4px 0 8px"><i class="fa-solid fa-screwdriver-wrench"></i> 누출 ${ng.length}곳 — 수리방법</div>`+
+        ng.map(l=>`<div class="rp"><div class="rp-h">[${l.g}] ${l.name} 누출</div><ul>${l.repair.map(r=>`<li>${r}</li>`).join('')}</ul>${rec.leak[l.g].memo?`<div class="memo">📝 ${esc(rec.leak[l.g].memo)}</div>`:''}</div>`).join('')
+        :`<div class="rp" style="border-left-color:var(--ok)"><div class="rp-h" style="color:var(--ok)">누출 위치 없음</div><ul><li>전 위치 정상 — 수리 불필요</li></ul></div>`}
+      ${findings.filter(f=>f.sev==='wr').length?`<div style="font-weight:800;font-size:12.5px;color:var(--wr);margin:10px 0 6px"><i class="fa-solid fa-circle-exclamation"></i> 주의 항목</div>`+
+        findings.filter(f=>f.sev==='wr').map(f=>`<div class="rp" style="border-left-color:var(--wr)"><div style="font-size:12.5px">${f.t}</div></div>`).join(''):''}
+      <label class="fl">등급 수동 조정</label>
+      <div class="chips">${['','양호','주의','중대'].map(g=>`<div class="chip ${rec.overrideGrade===g?'on':''}" onclick="rec.overrideGrade='${g}';render()">${g===''?'자동':g}</div>`).join('')}</div>
+      <label class="fl">종합 의견 / 조치 사항</label>
+      <textarea placeholder="재점검 일정, 부품, 특이사항 등" oninput="rec.note=this.value">${esc(rec.note)}</textarea>`);
+  }
+  else if(step===5){
+    h=card('6','리포트 / 저장','PDF 출력 · 시트 전송 · 저장',
+      `<button class="btn btn-p btn-full" onclick="genPDF()"><i class="fa-solid fa-file-pdf"></i> 리포트 PDF 출력</button>
+       <div style="height:9px"></div>
+       <button class="btn btn-p btn-full" style="background:var(--pl)" onclick="saveLocal()"><i class="fa-solid fa-floppy-disk"></i> 이 점검 저장</button>
+       <div style="height:9px"></div>
+       <button class="btn btn-p btn-full" style="background:#03C75A" onclick="sendSheet()"><i class="fa-solid fa-table"></i> 스프레드시트 전송</button>
+       <p class="muted">${GAS_URL?'시트 전송 시 점검 1건 = 시트 1행으로 기록됩니다.':'⚠️ 시트 전송은 GAS 백엔드 배포 후 활성화됩니다 (backend.gs 참고). 로컬 저장·PDF는 즉시 동작합니다.'}</p>`)
+      + savedListCard();
+  }
+  wrap.innerHTML=h;
+  renderNav();
+}
+function card(n,t,s,body){ return `<div class="card"><div class="step-tt">${n?`<span class="n">${n}</span>`:'<i class="fa-solid fa-location-crosshairs" style="color:var(--p)"></i>'}${t}</div><div class="step-sb">${s}</div>${body}</div>`; }
+function renderNav(){
+  let h='';
+  if(step>0) h+=`<button class="btn btn-g" onclick="go(${step-1})"><i class="fa-solid fa-chevron-left"></i> 이전</button>`;
+  if(step<STEPS.length-1){
+    const blocked=step===0&&!rec.site.trim();
+    h+=`<button class="btn btn-p" ${blocked?'disabled':''} onclick="go(${step+1})">다음 <i class="fa-solid fa-chevron-right"></i></button>`;
+  } else h+=`<button class="btn btn-p" onclick="resetNew()"><i class="fa-solid fa-plus"></i> 새 점검 시작</button>`;
+  nav.innerHTML=h;
+}
+
+/* ===================== 이벤트 ===================== */
+function setM(key,val){ rec.m[key]=val; clearTimeout(window._mt); window._mt=setTimeout(render,400); }
+function setLeak(g,val){ rec.leak[g].status = rec.leak[g].status===val?'':val; render(); }
+function go(n){ step=n; window.scrollTo(0,0); render(); }
+
+function addLeakPhoto(g,ev){
+  const files=[...ev.target.files]; let pending=files.length;
+  files.forEach(f=>{ const r=new FileReader();
+    r.onload=e=> compress(e.target.result, data=>{ rec.leak[g].photos.push(data); if(--pending===0) render(); });
+    r.readAsDataURL(f); });
+  ev.target.value='';
+}
+function compress(src,cb){ const img=new Image();
+  img.onload=()=>{ const max=1280,sc=Math.min(1,max/Math.max(img.width,img.height));
+    const c=document.createElement('canvas'); c.width=img.width*sc; c.height=img.height*sc;
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height); cb(c.toDataURL('image/jpeg',0.7)); };
+  img.src=src;
+}
+function delLeakPhoto(g,i){ rec.leak[g].photos.splice(i,1); render(); }
+function resetNew(){ if(!confirm('새 점검을 시작할까요? 저장하지 않은 내용은 사라집니다.')) return; rec=blankRec(); step=0; window.scrollTo(0,0); render(); }
+
+/* ===================== AI 누출 분석 (FLIR 사진 → Gemini Vision) ===================== */
+function addFlir(ev){
+  const files=[...ev.target.files]; let pending=files.length;
+  files.forEach(f=>{ const r=new FileReader();
+    r.onload=e=> compress(e.target.result, data=>{ rec.flirPhotos.push(data); if(--pending===0) render(); });
+    r.readAsDataURL(f); });
+  ev.target.value='';
+}
+function delFlir(i){ rec.flirPhotos.splice(i,1); render(); }
+
+function aiResultCard(){
+  if(rec.aiState==='loading') return card('','AI 분석 결과','초음파 핫스팟 분석 중...',`<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i> 분석 중입니다 (10~20초)</div>`);
+  if(rec.aiState==='error') return card('','AI 분석 결과','',`<div class="rp" style="border-left-color:var(--wr)"><div class="rp-h" style="color:var(--wr)">분석 오류</div><div style="font-size:12px">${esc(rec.ai&&rec.ai.error||'AI 호출 실패 — 사진/네트워크 확인 후 다시 시도하세요.')}</div></div>`);
+  if(!rec.ai||rec.aiState!=='done') return '';
+  const a=rec.ai; const gm=gradeMeta(a.severity==='중대'||a.severity==='주의'||a.severity==='양호'?a.severity:'양호');
+  const locTxt=(Array.isArray(a.locations)&&a.locations.length)?a.locations.map(x=>`[${x.code}] ${x.name||''} <span style="color:var(--th)">(${x.confidence||'-'})</span>`).join(', '):'명확한 누출 핫스팟 미검출';
+  return card('','🤖 AI 분석 결과','Gemini Vision 초음파 분석 — 보고서에 반영됩니다',
+    `<div class="rp" style="border-left-color:${gm.dot}">
+       <div class="rp-h" style="color:${gm.dot}">누출 ${a.leakDetected?'검출':'미검출'} · 심각도 ${a.severity||'-'}</div>
+       <div style="font-size:12.5px;margin-bottom:7px"><b>위치:</b> ${locTxt}</div>
+       ${Array.isArray(a.repair)&&a.repair.length?`<div style="font-size:12.5px"><b>최선 수리방법:</b><ul style="margin:4px 0 0 16px">${a.repair.map(r=>`<li>${esc(r)}</li>`).join('')}</ul></div>`:''}
+       ${a.summary?`<div class="memo">${esc(a.summary)}</div>`:''}
+     </div>
+     <button class="mini" onclick="applyAi()" style="margin-bottom:4px"><i class="fa-solid fa-arrow-down"></i> 아래 위치에 AI 결과 적용</button>`);
+}
+
+async function aiAnalyze(){
+  if(!rec.flirPhotos.length){ toast('FLIR 사진을 먼저 첨부하세요'); return; }
+  if(!GAS_URL){ toast('GAS 백엔드(Gemini 키) 배포 후 사용 가능'); return; }
+  rec.aiState='loading'; render();
+  try{
+    const images=rec.flirPhotos.map(d=>({ mimeType:'image/jpeg', data:d.split(',')[1] }));
+    const res=await fetch(GAS_URL,{ method:'post', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({ action:'ai', secret:ADMIN_PW, images, context:{ refrigerant:rec.refrigerant, model:rec.model } }) });
+    const json=await res.json();
+    if(json.error){ rec.ai={error:json.message||json.error}; rec.aiState='error'; render(); return; }
+    const parsed=json.parsed||tryParse(json.text);
+    if(!parsed){ rec.ai={error:'AI 응답을 해석하지 못했습니다. 다시 시도해주세요.'}; rec.aiState='error'; render(); return; }
+    rec.ai=parsed; rec.aiState='done';
+    applyAi(true);
+    render();
+  }catch(e){ rec.ai={error:e.message}; rec.aiState='error'; render(); }
+}
+function applyAi(silent){
+  const a=rec.ai; if(!a) return;
+  if(Array.isArray(a.locations)){
+    LOCS.forEach(l=>{ const hit=a.locations.find(x=>x.code===l.g); if(hit) rec.leak[l.g].status='ng'; });
+  }
+  if(a.severity==='중대'||a.severity==='주의'||a.severity==='양호') rec.overrideGrade='';
+  if(!silent){ render(); toast('AI 결과를 위치에 적용했습니다'); }
+}
+function tryParse(txt){
+  if(!txt) return null;
+  let s=String(txt).trim().replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'').trim();
+  const a=s.indexOf('{'), b=s.lastIndexOf('}');
+  if(a>=0&&b>a) s=s.slice(a,b+1);
+  try{ return JSON.parse(s); }catch(e){ return null; }
+}
+
+/* ===================== 저장 ===================== */
+const LS_KEY='aircon_inspections_v2';
+function loadAll(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch(e){ return []; } }
+function saveAll(list){ localStorage.setItem(LS_KEY, JSON.stringify(list)); }
+function saveLocal(){
+  const {grade}=computeGrade(); const list=loadAll();
+  const snap=JSON.parse(JSON.stringify(rec)); snap.grade=grade; snap.savedAt=new Date().toISOString();
+  const idx=list.findIndex(x=>x.id===rec.id);
+  if(idx>=0) list[idx]=snap; else list.unshift(snap);
+  saveAll(list); toast('저장 완료 — '+grade); render();
+}
+function savedListCard(){
+  const list=loadAll();
+  if(!list.length) return `<div class="card"><div class="step-tt" style="font-size:14px"><i class="fa-solid fa-list" style="color:var(--p)"></i> 저장된 점검</div><div class="empty">아직 저장된 점검이 없습니다</div></div>`;
+  return `<div class="card"><div class="step-tt" style="font-size:14px"><i class="fa-solid fa-list" style="color:var(--p)"></i> 저장된 점검 (${list.length})</div>`+
+    list.slice(0,20).map(x=>{ const gm=gradeMeta(x.grade||'양호');
+      return `<div class="saved-it"><span class="saved-badge" style="background:${gm.dot}"></span>
+        <div class="saved-info"><div class="saved-nm">${esc(x.site||'(현장명 없음)')} ${x.dong?x.dong+'동':''} ${x.ho?x.ho+'호':''}</div>
+        <div class="saved-mt">${x.date} · ${x.refrigerant} · ${x.grade||'-'}</div></div>
+        <div class="saved-act"><button class="mini" onclick="loadRec('${x.id}')">열기</button><button class="mini danger" onclick="delRec('${x.id}')">삭제</button></div></div>`;
+    }).join('')+`</div>`;
+}
+function loadRec(id){ const x=loadAll().find(r=>r.id===id); if(!x) return;
+  rec=Object.assign(blankRec(),x); step=0; window.scrollTo(0,0); render(); toast('불러옴 — '+(x.site||'')); }
+function delRec(id){ if(!confirm('이 점검을 삭제할까요?')) return; saveAll(loadAll().filter(r=>r.id!==id)); render(); }
+
+/* ===================== 시트 전송 ===================== */
+function recToRow(){
+  const {grade,findings}=computeGrade();
+  const ls=g=>({ok:'정상',ng:'누출',na:'미검사'}[rec.leak[g].status]||'');
+  const repairText=leakLocs().map(l=>'['+l.g+'] '+l.name+': '+l.repair.join(' / ')+(rec.leak[l.g].memo?' ('+rec.leak[l.g].memo+')':'')).join('  |  ');
+  return {
+    id:rec.id, savedAt:new Date().toISOString(),
+    site:rec.site, addr:rec.addr, dong:rec.dong, ho:rec.ho, date:rec.date, inspector:rec.inspector,
+    maker:rec.maker, model:rec.model, refrigerant:rec.refrigerant, indoorN:rec.indoorN, pipeLen:rec.pipeLen, nameplateCharge:rec.nameplateCharge,
+    leakA:ls('A'), leakB:ls('B'), leakC:ls('C'), leakD:ls('D'), leakE:ls('E'), leakF:ls('F'),
+    pStart:rec.m.pStart, pEnd:rec.m.pEnd, pHold:rec.m.pHold, vac:rec.m.vac, vacRise:rec.m.vacRise,
+    dtIn:rec.m.dtIn, dtOut:rec.m.dtOut, chargeActual:rec.m.chargeActual,
+    pdrop:vPressureDrop().state, vacV:vVacuum().state, dtV:vDeltaT().state, chgV:vCharge().state,
+    grade, leakCount:leakLocs().length, repair:repairText,
+    aiSummary:(rec.ai&&!rec.ai.error)?(rec.ai.summary||''):'',
+    aiLocations:(rec.ai&&Array.isArray(rec.ai.locations))?rec.ai.locations.map(x=>x.code+(x.confidence?'('+x.confidence+')':'')).join(','):'',
+    findings:findings.map(f=>f.t).join(' / '), note:rec.note,
+    photoCount:rec.flirPhotos.length
+  };
+}
+async function sendSheet(){
+  if(!rec.site.trim()){ toast('현장명을 먼저 입력하세요'); return; }
+  if(!GAS_URL){ toast('GAS 백엔드 미배포 — backend.gs 참고'); return; }
+  toast('전송 중...');
+  try{
+    await fetch(GAS_URL,{ method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({ action:'saveInspection', record:recToRow() }) });
+    toast('시트 전송 완료'); saveLocal();
+  }catch(e){ toast('전송 실패 — 네트워크 확인'); }
+}
+
+/* ===================== PDF ===================== */
+function genPDF(){
+  const {grade,findings}=computeGrade(); const gm=gradeMeta(grade);
+  const lrow=l=>{ const v=rec.leak[l.g].status; const t=v==='ok'?'정상':v==='ng'?'누출':v==='na'?'미검사':'미점검';
+    const c=v==='ok'?'#10B981':v==='ng'?'#E74C3C':'#94A3B8';
+    return `<tr><td>${l.g}</td><td>${l.name}</td><td style="color:${c};font-weight:700">${t}</td></tr>`; };
+  const mz=measurements().map(m=>{ const r=m.fn(); const t=r.state==='none'?'미입력':r.val+' · '+r.extra;
+    const c=r.state==='pass'?'#10B981':r.state==='warn'?'#F59E0B':r.state==='fail'?'#E74C3C':'#94A3B8';
+    return `<tr><td>${m.label}</td><td style="color:${c};font-weight:700">${t}</td></tr>`; }).join('');
+  const ng=leakLocs();
+  const allPhotos=rec.flirPhotos.map(p=>({g:'',name:'FLIR 초음파',p}));
+  const a=(rec.ai&&!rec.ai.error)?rec.ai:null;
+  const aiBlock=a?`<div style="font-weight:800;color:#7C3AED;margin:14px 0 6px">■ AI 분석 (Gemini Vision · 초음파)</div>
+    <div style="border:1px solid #E2E8F0;border-left:4px solid #7C3AED;border-radius:8px;padding:10px 12px;font-size:12px">
+      <div><b>누출:</b> ${a.leakDetected?'검출':'미검출'} · <b>심각도:</b> ${a.severity||'-'}</div>
+      ${Array.isArray(a.locations)&&a.locations.length?`<div style="margin-top:3px"><b>AI 추정 위치:</b> ${a.locations.map(x=>'['+x.code+'] '+(x.name||'')+(x.confidence?' ('+x.confidence+')':'')).join(', ')}</div>`:''}
+      ${a.summary?`<div style="margin-top:5px;color:#52677A">${a.summary}</div>`:''}
+    </div>`:'';
+  const html=`
+  <div style="font-family:'Noto Sans KR',sans-serif;color:#0F2230;padding:24px;max-width:760px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #0E7490;padding-bottom:10px;margin-bottom:16px">
+      <div><div style="font-size:22px;font-weight:900;color:#0E7490">에어컨 냉매누출 진단 리포트</div>
+        <div style="font-size:12px;color:#52677A">청개구리 · FLIR 초음파 검사 · ${rec.date}</div></div>
+      <div style="text-align:right;padding:8px 14px;border-radius:10px;background:${gm.cls==='g-ng'?'#FEF2F2':gm.cls==='g-wr'?'#FFFBEB':'#ECFDF5'}">
+        <div style="font-size:11px;color:#52677A">종합 판정</div><div style="font-size:20px;font-weight:900;color:${gm.dot}">${grade}</div></div>
+    </div>
+    <table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-bottom:14px">
+      <tr><td style="padding:4px 8px;background:#F1F5F9;font-weight:700;width:90px">현장</td><td style="padding:4px 8px">${rec.site} ${rec.dong?rec.dong+'동':''} ${rec.ho?rec.ho+'호':''}</td>
+          <td style="padding:4px 8px;background:#F1F5F9;font-weight:700;width:90px">점검자</td><td style="padding:4px 8px">${rec.inspector||'-'}</td></tr>
+      <tr><td style="padding:4px 8px;background:#F1F5F9;font-weight:700">설비</td><td style="padding:4px 8px">${rec.maker} ${rec.model}</td>
+          <td style="padding:4px 8px;background:#F1F5F9;font-weight:700">냉매</td><td style="padding:4px 8px">${rec.refrigerant} / 명판 ${rec.nameplateCharge||'-'}g</td></tr>
+    </table>
+    <div style="font-weight:800;color:#0E7490;margin:14px 0 6px">■ 누출 검사 (FLIR 초음파)</div>
+    <table style="width:100%;font-size:12px;border-collapse:collapse">
+      <tr style="background:#0E7490;color:#fff"><th style="padding:5px;text-align:left">위치</th><th style="padding:5px;text-align:left">점검 부위</th><th style="padding:5px;text-align:left">판정</th></tr>
+      ${LOCS.map(lrow).join('')}
+    </table>
+    ${aiBlock}
+    ${ng.length?`<div style="font-weight:800;color:#E74C3C;margin:14px 0 6px">■ 누출 위치별 수리방법</div>
+      ${ng.map(l=>`<div style="border:1px solid #E2E8F0;border-left:4px solid #E74C3C;border-radius:8px;padding:9px 12px;margin-bottom:7px">
+        <div style="font-weight:800;color:#E74C3C;font-size:12.5px">[${l.g}] ${l.name} 누출</div>
+        <ul style="margin:4px 0 0 16px;font-size:12px">${l.repair.map(r=>`<li>${r}</li>`).join('')}</ul>
+        ${rec.leak[l.g].memo?`<div style="font-size:11.5px;color:#52677A;margin-top:4px">📝 ${rec.leak[l.g].memo}</div>`:''}</div>`).join('')}`
+      :`<div style="font-weight:800;color:#10B981;margin:14px 0 6px">■ 누출 위치 없음 — 수리 불필요</div>`}
+    <div style="font-weight:800;color:#0E7490;margin:14px 0 6px">■ 측정값 자동 판정</div>
+    <table style="width:100%;font-size:12px;border-collapse:collapse">
+      <tr style="background:#0E7490;color:#fff"><th style="padding:5px;text-align:left">측정 항목</th><th style="padding:5px;text-align:left">결과</th></tr>${mz}
+    </table>
+    ${rec.note?`<div style="font-weight:800;color:#0E7490;margin:14px 0 6px">■ 종합 의견</div><div style="font-size:12.5px;white-space:pre-wrap;border:1px solid #E2E8F0;border-radius:8px;padding:10px">${rec.note}</div>`:''}
+    ${allPhotos.length?`<div style="font-weight:800;color:#0E7490;margin:14px 0 6px">■ FLIR 초음파 사진 (${allPhotos.length})</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">${allPhotos.map(o=>`<div><img src="${o.p}" style="width:100%;border-radius:6px;border:1px solid #E2E8F0"><div style="font-size:9.5px;color:#52677A;text-align:center">${o.name}</div></div>`).join('')}</div>`:''}
+    <div style="margin-top:20px;padding-top:10px;border-top:1px solid #E2E8F0;font-size:10.5px;color:#94A3B8;text-align:center">
+      청개구리 에어컨 냉매누출 진단 · ☎ 1599-7380 · frogsash.co.kr · FLIR 초음파 카메라 기준 현장 진단 결과입니다</div>
+  </div>`;
+  const el=document.createElement('div'); el.innerHTML=html;
+  if(window.html2pdf){
+    window.html2pdf().set({ margin:0, filename:`냉매진단_${rec.site||'리포트'}_${rec.date}.pdf`,
+      image:{type:'jpeg',quality:0.9}, html2canvas:{scale:1.6,useCORS:true}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} }).from(el).save();
+  } else {
+    const w=window.open('','_blank'); w.document.write('<html><head><meta charset="utf-8"><title>리포트</title></head><body>'+html+'</body></html>');
+    w.document.close(); w.focus(); setTimeout(()=>w.print(),400);
+  }
+}
+
+/* ===================== 유틸 ===================== */
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove('show'),2200); }
+(function(){ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'; document.head.appendChild(s); })();
+
+/* ===================== 시작 ===================== */
+if(isUnlocked()) showApp();
+else setTimeout(()=>document.getElementById('gatePw').focus(),200);
+</script>
+</body>
+</html>
