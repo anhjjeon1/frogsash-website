@@ -2223,7 +2223,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v34.13';
+const APP_VER = 'v34.14';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3101,10 +3101,17 @@ function autoSave(savedW,savedC,savedDetail){
   reset();
   if(roomMissing)toast('<i class="fa-solid fa-circle-check"></i> 자동 저장! ⚠️ 위치는 미지정으로 저장됨',true,3500);
   else toast(`<i class="fa-solid fa-circle-check"></i> <b>${room}</b> 자동 저장 완료!`);
-  stat('✅ 자동 저장 완료 — ➡️ 다음입력 버튼을 눌러 계속하세요');
-  /* v30.9: 다음입력 버튼 강조 애니메이션 부여 */
+  stat('✅ 자동 저장 완료 — 다음 하자를 촬영하세요');
+  /* v30.9: 다음입력 버튼 강조 (v34.14: 안전망으로 유지 — 오류 폴백 저장·수동용) */
   const nxt=$('btnNext');if(nxt){nxt.classList.add('pulse-next');}
-    setTimeout(()=>{document.querySelector('.lh').scrollIntoView({behavior:'smooth'});setTimeout(()=>step(1),800);},600);
+  /* v34.14: 분석 후 자동으로 최상단 사진촬영 영역으로 이동 + 음성 안내 (다음입력 탭 불필요) */
+  setTimeout(()=>{
+    step(1);
+    const _top=document.querySelector('.sec-t .n');
+    if(_top)_top.scrollIntoView({behavior:'smooth',block:'start'});
+    else window.scrollTo({top:0,behavior:'smooth'});
+    _speakHint('저장됐습니다. 다음 하자를 촬영하세요.','next');
+  },700);
 }
 
 /* ── 위치 선택 ── */
