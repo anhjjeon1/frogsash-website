@@ -2223,7 +2223,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v34.15';
+const APP_VER = 'v34.16';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -2574,11 +2574,11 @@ A.voiceInput = async (targetId) => {
   if(btn) btn.classList.add('listening');
   /* v32.8: 필드별 음성입력 설정
      - fAddr(주소): 긴 문장 → 15초 하드캡 + 10초 침묵 종료
-     - fUser(하자내용): 짧은 문장 → 10초 하드캡 + 3초 침묵 자동확정
+     - fUser(하자내용): 짧은 문장 → 5초 하드캡 + 2초 침묵 자동확정 (v34.16: 흐름 단축)
      - fDetail(상세설명): 단발 모드 */
   const voiceCfg = {
     fAddr: {longForm:true,  silenceMs:10000, maxDurationMs:15000, msg:'🎤 천천히 말씀해 주세요... (최대 15초, 10초 침묵 시 자동 종료)'},
-    fUser: {longForm:true,  silenceMs:3000,  maxDurationMs:10000, msg:'🎤 말씀해 주세요... (3초 침묵 시 자동 입력)'},
+    fUser: {longForm:true,  silenceMs:2000,  maxDurationMs:5000, msg:'🎤 말씀해 주세요... (2초 침묵 시 자동 입력)'},
     fDetail:{longForm:false, msg:'🎤 말씀해 주세요... (다시 누르면 중단)'}
   };
   const cfg = voiceCfg[targetId] || voiceCfg.fDetail;
@@ -2640,7 +2640,7 @@ function _scheduleVoiceAI(text){
       ai.classList.add('attn');
       _speakHint('하자 내용 입력이 끝났으면 AI 분석 버튼을 눌러주세요.','ai'); /* v34.13 */
     }
-  }, 3000);
+  }, 1500); /* v34.16: 3000→1500, 흐름 단축 */
   const m = _matchWorkSubType(t);
   if(!m){
     det.value = `🔍 "${t}"\n\n카테고리 자동 매칭 실패.\n사진 촬영 후 AI분석 버튼을 눌러 정밀 분석을 실행하세요.`;
