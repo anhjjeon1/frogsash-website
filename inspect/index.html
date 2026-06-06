@@ -2223,7 +2223,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v34.14';
+const APP_VER = 'v34.15';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -2350,6 +2350,7 @@ const $=id=>document.getElementById(id);
    - 하자정보(fWork/fSub/fType): 음성→WM 키워드 매칭 선택
    ============================================================ */
 const _SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let _ttsActive=false; /* v34.15: 음성안내(TTS) 재생 중엔 STT 결과 무시 — TTS가 마이크에 재포착되는 피드백 루프 차단 */
 let _recActive = null;
 let _currentRec = null;
 
@@ -2413,6 +2414,7 @@ function _mkRec(onResult, onEnd, opts){
     /* v32.3: 삼성 인터넷에서 동일/포함관계 final 중복 누적 버그 대응.
        한쪽이 다른 쪽의 prefix면 긴 쪽만 유지, 완전히 다른 발화는 연결. */
     rec.onresult = (e) => {
+      if(_ttsActive) return; /* v34.15: 음성안내(TTS) 재생 중엔 입력 무시 */
       const finalParts = [];
       let interim = '';
       for(let i = 0; i < e.results.length; i++){
@@ -2466,6 +2468,7 @@ function _mkRec(onResult, onEnd, opts){
     rec._lfStart = () => {};
   } else {
     rec.onresult = (e) => {
+      if(_ttsActive) return; /* v34.15: 음성안내(TTS) 재생 중엔 입력 무시 */
       try{
         const transcript = (e.results[0][0].transcript||'').trim();
         if(transcript) onResult(transcript);
@@ -3205,12 +3208,18 @@ function _speakHint(text, key){
     if(_vPlaying) return;                       /* 전체 가이드 재생 중엔 방해 금지 */
     if(key && _hintSpokenKey===key) return;     /* 같은 힌트 중복 억제 */
     _hintSpokenKey=key||'';
+    /* v34.15: 말하기 전에 마이크 정지 — TTS가 STT에 재포착돼 입력칸을 덮는 피드백 루프 차단.
+       (long-form은 _stopRec이 누적 텍스트를 onResult로 확정하므로 사용자 입력은 보존됨) */
+    try{ if(typeof _stopRec==='function') _stopRec(); }catch(e){}
+    _ttsActive=true;
     const u=new SpeechSynthesisUtterance(text);
     u.lang='ko-KR'; u.rate=1.05; u.pitch=1;
     const vs=window.speechSynthesis.getVoices();
     const ko=vs.find(v=>/ko/i.test(v.lang)); if(ko)u.voice=ko;
+    u.onend=()=>{ setTimeout(()=>{ _ttsActive=false; }, 400); };  /* 재생 종료 후 0.4초 더 STT 무시 */
+    u.onerror=()=>{ _ttsActive=false; };
     window.speechSynthesis.speak(u);
-  }catch(e){}
+  }catch(e){ _ttsActive=false; }
 }
 
 /* ── 이미지 리사이즈 (v32.9: 768 타일 유지용 760px 한도, JPEG 70% 압축) ── */
