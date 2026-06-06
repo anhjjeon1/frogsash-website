@@ -2223,7 +2223,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v34.12';
+const APP_VER = 'v34.13';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -2635,6 +2635,7 @@ function _scheduleVoiceAI(text){
     const ai = document.getElementById('btnRunAI');
     if(ai && !ai.disabled && ($('fUser')?.value||'').trim()){
       ai.classList.add('attn');
+      _speakHint('하자 내용 입력이 끝났으면 AI 분석 버튼을 눌러주세요.','ai'); /* v34.13 */
     }
   }, 3000);
   const m = _matchWorkSubType(t);
@@ -2876,7 +2877,7 @@ A.onUserInput=(el)=>{
     _autoMatchDebounce(el.value.trim());
     _textInputAttnTimer = setTimeout(()=>{
       const ai = document.getElementById('btnRunAI');
-      if(ai && !ai.disabled && el.value.trim()) ai.classList.add('attn');
+      if(ai && !ai.disabled && el.value.trim()){ ai.classList.add('attn'); _speakHint('하자 내용 입력이 끝났으면 AI 분석 버튼을 눌러주세요.','ai'); } /* v34.13 */
     }, 3000);
   }else{
     const ai = document.getElementById('btnRunAI');
@@ -3189,10 +3190,27 @@ function _speakNext(){
 }
 if('speechSynthesis' in window){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();}
 
+/* v34.13: 짧은 1회성 음성 힌트 (전체 음성안내 재생 중이면 생략, 같은 key 중복 억제) */
+let _hintSpokenKey='';
+function _speakHint(text, key){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    if(_vPlaying) return;                       /* 전체 가이드 재생 중엔 방해 금지 */
+    if(key && _hintSpokenKey===key) return;     /* 같은 힌트 중복 억제 */
+    _hintSpokenKey=key||'';
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='ko-KR'; u.rate=1.05; u.pitch=1;
+    const vs=window.speechSynthesis.getVoices();
+    const ko=vs.find(v=>/ko/i.test(v.lang)); if(ko)u.voice=ko;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
 /* ── 이미지 리사이즈 (v32.9: 768 타일 유지용 760px 한도, JPEG 70% 압축) ── */
 function resizeImg(file,maxPx=760){return new Promise(r=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>maxPx||h>maxPx){const ratio=Math.min(maxPx/w,maxPx/h);w=Math.round(w*ratio);h=Math.round(h*ratio);}const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);const dataUrl=cv.toDataURL('image/jpeg',0.7);r({data:dataUrl.split(',')[1],mimeType:'image/jpeg'});};img.src=URL.createObjectURL(file);});}
 
 async function runAI(){
+  _hintSpokenKey=''; /* v34.13: 새 분석 시작 시 음성 힌트 키 리셋(재실패 시 재안내 허용) */
   const det=$('fDetail'), ui=$('fUser').value.trim();
   const activeMode=getActiveMode();
   const proExtra=(activeMode==='admin')?'\n[전문모드] 시공기준서·KS규격·국토부 하자판정 기준 상세 인용.':'';
@@ -3227,7 +3245,8 @@ async function runAI(){
       detEl.value='⚠️ '+reason+'\n\n➡️ AI 분석 버튼을 다시 눌러주세요.\n※ 하자내용을 입력하면 더 정확합니다.';
       stat('⚠️ '+reason+' — AI 분석 버튼을 다시 눌러주세요',true);
     }
-    $('btnReanalyze').style.display='inline-flex';
+    const _rbF=$('btnReanalyze');_rbF.style.display='inline-flex';_rbF.classList.add('highlight'); /* v34.13: 깜빡임 */
+    _speakHint('AI 분석에 실패했습니다. 수정 후 재분석 버튼을 눌러주세요.','re'); /* v34.13 */
     $('btnRunAI').disabled=false;$('btnRunAI').style.opacity='1';
     saveDraft();
   }
@@ -3340,9 +3359,6 @@ ${d1.detail||''}
       severity==='중대'?'\n⛔ [중대하자 — 즉시 시정 요청]':
       severity==='보통'?'\n⚠️ [보통 — 시정 권고]':
       severity==='경미'?'\n✅ [경미 — 기록 후 보수]':'';
-    const modeBadge=hasUserInput?'📝 입력 기반':'📷 사진 기반';
-    const badge=`\n${severityBadge}\n${modeBadge} 분석 완료 · 2차 검증 완료 (참고용)`;
-
     /* v32.0: 품질 평가 — failed면 쿼터 차감 없이 재분석 유도 */
     const _q=_assessAIQuality(d, ui);
     if(_q.quality==='failed'){
@@ -3351,14 +3367,22 @@ ${d1.detail||''}
       if(wF||cF){const b=$('btnReanalyze');b.style.display='inline-flex';b.classList.add('highlight');}
       $('btnRunAI').disabled=false;$('btnRunAI').style.opacity='1';
       stat(`⚠️ 분석 실패 — 재분석을 권장합니다 (쿼터 차감 없음)`,true);
+      _speakHint('AI 분석이 완료되지 않았습니다. 수정 후 재분석 버튼을 눌러주세요.','re'); /* v34.13 */
       updateQuotaUI();
       return;
     }
 
+    /* v34.13: 결과 라벨 구분 — 진짜 AI 정밀분석(good) vs 입력 기반 자동분류(poor·정밀판정 보류) */
+    const _isPoor=_q.quality==='poor';
+    const modeBadge=_isPoor
+      ?(hasUserInput?'📝 입력 기반 자동 분류 · AI 정밀판정 보류':'📷 사진 기반 자동 분류 · AI 정밀판정 보류')
+      :'🤖 AI 정밀 분석 완료 · 2차 검증 완료';
+    const badge=`\n${severityBadge}\n${modeBadge} (참고용)`;
+
     _applyAIResult(d.work||'',d.sub||'',d.type||'');
     const workInfo=`[공종] ${d.work||''} [세부] ${d.sub||''} [유형] ${d.type||''}\n\n`;
     /* v32.0: poor 품질이면 재분석 권장 안내 추가 */
-    const poorBadge=_q.quality==='poor'?`\n\n⚠️ 분석 신뢰도가 낮을 수 있습니다 (${_q.reason}). "수정 후 재분석" 버튼으로 다시 시도해보세요.`:'';
+    const poorBadge=_isPoor?`\n\n⚠️ 분석 신뢰도가 낮을 수 있습니다 (${_q.reason}). "수정 후 재분석" 버튼으로 다시 시도해보세요.`:'';
     det.value=workInfo+(d.detail||'')+badge+poorBadge;
     /* textarea 높이 자동 조절 */
     det.style.height='auto';det.style.height=det.scrollHeight+'px';
@@ -3379,7 +3403,7 @@ ${d1.detail||''}
     const remaining=getRemaining();
     const isFreeRe=_reanalyzeSession.sig===_sig&&_reanalyzeSession.count>0;
     const reTag=isFreeRe?` [재분석 ${_reanalyzeSession.count}/${REANALYZE_FREE_MAX} 무료]`:'';
-    if(_q.quality==='poor'){stat(`⚠️ 분석 완료 — 재분석 권장${reTag}`,true);}
+    if(_q.quality==='poor'){stat(`⚠️ 분석 완료 — 재분석 권장${reTag}`,true);_speakHint('분석 신뢰도가 낮습니다. 수정 후 재분석 버튼을 눌러주세요.','re');} /* v34.13 */
     else if(hasUserInput){stat(`📝 입력 기반 정밀 분석 완료 (잔여 ${remaining}건)${reTag}`);}
     else{stat(`✅ 사진 분석 완료 — 자동 저장 중... (잔여 ${remaining}건)${reTag}`);}
     /* AI 분석 완료 후 자동 저장 — detail을 즉시 캡처 */
@@ -3572,7 +3596,7 @@ function renderItem(it){
   $('lCnt').textContent=list.length;
 }
 function updateModeLabel(){const el=$('lMode');if(!list.length){el.style.display='none';return;}const hasPaid=list.some(i=>i.mode==='paid'),hasPro=list.some(i=>i.mode==='pro');if(hasPaid){el.textContent='이용권점검';el.style.background='var(--nvb)';el.style.color='#059669';}else if(hasPro){el.textContent='직원점검';el.style.background='var(--pub)';el.style.color='var(--pu)';}else{el.textContent='무료체험';el.style.background='var(--pg)';el.style.color='var(--p)';}el.style.display='inline-block';}
-function reset(){const _nxt=$('btnNext');if(_nxt)_nxt.classList.remove('pulse-next');$('inW').value='';$('inC').value='';wF=null;cF=null;['pvW','pvC'].forEach(i=>{$(i).style.display='none';$(i).src='';});['rtW','rtC'].forEach(i=>{$(i).style.display='none';});$('fUser').value='';$('fDetail').value='';$('fWork').value='';A.onWork();$('fRoom').value='';const label=$('cdLabel');label.textContent='위치 선택';label.classList.add('cd-placeholder');label.style.color='';label.style.fontWeight='';$('cdBtn').classList.remove('err-shake');document.querySelectorAll('.cd-item').forEach(i=>i.classList.remove('selected'));// 입력 모드 배너 리셋
+function reset(){_hintSpokenKey='';const _aibR=$('btnRunAI');if(_aibR)_aibR.classList.remove('attn');const _rbR=$('btnReanalyze');if(_rbR)_rbR.classList.remove('highlight');const _nxt=$('btnNext');if(_nxt)_nxt.classList.remove('pulse-next');$('inW').value='';$('inC').value='';wF=null;cF=null;['pvW','pvC'].forEach(i=>{$(i).style.display='none';$(i).src='';});['rtW','rtC'].forEach(i=>{$(i).style.display='none';});$('fUser').value='';$('fDetail').value='';$('fWork').value='';A.onWork();$('fRoom').value='';const label=$('cdLabel');label.textContent='위치 선택';label.classList.add('cd-placeholder');label.style.color='';label.style.fontWeight='';$('cdBtn').classList.remove('err-shake');document.querySelectorAll('.cd-item').forEach(i=>i.classList.remove('selected'));// 입력 모드 배너 리셋
 const el=$('fUser');el.classList.remove('has-value');const banner=$('inputHintBanner');if(banner){banner.classList.remove('has-input');const span=banner.querySelector('span:first-of-type');if(span)span.innerHTML='하자 내용을 입력하면 <b>입력 기반 정밀 분석</b>으로 전환됩니다';const badge=$('inputModeBadge');if(badge){badge.className='input-mode-badge photo-mode';badge.innerHTML='📷 사진 모드';}}/* fAgree는 한번 체크하면 세션 내 유지 (reset에서 해제하지 않음) */
 /* 태그 UI 초기화 */
 $('aiTags').style.display='none';$('afSelects').style.display='none';
@@ -3620,7 +3644,7 @@ A.pdf=()=>{
     const isSafe=it.type==='허용범위';
     const tc=isSafe?'#059669':'#E74C3C',tb=isSafe?'#ECFDF5':'#FFF5F5';
     /* v30.7: PDF에서는 "분석 완료 · 2차 검증 완료" 줄 제거 */
-    const detailRaw=(it.detail||'').split('\n').filter(l=>!/분석\s*완료\s*·\s*2차\s*검증\s*완료/.test(l)).join('\n').replace(/\n{2,}/g,'\n').trim();
+    const detailRaw=(it.detail||'').split('\n').filter(l=>!/(분석\s*완료\s*·\s*2차\s*검증\s*완료|자동\s*분류\s*·\s*AI\s*정밀판정\s*보류)/.test(l)).join('\n').replace(/\n{2,}/g,'\n').trim();
     const room=esc(it.room||'위치미지정'),type=esc(it.type||''),work=esc(it.work||''),sub=esc(it.sub||''),detail=esc(detailRaw);
     const mTag=it.mode==='paid'?'<span style="font-size:9px;background:#03C75A;color:#fff;padding:2px 6px;border-radius:3px">이용권</span>':it.mode==='pro'?'<span style="font-size:9px;background:#7C3AED;color:#fff;padding:2px 6px;border-radius:3px">직원</span>':'<span style="font-size:9px;background:#E6F7F3;color:#0A6B5C;padding:2px 6px;border-radius:3px">무료</span>';
     const hasW=it.wImg&&it.wImg.startsWith('data:'),hasC=it.cImg&&it.cImg.startsWith('data:');
