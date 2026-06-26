@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0F3D26">
+<title>창호 밀폐력(차음) 수리 전·후 비교 · 청개구리샤시</title>
+<style>
+:root{--brand:#2E7D32;--brand-700:#1B5E20;--brand-900:#0E3A23;--brand-300:#5FC07A;--brand-50:#ECF6EE;--accent:#10B981;--ink:#0C1611;--ink-2:#3D4D45;--ink-3:#7C8B82;--line:#E9EEEA;--line-2:#F2F6F3;--surface:#FFFFFF;--surface-2:#F7FAF8;--bg:#EDF2EE;--warn:#B8860B;--bad:#DC2626;--neutral:#8B978F;--r-sm:12px;--r-md:16px;--r-lg:22px;--r-xl:28px;--sh-sm:0 1px 2px rgba(13,38,24,.04),0 2px 6px rgba(13,38,24,.05);--sh-md:0 4px 16px rgba(13,38,24,.07),0 1px 3px rgba(13,38,24,.05);--sh-lg:0 18px 44px rgba(13,38,24,.16),0 4px 12px rgba(13,38,24,.07);--ring:0 0 0 3.5px rgba(46,125,50,.15);--safe-b:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;background:radial-gradient(820px 360px at 6% -8%,rgba(95,192,122,.13),transparent 56%),radial-gradient(820px 420px at 102% 2%,rgba(16,185,129,.08),transparent 55%),var(--bg);color:var(--ink);font-size:15.5px;line-height:1.5;letter-spacing:-.011em;-webkit-font-smoothing:antialiased;padding-bottom:calc(18px + var(--safe-b))}
+.wrap{max-width:600px;margin:0 auto;padding:0 8px}
+button{font-family:inherit}
+header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(13,38,24,.06)}
+.hbar{max-width:600px;margin:0 auto;padding:13px 10px;display:flex;align-items:center;justify-content:center}
+.app-title{margin:0;font-size:22px;font-weight:820;letter-spacing:-.02em;color:var(--brand-700);display:inline-flex;align-items:center;justify-content:center}
+.windico{display:inline-grid;place-items:center;width:25px;height:25px;flex:0 0 auto;border-radius:8px;background:linear-gradient(135deg,#42A5F5,#1565C0);margin-right:7px;box-shadow:0 2px 6px rgba(21,101,192,.3)}
+.logo{width:38px;height:42px;flex:0 0 auto;filter:drop-shadow(0 2px 4px rgba(15,61,38,.2))}
+.htxt h1{font-size:16px;margin:0;font-weight:750;letter-spacing:-.02em}
+.htxt .tag{font-size:11px;color:var(--ink-3);font-weight:600;letter-spacing:.02em}
+.hbadge{margin-left:auto;font-size:11px;font-weight:700;color:var(--brand-700);background:var(--brand-50);border:1px solid #D3EAD9;padding:5px 10px;border-radius:999px}
+.steps{display:flex;gap:6px;max-width:600px;margin:0 auto;padding:9px 8px 0}
+.step{flex:1;height:4px;border-radius:999px;background:var(--line);overflow:hidden}
+.step.on{background:linear-gradient(90deg,var(--brand-300),var(--brand))}
+.hero{position:relative;margin:16px 0;border-radius:var(--r-xl);overflow:hidden;background:radial-gradient(460px 240px at 88% -50%,rgba(16,185,129,.5),transparent 60%),radial-gradient(360px 200px at 0% 120%,rgba(95,192,122,.28),transparent 55%),linear-gradient(155deg,#1F7A3D,var(--brand-900));color:#fff;box-shadow:var(--sh-lg);padding:22px 22px 20px}
+.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border:1px solid rgba(255,255,255,.12);border-radius:50%}
+.hero .eyebrow{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.78;font-weight:700}
+.hero .figure{display:flex;align-items:baseline;gap:8px;margin-top:6px}
+.hero .big{font-size:62px;font-weight:820;line-height:.92;letter-spacing:-.03em;font-variant-numeric:tabular-nums;text-shadow:0 2px 18px rgba(0,0,0,.18)}
+.hero .unit{font-size:22px;font-weight:700;opacity:.92}
+.hero .delta{margin-left:auto;font-size:12px;font-weight:700;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);padding:6px 11px;border-radius:999px;align-self:center}
+.hero .comment{margin-top:12px;font-size:13.5px;line-height:1.55;opacity:.96;max-width:90%}
+.hero .mini{display:flex;gap:10px;margin-top:16px}
+.hero .mchip{flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:var(--r-md);padding:10px 12px}
+.hero .mchip .k{font-size:10.5px;opacity:.78;letter-spacing:.04em}
+.hero .mchip .v{font-size:18px;font-weight:780;font-variant-numeric:tabular-nums;margin-top:2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-md);margin:14px 0;overflow:hidden}
+.card-head{display:flex;align-items:center;gap:10px;padding:14px 12px}
+.card-head .ic{width:32px;height:32px;border-radius:11px;flex:0 0 auto;display:grid;place-items:center;background:linear-gradient(140deg,var(--brand-50),#DCEFE1);color:var(--brand-700);box-shadow:inset 0 0 0 1px rgba(46,125,50,.09)}
+.card-head h2{font-size:14.5px;margin:0;font-weight:740;letter-spacing:-.01em}
+.card-head .hint{font-size:11.5px;color:var(--ink-3);margin-top:1px}
+.card-head .chev{margin-left:auto;color:var(--ink-3);transition:transform .25s ease;font-size:12px}
+.collapsible .card-head{cursor:pointer}
+.collapsible.closed .chev{transform:rotate(-90deg)}
+.collapsible.closed .card-body{display:none}
+.card-body{padding:0 12px 13px}
+.field{margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+.field label{display:flex;align-items:center;min-height:20px;font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:5px;letter-spacing:.01em}
+.inp,.field select{width:100%;padding:12px 13px;font-size:16px;color:var(--ink);background:#FBFDFC;border:1.5px solid var(--line);border-radius:var(--r-sm);transition:border-color .15s,box-shadow .15s,background .15s;appearance:none}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7A72' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
+.inp:focus,.field select:focus{outline:none;border-color:var(--brand);background:var(--surface);box-shadow:var(--ring)}
+.inp::placeholder{color:#A9B4AD}
+#c_site{font-size:11.5px;height:40px;padding-top:0;padding-bottom:0}
+#c_date{height:40px;padding-top:0;padding-bottom:0;font-size:13.5px;font-weight:600;font-family:"Segoe UI",Roboto,"Pretendard",-apple-system,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.2px;color:var(--ink-2)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.unit-inp{position:relative}
+.unit-inp .u{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--ink-3);font-weight:700;pointer-events:none}
+.unit-inp .inp{padding-right:38px}
+.loc{border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);margin-bottom:14px;overflow:hidden;box-shadow:var(--sh-md)}
+.loc-head{display:flex;align-items:center;gap:9px;padding:12px 13px;background:var(--surface-2);border-bottom:1px solid var(--line-2)}
+.loc-no{width:20px;height:20px;border-radius:50%;background:var(--brand);color:#fff;font-size:11.5px;font-weight:800;display:grid;place-items:center;flex:0 0 auto}
+.stepno{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--brand);color:#fff;font-size:11.5px;font-weight:800;flex:0 0 auto;margin-right:5px;vertical-align:-4px}
+.loc-no,.stepno{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:12px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.loc-head .name-inp{flex:1;border:none;background:transparent;font-size:13px;font-weight:740;padding:6px 4px;color:var(--ink)}
+.loc-head .name-inp:focus{outline:none}
+.del-btn{flex:0 0 auto;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--bad);display:grid;place-items:center}
+.loc-pad{padding:13px}
+.seg-label{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;margin:10px 0 7px;letter-spacing:.02em}
+.seg-label:first-child{margin-top:0}
+.dot{width:9px;height:9px;border-radius:3px;flex:0 0 auto}
+.dot.before{background:var(--neutral)}
+.dot.after{background:var(--brand)}
+.seg-label.before{color:var(--ink-2)}
+.seg-label.after{color:var(--brand-700)}
+.mini-lab{font-size:10.5px;font-weight:700;color:var(--ink-3);margin:7px 0 4px}
+.mic-btn{flex:0 0 auto;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--brand-700);display:grid;place-items:center;font-size:15px}
+.mic-btn.rec{background:var(--bad);color:#fff;border-color:var(--bad);animation:micpulse 1s infinite}
+@keyframes micpulse{0%,100%{opacity:1}50%{opacity:.55}}
+.onoff{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:4px}
+.onoff .mini-lab{margin:0 0 4px}
+.photo-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
+.photo-cell .mini-lab{margin:0 0 5px}
+.photo-slot.ratio34{aspect-ratio:1/1}
+.photo-slot.ratio34 .photo-btn{height:100%;flex-direction:column;gap:3px;font-size:12px;line-height:1.35}
+.cam{font-size:24px;line-height:1}
+.photo-slot.ratio34 .photo-thumb{height:100%}
+.photo-slot.ratio34 .photo-thumb img{height:100%;max-height:none}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.db{width:100%;padding:8px 4px;text-align:center;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface);transition:border-color .15s,box-shadow .15s}
+.db::placeholder{color:#C4CCC7;font-weight:500}
+.db:focus{outline:none;border-color:var(--brand);box-shadow:var(--ring)}
+.loc-res{display:flex;align-items:center;gap:10px;margin-top:13px;padding:12px 13px;border-radius:var(--r-sm);background:var(--surface-2);border:1px solid var(--line-2)}
+.loc-res .flow{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.loc-res .v{font-size:16px;font-weight:800;color:var(--ink)}
+.loc-res .arrow{color:var(--ink-3);font-size:13px}
+.loc-res .imp{font-weight:850;font-size:16px;font-variant-numeric:tabular-nums}
+.badge{margin-left:auto;padding:7px 12px;border-radius:999px;font-size:11.5px;font-weight:800;color:#fff;white-space:nowrap;letter-spacing:.01em;box-shadow:0 2px 8px rgba(13,38,24,.18)}
+.loc-res.empty{display:none}
+.photo-slot{margin-top:9px}
+.photo-btn{width:100%;padding:11px;border:1.5px dashed #CFD8D2;background:var(--surface-2);color:#A9B4AD;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.photo-thumb{position:relative;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--line)}
+.photo-thumb img{width:100%;display:block;max-height:260px;object-fit:cover}
+.photo-del{position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:8px;border:none;background:rgba(14,26,18,.66);color:#fff;font-size:15px;cursor:pointer;display:grid;place-items:center}
+.photo-cap{position:absolute;left:6px;bottom:6px;font-size:10.5px;font-weight:700;color:#fff;background:rgba(14,26,18,.6);padding:3px 8px;border-radius:6px}
+.hidden-file{display:none}
+.btn{width:100%;border:none;border-radius:var(--r-md);font-size:15.5px;font-weight:750;letter-spacing:-.01em;padding:14px;cursor:pointer;transition:transform .08s ease,box-shadow .2s,background .15s,filter .15s}
+.btn:active{transform:scale(.975)}
+.btn-add{background:var(--brand-50);color:var(--brand-700);border:1.5px dashed #B6D8BD}
+.us-add{display:inline-block;width:auto;margin-top:9px;padding:7px 12px;font-size:12px;font-weight:700;border-radius:999px;background:var(--brand-50);color:var(--brand-700);border:1.5px dashed #B6D8BD;cursor:pointer}
+.us-pair-head{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;color:var(--ink-3);margin:9px 0 0}
+.us-pair-head button{border:none;background:transparent;color:var(--bad);font-size:11px;font-weight:700;cursor:pointer;padding:2px 4px}
+.act-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:340px;margin:2px auto 0}
+.act-row .btn{padding:9px 10px;font-size:13px;font-weight:700;border-radius:var(--r-sm)}
+.act-row .btn-ai svg{width:14px;height:14px}
+.btn-ai{background:linear-gradient(135deg,var(--accent),var(--brand));color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 6px 16px rgba(16,185,129,.32)}
+@keyframes cardflash{0%,100%{box-shadow:var(--sh-sm)}30%{box-shadow:0 0 0 3px var(--brand-300),var(--sh-lg)}}
+.flash{animation:cardflash 1.1s ease}
+.seg-toggle{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px;margin-left:auto}
+.seg-toggle button{border:none;background:transparent;font-size:11.5px;font-weight:700;color:var(--ink-3);padding:5px 11px;border-radius:999px;cursor:pointer}
+.seg-toggle button.on{background:#fff;color:var(--brand-700);box-shadow:var(--sh-sm)}
+.chart-row{padding:13px 0;border-bottom:1px dashed var(--line-2)}
+.chart-row:last-child{border-bottom:none;padding-bottom:2px}
+.chart-row .name{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:740;margin-bottom:9px}
+.chart-row .impchip{font-size:11.5px;font-weight:800;color:var(--brand-700);background:var(--brand-50);border:1px solid #D5E8D9;padding:3px 9px;border-radius:999px;font-variant-numeric:tabular-nums}
+.bar-line{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.bar-line:last-child{margin-bottom:0}
+.bar-line .tag{width:24px;flex:0 0 auto;font-size:11px;font-weight:800;color:var(--ink-3);text-align:right}
+.bar-track{flex:1;height:26px;background:var(--line-2);border-radius:8px;overflow:hidden}
+.bar-fill{height:100%;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:9px;font-size:11.5px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;transition:width .55s cubic-bezier(.22,.61,.36,1);min-width:30px}
+.bar-before .bar-fill{background:linear-gradient(90deg,#B7C2BB,#9AA7A0);color:#23302a}
+.bar-after .bar-fill{background:linear-gradient(90deg,var(--accent),var(--brand))}
+.empty-state{text-align:center;color:var(--ink-3);font-size:13px;padding:26px 10px}
+.empty-state .em{font-size:26px;display:block;margin-bottom:6px;opacity:.5}
+.ai-toggle{margin-left:auto;display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:2px}
+.ai-toggle button{border:none;background:transparent;font-size:11px;font-weight:700;color:var(--ink-3);padding:4px 9px;border-radius:999px;cursor:pointer}
+.ai-toggle button.on{background:#fff;color:var(--brand-700);box-shadow:var(--sh-sm)}
+.ai{border:1px solid #D6EBDB;border-radius:var(--r-md);background:linear-gradient(180deg,#F2FBF5,#fff);padding:15px;box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+.ai .hl{font-size:14px;font-weight:800;color:var(--brand-700);margin-bottom:9px;display:flex;align-items:center;gap:7px}
+.ai .grade{font-size:11px;font-weight:800;color:#fff;padding:3px 9px;border-radius:999px}
+.ai ul{margin:0;padding-left:17px}
+.ai li{font-size:13px;line-height:1.62;margin-bottom:5px;color:var(--ink-2)}
+.ai li:last-child{margin-bottom:0}
+.ai .empty{color:var(--ink-3);font-size:13px;text-align:center;padding:8px}
+.notice{display:flex;gap:10px;font-size:11.5px;color:#6B5B12;line-height:1.6;background:#FFF9E6;border:1px solid #F2E2A6;border-radius:var(--r-md);padding:12px 13px;margin:14px 0}
+.notice .ni{flex:0 0 auto;color:var(--warn);font-weight:900}
+footer{text-align:center;font-size:12px;color:var(--ink-3);padding:20px 0 4px;font-weight:600}
+footer .ph{color:var(--brand-700);font-weight:800}
+.foot-actions{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin:16px 0 6px}
+.foot-actions .btn{padding:9px 10px;font-size:13px;font-weight:700;border-radius:var(--r-sm)}
+.foot-actions .btn svg{width:14px;height:14px}
+.btn-reset{background:var(--surface);color:var(--ink-2);border:1.5px solid var(--line)}
+.btn-reset:active{background:var(--surface-2)}
+.btn-pdf{background:linear-gradient(135deg,#33433B,#16241C);color:#fff;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 8px 20px rgba(13,38,24,.28)}
+.actionbar .wrap{display:flex;gap:10px;padding:0}
+.btn-ghost{flex:0 0 auto;width:120px;background:var(--surface);color:var(--brand-700);border:1.5px solid var(--line)}
+.btn-primary{flex:1;background:linear-gradient(135deg,var(--brand),var(--brand-700));color:#fff;box-shadow:0 6px 18px rgba(27,94,32,.32);display:flex;align-items:center;justify-content:center;gap:8px}
+.toast{position:fixed;left:50%;bottom:calc(110px + var(--safe-b));transform:translateX(-50%) translateY(8px);background:rgba(14,26,18,.94);color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;font-weight:600;z-index:60;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;box-shadow:var(--sh-lg);max-width:88%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#print-area{display:none}
+@media print{@page{margin:14mm}header,.steps,.actionbar,.btn,.del-btn,#app,.toast,.notice{display:none!important}body{background:#fff;padding:0}#print-area{display:block;color:#111;font-size:12px}.p-head{display:flex;align-items:center;gap:12px;border-bottom:2.5px solid #2E7D32;padding-bottom:12px;margin-bottom:16px}.p-head h2{margin:0;color:#1B5E20;font-size:18px}.p-sub{font-size:11px;color:#555;margin-top:2px}.p-summary{display:flex;align-items:center;gap:16px;margin:14px 0;padding:14px 18px;background:#EAF4EC;border:1px solid #CDE3D2;border-radius:12px}.p-summary .big{font-size:40px;font-weight:800;color:#1B5E20;line-height:1}.p-summary .cm{font-size:12px;color:#33493b}table{width:100%;border-collapse:collapse;margin:12px 0;font-size:11px}th,td{border:1px solid #d4ddd6;padding:7px 6px;text-align:center}th{background:#F1F8F2;color:#1B5E20;font-weight:700}.p-cond{font-size:11px;color:#333;margin:6px 0 2px;line-height:1.7;background:#F7FAF7;border:1px solid #E6EBE7;border-radius:8px;padding:10px 12px}.p-notice{font-size:10px;color:#555;border-top:1px solid #ddd;padding-top:9px;margin-top:16px;line-height:1.6}.p-ploc{margin:10px 0;page-break-inside:avoid}.p-ploc .nm{font-size:12px;font-weight:700;color:#1B5E20;margin-bottom:4px}.p-photos{display:flex;gap:8px}.p-photo{width:48%}.p-photo img{width:100%;border:1px solid #ccc;border-radius:6px}.p-photo .cap{font-size:10px;color:#555;margin-top:2px;text-align:center}.p-ai{margin:12px 0;padding:10px 12px;background:#F3FAF4;border:1px solid #CDE3D2;border-radius:8px}.p-ai .t{font-size:12px;font-weight:800;color:#1B5E20;margin-bottom:5px}.p-ai ul{margin:0;padding-left:16px}.p-ai li{font-size:10.5px;line-height:1.55;color:#33493b;margin-bottom:2px}.p-foot{text-align:center;font-size:11px;color:#1B5E20;margin-top:10px;font-weight:800;letter-spacing:.02em}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hbar"><h1 class="app-title"><span class="windico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h14a3 3 0 1 1-3 3"/><path d="M3 16h7a2.4 2.4 0 1 1-2.4 2.4"/></svg></span>창호 기밀성능 측정앱</h1></div>
+  <div class="steps"><div class="step" id="st1"></div><div class="step" id="st2"></div><div class="step" id="st3"></div></div>
+</header>
+
+<div id="app" class="wrap">
+  <section class="card collapsible" id="condCard">
+    <div class="card-head" id="condHead">
+      <div class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></div>
+      <div><h2>현장 정보</h2><div class="hint">현장당 1회 입력</div></div>
+      <span class="chev">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="row2" style="padding-left:14px;grid-template-columns:1fr 142px">
+        <div class="field"><label><span class="stepno">1</span>현장 / 고객명</label><input class="inp" id="c_site" placeholder="예 : 송도 아파트명 101동 101호"></div>
+        <div class="field"><label>측정일자</label><input class="inp" id="c_date" type="date"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-body" style="padding-top:14px">
+      <div id="locList"></div>
+      <div class="act-row">
+        <button class="btn btn-ai" id="goAi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"/></svg>AI 분석</button>
+        <button class="btn btn-add" id="goAiRe"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>AI 재분석</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card collapsible closed" id="aiCard">
+    <div class="card-head">
+      <div class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"/><path d="M19 14l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/></svg></div>
+      <div><h2>AI 분석 · 수리 전·후 비교</h2><div class="hint">그래프 + 자동 진단</div></div>
+      <div class="seg-toggle"><button id="tgBar" class="on">막대</button><button id="tgNum">수치</button></div>
+      <span class="chev" style="margin-left:8px">▼</span>
+    </div>
+    <div class="card-body"><div id="chart"></div><div id="aiReport" style="margin-top:14px"></div><div id="geminiOut" style="margin-top:10px"></div></div>
+  </section>
+
+  <div class="foot-actions">
+    <button class="btn btn-reset" id="btnReset">초기화</button>
+    <button class="btn btn-pdf" id="btnSave"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 내 파일 PDF 저장</button>
+  </div>
+  <footer>청개구리샤시 · <span class="ph">1599-7380</span> · frogsash.co.kr</footer>
+</div>
+
+<div id="print-area"></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script>
+var CONFIG={MIN_HEADROOM:10,IMP_STRONG:6,IMP_GOOD:3,PHONE_ERR:3,
+rules:[
+{test:function(imp){return imp>=6},label:"◎ 뚜렷한 개선",color:"#1B5E20"},
+{test:function(imp){return imp>=3},label:"○ 개선",color:"#2E7D32"},
+{test:function(imp){return imp>=0},label:"△ 오차범위",color:"#7A8A80",note:"휴대폰 앱 오차 ±3dB"},
+{test:function(imp){return imp<0},label:"✕ 재확인",color:"#C62828"}
+],
+STORAGE_KEY:"frogsash_seal_v4",GAS_URL:"",GEMINI_PROXY_URL:"https://script.google.com/macros/s/AKfycbxkAACBKNNG76fEO5neH-Xw3Sg-DgN2DulIEo-taSxZU9zohpNUlWK65TtkmVehAZUX/exec",
+NOTICE:"본 측정은 상대적 밀폐·차음 개선 확인용이며, 법적 기밀성 등급(KS F 2292 통기량)과는 다른 지표입니다. 휴대폰 앱 측정 오차 ±3dB 내외.",
+COMPANY:"청개구리샤시 · 1599-7380 · frogsash.co.kr"};
+
+var locations=[],chartMode="bar",aiMode="pro";
+function $(s){return document.querySelector(s)}
+function num(v){var n=parseFloat(v);return isNaN(n)?null:n}
+function avg(a){var v=a.map(num).filter(function(x){return x!==null});return v.length?v.reduce(function(p,q){return p+q},0)/v.length:null}
+function r1(n){return Math.round(n*10)/10}
+function escapeHtml(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function toast(m){var t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("show")},2000)}
+function today(){var d=new Date(),z=function(n){return String(n).padStart(2,"0")};return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())}
+
+function judge(imp){for(var i=0;i<CONFIG.rules.length;i++){var r=CONFIG.rules[i];if(r.test(imp))return r}return CONFIG.rules[CONFIG.rules.length-1]}
+function computeLoc(loc){
+  var bAvg=avg(loc.before),aAvg=avg(loc.after);
+  if(bAvg===null||aAvg===null)return{ready:false,bAvg:null,aAvg:null,imp:null,j:null};
+  var imp=r1(bAvg-aAvg);
+  return{ready:true,bAvg:r1(bAvg),aAvg:r1(aAvg),imp:imp,j:judge(imp)};
+}
+
+var _ocr=null;
+function getOCR(){
+  if(_ocr)return _ocr;
+  if(typeof Tesseract==="undefined")return null;
+  _ocr=Tesseract.createWorker("eng").then(function(w){return w.setParameters({tessedit_char_whitelist:"0123456789."}).then(function(){return w})});
+  return _ocr;
+}
+function ocrPhoto(dataUrl,cb){
+  var p=getOCR();if(!p){cb(null);return}
+  p.then(function(w){return w.recognize(dataUrl)}).then(function(res){
+    var nums=(res.data.text.match(/\d{2,3}(?:\.\d)?/g)||[]).map(parseFloat).filter(function(n){return n>=20&&n<=130});
+    if(!nums.length){cb(null);return}
+    var dec=nums.filter(function(n){return n%1!==0});
+    cb(dec.length?dec[0]:Math.max.apply(null,nums));
+  }).catch(function(){cb(null)});
+}
+function readPhoto(file,cb){
+  if(!file)return;
+  var r=new FileReader();
+  r.onload=function(e){var img=new Image();img.onload=function(){
+    var max=1200,w=img.width,h=img.height;
+    if(w>max||h>max){if(w>=h){h=Math.round(h*max/w);w=max}else{w=Math.round(w*max/h);h=max}}
+    var cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);
+    cb(cv.toDataURL("image/jpeg",0.7));
+  };img.src=e.target.result};
+  r.readAsDataURL(file);
+}
+function photoHtml(url,cap,kind,id){
+  if(url)return '<div class="photo-thumb"><img src="'+url+'"><span class="photo-cap">'+cap+'</span><button class="photo-del" data-delphoto="'+kind+'" data-id="'+id+'" aria-label="사진 삭제">✕</button></div>';
+  return '<button class="photo-btn" data-addphoto="'+kind+'" data-id="'+id+'"><span class="cam">📷</span>사진 입력</button><input type="file" accept="image/*" class="hidden-file" data-file="'+kind+'" data-id="'+id+'">';
+}
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function startVoice(id,btn){
+  if(!SR){toast("이 브라우저는 음성 입력을 지원하지 않습니다");return}
+  var loc=locations.filter(function(l){return String(l.id)===id})[0];if(!loc)return;
+  var rec=new SR();rec.lang="ko-KR";rec.interimResults=false;rec.maxAlternatives=1;
+  if(btn)btn.classList.add("rec");toast("위치명을 말씀하세요…");
+  rec.onresult=function(e){loc.name=(e.results[0][0].transcript||"").replace(/[.\s]+$/,"");render();save()};
+  rec.onerror=function(){toast("음성 인식 실패 — 다시 시도하세요")};
+  rec.onend=function(){if(btn)btn.classList.remove("rec")};
+  try{rec.start()}catch(err){if(btn)btn.classList.remove("rec")}
+}
+function usSet(loc,kind,url){var side=kind.charAt(2)==="B"?"b":"a";var idx=parseInt(kind.slice(3));if(loc.us&&loc.us[idx])loc.us[idx][side]=url;}
+function addLocation(data){locations.push(data||{id:String(Date.now())+Math.random().toString(36).slice(2,6),name:"",before:[""],after:[""],beforePhoto:null,afterPhoto:null,placeLPhoto:null,placeRPhoto:null,us:[{b:null,a:null}]});render();save()}
+function delLocation(idStr){locations=locations.filter(function(l){return String(l.id)!==idStr});if(!locations.length)addLocation();else{render();save();}}
+
+function render(){
+  var list=$("#locList");
+  list.innerHTML=locations.map(function(loc,i){
+    function one(field){return '<input class="db" inputmode="decimal" placeholder="dB" value="'+escapeHtml(loc[field][0])+'" data-id="'+loc.id+'" data-f="'+field+'" data-k="0">'}
+    return '<div class="loc"><div class="loc-head"><span class="loc-no">2</span>'
+      +'<input class="name-inp" value="'+escapeHtml(loc.name)+'" placeholder="위치명 (음성 또는 입력)" data-id="'+loc.id+'" data-f="name">'
+      +'<button class="mic-btn" data-mic="'+loc.id+'" aria-label="음성 입력"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/></svg></button>'
+      +'<button class="del-btn" data-del="'+loc.id+'" aria-label="삭제"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button></div>'
+      +'<div class="loc-pad"><div class="seg-label" style="color:var(--ink-2);margin-top:0"><span class="dot before"></span>점검창호</div>'
+      +'<div class="photo-row"><div class="photo-cell"><div class="photo-slot ratio34">'+photoHtml(loc.placeLPhoto,"점검창호","placeL",loc.id)+'</div></div><div class="photo-cell"><div class="photo-slot ratio34">'+photoHtml(loc.placeRPhoto,"점검창호","placeR",loc.id)+'</div></div></div>'
+      +'<div class="seg-label before"><span class="stepno">3</span>소음 측정 · 평균소음도 LAeq 기준 (사진 첨부 시 dB 자동인식)</div>'
+      +'<div class="photo-row"><div class="photo-cell"><div class="mini-lab">수리전 소음측정</div><div class="photo-slot ratio34">'+photoHtml(loc.beforePhoto,"수리 전","before",loc.id)+'</div></div><div class="photo-cell"><div class="mini-lab">수리후 소음측정</div><div class="photo-slot ratio34">'+photoHtml(loc.afterPhoto,"수리 후","after",loc.id)+'</div></div></div>'
+      +'<div class="onoff" style="margin-top:9px"><div><div class="mini-lab">수리 전 dB (LAeq)</div><input class="db" inputmode="decimal" placeholder="dB" value="'+escapeHtml(loc.before[0])+'" data-id="'+loc.id+'" data-f="before" data-k="0"></div><div><div class="mini-lab">수리 후 dB (LAeq)</div><input class="db" inputmode="decimal" placeholder="dB" value="'+escapeHtml(loc.after[0])+'" data-id="'+loc.id+'" data-f="after" data-k="0"></div></div>'
+      +'<div class="loc-res empty" id="res_'+loc.id+'"></div>'
+      +'<div class="seg-label after"><span class="stepno">4</span>초음파 카메라 측정</div>'
+      +loc.us.map(function(p,ui){return (ui>0?'<div class="us-pair-head"><span>초음파 측정 '+(ui+1)+'</span><button data-usdel="'+ui+'" data-id="'+loc.id+'">✕ 행 삭제</button></div>':'')
+        +'<div class="photo-row"><div class="photo-cell"><div class="mini-lab">초음파 수리 전</div><div class="photo-slot ratio34">'+photoHtml(p.b,"초음파 전","usB"+ui,loc.id)+'</div></div><div class="photo-cell"><div class="mini-lab">초음파 수리 후</div><div class="photo-slot ratio34">'+photoHtml(p.a,"초음파 후","usA"+ui,loc.id)+'</div></div></div>';}).join("")
+      +'<button class="us-add" data-usadd="'+loc.id+'">＋ 초음파 측정 추가</button></div></div>';
+  }).join("");
+  list.querySelectorAll("input[data-f]").forEach(function(inp){
+    inp.addEventListener("input",function(e){
+      var loc=locations.filter(function(l){return String(l.id)===e.target.dataset.id})[0];
+      if(!loc)return;
+      var f=e.target.dataset.f;
+      if(f==="name")loc.name=e.target.value;else loc[f][parseInt(e.target.dataset.k)]=e.target.value;
+      updateLocResult(loc);updateSummary();renderChart();save();
+    });
+  });
+  list.querySelectorAll("[data-del]").forEach(function(b){b.addEventListener("click",function(){delLocation(b.dataset.del)})});
+  list.querySelectorAll("[data-mic]").forEach(function(b){b.addEventListener("click",function(){startVoice(b.dataset.mic,b)})});
+  list.querySelectorAll("[data-addphoto]").forEach(function(b){b.addEventListener("click",function(){var inp=list.querySelector('input[data-file="'+b.dataset.addphoto+'"][data-id="'+b.dataset.id+'"]');if(inp)inp.click()})});
+  list.querySelectorAll("input[data-file]").forEach(function(inp){inp.addEventListener("change",function(e){var f=e.target.files[0];if(!f)return;var kind=inp.dataset.file,id=inp.dataset.id;readPhoto(f,function(url){var loc=locations.filter(function(l){return String(l.id)===id})[0];if(!loc)return;if(kind.indexOf("us")===0){usSet(loc,kind,url);render();}else{loc[kind+"Photo"]=url;render();}if(kind==="before"||kind==="after"){toast("사진에서 dB 분석 중…");ocrPhoto(url,function(db){var l2=locations.filter(function(l){return String(l.id)===id})[0];if(!l2)return;if(db!=null){l2[kind]=[String(db)];render();toast("사진에서 "+db+" dB 인식 → "+(kind==="before"?"수리 전":"수리 후")+" 자동입력");}else{toast("사진에서 dB를 못 읽었어요");}})}})})});
+  list.querySelectorAll("[data-delphoto]").forEach(function(b){b.addEventListener("click",function(){var loc=locations.filter(function(l){return String(l.id)===b.dataset.id})[0];if(!loc)return;var k=b.dataset.delphoto;if(k.indexOf("us")===0)usSet(loc,k,null);else loc[k+"Photo"]=null;render()})});
+  list.querySelectorAll("[data-usadd]").forEach(function(b){b.addEventListener("click",function(){var loc=locations.filter(function(l){return String(l.id)===b.dataset.usadd})[0];if(!loc)return;loc.us.push({b:null,a:null});render()})});
+  list.querySelectorAll("[data-usdel]").forEach(function(b){b.addEventListener("click",function(){var loc=locations.filter(function(l){return String(l.id)===b.dataset.id})[0];if(!loc)return;loc.us.splice(parseInt(b.dataset.usdel),1);render()})});
+  locations.forEach(updateLocResult);updateSummary();renderChart();
+}
+
+function updateLocResult(loc){
+  var box=document.getElementById("res_"+loc.id);if(!box)return;
+  var c=computeLoc(loc);
+  if(!c.ready){box.className="loc-res empty";box.innerHTML="";return}
+  box.className="loc-res";
+  var impTxt=(c.imp>0?"−":"")+Math.abs(c.imp)+"dB";
+  box.innerHTML='<span class="flow"><span class="v">'+c.bAvg+'</span><span class="arrow">→</span><span class="v">'+c.aAvg+'</span>&nbsp;<span class="imp" style="color:'+c.j.color+'">'+impTxt+'</span></span><span class="badge" style="background:'+c.j.color+'">'+c.j.label+'</span>';
+}
+
+function comment(m){
+  if(m>=6)return "평균 "+m.toFixed(1)+"dB 감소 — 체감상 확연히 조용해지는 수준입니다.";
+  if(m>=3)return "평균 "+m.toFixed(1)+"dB 감소 — 또렷하게 체감되는 개선입니다.";
+  if(m>=0)return "평균 "+m.toFixed(1)+"dB 변화 — 휴대폰 앱 오차(±3dB) 범위입니다.";
+  return "평균 "+m.toFixed(1)+"dB — 재측정·재확인이 필요합니다.";
+}
+
+function updateSummary(){
+  var valid=locations.map(computeLoc).filter(function(c){return c.ready});
+  var condFilled=!!($("#c_site").value);
+  $("#st1").classList.toggle("on",condFilled);
+  $("#st2").classList.toggle("on",locations.length>0);
+  $("#st3").classList.toggle("on",valid.length>0);
+  renderAI();
+  invalidateGemini();
+}
+function invalidateGemini(){var o=$("#geminiOut");if(o&&/Gemini 정밀 분석|분석 중|분석 실패|네트워크 오류/.test(o.innerHTML)){o.innerHTML='<div class="ai empty">측정 데이터가 변경됐습니다 — \u2018AI 분석\u2019을 다시 눌러 최신 Gemini 분석을 받으세요.</div>';}}
+
+function feel_(d){if(d>=10)return"체감상 소음이 절반 가까이 줄어드는 큰 변화입니다.";if(d>=6)return"확연히 조용해졌다고 느껴지는 수준입니다.";if(d>=3)return"또렷하게 조용해진 것을 느낄 수 있는 수준입니다.";if(d>=0)return"측정 오차 범위라 체감 차이는 크지 않을 수 있습니다.";return"오히려 더 시끄러워져 다시 확인이 필요합니다.";}
+function dbScene_(d){if(d<25)return"속삭임 수준의 매우 정숙한 환경";if(d<35)return"조용한 도서관·심야 주택가 수준";if(d<45)return"조용한 주거 실내 수준";if(d<55)return"일반 사무실·냉장고 소음 수준";if(d<65)return"실내 일상 대화 수준";if(d<75)return"번화가·진공청소기 수준";return"교통 소음이 큰 매우 시끄러운 수준";}
+function aiReport(){
+  var valid=locations.map(function(loc){return{loc:loc,c:computeLoc(loc)}}).filter(function(x){return x.c.ready});
+  var usCount=locations.filter(function(l){return l.us&&l.us.some(function(p){return p.b||p.a})}).length;
+  if(!valid.length&&!usCount)return null;
+  var nm=function(x){return x.loc.name||"이름없는 위치"};
+  var cust=[],pro=[],grade="기록",color="#7A8A80",av=null,best,worst,neg=[];
+  if(valid.length){
+    var imps=valid.map(function(x){return x.c.imp});
+    av=r1(imps.reduce(function(a,b){return a+b},0)/valid.length);
+    var sorted=valid.slice().sort(function(a,b){return b.c.imp-a.c.imp});
+    best=sorted[0];worst=sorted[sorted.length-1];
+    if(av>=CONFIG.IMP_STRONG){grade="우수";color="#1B5E20";}
+    else if(av>=CONFIG.IMP_GOOD){grade="양호";color="#2E7D32";}
+    else if(av>=0){grade="미미";color="#7A8A80";}
+    else{grade="재점검";color="#C62828";}
+    neg=valid.filter(function(x){return x.c.imp<0});
+    // 고객용(쉬운 설명)
+    cust.push("수리 전·후를 비교하니 평균 "+av.toFixed(1)+"dB 줄었습니다 — "+feel_(av));
+    cust.push("가장 조용해진 곳은 '"+nm(best)+"'로 "+Math.abs(best.c.imp)+"dB 줄었어요(수리 전 "+best.c.bAvg+" → 후 "+best.c.aAvg+"dB). 소음은 3dB만 줄어도 소리 에너지가 절반으로 주는 단위라, 숫자보다 체감이 큽니다.");
+    if(neg.length)cust.push("단, '"+neg.map(nm).join("', '")+"'은(는) 수리 후 오히려 시끄러워져 다시 확인이 필요합니다.");
+    if(usCount)cust.push("초음파 카메라 사진으로 수리 전 바람·소음이 새어 들던 자리와, 수리 후 그 자리가 막힌 모습을 눈으로 비교하실 수 있습니다.");
+    cust.push(av>=CONFIG.IMP_GOOD?"정리하면, 수리 후 더 조용하고 외풍이 줄었습니다.":(av>=0?"정리하면, 변화가 크지 않아 추가 점검을 권해 드립니다.":"정리하면, 개선이 확인되지 않아 재시공이 필요합니다."));
+    // 전문가용(건설사 보고)
+    pro.push("[정량] 측정 "+valid.length+"개소, 평균 음압 저감 ΔLp = "+av.toFixed(1)+"dB(상대 비교, 휴대폰 앱 측정 ±"+CONFIG.PHONE_ERR+"dB 오차 포함).");
+    pro.push("[최대/최소] 최대 저감 '"+nm(best)+"' "+best.c.imp+"dB(전 "+best.c.bAvg+"→후 "+best.c.aAvg+"dB)"+(valid.length>1?(" · 최소 '"+nm(worst)+"' "+worst.c.imp+"dB"):"")+".");
+    pro.push("[판정] 종합 등급 "+grade+". 본 수치는 상대적 차음·기밀 개선 확인용이며 KS F 2292(통기량) 법적 등급과는 별개 지표.");
+    var aAll=r1(valid.reduce(function(a,x){return a+x.c.aAvg},0)/valid.length);
+    pro.push("[음환경] 수리 후 평균 실내 음압 "+aAll.toFixed(1)+"dB는 '"+dbScene_(aAll)+"'에 해당. (수리 전 평균 "+r1(valid.reduce(function(a,x){return a+x.c.bAvg},0)/valid.length).toFixed(1)+"dB → '"+dbScene_(r1(valid.reduce(function(a,x){return a+x.c.bAvg},0)/valid.length))+"')");
+    pro.push("[허용범위] 주거 실내 권장치는 통상 35~40dB(A) 이하이며(WHO 침실 권장 약 30dB, 환경 실내소음 권고 참고), 수리 후 평균 "+aAll.toFixed(1)+"dB는 "+(aAll<=40?"권장 범위 이내로 일반 주거용 창호 기준에서 양호":(aAll<=45?"권장 상한에 근접 — 추가 차음 보강 검토 권장":"권장치 초과 — 차음 보강 필요"))+". ※ 본 측정은 음원을 창짝 사이에 둔 상대 비교값으로, 실제 생활소음 레벨과는 차이가 있을 수 있음.");
+    if(neg.length)pro.push("[이상] '"+neg.map(nm).join("', '")+"' 수리 후 음압 증가 → 시공·재측정 재검 필요.");
+  }else{
+    cust.push("아직 소음 수치(사진)가 없어 비교를 표시하지 못했습니다. 수리 전·후 소음측정 사진을 넣어 주세요.");
+    pro.push("[정량] 소음 dB 데이터 미입력 — 정량 평가 보류.");
+  }
+  if(usCount){
+    pro.push("[초음파] 누설 경로(틈새) 전·후 비교 자료 "+usCount+"개소 확보(정성 진단). 차폐 시공 효과 보조 입증용.");
+  }
+  pro.push("[고지] "+CONFIG.NOTICE);
+  pro.push("[측정기준] 측정값은 평균소음도(LAeq) 기준, 동일 음원·동일 시간·동일 거리/높이로 수리 전·후 측정. (최대 Lmax·최소 Lmin이 아닌 평균값 사용). 사진 OCR 인식값은 수동 보정 가능.");
+  return{grade:grade,color:color,av:av,cust:cust,pro:pro};
+}
+function renderAI(){
+  var box=$("#aiReport");if(!box)return;
+  var r=aiReport();
+  if(!r){box.innerHTML='<div class="ai empty">측정값이 입력되면 자동 분석이 표시됩니다.</div>';return}
+  var list=(aiMode==="pro"?r.pro:r.cust);
+  box.innerHTML='<div class="ai"><div class="hl">✨ 종합 진단<span class="grade" style="background:'+r.color+'">'+r.grade+'</span><span class="ai-toggle"><button id="aiCust" class="'+(aiMode==="cust"?"on":"")+'">고객용</button><button id="aiPro" class="'+(aiMode==="pro"?"on":"")+'">전문가용</button></span></div><ul>'+list.map(function(s){return '<li>'+escapeHtml(s)+'</li>'}).join("")+'</ul></div>';
+  $("#aiCust").addEventListener("click",function(){aiMode="cust";renderAI()});
+  $("#aiPro").addEventListener("click",function(){aiMode="pro";renderAI()});
+}
+function renderChart(){
+  var wrap=$("#chart");
+  var rows=locations.map(function(loc){return{loc:loc,c:computeLoc(loc)}}).filter(function(x){return x.c.ready});
+  if(!rows.length){wrap.innerHTML='<div class="empty-state"><span class="em">📊</span>측정값을 입력하면<br>전·후 비교가 표시됩니다.</div>';return}
+  if(chartMode==="num"){
+    wrap.innerHTML=rows.map(function(x){var loc=x.loc,c=x.c;
+      return '<div class="chart-row"><div class="name"><span>'+escapeHtml(loc.name||"(위치명 없음)")+'</span><span class="impchip">−'+c.imp+'dB</span></div>'
+        +'<div style="display:flex;gap:8px;font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums">'
+        +'<span>수리 전 <b style="color:var(--ink)">'+c.bAvg+'</b>dB</span><span style="color:var(--ink-3)">·</span>'
+        +'<span>수리 후 <b style="color:var(--brand-700)">'+c.aAvg+'</b>dB</span><span style="color:var(--ink-3)">·</span>'
+        +'<span>판정 <b style="color:'+c.j.color+'">'+c.j.label+'</b></span></div></div>';
+    }).join("");return;
+  }
+  var maxDb=Math.max.apply(null,rows.map(function(x){return Math.max(x.c.bAvg,x.c.aAvg)}).concat([1]));
+  wrap.innerHTML=rows.map(function(x){var loc=x.loc,c=x.c;
+    var wB=Math.max(Math.round(c.bAvg/maxDb*100),8),wA=Math.max(Math.round(c.aAvg/maxDb*100),8);
+    return '<div class="chart-row"><div class="name"><span>'+escapeHtml(loc.name||"(위치명 없음)")+'</span><span class="impchip">▼ '+c.imp+'dB 감소</span></div>'
+      +'<div class="bar-line bar-before"><span class="tag">전</span><div class="bar-track"><div class="bar-fill" style="width:'+wB+'%">'+c.bAvg+'</div></div></div>'
+      +'<div class="bar-line bar-after"><span class="tag">후</span><div class="bar-track"><div class="bar-fill" style="width:'+wA+'%">'+c.aAvg+'</div></div></div></div>';
+  }).join("");
+}
+
+function save(){
+  var data={cond:{date:$("#c_date").value},locations:locations.map(function(l){return{id:l.id,name:l.name,before:l.before,after:l.after}})};
+  try{localStorage.setItem(CONFIG.STORAGE_KEY,JSON.stringify(data))}catch(e){}
+}
+function load(){
+  try{
+    var raw=localStorage.getItem(CONFIG.STORAGE_KEY);if(!raw)return false;
+    var d=JSON.parse(raw);
+    if(d.cond){
+      $("#c_date").value=d.cond.date||"";
+    }
+    locations=(Array.isArray(d.locations)?d.locations:[]).map(function(l){["before","after"].forEach(function(k){if(!Array.isArray(l[k])||!l[k].length)l[k]=[""]});l.beforePhoto=l.beforePhoto||null;l.afterPhoto=l.afterPhoto||null;if(!Array.isArray(l.us)||!l.us.length)l.us=[{b:null,a:null}];return l});return true;
+  }catch(e){return false}
+}
+
+function sendToSheet(){
+  if(!CONFIG.GAS_URL)return;
+  var payload={site:$("#c_site").value,date:$("#c_date").value,avgImprovement:avgImprovement(),
+    locations:locations.map(function(loc){var c=computeLoc(loc);return{name:loc.name,before:loc.before,after:loc.after,beforeAvg:c.bAvg,afterAvg:c.aAvg,improvement:c.imp,result:c.j?c.j.label:""}})};
+  try{fetch(CONFIG.GAS_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})}catch(e){}
+}
+
+function avgImprovement(){var v=locations.map(computeLoc).filter(function(c){return c.ready});if(!v.length)return"0.0";return r1(v.reduce(function(a,c){return a+c.imp},0)/v.length).toFixed(1)}
+function geminiAnalyze(){
+  var out=$("#geminiOut");if(!out)return;
+  if(!CONFIG.GEMINI_PROXY_URL){out.innerHTML='<div class="ai empty">Gemini 프록시(GAS) URL이 설정되지 않았습니다. CONFIG.GEMINI_PROXY_URL에 GAS 웹앱 주소를 넣어주세요.</div>';return;}
+  var valid=locations.map(function(loc){return{loc:loc,c:computeLoc(loc)}}).filter(function(x){return x.c.ready});
+  if(!valid.length){out.innerHTML='<div class="ai empty">측정값(소음 사진)이 입력된 위치가 필요합니다.</div>';return;}
+  var payload={site:$("#c_site").value,date:$("#c_date").value,avgImprovement:avgImprovement(),
+    locations:valid.map(function(x){return{name:x.loc.name||"",before:x.c.bAvg,after:x.c.aAvg,improvement:x.c.imp,result:x.c.j.label,ultrasonic:(x.loc.us||[]).filter(function(p){return p.b||p.a}).length,placePhotos:(x.loc.placeLPhoto?1:0)+(x.loc.placeRPhoto?1:0)};})};
+  out.innerHTML='<div class="ai empty">✨ Gemini 분석 중… (네트워크)</div>';
+  var cb="gcb_"+Date.now();
+  var done=false, s=document.createElement("script");
+  var timer=setTimeout(function(){if(done)return;done=true;cleanup();out.innerHTML='<div class="ai empty">응답 시간 초과 — 다시 시도하세요.</div>';},30000);
+  function cleanup(){try{delete window[cb];}catch(e){window[cb]=undefined;}if(s.parentNode)s.parentNode.removeChild(s);clearTimeout(timer);}
+  window[cb]=function(d){if(done)return;done=true;cleanup();
+    if(d&&d.ok&&d.text){out.innerHTML='<div class="ai"><div class="hl">✨ Gemini 정밀 분석</div><div style="font-size:13px;line-height:1.65;color:var(--ink-2);white-space:pre-wrap">'+escapeHtml(d.text)+'</div></div>';}
+    else{out.innerHTML='<div class="ai empty">Gemini 분석 실패'+(d&&d.error?": "+escapeHtml(d.error):"")+'</div>';}
+  };
+  s.onerror=function(){if(done)return;done=true;cleanup();out.innerHTML='<div class="ai empty">네트워크 오류 — GAS 배포(액세스: 모든 사용자)와 URL을 확인하세요.</div>';};
+  s.src=CONFIG.GEMINI_PROXY_URL+"?callback="+cb+"&data="+encodeURIComponent(JSON.stringify(payload));
+  document.body.appendChild(s);
+}
+function buildPrint(){
+  var rows=locations.map(function(loc){return{loc:loc,c:computeLoc(loc)}}).filter(function(x){return x.c.ready});
+  var cond="현장/고객 <b>"+escapeHtml($("#c_site").value||"-")+"</b> &nbsp;·&nbsp; 일자 "+escapeHtml($("#c_date").value||"-");
+  var avgImp=avgImprovement();
+  var tableRows=rows.map(function(x){var loc=x.loc,c=x.c;
+    return '<tr><td style="text-align:left">'+escapeHtml(loc.name||"-")+'</td><td>'+c.bAvg+'</td><td>'+c.aAvg+'</td><td style="color:'+c.j.color+';font-weight:700">−'+c.imp+'</td><td style="color:'+c.j.color+';font-weight:600">'+c.j.label+'</td></tr>';
+  }).join("");
+  $("#print-area").innerHTML='<div class="p-head"><svg width="42" height="48" viewBox="0 0 60 68"><polygon points="30,2 56,17 56,51 30,66 4,51 4,17" fill="#1B5E20"/><ellipse cx="22" cy="33" rx="9" ry="11" fill="#fff"/><ellipse cx="38" cy="33" rx="9" ry="11" fill="#fff"/><circle cx="22" cy="34" r="4" fill="#1B5E20"/><circle cx="38" cy="34" r="4" fill="#1B5E20"/></svg><div><h2>창호 밀폐력(차음) 수리 전·후 측정 결과</h2><div class="p-sub">청개구리샤시 · 1599-7380 · frogsash.co.kr</div></div></div>'
+    +'<div class="p-cond">'+cond+'</div>'
+    +'<div class="p-summary"><div><div style="font-size:11px;color:#33493b">평균 개선량</div><div class="big">'+avgImp+' dB</div></div><div class="cm">'+escapeHtml(comment(parseFloat(avgImp)||0))+'</div></div>'
+    +'<table><thead><tr><th style="text-align:left">위치</th><th>수리 전</th><th>수리 후</th><th>개선(dB)</th><th>판정</th></tr></thead><tbody>'+(tableRows||'<tr><td colspan="5">입력된 위치 없음</td></tr>')+'</tbody></table>'
+    +locations.filter(function(loc){return loc.placeLPhoto||loc.placeRPhoto||loc.beforePhoto||loc.afterPhoto||(loc.us&&loc.us.some(function(p){return p.b||p.a}))}).map(function(loc){var us="";(loc.us||[]).forEach(function(p,ui){var sfx=(loc.us.length>1?(ui+1):"");if(p.b)us+='<div class="p-photo"><img src="'+p.b+'"><div class="cap">초음파 전'+sfx+'</div></div>';if(p.a)us+='<div class="p-photo"><img src="'+p.a+'"><div class="cap">초음파 후'+sfx+'</div></div>';});return '<div class="p-ploc"><div class="nm">'+escapeHtml(loc.name||"-")+'</div><div class="p-photos">'+(loc.placeLPhoto?'<div class="p-photo"><img src="'+loc.placeLPhoto+'"><div class="cap">현장 좌</div></div>':'')+(loc.placeRPhoto?'<div class="p-photo"><img src="'+loc.placeRPhoto+'"><div class="cap">현장 우</div></div>':'')+(loc.beforePhoto?'<div class="p-photo"><img src="'+loc.beforePhoto+'"><div class="cap">수리 전(소음)</div></div>':'')+(loc.afterPhoto?'<div class="p-photo"><img src="'+loc.afterPhoto+'"><div class="cap">수리 후(소음)</div></div>':'')+us+'</div></div>'}).join("")
+    +(function(){var r=aiReport();if(!r)return"";return '<div class="p-ai"><div class="t">AI 분석 · 종합 '+r.grade+'</div><ul>'+r.bullets.map(function(s){return '<li>'+escapeHtml(s)+'</li>'}).join("")+'</ul></div>';})()
+    +'<div class="p-notice">※ '+CONFIG.NOTICE+'</div><div class="p-foot">'+CONFIG.COMPANY+'</div>';
+}
+function savePDF(){
+  var valid=locations.map(computeLoc).filter(function(c){return c.ready});
+  if(!valid.length){toast("측정값이 입력된 위치가 최소 1곳 필요합니다");return}
+  buildPrint();sendToSheet();
+  var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+  setTimeout(function(){window.print();if(isIOS)toast("공유 → 'PDF로 저장' 또는 인쇄를 선택하세요")},200);
+}
+
+function resetAll(){
+  if(!confirm("모든 입력을 지우고 새로 시작할까요?"))return;
+  localStorage.removeItem(CONFIG.STORAGE_KEY);locations=[];
+  ["c_site"].forEach(function(id){$("#"+id).value=""});
+  $("#c_date").value=today();
+  addLocation();toast("초기화되었습니다");
+}
+
+document.addEventListener("DOMContentLoaded",function(){
+  $("#condHead").addEventListener("click",function(){$("#condCard").classList.toggle("closed")});
+  $("#aiCard .card-head").addEventListener("click",function(e){if(e.target.closest(".seg-toggle"))return;$("#aiCard").classList.toggle("closed");renderAI()});
+  document.querySelectorAll("#condCard input, #condCard select").forEach(function(el){
+    el.addEventListener("input",function(){save();locations.forEach(updateLocResult);updateSummary()});
+  });
+  $("#c_site").addEventListener("input",updateSummary);
+  $("#goAi").addEventListener("click",function(){renderAI();var el=$("#aiCard");if(!el)return;el.classList.remove("closed");el.scrollIntoView({behavior:"smooth",block:"start"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash");if(CONFIG.GEMINI_PROXY_URL)geminiAnalyze();});
+  $("#goAiRe").addEventListener("click",function(){var el=$("#aiCard");if(el)el.classList.remove("closed");renderAI();if(CONFIG.GEMINI_PROXY_URL)geminiAnalyze();else{var o=$("#geminiOut");if(o)o.innerHTML='<div class="ai empty">Gemini 프록시(GAS) URL이 설정되지 않았습니다.</div>';}});
+  $("#btnSave").addEventListener("click",savePDF);
+  $("#btnReset").addEventListener("click",resetAll);
+  $("#tgBar").addEventListener("click",function(e){e.stopPropagation();chartMode="bar";$("#tgBar").classList.add("on");$("#tgNum").classList.remove("on");renderChart()});
+  $("#tgNum").addEventListener("click",function(e){e.stopPropagation();chartMode="num";$("#tgNum").classList.add("on");$("#tgBar").classList.remove("on");renderChart()});
+  var had=load();
+  if(!$("#c_date").value)$("#c_date").value=today();
+  if(!had||locations.length===0)addLocation();else render();
+});
+</script>
+</body>
+</html>
