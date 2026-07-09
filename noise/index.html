@@ -85,6 +85,9 @@ header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.72);backdro
 .repair-item{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:650;color:var(--ink-2);background:var(--surface-2);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:9px 11px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;-webkit-user-select:none;user-select:none}
 .repair-item input{width:18px;height:18px;flex:0 0 auto;accent-color:var(--brand);margin:0;cursor:pointer}
 .repair-item.on{background:var(--brand-50);border-color:var(--brand-300);color:var(--brand-700);font-weight:750}
+.prenote{width:100%;box-sizing:border-box;margin:8px 0 2px;padding:10px 12px;font-family:inherit;font-size:13.5px;line-height:1.55;color:var(--ink);background:var(--surface-2);border:1.5px solid var(--line);border-radius:var(--r-sm);resize:vertical;-webkit-appearance:none}
+.prenote:focus{outline:none;border-color:var(--brand-300);box-shadow:var(--ring)}
+.prenote::placeholder{color:var(--ink-3);font-weight:500;line-height:1.5}
 .dbcell{display:flex;align-items:center;gap:5px}
 .dbcell .mini-lab{margin:0;white-space:nowrap;font-size:12.5px;line-height:1.15}
 .dbcell .db{width:62px;flex:0 0 auto;padding:3px 4px;font-size:14px}
@@ -174,7 +177,7 @@ footer .ph{color:var(--brand-700);font-weight:800}
 </head>
 <body>
 <header>
-  <div class="hbar"><h1 class="app-title"><span class="windico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h14a3 3 0 1 1-3 3"/><path d="M3 16h7a2.4 2.4 0 1 1-2.4 2.4"/></svg></span>창호 기밀성능 측정앱</h1><span class="ver" id="verBadge">V 2.8</span></div>
+  <div class="hbar"><h1 class="app-title"><span class="windico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h14a3 3 0 1 1-3 3"/><path d="M3 16h7a2.4 2.4 0 1 1-2.4 2.4"/></svg></span>창호 기밀성능 측정앱</h1><span class="ver" id="verBadge">V 2.9</span></div>
   <div class="steps"><div class="step" id="st1"></div><div class="step" id="st2"></div><div class="step" id="st3"></div></div>
 </header>
 
@@ -336,7 +339,7 @@ function startVoice(id,btn){
   try{rec.start()}catch(err){if(btn)btn.classList.remove("rec")}
 }
 function usSet(loc,kind,url){var side=kind.charAt(2)==="B"?"b":"a";var idx=parseInt(kind.slice(3));if(loc.us&&loc.us[idx])loc.us[idx][side]=url;}
-function addLocation(data){locations.push(data||{id:String(Date.now())+Math.random().toString(36).slice(2,6),name:"",before:[""],after:[""],beforePhoto:null,afterPhoto:null,placeLPhoto:null,placeRPhoto:null,repair:[],us:[{b:null,a:null}]});render();save()}
+function addLocation(data){locations.push(data||{id:String(Date.now())+Math.random().toString(36).slice(2,6),name:"",before:[""],after:[""],beforePhoto:null,afterPhoto:null,placeLPhoto:null,placeRPhoto:null,repair:[],preNote:"",us:[{b:null,a:null}]});render();save()}
 function delLocation(idStr){locations=locations.filter(function(l){return String(l.id)!==idStr});if(!locations.length)addLocation();else{render();save();}}
 
 function render(){
@@ -347,8 +350,9 @@ function render(){
       +'<input class="name-inp" value="'+escapeHtml(loc.name)+'" placeholder="위치명 (음성 또는 입력)" data-id="'+loc.id+'" data-f="name">'
       +'<button class="mic-btn" data-mic="'+loc.id+'" aria-label="음성 입력"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/></svg></button>'
       +'</div>'
-      +'<div class="loc-pad"><div class="seg-label" style="color:var(--ink-2);margin-top:0"><span class="dot before"></span>점검창호</div>'
-      +'<div class="photo-row"><div class="photo-cell"><div class="photo-slot ratio34">'+photoHtml(loc.placeLPhoto,"점검창호","placeL",loc.id)+'</div></div><div class="photo-cell"><div class="photo-slot ratio34">'+photoHtml(loc.placeRPhoto,"점검창호","placeR",loc.id)+'</div></div></div>'
+      +'<div class="loc-pad"><div class="seg-label" style="color:var(--ink-2);margin-top:0"><span class="dot before"></span>수리전 창호상태</div>'
+      +'<div class="photo-row"><div class="photo-cell"><div class="photo-slot ratio34">'+photoHtml(loc.placeLPhoto,"수리전 창호상태","placeL",loc.id)+'</div></div><div class="photo-cell"><div class="photo-slot ratio34">'+photoHtml(loc.placeRPhoto,"수리전 창호상태","placeR",loc.id)+'</div></div></div>'
+      +'<textarea class="prenote" rows="3" placeholder="수리 전 창호 상태를 간단히 적어주세요 — 제작 문제(예: 프레임 뒤틀림·조립 불량), 시공 문제(예: 사춤 부실·수평 안 맞음), 단열 상태(예: 결로·외풍) 등. AI 분석에 반영됩니다." data-id="'+loc.id+'" data-f="preNote">'+escapeHtml(loc.preNote||"")+'</textarea>'
       +'<div class="seg-label before"><span class="stepno">3</span>수리 항목</div>'
       +'<div class="repair-grid">'+REPAIR_ITEMS.map(function(it,ri){var on=loc.repair&&loc.repair[ri];return '<label class="repair-item'+(on?' on':'')+'"><input type="checkbox" data-repair="'+ri+'" data-id="'+loc.id+'"'+(on?' checked':'')+'><span>'+escapeHtml(it)+'</span></label>';}).join("")+'</div>'
       +'<div class="seg-label before"><span class="stepno">4</span>소음 측정 · 평균소음도 LAeq 기준</div>'
@@ -370,6 +374,7 @@ function render(){
     });
   });
   list.querySelectorAll("input[data-repair]").forEach(function(cb){cb.addEventListener("change",function(){var loc=locations.filter(function(l){return String(l.id)===cb.dataset.id})[0];if(!loc)return;if(!Array.isArray(loc.repair))loc.repair=[];loc.repair[parseInt(cb.dataset.repair)]=cb.checked;var it=cb.closest(".repair-item");if(it)it.classList.toggle("on",cb.checked);save();})});
+  list.querySelectorAll("textarea[data-f='preNote']").forEach(function(ta){ta.addEventListener("input",function(){var loc=locations.filter(function(l){return String(l.id)===ta.dataset.id})[0];if(!loc)return;loc.preNote=ta.value;renderAI();save();})});
   list.querySelectorAll("[data-del]").forEach(function(b){b.addEventListener("click",function(){delLocation(b.dataset.del)})});
   list.querySelectorAll("[data-mic]").forEach(function(b){b.addEventListener("click",function(){startVoice(b.dataset.mic,b)})});
   list.querySelectorAll("[data-addphoto]").forEach(function(b){b.addEventListener("click",function(){var inp=list.querySelector('input[data-file="'+b.dataset.addphoto+'"][data-id="'+b.dataset.id+'"]');if(inp)inp.click()})});
@@ -413,7 +418,8 @@ function aiReport(){
   var valid=locations.map(function(loc){return{loc:loc,c:computeLoc(loc)}}).filter(function(x){return x.c.ready});
   var usCount=locations.filter(function(l){return l.us&&l.us.some(function(p){return p.b||p.a})}).length;
   var repairByLoc=locations.map(function(loc){return{name:loc.name||"이름없는 위치",items:repairLabels(loc)}}).filter(function(x){return x.items.length});
-  if(!valid.length&&!usCount&&!repairByLoc.length)return null;
+  var preByLoc=locations.map(function(loc){return{name:loc.name||"이름없는 위치",note:(loc.preNote||"").trim()}}).filter(function(x){return x.note});
+  if(!valid.length&&!usCount&&!repairByLoc.length&&!preByLoc.length)return null;
   var nm=function(x){return x.loc.name||"이름없는 위치"};
   var cust=[],pro=[],grade="기록",color="#7A8A80",av=null,best,worst,neg=[];
   if(valid.length){
@@ -442,6 +448,10 @@ function aiReport(){
   }else{
     cust.push("아직 소음 수치(사진)가 없어 비교를 표시하지 못했습니다. 수리 전·후 소음측정 사진을 넣어 주세요.");
     pro.push("[정량] 소음 dB 데이터 미입력 — 정량 평가 보류.");
+  }
+  if(preByLoc.length){
+    cust.push("수리 전 창호 상태로 기록된 문제는 — "+preByLoc.map(function(x){return "'"+x.name+"': "+x.note}).join(" / ")+" — 이며, 이번 수리는 이 문제들을 해소하기 위한 조치입니다.");
+    pro.push("[수리 전 상태] 위치별 사전 결함 기록(제작·시공·단열) — "+preByLoc.map(function(x){return "'"+x.name+"': "+x.note}).join(" / ")+". 각 개선량(ΔdB)은 이 결함을 해소한 결과로 해석하며, 기록되지 않은 결함은 판단에서 제외.");
   }
   if(repairByLoc.length){
     var repAgg={};repairByLoc.forEach(function(x){x.items.forEach(function(it){repAgg[it]=(repAgg[it]||0)+1})});
@@ -488,7 +498,7 @@ function renderChart(){
 }
 
 function save(){
-  var data={cond:{date:$("#c_date").value},locations:locations.map(function(l){return{id:l.id,name:l.name,before:l.before,after:l.after,repair:l.repair}})};
+  var data={cond:{date:$("#c_date").value},locations:locations.map(function(l){return{id:l.id,name:l.name,before:l.before,after:l.after,repair:l.repair,preNote:l.preNote||""}})};
   try{localStorage.setItem(CONFIG.STORAGE_KEY,JSON.stringify(data))}catch(e){}
 }
 function load(){
@@ -498,7 +508,7 @@ function load(){
     if(d.cond){
       $("#c_date").value=d.cond.date||"";
     }
-    locations=(Array.isArray(d.locations)?d.locations:[]).map(function(l){["before","after"].forEach(function(k){if(!Array.isArray(l[k])||!l[k].length)l[k]=[""]});l.beforePhoto=l.beforePhoto||null;l.afterPhoto=l.afterPhoto||null;if(!Array.isArray(l.repair))l.repair=[];if(!Array.isArray(l.us)||!l.us.length)l.us=[{b:null,a:null}];return l});return true;
+    locations=(Array.isArray(d.locations)?d.locations:[]).map(function(l){["before","after"].forEach(function(k){if(!Array.isArray(l[k])||!l[k].length)l[k]=[""]});l.beforePhoto=l.beforePhoto||null;l.afterPhoto=l.afterPhoto||null;if(!Array.isArray(l.repair))l.repair=[];if(typeof l.preNote!=="string")l.preNote="";if(!Array.isArray(l.us)||!l.us.length)l.us=[{b:null,a:null}];return l});return true;
   }catch(e){return false}
 }
 
@@ -516,7 +526,7 @@ function geminiAnalyze(){
   var valid=locations.map(function(loc){return{loc:loc,c:computeLoc(loc)}}).filter(function(x){return x.c.ready});
   if(!valid.length){out.innerHTML='<div class="ai empty">측정값(소음 사진)이 입력된 위치가 필요합니다.</div>';return;}
   var payload={site:$("#c_site").value,date:$("#c_date").value,avgImprovement:avgImprovement(),
-    locations:valid.map(function(x){return{name:x.loc.name||"",before:x.c.bAvg,after:x.c.aAvg,improvement:x.c.imp,result:x.c.j.label,ultrasonic:(x.loc.us||[]).filter(function(p){return p.b||p.a}).length,placePhotos:(x.loc.placeLPhoto?1:0)+(x.loc.placeRPhoto?1:0),repair:repairLabels(x.loc)};})};
+    locations:valid.map(function(x){return{name:x.loc.name||"",before:x.c.bAvg,after:x.c.aAvg,improvement:x.c.imp,result:x.c.j.label,ultrasonic:(x.loc.us||[]).filter(function(p){return p.b||p.a}).length,placePhotos:(x.loc.placeLPhoto?1:0)+(x.loc.placeRPhoto?1:0),repair:repairLabels(x.loc),preNote:(x.loc.preNote||"").trim()};})};
   out.innerHTML='<div class="ai empty">✨ Gemini 분석 중… (네트워크)</div>';
   var cb="gcb_"+Date.now();
   var done=false, s=document.createElement("script");
@@ -562,7 +572,7 @@ function buildPrint(){
     +'<div class="pblock"><table class="r-info"><tr><th>현장 / 고객명</th><td>'+site+'</td><th>측정일자</th><td>'+date+'</td></tr><tr><th>측정 방식</th><td colspan="3">핑크노이즈 발생기와 소음측정기로 수리 전·후 평균소음도(LAeq)를 동일 음원·동일 거리 조건에서 측정</td></tr><tr><th>종합 평균 개선량</th><td colspan="3"><b>'+avgImp+' dB</b> &nbsp; '+escapeHtml(comment(parseFloat(avgImp)||0))+'</td></tr></table></div>'
     +'<div class="pblock"><div class="r-sec">1. 위치별 측정 결과 (LAeq 기준)</div><table class="r-res"><thead><tr><th style="text-align:left">측정 위치</th><th>수리 전(dB)</th><th>수리 후(dB)</th><th>개선량(dB)</th><th>판정</th></tr></thead><tbody>'+(tableRows||'<tr><td colspan="5">입력된 위치 없음</td></tr>')+'</tbody></table></div>'
     +aiBlock
-    +(photoBlocks?'<div class="pblock"><div class="r-sec">3. 측정 사진</div></div><div class="pblock"><div class="r-note">※ 점검창호 사진 — (좌) 전면 촬영, (우) 근접 촬영.</div></div>'+photoBlocks:'')
+    +(photoBlocks?'<div class="pblock"><div class="r-sec">3. 측정 사진</div></div><div class="pblock"><div class="r-note">※ 수리전 창호상태 사진 — (좌) 전면 촬영, (우) 근접 촬영.</div></div>'+photoBlocks:'')
     +'<div class="pblock"><div class="r-notice">※ '+escapeHtml(CONFIG.NOTICE)+'</div><div class="r-foot">'+escapeHtml(CONFIG.COMPANY)+' &nbsp;|&nbsp; 발행일 '+date+'</div></div>';
 }
 function pdfName(){
