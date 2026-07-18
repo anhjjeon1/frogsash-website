@@ -78,6 +78,9 @@ canvas{width:100%;height:120px;display:block;background:var(--card2);border-radi
 .toggle.on{background:var(--accent);border-color:var(--accent)} .toggle.on>i{left:24px;background:#06120c}
 input[type=number]{width:74px;background:var(--card2);border:1px solid var(--line);color:var(--txt);
   border-radius:9px;padding:9px;font-size:15px;text-align:center;font-family:inherit}
+.txtin{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--txt);
+  border-radius:11px;padding:13px;font-size:15px;font-family:inherit}
+.txtin::placeholder{color:var(--dim)}
 .mini{font-size:12px;color:var(--dim)} .mini b{color:var(--accent)}
 .sec-title{font-size:12px;color:var(--dim);font-weight:700;letter-spacing:.8px;margin:18px 4px 2px}
 details>summary{cursor:pointer;font-weight:700;font-size:14px;color:var(--dim);padding:4px 0;list-style:none}
@@ -99,7 +102,7 @@ details>summary::before{content:"⚙ ";}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.2</div>
+  <div class="badge" id="verBadge">v1.3</div>
 </header>
 
 <!-- permission gate -->
@@ -171,7 +174,13 @@ details>summary::before{content:"⚙ ";}
     <button class="b-sec" id="btnReset">초기화</button>
   </div>
   <button class="b-ghost hidden" id="btnCancel" style="width:100%;margin-top:10px">측정 취소</button>
-  <button class="b-sec hidden" id="btnSave" style="width:100%;margin-top:10px">✔ 이 값 기록에 저장</button>
+  <div class="hidden" id="doneArea" style="margin-top:10px">
+    <input id="memoInput" class="txtin" type="text" placeholder="현장·메모 (이미지에 표시, 선택)" maxlength="40">
+    <div class="btns" style="margin-top:10px">
+      <button class="b-main" id="btnImage">🖼 이미지로 저장</button>
+      <button class="b-sec" id="btnSave">✔ 기록에 저장</button>
+    </div>
+  </div>
 
   <div class="card">
     <div class="graph-h"><span id="graphRange">실시간 그래프</span><span>(dB)</span></div>
@@ -350,7 +359,7 @@ function startMeasure(){
   if(mode!=="idle")return;
   mode="settle"; gbuf=[];
   $("#btnMeasure").classList.add("hidden"); $("#btnReset").classList.add("hidden");
-  $("#btnSave").classList.add("hidden"); $("#btnCancel").classList.remove("hidden");
+  $("#doneArea").classList.add("hidden"); $("#btnCancel").classList.remove("hidden");
   $("#readout").className="card readout";
   const ov=$("#countOv"); ov.classList.add("on");
   $("#countT").textContent="폰을 창에 대고 손을 떼세요";
@@ -387,7 +396,7 @@ function finishWindow(){
   capture={leq:+leq.toFixed(1),min:+live.min.toFixed(1),max:+live.max.toFixed(1),w:cfg.weight};
   $("#btnCancel").classList.add("hidden");
   $("#btnMeasure").classList.remove("hidden"); $("#btnReset").classList.remove("hidden");
-  $("#btnSave").classList.remove("hidden");
+  $("#doneArea").classList.remove("hidden");
   if(cfg.beep){ doneBeep(); if(navigator.vibrate) navigator.vibrate(200); }
 }
 function doneBeep(){
@@ -402,7 +411,7 @@ function cancelMeasure(){
   mode="idle";
   $("#countOv").classList.remove("on"); $("#readout").className="card readout live";
   $("#stateLbl").textContent="실시간"; $("#subLbl").textContent=cfg.weight+"가중 · 실시간";
-  $("#btnCancel").classList.add("hidden"); $("#btnSave").classList.add("hidden");
+  $("#btnCancel").classList.add("hidden"); $("#doneArea").classList.add("hidden");
   $("#btnMeasure").classList.remove("hidden"); $("#btnReset").classList.remove("hidden");
 }
 function resetAll(){ resetLive(); gbuf=[]; $("#stMin").textContent="--";$("#stMax").textContent="--";$("#stAvg").textContent="--";
@@ -435,6 +444,91 @@ $("#btnSave").onclick=()=>{ if(!capture)return; recs.unshift(Object.assign({t:no
 $("#recCopy").onclick=()=>{ const txt=recs.map(r=>`${r.t}\t${r.leq}\t${r.w}\t${r.min}\t${r.max}`).join("\n");
   navigator.clipboard&&navigator.clipboard.writeText("시각\tLAeq\t가중\t최소\t최대\n"+txt); };
 $("#recClear").onclick=()=>{ if(confirm("측정 기록을 모두 삭제할까요?")){recs=[];persistRecs();} };
+
+// ---- 이미지로 저장 (게이지 증빙 카드, 외부 라이브러리 없이 canvas로 직접 그림) ----
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function dateStamp(){const d=new Date(),p=n=>String(n).padStart(2,"0");
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes());}
+function angC(v){return 180-(Math.max(20,Math.min(100,v))-20)/80*180;}
+function gp(r,aDeg,ox,oy,sg){const a=aDeg*Math.PI/180;return [ox+(160+r*Math.cos(a))*sg, oy+(172-r*Math.sin(a))*sg];}
+function strokeArc(c,v0,v1,r,ox,oy,sg){c.beginPath();let first=true;
+  for(let t=v0;t<=v1+0.001;t+=0.5){const p=gp(r,angC(t),ox,oy,sg);
+    if(first){c.moveTo(p[0],p[1]);first=false;}else c.lineTo(p[0],p[1]);} c.stroke();}
+function renderCard(){
+  const memo=$("#memoInput")?$("#memoInput").value.trim():"";
+  const S=2, W=760, H=memo?812:752;
+  const cv=document.createElement("canvas"); cv.width=W*S; cv.height=H*S;
+  const c=cv.getContext("2d"); c.scale(S,S);
+  const F='"Malgun Gothic",Roboto,sans-serif';
+  c.fillStyle="#0e1512"; c.fillRect(0,0,W,H);
+  c.fillStyle="#141d19"; c.strokeStyle="#2a3833"; c.lineWidth=1.5; rr(c,16,16,W-32,H-32,20); c.fill(); c.stroke();
+  // header icon (level meter bars)
+  const ix=44,iy=42,is=46;
+  c.fillStyle="#39c07a"; rr(c,ix,iy,is,is,12); c.fill();
+  c.fillStyle="#06120c"; const bh=[16,26,36,22], baseY=iy+is-9;
+  [9,17,25,33].forEach((dx,i)=>{const h=bh[i]*0.72; rr(c,ix+dx,baseY-h,5,h,2); c.fill();});
+  // title + date
+  c.fillStyle="#eaf3ee"; c.textAlign="left"; c.textBaseline="alphabetic"; c.font="700 26px "+F;
+  c.fillText("청개구리샤시 소음측정기", ix+is+16, iy+29);
+  c.fillStyle="#8ea79b"; c.font="400 14px "+F; c.fillText("소음 측정 결과", ix+is+16, iy+46);
+  c.textAlign="right"; c.font="600 14px "+F; c.fillText(dateStamp(), W-44, iy+30);
+  // gauge
+  const sg=1.86, ox=(W-320*sg)/2, oy=104;
+  c.lineCap="round"; c.lineWidth=18*sg; c.strokeStyle="#22302b"; strokeArc(c,20,100,126,ox,oy,sg);
+  c.lineCap="butt"; c.lineWidth=16*sg;
+  [[20,45,"#2ea56a"],[45,65,"#8bc34a"],[65,82,"#e0b64a"],[82,100,"#e06b5a"]].forEach(z=>{c.strokeStyle=z[2];strokeArc(c,z[0],z[1],126,ox,oy,sg);});
+  for(let v=20;v<=100;v+=5){ if(v%20===0)continue; const a=angC(v),p0=gp(126,a,ox,oy,sg),p1=gp(130,a,ox,oy,sg);
+    c.strokeStyle="#4a5c54";c.lineWidth=1.4*sg;c.beginPath();c.moveTo(p0[0],p0[1]);c.lineTo(p1[0],p1[1]);c.stroke();}
+  c.textAlign="center"; c.textBaseline="middle"; c.font="700 15px sans-serif";
+  for(let v=20;v<=100;v+=20){ const a=angC(v),t0=gp(118,a,ox,oy,sg),t1=gp(134,a,ox,oy,sg),lp=gp(104,a,ox,oy,sg);
+    c.strokeStyle="#8ea79b";c.lineWidth=2.4*sg;c.beginPath();c.moveTo(t0[0],t0[1]);c.lineTo(t1[0],t1[1]);c.stroke();
+    c.fillStyle="#8ea79b";c.fillText(String(v),lp[0],lp[1]);}
+  const v=(capture?capture.leq:live.disp)||0;
+  const tip=gp(120,angC(v),ox,oy,sg), hub=gp(0,0,ox,oy,sg);
+  c.strokeStyle="#eaf3ee";c.lineWidth=5*sg;c.lineCap="round";c.beginPath();c.moveTo(hub[0],hub[1]);c.lineTo(tip[0],tip[1]);c.stroke();
+  c.fillStyle="#1c2823";c.beginPath();c.arc(hub[0],hub[1],12*sg,0,7);c.fill();
+  c.strokeStyle="#39c07a";c.lineWidth=2.5*sg;c.stroke();
+  c.fillStyle="#39c07a";c.beginPath();c.arc(hub[0],hub[1],4*sg,0,7);c.fill();
+  // big value
+  const nx=ox+160*sg, ny=oy+150*sg, vtxt=v.toFixed(1);
+  c.textAlign="center";c.textBaseline="middle";c.fillStyle="#39c07a";c.font="800 62px "+F;
+  c.fillText(vtxt, nx-12, ny);
+  const vw=c.measureText(vtxt).width;
+  c.fillStyle="#8ea79b";c.font="700 22px sans-serif";c.textAlign="left";c.fillText("dB", nx-12+vw/2+6, ny+9);
+  c.textAlign="center";c.fillStyle="#8ea79b";c.font="500 15px "+F;
+  c.fillText((capture?capture.w:cfg.weight)+"가중 · LAeq "+cfg.win+"초", W/2, oy+196*sg+2);
+  // stats
+  const mn=capture?capture.min:live.min, mx=capture?capture.max:live.max;
+  const sy=oy+196*sg+30, sh=92, gap=14, sw=(W-88-2*gap)/3;
+  [["최소",isFinite(mn)?mn.toFixed(0):"--"],["평균 (LAeq)",vtxt],["최대",isFinite(mx)?mx.toFixed(0):"--"]].forEach((s,i)=>{
+    const x=44+i*(sw+gap); c.fillStyle="#1c2823";rr(c,x,sy,sw,sh,14);c.fill();
+    c.fillStyle="#8ea79b";c.textAlign="center";c.textBaseline="alphabetic";c.font="600 15px "+F;c.fillText(s[0],x+sw/2,sy+31);
+    c.fillStyle="#eaf3ee";c.font="800 32px "+F;c.fillText(s[1],x+sw/2,sy+71);});
+  let fy=sy+sh+34;
+  if(memo){ c.fillStyle="#1c2823";rr(c,44,fy-26,W-88,46,12);c.fill();
+    c.fillStyle="#eaf3ee";c.textAlign="left";c.textBaseline="middle";c.font="600 16px "+F;c.fillText("📍 "+memo,60,fy-2);fy+=54;}
+  c.fillStyle="#5f746a";c.textAlign="center";c.textBaseline="alphabetic";c.font="500 13px "+F;
+  c.fillText("frogsash.co.kr · 휴대폰 측정 오차 ±3dB · 상대 비교용", W/2, fy+4);
+  return cv;
+}
+function saveImage(){
+  if(!capture){ toast("먼저 측정을 완료하세요"); return; }
+  const cv=renderCard(), dataUrl=cv.toDataURL("image/png");
+  const bin=atob(dataUrl.split(",")[1]), arr=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+  const blob=new Blob([arr],{type:"image/png"});
+  const d=new Date(),p=n=>String(n).padStart(2,"0");
+  const fname="소음측정_"+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"_"+p(d.getHours())+p(d.getMinutes())+".png";
+  const file=new File([blob],fname,{type:"image/png"});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:"소음 측정 결과"}).catch(()=>{}); return;
+  }
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download=fname;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000); toast("이미지를 저장했습니다");
+}
+$("#btnImage").onclick=saveImage;
 
 function segWire(sel,key,cast){ const el=$(sel);
   el.querySelectorAll("button").forEach(b=>b.onclick=()=>{
