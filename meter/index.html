@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>청개구리샤시 · 소음측정기</title>
+<style>
+:root{
+  --bg:#0e1512; --card:#161f1b; --card2:#1c2823; --line:#2a3833;
+  --txt:#eaf3ee; --dim:#8ea79b; --accent:#39c07a; --accent2:#2ea56a;
+  --warn:#e0b64a; --bad:#e06b5a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:-apple-system,"Segoe UI",Roboto,"Malgun Gothic","맑은 고딕",sans-serif}
+body{padding:0 14px 30px;max-width:520px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;padding:16px 2px 10px}
+header .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;font-size:17px}
+header h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.2px}
+header .badge{margin-left:auto;font-size:11px;color:var(--dim);border:1px solid var(--line);
+  padding:3px 8px;border-radius:20px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+
+/* main readout */
+.readout{text-align:center;padding:22px 16px 18px;position:relative}
+.readout .state{font-size:13px;color:var(--dim);min-height:18px;font-weight:600;letter-spacing:.3px}
+.readout .big{font-size:84px;font-weight:800;line-height:.95;margin:6px 0 0;
+  font-variant-numeric:tabular-nums;letter-spacing:-2px}
+.readout .big small{font-size:26px;color:var(--dim);font-weight:700;margin-left:4px;letter-spacing:0}
+.readout.live .big{color:var(--txt)} .readout.done .big{color:var(--accent)}
+.readout .sub{font-size:12px;color:var(--dim);margin-top:6px}
+.bar{height:10px;border-radius:6px;background:var(--card2);margin:16px 4px 4px;overflow:hidden;position:relative}
+.bar>i{display:block;height:100%;width:0;border-radius:6px;
+  background:linear-gradient(90deg,var(--accent),#7fe0a8);transition:width .08s linear}
+.scale{display:flex;justify-content:space-between;font-size:10px;color:var(--dim);padding:2px 4px 0}
+
+/* countdown overlay number */
+.count{position:absolute;top:0;left:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;
+  flex-direction:column;background:rgba(14,21,18,.92);border-radius:16px;z-index:5}
+.count.on{display:flex}
+.count .n{font-size:96px;font-weight:800;color:var(--accent);line-height:1}
+.count .t{font-size:15px;color:var(--txt);margin-top:8px;font-weight:600;text-align:center;padding:0 20px}
+.count .prog{width:70%;height:8px;background:var(--card2);border-radius:5px;margin-top:16px;overflow:hidden}
+.count .prog>i{display:block;height:100%;width:0;background:var(--accent)}
+
+/* stats */
+.stats{display:flex;gap:10px}
+.stats .s{flex:1;background:var(--card2);border-radius:12px;padding:12px 8px;text-align:center}
+.stats .s .k{font-size:11px;color:var(--dim);font-weight:600}
+.stats .s .v{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:2px}
+
+/* buttons */
+.btns{display:flex;gap:10px;margin-top:14px}
+button{font-family:inherit;border:none;border-radius:13px;font-size:16px;font-weight:700;
+  padding:16px 10px;cursor:pointer;transition:transform .05s,opacity .15s}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.4}
+.b-main{flex:2;background:var(--accent);color:#06120c}
+.b-sec{flex:1;background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+.b-wide{width:100%;background:var(--accent);color:#06120c;padding:18px}
+.b-ghost{background:transparent;color:var(--dim);border:1px solid var(--line);font-weight:600}
+
+canvas{width:100%;height:120px;display:block;background:var(--card2);border-radius:12px}
+.graph-h{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--dim);margin-bottom:8px}
+
+/* settings */
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.set-row:last-child{border-bottom:none}
+.set-row .lab{font-size:14px;font-weight:600}
+.set-row .lab small{display:block;font-size:11px;color:var(--dim);font-weight:400;margin-top:2px}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{padding:8px 12px;font-size:13px;background:transparent;color:var(--dim);border-radius:0}
+.seg button.on{background:var(--accent);color:#06120c}
+.toggle{width:50px;height:28px;border-radius:20px;background:var(--card2);border:1px solid var(--line);position:relative;flex:none}
+.toggle>i{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:var(--dim);transition:.15s}
+.toggle.on{background:var(--accent);border-color:var(--accent)} .toggle.on>i{left:24px;background:#06120c}
+input[type=number]{width:74px;background:var(--card2);border:1px solid var(--line);color:var(--txt);
+  border-radius:9px;padding:9px;font-size:15px;text-align:center;font-family:inherit}
+.mini{font-size:12px;color:var(--dim)} .mini b{color:var(--accent)}
+.sec-title{font-size:12px;color:var(--dim);font-weight:700;letter-spacing:.8px;margin:18px 4px 2px}
+details>summary{cursor:pointer;font-weight:700;font-size:14px;color:var(--dim);padding:4px 0;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"⚙ ";}
+.rec{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:14px}
+.rec .rv{font-weight:800;font-variant-numeric:tabular-nums;color:var(--accent);width:70px}
+.rec .rt{color:var(--dim);font-size:12px;flex:1}
+.note{font-size:12px;color:var(--dim);line-height:1.5;margin-top:8px}
+.err{color:var(--bad);font-weight:600}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🐸</div>
+  <h1>청개구리샤시 · 소음측정기</h1>
+  <div class="badge" id="verBadge">v1.0</div>
+</header>
+
+<!-- permission gate -->
+<div class="card" id="gate">
+  <div style="font-size:15px;font-weight:700;margin-bottom:6px">마이크 권한이 필요합니다</div>
+  <div class="note">측정을 시작하려면 아래 버튼을 누르고 마이크 접근을 <b style="color:var(--txt)">허용</b>하세요.
+  자동증폭(AGC)·노이즈제거는 정확한 측정을 위해 자동으로 꺼집니다.</div>
+  <div class="btns" style="margin-top:14px"><button class="b-wide" id="startMic">🎙️ 마이크 시작</button></div>
+  <div class="note err hidden" id="gateErr"></div>
+</div>
+
+<!-- meter -->
+<div id="app" class="hidden">
+  <div class="card readout live" id="readout">
+    <div class="state" id="stateLbl">실시간</div>
+    <div class="big"><span id="bigVal">--</span><small>dB</small></div>
+    <div class="sub" id="subLbl">A가중 · 실시간</div>
+    <div class="bar"><i id="barFill"></i></div>
+    <div class="scale"><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span></div>
+    <div class="count" id="countOv">
+      <div class="n" id="countN">4</div>
+      <div class="t" id="countT">폰을 창에 대고 손을 떼세요</div>
+      <div class="prog"><i id="countProg"></i></div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="s"><div class="k">최소</div><div class="v" id="stMin">--</div></div>
+    <div class="s"><div class="k">평균(LAeq)</div><div class="v" id="stAvg">--</div></div>
+    <div class="s"><div class="k">최대</div><div class="v" id="stMax">--</div></div>
+  </div>
+
+  <div class="btns">
+    <button class="b-main" id="btnMeasure">📏 측정 (핸즈프리)</button>
+    <button class="b-sec" id="btnReset">초기화</button>
+  </div>
+  <button class="b-ghost hidden" id="btnCancel" style="width:100%;margin-top:10px">측정 취소</button>
+  <button class="b-sec hidden" id="btnSave" style="width:100%;margin-top:10px">✔ 이 값 기록에 저장</button>
+
+  <div class="card">
+    <div class="graph-h"><span id="graphRange">실시간 그래프</span><span>(dB)</span></div>
+    <canvas id="graph" width="500" height="120"></canvas>
+  </div>
+
+  <div class="card">
+    <details id="setPanel">
+      <summary>측정 설정</summary>
+      <div class="set-row">
+        <div class="lab">주파수 가중<small>1kHz 순음·A / 광대역·Z</small></div>
+        <div class="seg" id="segWeight">
+          <button data-w="A" class="on">A</button><button data-w="Z">Z</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <div class="lab">측정 시간<small>핸즈프리 측정 창(LAeq)</small></div>
+        <div class="seg" id="segWin">
+          <button data-v="5">5초</button><button data-v="10" class="on">10초</button><button data-v="30">30초</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <div class="lab">준비 시간<small>손 떼고 안정될 시간</small></div>
+        <div class="seg" id="segSettle">
+          <button data-v="3">3초</button><button data-v="4" class="on">4초</button><button data-v="6">6초</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <div class="lab">완료 알림<small>측정 끝 삐·진동</small></div>
+        <div class="toggle on" id="tgBeep"><i></i></div>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>보정 (절대 dB 맞추기)</summary>
+      <div class="note">수리 전·후 <b style="color:var(--txt)">차이(Δ)</b> 측정엔 보정이 필요 없습니다. 절대값을 다른 측정기와 맞추고 싶을 때만 사용하세요.</div>
+      <div class="set-row" style="margin-top:8px">
+        <div class="lab">기준 측정기 값 입력<small>지금 이 앱이 <b id="calNow" style="color:var(--accent)">--</b>dB로 보임</small></div>
+        <div><input type="number" id="calInput" placeholder="예: 47" step="0.1"></div>
+      </div>
+      <button class="b-ghost" id="calApply" style="width:100%;margin-top:10px">이 값으로 보정</button>
+      <div class="mini" style="margin-top:8px">현재 보정 오프셋: <b id="calOff">0.0</b> dB
+        <button class="b-ghost" id="calReset" style="padding:5px 10px;font-size:12px;margin-left:8px">초기화</button></div>
+    </details>
+  </div>
+
+  <div class="sec-title">측정 기록</div>
+  <div class="card" id="recCard">
+    <div id="recList"><div class="note" id="recEmpty">저장된 측정값이 없습니다. 측정 후 “이 값 기록에 저장”을 누르세요.</div></div>
+    <div class="btns hidden" id="recBtns">
+      <button class="b-ghost" id="recCopy" style="flex:1">전체 복사</button>
+      <button class="b-ghost" id="recClear" style="flex:1">전체 삭제</button>
+    </div>
+  </div>
+
+  <div class="note">※ 폰 마이크 측정은 기기별 오차가 있습니다(±3dB 내외). 수리 전·후 <b style="color:var(--txt)">동일 조건</b>으로 재면 그 차이는 신뢰할 수 있습니다.
+  본 측정은 상대적 밀폐·차음 개선 확인용이며 KS F 2292(통기량) 등급과는 다른 지표입니다.</div>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const LS="frog_meter_v1";
+const cfg=Object.assign({weight:"A",win:10,settle:4,beep:true,cal:0},JSON.parse(localStorage.getItem(LS)||"{}"));
+function saveCfg(){localStorage.setItem(LS,JSON.stringify(cfg));}
+
+// ---- audio state ----
+let ac,analyser,freq,wPow,binLo,binHi,rafId,stream;
+let live={min:Infinity,max:-Infinity,eSum:0,eN:0,disp:0};
+let mode="idle"; // idle | settle | measure | done
+let capture=null;
+const DEFAULT_CAL=118; // 대략적 기본 오프셋(FFT 정규화 기준). 실기기에서 보정으로 미세조정.
+
+function aWeightDb(f){
+  const f2=f*f;
+  const ra=(Math.pow(12194,2)*f2*f2)/
+    ((f2+Math.pow(20.6,2))*Math.sqrt((f2+Math.pow(107.7,2))*(f2+Math.pow(737.9,2)))*(f2+Math.pow(12194,2)));
+  return 20*Math.log10(ra)+2.00;
+}
+function buildWeights(){
+  const n=analyser.frequencyBinCount, sr=ac.sampleRate;
+  wPow=new Float64Array(n);
+  for(let i=0;i<n;i++){
+    const f=i*sr/(analyser.fftSize);
+    let db=(cfg.weight==="A")?aWeightDb(Math.max(f,1)):0;
+    wPow[i]=Math.pow(10,db/10);
+  }
+  binLo=Math.max(1,Math.floor(20/(sr/analyser.fftSize)));
+  binHi=Math.min(n-1,Math.ceil(20000/(sr/analyser.fftSize)));
+}
+
+async function startMic(){
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({audio:{
+      echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1}});
+  }catch(e){
+    $("#gateErr").classList.remove("hidden");
+    $("#gateErr").textContent="마이크를 열 수 없습니다: "+e.message+" (HTTPS·권한 확인)";
+    return;
+  }
+  ac=new (window.AudioContext||window.webkitAudioContext)();
+  if(ac.state==="suspended") await ac.resume();
+  const src=ac.createMediaStreamSource(stream);
+  analyser=ac.createAnalyser();
+  analyser.fftSize=8192;
+  analyser.smoothingTimeConstant=0;
+  analyser.minDecibels=-120; analyser.maxDecibels=0;
+  src.connect(analyser);
+  freq=new Float32Array(analyser.frequencyBinCount);
+  buildWeights();
+  $("#gate").classList.add("hidden");
+  $("#app").classList.remove("hidden");
+  loop();
+}
+
+function levelNow(){
+  analyser.getFloatFrequencyData(freq);
+  let sum=0;
+  for(let i=binLo;i<=binHi;i++){
+    if(freq[i]===-Infinity) continue;
+    sum += Math.pow(10,freq[i]/10)*wPow[i];
+  }
+  if(sum<=0) return null;
+  return 10*Math.log10(sum)+DEFAULT_CAL+cfg.cal;
+}
+
+let lastT=0;
+function loop(t){
+  rafId=requestAnimationFrame(loop);
+  const L=levelNow();
+  if(L===null) return;
+  // fast display smoothing (~125ms) for readability
+  live.disp = live.disp? live.disp*0.75+L*0.25 : L;
+  $("#calNow").textContent=live.disp.toFixed(0);
+
+  if(mode==="measure"){
+    live.eSum+=Math.pow(10,L/10); live.eN++;
+    if(L<live.min)live.min=L; if(L>live.max)live.max=L;
+    const leq=10*Math.log10(live.eSum/live.eN);
+    setBig(leq);
+    $("#stMin").textContent=live.min.toFixed(0);
+    $("#stMax").textContent=live.max.toFixed(0);
+    $("#stAvg").textContent=leq.toFixed(1);
+    pushGraph(L);
+  } else if(mode==="idle"||mode==="settle"){
+    setBig(live.disp);
+    pushGraph(L);
+  }
+}
+function setBig(v){ $("#bigVal").textContent=v.toFixed(mode==="measure"||mode==="done"?1:0);
+  const pc=Math.max(0,Math.min(1,(v-20)/80)); $("#barFill").style.width=(pc*100)+"%"; }
+
+// ---- graph ----
+const g=$("#graph"), gx=g.getContext("2d"); let gbuf=[];
+function pushGraph(v){ gbuf.push(v); if(gbuf.length>240)gbuf.shift(); drawGraph(); }
+function drawGraph(){
+  const w=g.width,h=g.height; gx.clearRect(0,0,w,h);
+  gx.strokeStyle="#2a3833"; gx.lineWidth=1;
+  for(let db=20;db<=100;db+=20){ const y=h-(db-20)/80*h; gx.beginPath();gx.moveTo(0,y);gx.lineTo(w,y);gx.stroke();
+    gx.fillStyle="#5f746a";gx.font="10px sans-serif";gx.fillText(db,2,y-2); }
+  if(gbuf.length<2)return;
+  gx.strokeStyle="#39c07a"; gx.lineWidth=2; gx.beginPath();
+  gbuf.forEach((v,i)=>{ const x=i/(240-1)*w, y=h-(Math.max(20,Math.min(100,v))-20)/80*h;
+    i?gx.lineTo(x,y):gx.moveTo(x,y); });
+  gx.stroke();
+}
+
+// ---- hands-free measure ----
+function resetLive(){ live.min=Infinity;live.max=-Infinity;live.eSum=0;live.eN=0; }
+function startMeasure(){
+  if(mode!=="idle")return;
+  mode="settle"; gbuf=[];
+  $("#btnMeasure").classList.add("hidden"); $("#btnReset").classList.add("hidden");
+  $("#btnSave").classList.add("hidden"); $("#btnCancel").classList.remove("hidden");
+  $("#readout").className="card readout";
+  const ov=$("#countOv"); ov.classList.add("on");
+  $("#countT").textContent="폰을 창에 대고 손을 떼세요";
+  let left=cfg.settle;
+  $("#countN").textContent=left;
+  $("#stateLbl").textContent="준비 중";
+  const iv=setInterval(()=>{
+    if(mode!=="settle"){clearInterval(iv);return;}
+    left--;
+    if(left>0){ $("#countN").textContent=left; }
+    else{ clearInterval(iv); beginWindow(); }
+  },1000);
+}
+function beginWindow(){
+  mode="measure"; resetLive();
+  $("#countOv").classList.remove("on");
+  $("#readout").className="card readout live";
+  $("#stateLbl").textContent="측정 중 (손대지 마세요)";
+  $("#subLbl").textContent=cfg.weight+"가중 · LAeq "+cfg.win+"초";
+  const total=cfg.win*1000, t0=performance.now();
+  const iv=setInterval(()=>{
+    if(mode!=="measure"){clearInterval(iv);return;}
+    const el=performance.now()-t0;
+    if(el>=total){ clearInterval(iv); finishWindow(); }
+  },50);
+}
+function finishWindow(){
+  mode="done";
+  const leq=live.eN?10*Math.log10(live.eSum/live.eN):0;
+  $("#readout").className="card readout done";
+  $("#stateLbl").textContent="측정 완료";
+  $("#subLbl").textContent=cfg.weight+"가중 · LAeq "+cfg.win+"초 · 최소 "+live.min.toFixed(0)+" / 최대 "+live.max.toFixed(0);
+  setBig(leq); $("#bigVal").textContent=leq.toFixed(1);
+  capture={leq:+leq.toFixed(1),min:+live.min.toFixed(1),max:+live.max.toFixed(1),w:cfg.weight};
+  $("#btnCancel").classList.add("hidden");
+  $("#btnMeasure").classList.remove("hidden"); $("#btnReset").classList.remove("hidden");
+  $("#btnSave").classList.remove("hidden");
+  if(cfg.beep){ doneBeep(); if(navigator.vibrate) navigator.vibrate(200); }
+}
+function doneBeep(){
+  try{ const o=ac.createOscillator(),gg=ac.createGain();
+    o.frequency.value=880; gg.gain.value=0.0001; o.connect(gg); gg.connect(ac.destination);
+    const n=ac.currentTime; gg.gain.setValueAtTime(0.0001,n);
+    gg.gain.exponentialRampToValueAtTime(0.25,n+0.02); gg.gain.exponentialRampToValueAtTime(0.0001,n+0.35);
+    o.start(n); o.stop(n+0.36);
+  }catch(e){}
+}
+function cancelMeasure(){
+  mode="idle";
+  $("#countOv").classList.remove("on"); $("#readout").className="card readout live";
+  $("#stateLbl").textContent="실시간"; $("#subLbl").textContent=cfg.weight+"가중 · 실시간";
+  $("#btnCancel").classList.add("hidden"); $("#btnSave").classList.add("hidden");
+  $("#btnMeasure").classList.remove("hidden"); $("#btnReset").classList.remove("hidden");
+}
+function resetAll(){ resetLive(); gbuf=[]; $("#stMin").textContent="--";$("#stMax").textContent="--";$("#stAvg").textContent="--";
+  cancelMeasure(); }
+
+// ---- records ----
+let recs=JSON.parse(localStorage.getItem(LS+"_rec")||"[]");
+function renderRecs(){
+  const box=$("#recList");
+  if(!recs.length){ box.innerHTML='<div class="note" id="recEmpty">저장된 측정값이 없습니다. 측정 후 “이 값 기록에 저장”을 누르세요.</div>';
+    $("#recBtns").classList.add("hidden"); return; }
+  box.innerHTML=recs.map((r,i)=>`<div class="rec"><span class="rv">${r.leq} dB</span>
+    <span class="rt">${r.t} · ${r.w}가중 · 최소 ${r.min}/최대 ${r.max}</span>
+    <button class="b-ghost" data-del="${i}" style="padding:5px 9px;font-size:12px">✕</button></div>`).join("");
+  $("#recBtns").classList.remove("hidden");
+  box.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{recs.splice(+b.dataset.del,1);persistRecs();});
+}
+function persistRecs(){ localStorage.setItem(LS+"_rec",JSON.stringify(recs)); renderRecs(); }
+function nowStr(){ const d=new Date(); const p=n=>String(n).padStart(2,"0");
+  return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
+
+// ---- wire up ----
+$("#startMic").onclick=startMic;
+$("#btnMeasure").onclick=startMeasure;
+$("#btnCancel").onclick=cancelMeasure;
+$("#btnReset").onclick=resetAll;
+$("#btnSave").onclick=()=>{ if(!capture)return; recs.unshift(Object.assign({t:nowStr()},capture));
+  if(recs.length>50)recs.pop(); persistRecs(); $("#btnSave").textContent="✔ 저장됨";
+  setTimeout(()=>$("#btnSave").textContent="✔ 이 값 기록에 저장",1200); };
+$("#recCopy").onclick=()=>{ const txt=recs.map(r=>`${r.t}\t${r.leq}\t${r.w}\t${r.min}\t${r.max}`).join("\n");
+  navigator.clipboard&&navigator.clipboard.writeText("시각\tLAeq\t가중\t최소\t최대\n"+txt); };
+$("#recClear").onclick=()=>{ if(confirm("측정 기록을 모두 삭제할까요?")){recs=[];persistRecs();} };
+
+function segWire(sel,key,cast){ const el=$(sel);
+  el.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    el.querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+    cfg[key]=cast(b.dataset.w||b.dataset.v); saveCfg();
+    if(key==="weight"&&analyser){buildWeights(); $("#subLbl").textContent=cfg.weight+"가중 · 실시간";}
+  });
+  el.querySelectorAll("button").forEach(b=>{ const v=cast(b.dataset.w||b.dataset.v);
+    b.classList.toggle("on", v===cfg[key]); });
+}
+segWire("#segWeight","weight",String);
+segWire("#segWin","win",Number);
+segWire("#segSettle","settle",Number);
+$("#tgBeep").classList.toggle("on",cfg.beep);
+$("#tgBeep").onclick=()=>{ cfg.beep=!cfg.beep; $("#tgBeep").classList.toggle("on",cfg.beep); saveCfg(); };
+
+$("#calApply").onclick=()=>{ const v=parseFloat($("#calInput").value); if(isNaN(v))return;
+  cfg.cal += (v - live.disp); saveCfg(); $("#calOff").textContent=cfg.cal.toFixed(1); $("#calInput").value=""; };
+$("#calReset").onclick=()=>{ cfg.cal=0; saveCfg(); $("#calOff").textContent="0.0"; };
+$("#calOff").textContent=cfg.cal.toFixed(1);
+
+// keep screen awake if supported
+let wl=null; async function keepAwake(){ try{ wl=await navigator.wakeLock.request("screen"); }catch(e){} }
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible")keepAwake(); });
+$("#startMic").addEventListener("click",keepAwake);
+
+renderRecs();
+</script>
+</body>
+</html>
