@@ -108,6 +108,15 @@ details>summary::before{content:"⚙ ";}
 .rec .rt{color:var(--dim);font-size:12px;flex:1}
 .note{font-size:12px;color:var(--dim);line-height:1.5;margin-top:8px}
 .note.legal{font-size:11px}
+.purpose{margin-top:14px;padding:12px 14px;border-radius:11px;background:#12211a;border:1px solid var(--line);
+  border-left:3px solid var(--accent);font-size:12.5px;line-height:1.6;color:var(--dim)}
+.purpose b{color:var(--txt)}
+.manual{margin-top:12px;border:1px solid var(--line);border-radius:11px;padding:2px 14px}
+.manual>summary{color:var(--accent);font-weight:700;font-size:14px;padding:11px 0;cursor:pointer;list-style:none}
+.manual>summary::before{content:none}
+.manual ol{margin:2px 0 6px;padding-left:20px;font-size:13px;line-height:1.7;color:var(--dim)}
+.manual li{margin-bottom:7px}
+.manual li b{color:var(--txt)}
 .err{color:var(--bad);font-weight:600}
 .hidden{display:none!important}
 </style>
@@ -120,7 +129,7 @@ details>summary::before{content:"⚙ ";}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.8</div>
+  <div class="badge" id="verBadge">v1.9</div>
 </header>
 
 <!-- permission gate -->
@@ -130,6 +139,21 @@ details>summary::before{content:"⚙ ";}
   자동증폭(AGC)·노이즈제거는 정확한 측정을 위해 자동으로 꺼집니다.</div>
   <div class="btns" style="margin-top:14px"><button class="b-wide" id="startMic">🎙️ 마이크 시작</button></div>
   <div class="note err hidden" id="gateErr"></div>
+
+  <div class="purpose">본 앱은 창호의 소음을 측정해 <b>외풍(공기 누기)의 정도를 가늠</b>하기 위해 개발한 <b>보조 측정 도구</b>입니다. 휴대폰 마이크 특성상 참고용이며, <b>정밀한 진단·시공은 청개구리샤시</b>(frogsash.co.kr)에 의뢰해 주세요.</div>
+
+  <details class="manual">
+    <summary>📖 사용설명서</summary>
+    <ol>
+      <li><b>수리 전 / 수리 후 선택</b> — 상단에서 지금 재는 것이 '수리 전'인지 '수리 후'인지 고릅니다.</li>
+      <li><b>위치 고정</b> — 폰을 측정할 창가에 대고, 수리 전·후 항상 <b>같은 위치·같은 방향</b>으로 둡니다.</li>
+      <li><b>측정</b> — [측정]을 누르면 준비 시간 뒤 15초씩 <b>3회 자동</b>으로 잽니다. 측정 중에는 <b>폰에서 손을 떼세요</b> — 손이 닿으면 소리가 섞여 값이 올라갑니다.</li>
+      <li><b>조건 통일</b> — 창은 닫고 주변은 조용히. 전·후 조건이 다르면 비교가 무효입니다.</li>
+      <li><b>결과 확인</b> — 3회 평균과 편차가 나오고, 수리 전·후를 모두 저장하면 <b>개선량</b>이 자동으로 표시됩니다.</li>
+      <li><b>저장·전달</b> — [기록에 저장]으로 목록에 남기고, [이미지로 저장]으로 결과 사진을 갤러리에 저장해 고객에게 전달합니다.</li>
+    </ol>
+    <div class="note" style="margin:0 0 10px">※ 폰 마이크 측정은 ±3dB 내외 오차가 있는 참고용입니다. 정밀 측정·진단은 청개구리샤시에 의뢰하세요.</div>
+  </details>
 </div>
 
 <!-- meter -->
