@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>청개구리샤시 · 음원 발생기 (1kHz)</title>
+<style>
+:root{
+  --bg:#0e1512; --card:#161f1b; --card2:#1c2823; --line:#2a3833;
+  --txt:#eaf3ee; --dim:#8ea79b; --accent:#39c07a; --accent2:#2ea56a; --warn:#e0b64a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:-apple-system,"Segoe UI",Roboto,"Malgun Gothic","맑은 고딕",sans-serif}
+body{padding:0 7px 30px;max-width:520px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;padding:16px 6px 10px}
+header .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center}
+header h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.2px}
+header .badge{margin-left:auto;font-size:11px;color:var(--dim);border:1px solid var(--line);padding:3px 8px;border-radius:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+
+.playwrap{text-align:center;padding:20px 16px 22px}
+.state{font-size:14px;color:var(--dim);font-weight:600;min-height:20px}
+.bigfreq{font-size:46px;font-weight:800;letter-spacing:-1.5px;margin:2px 0 0}
+.bigfreq small{font-size:20px;color:var(--dim);font-weight:700;margin-left:4px}
+.playbtn{width:140px;height:140px;border-radius:50%;border:none;margin:16px auto 0;display:flex;
+  align-items:center;justify-content:center;cursor:pointer;font-size:48px;color:#06120c;
+  background:var(--accent);transition:transform .06s, background .15s;position:relative}
+.playbtn:active{transform:scale(.96)}
+.playbtn.on{background:#e06b5a;color:#2a0d09}
+.playbtn.on::before,.playbtn.on::after{content:"";position:absolute;border-radius:50%;border:2px solid #e06b5a;
+  width:140px;height:140px;opacity:.6;animation:ripple 1.6s ease-out infinite}
+.playbtn.on::after{animation-delay:.8s}
+@keyframes ripple{from{transform:scale(1);opacity:.5}to{transform:scale(1.5);opacity:0}}
+
+.lab{font-size:14px;font-weight:700;margin-bottom:2px}
+.lab small{display:block;font-size:11px;color:var(--dim);font-weight:400;margin-top:2px}
+.vols{display:flex;gap:10px;margin-top:12px}
+.vols button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:15px 6px;border-radius:13px;border:1.5px solid var(--line);background:var(--card2);
+  color:var(--dim);font-size:17px;font-weight:800;font-family:inherit;cursor:pointer;transition:.12s}
+.vols button.on{background:#123a24;border-color:var(--accent);color:#7fe0a8}
+.vols button .chk{width:19px;height:19px;border-radius:5px;border:2px solid currentColor;position:relative;opacity:.5;flex:none}
+.vols button.on .chk{opacity:1;background:currentColor}
+.vols button.on .chk::after{content:"✓";position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);
+  font-size:13px;font-weight:900;color:var(--bg)}
+
+.tip{background:#12211a;border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:11px;padding:12px 14px;font-size:12.5px;line-height:1.7;color:var(--dim);margin-top:12px}
+.tip b{color:var(--txt)}
+.note{font-size:12px;color:var(--dim);line-height:1.6;margin-top:10px;padding:0 6px}
+.note b{color:var(--txt)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><svg viewBox="0 0 24 24" width="19" height="19" fill="#06120c" aria-hidden="true">
+    <rect x="2" y="14" width="3.2" height="8" rx="1.4"/><rect x="7" y="9" width="3.2" height="13" rx="1.4"/>
+    <rect x="12" y="4" width="3.2" height="18" rx="1.4"/><rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
+  <h1>청개구리샤시 · 음원 발생기</h1>
+  <div class="badge" id="verBadge">v1.0</div>
+</header>
+
+<div class="card playwrap">
+  <div class="state" id="stateLbl">정지됨 — 재생을 누르세요</div>
+  <div class="bigfreq">1000<small>Hz</small></div>
+  <button class="playbtn" id="playBtn" aria-label="재생/정지">▶</button>
+</div>
+
+<div class="card">
+  <div class="lab">음량 선택<small>측정할 때 볼륨을 바꿔가며 비교 (앱 볼륨 · 폰 미디어 볼륨과 별개)</small></div>
+  <div class="vols" id="vols">
+    <button data-v="50"><span class="chk"></span>50%</button>
+    <button data-v="60" class="on"><span class="chk"></span>60%</button>
+    <button data-v="70"><span class="chk"></span>70%</button>
+  </div>
+</div>
+
+<div class="tip">
+  🔊 <b>가장 크게</b> 하려면 폰 <b>미디어 볼륨을 최대</b>로 두고 위에서 앱 음량을 고르세요. 폰이 약하면 <b>블루투스 스피커·태블릿</b>이 훨씬 큽니다.<br>
+  🪟 음원은 <b>내창·외창 사이</b>에 두고, 측정은 <b>태블릿</b>으로 실내에서 하세요.
+</div>
+
+<div class="note">이 앱은 <b>1000Hz 순음을 재생만</b> 합니다(측정 아님). 측정은 <b>frogsash.co.kr/meter</b> 소음측정기로. · frogsash.co.kr</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+let ac=null, osc=null, gain=null, playing=false;
+let cfg={freq:1000, vol:60};
+
+function ensureAC(){
+  if(ac) return;
+  ac=new (window.AudioContext||window.webkitAudioContext)();
+  gain=ac.createGain(); gain.gain.value=cfg.vol/100; gain.connect(ac.destination);
+}
+function startTone(){
+  stopTone();
+  osc=ac.createOscillator(); osc.type="sine"; osc.frequency.value=cfg.freq;
+  osc.connect(gain); osc.start();
+}
+function stopTone(){ if(osc){ try{osc.stop();}catch(e){} try{osc.disconnect();}catch(e){} osc=null; } }
+
+function play(){
+  ensureAC(); if(ac.state==="suspended") ac.resume();
+  startTone(); playing=true;
+  $("#playBtn").textContent="■"; $("#playBtn").classList.add("on");
+  $("#stateLbl").textContent="재생 중 · "+cfg.vol+"%";
+  keepAwake();
+}
+function stop(){
+  stopTone(); playing=false;
+  $("#playBtn").textContent="▶"; $("#playBtn").classList.remove("on");
+  $("#stateLbl").textContent="정지됨 — 재생을 누르세요";
+}
+$("#playBtn").onclick=()=>{ playing?stop():play(); };
+
+$("#vols").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+  $("#vols").querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+  cfg.vol=+b.dataset.v;
+  if(gain) gain.gain.value=cfg.vol/100;
+  if(playing) $("#stateLbl").textContent="재생 중 · "+cfg.vol+"%";
+});
+
+let wl=null; async function keepAwake(){ try{ wl=await navigator.wakeLock.request("screen"); }catch(e){} }
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"&&playing)keepAwake(); });
+</script>
+</body>
+</html>
