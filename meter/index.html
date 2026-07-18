@@ -40,6 +40,12 @@ header .badge{margin-left:auto;font-size:11px;color:var(--dim);border:1px solid 
 .count{position:absolute;top:0;left:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;
   flex-direction:column;background:rgba(14,21,18,.92);border-radius:16px;z-index:5}
 .count.on{display:flex}
+.michint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;
+  background:rgba(14,21,18,.86);border-radius:16px;z-index:6;cursor:pointer;padding:0 24px;text-align:center}
+.michint .mi-ic{font-size:40px}
+.michint .mi-t{font-size:16px;font-weight:700;color:var(--txt);margin-top:10px}
+.michint .mi-s{font-size:12px;color:var(--dim);margin-top:8px;line-height:1.5}
+.michint .mi-e{font-size:12px;color:var(--bad);margin-top:10px;font-weight:600}
 .count .n{font-size:96px;font-weight:800;color:var(--accent);line-height:1}
 .count .t{font-size:15px;color:var(--txt);margin-top:8px;font-weight:600;text-align:center;padding:0 20px}
 .count .prog{width:70%;height:8px;background:var(--card2);border-radius:5px;margin-top:16px;overflow:hidden}
@@ -119,20 +125,11 @@ details>summary::before{content:"⚙ ";}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.5</div>
+  <div class="badge" id="verBadge">v1.6</div>
 </header>
 
-<!-- permission gate -->
-<div class="card" id="gate">
-  <div style="font-size:15px;font-weight:700;margin-bottom:6px">마이크 권한이 필요합니다</div>
-  <div class="note">측정을 시작하려면 아래 버튼을 누르고 마이크 접근을 <b style="color:var(--txt)">허용</b>하세요.
-  자동증폭(AGC)·노이즈제거는 정확한 측정을 위해 자동으로 꺼집니다.</div>
-  <div class="btns" style="margin-top:14px"><button class="b-wide" id="startMic">🎙️ 마이크 시작</button></div>
-  <div class="note err hidden" id="gateErr"></div>
-</div>
-
-<!-- meter -->
-<div id="app" class="hidden">
+<!-- meter (마이크는 첫 탭에서 자동 시작) -->
+<div id="app">
   <div class="phasebar" id="phasebar">
     <button data-p="수리전" class="on before"><span class="chk"></span>수리 전</button>
     <button data-p="수리후" class="after"><span class="chk"></span>수리 후</button>
@@ -182,6 +179,12 @@ details>summary::before{content:"⚙ ";}
       <div class="n" id="countN">4</div>
       <div class="t" id="countT">폰을 창에 대고 손을 떼세요</div>
       <div class="prog"><i id="countProg"></i></div>
+    </div>
+    <div class="michint" id="micHint">
+      <div class="mi-ic">🎙️</div>
+      <div class="mi-t">화면을 탭하면 시작됩니다</div>
+      <div class="mi-s">마이크 접근을 <b style="color:var(--txt)">허용</b>하세요 · 자동증폭(AGC) 자동 OFF</div>
+      <div class="mi-e hidden" id="micHintErr"></div>
     </div>
   </div>
 
@@ -306,15 +309,10 @@ function buildWeights(){
   binHi=Math.min(n-1,Math.ceil(20000/(sr/analyser.fftSize)));
 }
 
+let micReady=false, micInit=null;
 async function startMic(){
-  try{
-    stream=await navigator.mediaDevices.getUserMedia({audio:{
-      echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1}});
-  }catch(e){
-    $("#gateErr").classList.remove("hidden");
-    $("#gateErr").textContent="마이크를 열 수 없습니다: "+e.message+" (HTTPS·권한 확인)";
-    return;
-  }
+  stream=await navigator.mediaDevices.getUserMedia({audio:{
+    echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1}});
   ac=new (window.AudioContext||window.webkitAudioContext)();
   if(ac.state==="suspended") await ac.resume();
   const src=ac.createMediaStreamSource(stream);
@@ -325,10 +323,28 @@ async function startMic(){
   src.connect(analyser);
   freq=new Float32Array(analyser.frequencyBinCount);
   buildWeights();
-  $("#gate").classList.add("hidden");
-  $("#app").classList.remove("hidden");
+  micReady=true;
+  $("#micHint").classList.add("hidden");
+  $("#stateLbl").textContent="실시간";
+  $("#subLbl").textContent=phaseVal()+" · "+cfg.weight+"가중 · 실시간";
+  keepAwake();
   loop();
 }
+// 마이크는 첫 사용자 탭에서 자동 시작 (브라우저 보안상 탭 없이는 불가)
+function ensureMic(){
+  if(micReady) return Promise.resolve(true);
+  if(!micInit) micInit=startMic().then(()=>true).catch(e=>{
+    micInit=null;
+    $("#micHint").classList.remove("hidden");
+    const t=$("#micHintErr"); if(t){ t.textContent="마이크를 열 수 없습니다 — 브라우저에서 마이크 접근을 허용해 주세요."; t.classList.remove("hidden"); }
+    return false;
+  });
+  return micInit;
+}
+(function armFirstGesture(){
+  const h=()=>{ document.removeEventListener("pointerdown",h,true); ensureMic(); };
+  document.addEventListener("pointerdown",h,true);
+})();
 
 function levelNow(){
   analyser.getFloatFrequencyData(freq);
@@ -517,8 +533,8 @@ function nowStr(){ const d=new Date(); const p=n=>String(n).padStart(2,"0");
   return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
 
 // ---- wire up ----
-$("#startMic").onclick=startMic;
-$("#btnMeasure").onclick=startMeasure;
+$("#btnMeasure").onclick=async ()=>{ if(await ensureMic()) startMeasure(); };
+$("#micHint").onclick=ensureMic;
 $("#btnCancel").onclick=cancelMeasure;
 $("#btnReset").onclick=resetAll;
 $("#btnSave").onclick=()=>{ if(!capture)return; recs.unshift(Object.assign({t:nowStr()},capture));
@@ -651,8 +667,7 @@ $("#calOff").textContent=cfg.cal.toFixed(1);
 
 // keep screen awake if supported
 let wl=null; async function keepAwake(){ try{ wl=await navigator.wakeLock.request("screen"); }catch(e){} }
-document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible")keepAwake(); });
-$("#startMic").addEventListener("click",keepAwake);
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"&&micReady)keepAwake(); });
 
 renderRecs();
 </script>
