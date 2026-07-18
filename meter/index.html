@@ -95,7 +95,7 @@ details>summary::before{content:"⚙ ";}
 <header>
   <div class="logo">🐸</div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.0</div>
+  <div class="badge" id="verBadge">v1.1</div>
 </header>
 
 <!-- permission gate -->
@@ -150,9 +150,9 @@ details>summary::before{content:"⚙ ";}
         </div>
       </div>
       <div class="set-row">
-        <div class="lab">측정 시간<small>핸즈프리 측정 창(LAeq)</small></div>
+        <div class="lab">측정 시간<small>이 시간 지나면 자동 종료 (LAeq)</small></div>
         <div class="seg" id="segWin">
-          <button data-v="5">5초</button><button data-v="10" class="on">10초</button><button data-v="30">30초</button>
+          <button data-v="10">10초</button><button data-v="15" class="on">15초</button><button data-v="20">20초</button>
         </div>
       </div>
       <div class="set-row">
@@ -199,7 +199,8 @@ details>summary::before{content:"⚙ ";}
 "use strict";
 const $=s=>document.querySelector(s);
 const LS="frog_meter_v1";
-const cfg=Object.assign({weight:"A",win:10,settle:4,beep:true,cal:0},JSON.parse(localStorage.getItem(LS)||"{}"));
+const cfg=Object.assign({weight:"A",win:15,settle:4,beep:true,cal:0},JSON.parse(localStorage.getItem(LS)||"{}"));
+if(![10,15,20].includes(cfg.win)) cfg.win=15; // 구버전 저장값(5/30) 보정
 function saveCfg(){localStorage.setItem(LS,JSON.stringify(cfg));}
 
 // ---- audio state ----
