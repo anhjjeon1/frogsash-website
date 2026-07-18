@@ -131,7 +131,7 @@ details>summary::before{content:"⚙ ";}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.11</div>
+  <div class="badge" id="verBadge">v1.12</div>
 </header>
 
 <!-- permission gate -->
@@ -421,9 +421,10 @@ function drawGraph(){
 function resetLive(){ live.min=Infinity;live.max=-Infinity;live.eSum=0;live.eN=0;live.frames=0; }
 let repVals=[], measureToken=0;
 function startMeasure(){
-  if(mode!=="idle")return;
+  if(mode==="settle"||mode==="measure"||mode==="gap")return; // 측정 진행 중에만 막고, idle·done에서는 시작 허용
   const tk=++measureToken;
   mode="settle"; gbuf=[]; repVals=[];
+  $("#stMin").textContent="--"; $("#stMax").textContent="--"; $("#stAvg").textContent="--";
   $("#btnMeasure").classList.add("hidden"); $("#btnReset").classList.add("hidden");
   $("#doneArea").classList.add("hidden"); $("#btnCancel").classList.remove("hidden");
   $("#readout").className="card readout";
@@ -502,6 +503,7 @@ function cancelMeasure(){
   $("#countOv").classList.remove("on"); $("#readout").className="card readout";
   $("#stateLbl").textContent="측정 대기"; $("#subLbl").textContent=phaseVal()+" · "+cfg.weight+"가중";
   parkGauge(); gbuf=[]; drawGraph();
+  $("#stMin").textContent="--"; $("#stMax").textContent="--"; $("#stAvg").textContent="--";
   $("#btnCancel").classList.add("hidden"); $("#doneArea").classList.add("hidden");
   $("#btnMeasure").classList.remove("hidden"); $("#btnReset").classList.remove("hidden");
 }
@@ -667,7 +669,7 @@ segWire("#segReps","reps",Number);
     b.onclick=()=>{ if(mode==="settle"||mode==="measure"||mode==="gap"){ toast("측정 중에는 바꿀 수 없습니다"); return; }
       cfg.phase=b.dataset.p; saveCfg();
       el.querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
-      $("#subLbl").textContent=phaseVal()+" · "+cfg.weight+"가중"; };
+      cancelMeasure(); }; // 전환 시 대기 상태로 리셋(게이지 park·상태 초기화) → 새 phase 측정 준비
   });
   $("#subLbl").textContent=phaseVal()+" · "+cfg.weight+"가중";
 })();
