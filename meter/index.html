@@ -147,7 +147,7 @@ details>summary::before{content:"⚙ ";}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.16</div>
+  <div class="badge" id="verBadge">v1.17</div>
 </header>
 
 <div id="toast" class="toast"></div>
@@ -195,8 +195,6 @@ details>summary::before{content:"⚙ ";}
       <span class="srclab">볼륨</span>
       <button data-v="50%">50%</button>
       <button data-v="60%" class="on">60%</button>
-      <button data-v="70%">70%</button>
-      <button data-v="100%">100%</button>
     </div>
   </div>
 
@@ -339,6 +337,9 @@ function toast(m){ const t=$("#toast"); if(!t)return; t.textContent=m; t.classLi
   clearTimeout(t._t); t._t=setTimeout(function(){ t.classList.remove("show"); },2200); }
 const LS="frog_meter_v1";
 const cfg=Object.assign({weight:"A",win:15,settle:4,beep:true,cal:0,phase:"수리전",reps:3,src:"1kHz",vol:"60%"},JSON.parse(localStorage.getItem(LS)||"{}"));
+// 70%·100% 폐지(v1.17) — 이전에 저장된 설정이 남아 있으면 표준 60%로 되돌림
+if(["50%","60%"].indexOf(cfg.vol)<0) cfg.vol="60%";
+if(["배경","1kHz","2kHz"].indexOf(cfg.src)<0) cfg.src="1kHz";
 function volVal(){ return cfg.src==="배경" ? "—" : cfg.vol; }
 function tagStr(r){ const s=r&&r.src; if(!s) return ""; return s==="배경" ? "배경" : s+(r.vol&&r.vol!=="—"?"·"+r.vol:""); }
 if(![10,15,20].includes(cfg.win)) cfg.win=15; // 구버전 저장값(5/30) 보정
