@@ -20,17 +20,17 @@ header h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.2px}
 header .badge{margin-left:auto;font-size:11px;color:var(--dim);border:1px solid var(--line);padding:3px 8px;border-radius:20px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
 
-.playwrap{text-align:center;padding:20px 16px 22px}
-.state{font-size:14px;color:var(--dim);font-weight:600;min-height:20px}
-.bigfreq{font-size:46px;font-weight:800;letter-spacing:-1.5px;margin:2px 0 0}
-.bigfreq small{font-size:20px;color:var(--dim);font-weight:700;margin-left:4px}
-.playbtn{width:140px;height:140px;border-radius:50%;border:none;margin:16px auto 0;display:flex;
-  align-items:center;justify-content:center;cursor:pointer;font-size:48px;color:#06120c;
+.playwrap{text-align:center;padding:8px 16px 10px}
+.state{font-size:13px;color:var(--dim);font-weight:600;min-height:17px}
+.bigfreq{font-size:26px;font-weight:800;letter-spacing:-1px;margin:0}
+.bigfreq small{font-size:13px;color:var(--dim);font-weight:700;margin-left:4px}
+.playbtn{width:64px;height:64px;border-radius:50%;border:none;margin:6px auto 0;display:flex;
+  align-items:center;justify-content:center;cursor:pointer;font-size:24px;color:#06120c;
   background:var(--accent);transition:transform .06s, background .15s;position:relative}
 .playbtn:active{transform:scale(.96)}
 .playbtn.on{background:#e06b5a;color:#2a0d09}
 .playbtn.on::before,.playbtn.on::after{content:"";position:absolute;border-radius:50%;border:2px solid #e06b5a;
-  width:140px;height:140px;opacity:.6;animation:ripple 1.6s ease-out infinite}
+  width:64px;height:64px;opacity:.6;animation:ripple 1.6s ease-out infinite}
 .playbtn.on::after{animation-delay:.8s}
 @keyframes ripple{from{transform:scale(1);opacity:.5}to{transform:scale(1.5);opacity:0}}
 
@@ -59,7 +59,7 @@ header .badge{margin-left:auto;font-size:11px;color:var(--dim);border:1px solid 
     <rect x="2" y="14" width="3.2" height="8" rx="1.4"/><rect x="7" y="9" width="3.2" height="13" rx="1.4"/>
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/><rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 음원 발생기</h1>
-  <div class="badge" id="verBadge">v1.4</div>
+  <div class="badge" id="verBadge">v1.5</div>
 </header>
 
 <div class="card playwrap">
