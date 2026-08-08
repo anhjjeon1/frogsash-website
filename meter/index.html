@@ -156,7 +156,7 @@ details>summary::before{content:"⚙ ";}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.22</div>
+  <div class="badge" id="verBadge">v1.23</div>
 </header>
 
 <div id="toast" class="toast"></div>
@@ -636,7 +636,7 @@ function renderDelta(){
     '<br><span style="font-size:11px">같은 조건끼리 비교 · 값이 클수록 조용해짐</span></div>'+
     '<div class="dj" style="background:'+j[1]+'22;color:'+j[1]+'">'+j[0]+'</div>';
 }
-// 소음 에너지 차단율 = 1 − 10^(−Δ/10)  (Δ dB 만큼 줄었을 때 차단된 음향에너지 비율)
+// 소음에너지 차단율 = 1 - 10^(-d/10)  (d dB 만큼 줄었을 때 차단된 음향에너지 비율)
 function blockPct(d){ return Math.round((1-Math.pow(10,-d/10))*100); }
 function effectPhrase(d){
   if(d>=10) return "귀로도 뚜렷하게 조용해진 것을 느낄 수 있는 큰 개선입니다.";
@@ -847,8 +847,8 @@ function buildReportHTML(){
    (memo?'<div class="memo">📍 '+memo+'</div>':'')+
    '<h2>측정 결과 요약</h2>'+summary+
    (specImg?'<h2>주파수 스펙트럼 (수리 전·후)</h2>'+specImg+'<div class="note">저음(왼쪽)은 틈과 무관해 변화가 적고, 고음(오른쪽)이 내려간 만큼 누기 경로가 차단된 것입니다.</div>':'')+
-   '<h2>측정 기록</h2><table><thead><tr><th>구분</th><th>dB</th><th>조건</th><th>3회</th><th>σ</th><th>시각</th></tr></thead><tbody>'+rows+'</tbody></table>'+
-   '<h2>안내</h2><div class="note">※ 휴대폰·태블릿 마이크 측정으로 절대값은 ±3dB 내외 오차가 있으나, 수리 전·후를 <b>동일 조건</b>으로 재어 그 <b>차이(Δ)</b>는 신뢰할 수 있습니다. 본 측정은 상대적 밀폐·차음 개선 확인용이며 KS F 2292(통기량) 등급과는 다른 지표입니다. 소음 에너지 차단율 = 1 − 10^(−Δ/10).</div>'+
+   '<h2>측정 기록</h2><table><thead><tr><th>구분</th><th>dB</th><th>조건</th><th>3회</th><th>편차</th><th>시각</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+   '<h2>안내</h2><div class="note">※ 휴대폰·태블릿 마이크 측정으로 절대값은 ±3dB 내외 오차가 있으나, 수리 전·후를 <b>동일 조건</b>으로 재어 그 <b>차이(Δ)</b>는 신뢰할 수 있습니다. 본 측정은 상대적 밀폐·차음 개선 확인용이며 KS F 2292(통기량) 등급과는 다른 지표입니다. 본 보고서의 ‘소음에너지 차단율(%)’은 dB 감소량(Δ)을 소리 에너지 기준 비율로 환산한 값입니다.</div>'+
    '<div class="ft">frogsash.co.kr · ☎ 1599-7380</div></body></html>';
 }
 function saveReportPDF(){
