@@ -63,6 +63,7 @@ button:disabled{opacity:.4}
 .b-ghost{background:transparent;color:var(--dim);border:1px solid var(--line);font-weight:600}
 
 canvas{width:100%;height:120px;display:block;background:var(--card2);border-radius:12px}
+#specCanvas{height:184px}
 .graph-h{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--dim);margin-bottom:8px}
 
 /* settings */
@@ -155,7 +156,7 @@ details>summary::before{content:"⚙ ";}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.19</div>
+  <div class="badge" id="verBadge">v1.20</div>
 </header>
 
 <div id="toast" class="toast"></div>
@@ -198,6 +199,7 @@ details>summary::before{content:"⚙ ";}
       <button data-f="배경">배경</button>
       <button data-f="1kHz" class="on">1kHz</button>
       <button data-f="2kHz">2kHz</button>
+      <button data-f="핑크">핑크</button>
       <button data-f="송풍기">송풍기</button>
     </div>
     <div class="srcrow" id="volrow">
@@ -336,6 +338,15 @@ details>summary::before{content:"⚙ ";}
     <div id="effectSummary" class="effectsum hidden"></div>
   </div>
 
+  <div class="sec-title">주파수 스펙트럼 (수리 전·후)</div>
+  <div class="card" id="specCard">
+    <div class="graph-h"><span>낮은음 ← → 높은음</span><span>1/3옥타브 · Z(무가중)</span></div>
+    <canvas id="specCanvas" width="500" height="200"></canvas>
+    <div id="specLegend" class="mini" style="margin-top:8px"></div>
+    <button class="b-ghost hidden" id="specImg" style="width:100%;margin-top:10px">🖼 스펙트럼 이미지로 저장</button>
+    <div class="note" id="specNote" style="margin-top:8px"></div>
+  </div>
+
   <div class="note legal">※ 폰 마이크 측정은 기기별 오차가 있습니다(±3dB 내외). 수리 전·후 <b style="color:var(--txt)">동일 조건</b>으로 재면 그 차이는 신뢰할 수 있습니다.
   본 측정은 상대적 밀폐·차음 개선 확인용이며 KS F 2292(통기량) 등급과는 다른 지표입니다.</div>
 </div>
@@ -349,7 +360,7 @@ const LS="frog_meter_v1";
 const cfg=Object.assign({weight:"A",win:15,settle:4,beep:true,cal:0,phase:"수리전",reps:3,src:"1kHz",vol:"60%"},JSON.parse(localStorage.getItem(LS)||"{}"));
 // 70%·100% 폐지(v1.17) — 이전에 저장된 설정이 남아 있으면 표준 60%로 되돌림
 if(["50%","60%"].indexOf(cfg.vol)<0) cfg.vol="60%";
-if(["배경","1kHz","2kHz","송풍기"].indexOf(cfg.src)<0) cfg.src="1kHz";
+if(["배경","1kHz","2kHz","핑크","송풍기"].indexOf(cfg.src)<0) cfg.src="1kHz";
 // 배경·송풍기는 앱 볼륨 개념이 없음(송풍기=외부 기기)
 function noVol(){ return cfg.src==="배경"||cfg.src==="송풍기"; }
 function volVal(){ return noVol() ? "—" : cfg.vol; }
@@ -366,6 +377,11 @@ let live={min:Infinity,max:-Infinity,eSum:0,eN:0,disp:0};
 let mode="idle"; // idle | settle | measure | done
 let capture=null;
 const DEFAULT_CAL=128; // 기본 오프셋(삼성폰 기준 ~+10 보정: 조용한방 우리앱26 vs ST36). 기기별 보정으로 미세조정.
+// 1/3옥타브 밴드 중심주파수(ISO) — 스펙트럼 수집·표시용
+const TOB_FC=[50,63,80,100,125,160,200,250,315,400,500,630,800,1000,1250,1600,2000,2500,3150,4000,5000,6300,8000,10000];
+const TOB_LABELS={63:"63",125:"125",250:"250",500:"500",1000:"1k",2000:"2k",4000:"4k",8000:"8k"};
+let bandBins=null;               // 각 밴드의 FFT bin 구간 [lo,hi]
+let specSum=null,specFrames=0;   // 측정 중 밴드별 파워 누적(전 회차 통합)
 
 function aWeightDb(f){
   const f2=f*f;
@@ -383,6 +399,10 @@ function buildWeights(){
   }
   binLo=Math.max(1,Math.floor(20/(sr/analyser.fftSize)));
   binHi=Math.min(n-1,Math.ceil(20000/(sr/analyser.fftSize)));
+  const df=sr/analyser.fftSize;
+  bandBins=TOB_FC.map(fc=>[
+    Math.max(1, Math.round((fc/Math.pow(2,1/6))/df)),
+    Math.min(n-1, Math.round((fc*Math.pow(2,1/6))/df))]);
 }
 
 async function startMic(){
@@ -456,6 +476,15 @@ function loop(t){
     $("#stMax").textContent=isFinite(live.max)?live.max.toFixed(0):"--";
     $("#stAvg").textContent=leq.toFixed(1);
     pushGraph(L);
+    // 1/3옥타브 밴드 파워 누적(무가중) — freq[]는 levelNow()에서 이미 채워짐
+    if(bandBins&&specSum){
+      for(let bi=0;bi<bandBins.length;bi++){
+        const lo=bandBins[bi][0], hi=bandBins[bi][1]; let p=0;
+        for(let i=lo;i<=hi;i++){ const fv=freq[i]; if(fv!==-Infinity) p+=Math.pow(10,fv/10); }
+        specSum[bi]+=p;
+      }
+      specFrames++;
+    }
   }
   // 측정 중일 때만 게이지·그래프가 움직임. idle/settle/gap/done은 정지(calNow만 보정용으로 계속 갱신).
 }
@@ -487,6 +516,7 @@ function startMeasure(){
   if(mode==="settle"||mode==="measure"||mode==="gap")return; // 측정 진행 중에만 막고, idle·done에서는 시작 허용
   const tk=++measureToken;
   mode="settle"; gbuf=[]; repVals=[];
+  specSum=new Float64Array(TOB_FC.length); specFrames=0; // 전 회차 통합 스펙트럼 누적 초기화
   $("#stMin").textContent="--"; $("#stMax").textContent="--"; $("#stAvg").textContent="--";
   $("#btnMeasure").classList.add("hidden"); $("#btnReset").classList.add("hidden");
   $("#doneArea").classList.add("hidden"); $("#btnCancel").classList.remove("hidden");
@@ -531,8 +561,14 @@ function finishMeasure(tk){
   const mx=Math.max.apply(null,repVals.map(r=>r.max));
   const mean=repVals.reduce((a,r)=>a+r.leq,0)/repVals.length;
   const sd=Math.sqrt(repVals.reduce((a,r)=>a+(r.leq-mean)*(r.leq-mean),0)/repVals.length);
+  // 밴드별 에너지 평균 → dB (조용한 밴드는 null)
+  let bands=null;
+  if(specSum&&specFrames){
+    bands=TOB_FC.map((fc,bi)=>{ const mp=specSum[bi]/specFrames;
+      return mp>0 ? +(10*Math.log10(mp)+DEFAULT_CAL+cfg.cal).toFixed(1) : null; });
+  }
   capture={leq:+leq.toFixed(1),min:+mn.toFixed(1),max:+mx.toFixed(1),w:cfg.weight,
-           phase:phaseVal(), src:cfg.src, vol:volVal(),
+           phase:phaseVal(), src:cfg.src, vol:volVal(), bands:bands,
            reps:repVals.map(r=>+r.leq.toFixed(1)), sd:+sd.toFixed(2)};
   $("#readout").className="card readout done";
   $("#stateLbl").textContent=phaseVal()+" 측정 완료";
@@ -644,7 +680,7 @@ function renderRecs(){
   updatePhaseChecks();
   const box=$("#recList");
   if(!recs.length){ box.innerHTML='<div class="note" id="recEmpty">저장된 측정값이 없습니다. 측정 후 “기록에 저장”을 누르세요.</div>';
-    $("#recBtns").classList.add("hidden"); $("#deltaBox").classList.add("hidden"); renderEffectSummary(); return; }
+    $("#recBtns").classList.add("hidden"); $("#deltaBox").classList.add("hidden"); renderEffectSummary(); drawSpectrum(); return; }
   box.innerHTML=recs.map((r,i)=>{ const ph=r.phase||"수리전", cls=ph==="수리후"?"after":"before";
     const rep=(r.reps&&r.reps.length>1)?(" · "+r.reps.length+"회 "+r.reps.join("/")):"";
     const sd=(r.sd!=null&&r.reps&&r.reps.length>1)?(" · σ"+r.sd):"";
@@ -656,10 +692,115 @@ function renderRecs(){
   box.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{recs.splice(+b.dataset.del,1);persistRecs();});
   renderDelta();
   renderEffectSummary();
+  drawSpectrum();
 }
 function persistRecs(){ localStorage.setItem(LS+"_rec",JSON.stringify(recs)); renderRecs(); }
 function nowStr(){ const d=new Date(); const p=n=>String(n).padStart(2,"0");
   return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
+
+// ---- 주파수 스펙트럼 (수리 전·후 오버레이) ----
+// 현재 조건(음원·볼륨)과 같은 최신 수리전/수리후 밴드 기록을 찾음
+function bandRecords(){
+  return { b: recs.find(r=>r.phase==="수리전"&&sameCond(r)&&r.bands),
+           a: recs.find(r=>r.phase==="수리후"&&sameCond(r)&&r.bands) };
+}
+// 박스(X,Y,W,H) 안에 전/후 스펙트럼 곡선을 그림 — 화면·이미지 공용
+function paintSpectrum(c,X,Y,W,H,before,after){
+  const ml=32,mr=10,mt=10,mb=22;
+  const px=X+ml, py=Y+mt, pw=W-ml-mr, ph=H-mt-mb, n=TOB_FC.length;
+  let vals=[]; [before,after].forEach(r=>{ if(r&&r.bands) r.bands.forEach(v=>{ if(v!=null) vals.push(v); }); });
+  if(!vals.length){ c.fillStyle="#5f746a"; c.font="13px sans-serif"; c.textAlign="center"; c.textBaseline="middle";
+    c.fillText("스펙트럼 데이터 없음 — 핑크노이즈로 측정하세요", X+W/2, Y+H/2); return; }
+  let vmax=Math.ceil((Math.max.apply(null,vals)+3)/5)*5;
+  const vminR=Math.floor((Math.min.apply(null,vals)-3)/5)*5;
+  const span=Math.max(30,vmax-vminR), yMin=vmax-span;
+  const xAt=i=> px+(n>1? i/(n-1)*pw : 0);
+  const yAt=v=> py+ph-(v-yMin)/span*ph;
+  // y 그리드
+  c.strokeStyle="#2a3833"; c.lineWidth=1; c.fillStyle="#5f746a"; c.font="10px sans-serif"; c.textAlign="right"; c.textBaseline="middle";
+  for(let v=yMin;v<=vmax+0.1;v+=10){ const y=yAt(v); c.beginPath();c.moveTo(px,y);c.lineTo(px+pw,y);c.stroke(); c.fillText(v.toFixed(0),px-4,y); }
+  // x 옥타브 눈금·라벨
+  c.textAlign="center"; c.textBaseline="top";
+  for(let i=0;i<n;i++){ const lab=TOB_LABELS[TOB_FC[i]]; if(!lab)continue; const x=xAt(i);
+    c.strokeStyle="#22302b"; c.beginPath();c.moveTo(x,py);c.lineTo(x,py+ph);c.stroke();
+    c.fillStyle="#5f746a"; c.fillText(lab,x,py+ph+4); }
+  // 감소 영역(수리전>수리후) 옅게 채움
+  if(before&&after){
+    c.beginPath(); let st=false;
+    for(let i=0;i<n;i++){ const bv=before.bands[i],av=after.bands[i]; if(bv==null||av==null)continue;
+      const x=xAt(i),y=yAt(bv); st?c.lineTo(x,y):(c.moveTo(x,y),st=true); }
+    for(let i=n-1;i>=0;i--){ const bv=before.bands[i],av=after.bands[i]; if(bv==null||av==null)continue; c.lineTo(xAt(i),yAt(av)); }
+    c.closePath(); c.fillStyle="rgba(57,192,122,.14)"; c.fill();
+  }
+  function poly(r,color){ if(!r||!r.bands)return;
+    c.strokeStyle=color; c.lineWidth=2.4; c.beginPath(); let st=false;
+    for(let i=0;i<n;i++){ const v=r.bands[i]; if(v==null)continue; const x=xAt(i),y=yAt(v); st?c.lineTo(x,y):(c.moveTo(x,y),st=true); }
+    c.stroke(); c.fillStyle=color;
+    for(let i=0;i<n;i++){ const v=r.bands[i]; if(v==null)continue; c.beginPath();c.arc(xAt(i),yAt(v),2.2,0,7);c.fill(); }
+  }
+  poly(before,"#ffd873"); poly(after,"#7fe0a8");
+}
+function drawSpectrum(){
+  const cv=$("#specCanvas"); if(!cv)return; const c=cv.getContext("2d");
+  c.clearRect(0,0,cv.width,cv.height);
+  const rb=bandRecords();
+  paintSpectrum(c,0,0,cv.width,cv.height,rb.b,rb.a);
+  const lab=tagStr({src:cfg.src,vol:volVal()});
+  const leg=$("#specLegend"), note=$("#specNote"), imgBtn=$("#specImg");
+  let parts=[];
+  if(rb.b) parts.push('<b style="color:#ffd873">● 수리 전</b>');
+  if(rb.a) parts.push('<b style="color:#7fe0a8">● 수리 후</b>');
+  if(leg) leg.innerHTML = parts.length ? (parts.join(" &nbsp; ")+' &nbsp;<span style="color:var(--dim)">('+lab+')</span>') : "";
+  if(rb.b&&rb.a){
+    imgBtn.classList.remove("hidden");
+    note.innerHTML='오른쪽(고음)이 내려갈수록 <b style="color:var(--txt)">틈(누기 경로)이 막힌</b> 것입니다. 저음(왼쪽)은 틈과 무관해 잘 안 변합니다.';
+  } else {
+    imgBtn.classList.add("hidden");
+    const miss=rb.b?"수리 후":rb.a?"수리 전":"수리 전·후";
+    note.innerHTML='<b>'+lab+'</b> 조건의 <b>'+miss+'</b> 측정이 필요합니다. 음원앱을 <b style="color:var(--txt)">핑크노이즈</b>로 켜고 같은 위치에서 재세요. (순음은 그 주파수에만 막대가 섭니다)';
+  }
+}
+// 스펙트럼 증빙 이미지(수리 전·후 모두 있을 때)
+function renderSpecCard(){
+  const rb=bandRecords(); if(!rb.b||!rb.a) return null;
+  const S=2,W=760,H=470;
+  const cv=document.createElement("canvas"); cv.width=W*S; cv.height=H*S;
+  const c=cv.getContext("2d"); c.scale(S,S);
+  const F='"Malgun Gothic",Roboto,sans-serif';
+  c.fillStyle="#0e1512"; c.fillRect(0,0,W,H);
+  c.fillStyle="#141d19"; c.strokeStyle="#2a3833"; c.lineWidth=1.5; rr(c,16,16,W-32,H-32,20); c.fill(); c.stroke();
+  const ix=44,iy=40,is=42; c.fillStyle="#39c07a"; rr(c,ix,iy,is,is,11); c.fill();
+  c.fillStyle="#06120c"; const bh=[16,26,36,22], baseY=iy+is-8;
+  [8,15,22,29].forEach((dx,i)=>{const h=bh[i]*0.66; rr(c,ix+dx,baseY-h,4.5,h,2); c.fill();});
+  c.fillStyle="#eaf3ee"; c.textAlign="left"; c.textBaseline="alphabetic"; c.font="700 24px "+F;
+  c.fillText("청개구리샤시 · 주파수 스펙트럼", ix+is+14, iy+26);
+  const lab=tagStr({src:cfg.src,vol:volVal()});
+  c.fillStyle="#8ea79b"; c.font="600 14px "+F; c.fillText("수리 전·후 비교 · "+lab, ix+is+14, iy+44);
+  c.textAlign="right"; c.font="600 14px "+F; c.fillText(dateStamp(), W-44, iy+26);
+  paintSpectrum(c,44,104,W-88,252,rb.b,rb.a);
+  c.textAlign="left"; c.textBaseline="middle";
+  c.fillStyle="#ffd873"; c.beginPath();c.arc(60,392,5,0,7);c.fill(); c.font="700 15px "+F; c.fillStyle="#eaf3ee"; c.fillText("수리 전",72,393);
+  c.fillStyle="#7fe0a8"; c.beginPath();c.arc(168,392,5,0,7);c.fill(); c.fillStyle="#eaf3ee"; c.fillText("수리 후",180,393);
+  const d=+(rb.b.leq-rb.a.leq).toFixed(1);
+  c.textAlign="right"; c.fillStyle="#eaf3ee"; c.font="800 17px "+F; c.fillText("전체 Δ "+d.toFixed(1)+"dB", W-44, 393);
+  c.textAlign="center"; c.fillStyle="#5f746a"; c.textBaseline="alphabetic"; c.font="500 13px "+F;
+  c.fillText("높은음(오른쪽)이 내려갈수록 틈이 막힌 것 · 1/3옥타브 Z · frogsash.co.kr", W/2, 432);
+  return cv;
+}
+function saveSpecImage(){
+  const cv=renderSpecCard(); if(!cv){ toast("수리 전·후가 모두 필요합니다"); return; }
+  const dataUrl=cv.toDataURL("image/png");
+  const bin=atob(dataUrl.split(",")[1]), a=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);
+  const blob=new Blob([a],{type:"image/png"});
+  const d=new Date(),p=n=>String(n).padStart(2,"0");
+  const fname="스펙트럼_"+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"_"+p(d.getHours())+p(d.getMinutes())+".png";
+  const file=new File([blob],fname,{type:"image/png"});
+  if(navigator.canShare && navigator.canShare({files:[file]})){ navigator.share({files:[file],title:"주파수 스펙트럼"}).catch(()=>{}); return; }
+  const url=URL.createObjectURL(blob);
+  const el=document.createElement("a"); el.href=url; el.download=fname; document.body.appendChild(el); el.click(); el.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000); toast("스펙트럼 이미지를 저장했습니다");
+}
 
 // ---- wire up ----
 $("#startMic").onclick=startMic;
@@ -758,6 +899,7 @@ function saveImage(){
   setTimeout(()=>URL.revokeObjectURL(url),4000); toast("이미지를 저장했습니다");
 }
 $("#btnImage").onclick=saveImage;
+$("#specImg").onclick=saveSpecImage;
 
 function segWire(sel,key,cast){ const el=$(sel);
   el.querySelectorAll("button").forEach(b=>b.onclick=()=>{

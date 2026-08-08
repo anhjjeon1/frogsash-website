@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>청개구리샤시 · 음원 발생기 (1k·2kHz)</title>
+<title>청개구리샤시 · 음원 발생기 (1k·2k·핑크)</title>
 <style>
 :root{
   --bg:#0e1512; --card:#161f1b; --card2:#1c2823; --line:#2a3833;
@@ -59,20 +59,21 @@ header .badge{margin-left:auto;font-size:11px;color:var(--dim);border:1px solid 
     <rect x="2" y="14" width="3.2" height="8" rx="1.4"/><rect x="7" y="9" width="3.2" height="13" rx="1.4"/>
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/><rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 음원 발생기</h1>
-  <div class="badge" id="verBadge">v1.6</div>
+  <div class="badge" id="verBadge">v1.7</div>
 </header>
 
 <div class="card playwrap">
   <div class="state" id="stateLbl">정지됨 — 재생을 누르세요</div>
-  <div class="bigfreq"><span id="bigFreqNum">1000</span><small>Hz</small></div>
+  <div class="bigfreq"><span id="bigFreqNum">1000</span><small id="hzUnit">Hz</small></div>
   <button class="playbtn" id="playBtn" aria-label="재생/정지">▶</button>
 </div>
 
 <div class="card">
-  <div class="lab">주파수 선택<small>1kHz = 표준(전체 차음 Δ) · 2kHz = 모헤어·고음 밀폐 효과 확인용</small></div>
+  <div class="lab">주파수 선택<small>1kHz = 표준(전체 차음 Δ) · 2kHz = 모헤어·고음 밀폐 · 핑크 = 전 대역(스펙트럼용)</small></div>
   <div class="vols" id="freqs">
     <button data-f="1000" class="on"><span class="chk"></span>1kHz</button>
     <button data-f="2000"><span class="chk"></span>2kHz</button>
+    <button data-f="pink"><span class="chk"></span>핑크노이즈</button>
   </div>
 </div>
 
@@ -85,6 +86,7 @@ header .badge{margin-left:auto;font-size:11px;color:var(--dim);border:1px solid 
 </div>
 
 <div class="tip">
+  🌈 <b>핑크노이즈 = 전 대역 소리</b>를 한꺼번에 냅니다 — 측정앱에서 <b>주파수별 스펙트럼 그래프</b>를 보려면 반드시 이걸로 재생하세요. 순음(1k·2k)은 그 주파수 막대 하나만 나옵니다.<br>
   🎚️ <b>1kHz = 표준</b>(전체 차음 Δ). <b>2kHz = 모헤어·고음역 밀폐 확인용</b> — 순음이라 2kHz만 틀면 측정앱 dB이 곧 <b>2kHz 값</b>이 됩니다. 1k·2k를 각각 수리 전후로 재서 비교하세요.<br>
   🔉 <b>볼륨은 60% 표준</b>입니다. 실측상 볼륨을 올려도 <b>판정값 Δ는 거의 변하지 않고</b>, 100%는 스피커 왜곡으로 순음이 깨져 <b>70·100%는 없앴습니다</b>.<br>
   ⚠️ <b>2kHz는 정재파 간격이 좁아(≈8.5cm) 위치에 더 민감</b>합니다 — 음원·태블릿 위치를 정밀히 고정하고, <b>수리 전·후 같은 볼륨</b>을 유지하세요.<br>
@@ -92,7 +94,7 @@ header .badge{margin-left:auto;font-size:11px;color:var(--dim);border:1px solid 
   🪟 음원은 <b>내창·외창 사이</b>에 두고, 측정은 <b>태블릿</b>으로 실내에서 하세요.
 </div>
 
-<div class="note">이 앱은 <b>1kHz·2kHz 순음을 재생만</b> 합니다(측정 아님). 측정은 <b>frogsash.co.kr/meter</b> 소음측정기로. · frogsash.co.kr</div>
+<div class="note">이 앱은 <b>1kHz·2kHz 순음과 핑크노이즈를 재생만</b> 합니다(측정 아님). 측정은 <b>frogsash.co.kr/meter</b> 소음측정기로. · frogsash.co.kr</div>
 
 <script>
 "use strict";
@@ -107,10 +109,35 @@ function ensureAC(){
 }
 function startTone(){
   stopTone();
-  osc=ac.createOscillator(); osc.type="sine"; osc.frequency.value=cfg.freq;
-  osc.connect(gain); osc.start();
+  if(cfg.freq==="pink"){
+    osc=ac.createBufferSource(); osc.buffer=pinkBuffer(); osc.loop=true;
+    osc.connect(gain); osc.start();
+  }else{
+    osc=ac.createOscillator(); osc.type="sine"; osc.frequency.value=cfg.freq;
+    osc.connect(gain); osc.start();
+  }
 }
-function freqLabel(){ return (cfg.freq/1000)+"kHz"; }
+// 핑크노이즈 4초 루프 버퍼(Paul Kellet 근사) — 한 번 만들어 재사용
+let _pink=null;
+function pinkBuffer(){
+  if(_pink) return _pink;
+  const len=Math.floor(ac.sampleRate*4);
+  const buf=ac.createBuffer(1,len,ac.sampleRate), d=buf.getChannelData(0);
+  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+  for(let i=0;i<len;i++){
+    const w=Math.random()*2-1;
+    b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759; b2=0.96900*b2+w*0.1538520;
+    b3=0.86650*b3+w*0.3104856; b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+    d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;
+  }
+  _pink=buf; return _pink;
+}
+function updateBigFreq(){
+  const pink=cfg.freq==="pink";
+  $("#bigFreqNum").textContent = pink ? "핑크" : cfg.freq;
+  const hz=$("#hzUnit"); if(hz) hz.style.display = pink ? "none" : "";
+}
+function freqLabel(){ return cfg.freq==="pink"?"핑크노이즈":(cfg.freq/1000)+"kHz"; }
 function stateText(){ return "재생 중 · "+freqLabel()+" · "+cfg.vol+"%"; }
 function stopTone(){ if(osc){ try{osc.stop();}catch(e){} try{osc.disconnect();}catch(e){} osc=null; } }
 
@@ -137,10 +164,10 @@ $("#vols").querySelectorAll("button").forEach(b=>b.onclick=()=>{
 
 $("#freqs").querySelectorAll("button").forEach(b=>b.onclick=()=>{
   $("#freqs").querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
-  cfg.freq=+b.dataset.f;
-  $("#bigFreqNum").textContent=cfg.freq;
-  if(osc) osc.frequency.setValueAtTime(cfg.freq, ac.currentTime);
-  if(playing) $("#stateLbl").textContent=stateText();
+  cfg.freq = b.dataset.f==="pink" ? "pink" : +b.dataset.f;
+  updateBigFreq();
+  // 순음↔핑크는 노드 종류가 달라 재생 중이면 소스를 다시 만든다
+  if(playing){ startTone(); $("#stateLbl").textContent=stateText(); }
 });
 
 let wl=null; async function keepAwake(){ try{ wl=await navigator.wakeLock.request("screen"); }catch(e){} }
