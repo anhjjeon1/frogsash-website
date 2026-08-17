@@ -1,126 +1,221 @@
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>BOS 현장 배치 계산기</title>
 <style>
-:root{--ink:#1c1c1a;--sub:#5f5e5a;--dim:#9a9890;--line:#d7d5cc;--acc:#185fa5;--teal:#0f6e56;--red:#a32d2d;--amb:#854f0b;--soft:#f4f2ec}
-*{box-sizing:border-box}
-body{margin:0;background:#eceae3;color:var(--ink);font-family:"Pretendard","Malgun Gothic",sans-serif;font-size:14px;line-height:1.45}
-.wrap{max-width:900px;margin:0 auto;background:#fff;padding:10px 10px 34px}
-h1{font-size:17px;font-weight:600;margin:0}
-h2{font-size:14px;font-weight:600;margin:14px 0 5px;padding-bottom:3px;border-bottom:1.5px solid var(--ink)}
-h3{font-size:12.5px;font-weight:600;margin:9px 0 3px;color:var(--acc)}
-.top{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;margin-bottom:8px}
-.badge{background:#e6f1fb;color:#0c447c;padding:1px 7px;border-radius:9px;font-size:11px}
-.top em{font-style:normal;font-size:11.5px;color:var(--sub)}
-.fg{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.f{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:6px;padding:3px 7px;background:#fff;min-width:0}
+:root{
+  --navy:#0f2d52; --acc:#1b5fa8; --acc2:#e8f0fa;
+  --bg:#eef1f5; --card:#fff; --line:#e2e6ec; --line2:#eef0f4;
+  --ink:#151b23; --sub:#5c6672; --dim:#98a1ac;
+  --ok:#0d7a52; --okbg:#e7f5ee; --warn:#a86400; --warnbg:#fdf3e2; --dan:#b3261e; --danbg:#fdeceb;
+  --r:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  font-size:14px;line-height:1.45}
+
+/* ── 상단 고정 바 ── */
+.hd{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;
+  padding:8px 12px calc(8px + env(safe-area-inset-top,0px));
+  padding-top:calc(8px + env(safe-area-inset-top,0px))}
+.hd .r1{display:flex;align-items:center;gap:8px}
+.hd h1{font-size:15px;font-weight:600;margin:0;letter-spacing:-.2px}
+.hd .v{font-size:10.5px;opacity:.65;margin-left:auto}
+.pbar{height:4px;background:rgba(255,255,255,.18);border-radius:99px;margin-top:7px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#5fd0a0;transition:width .2s}
+.hd .st{display:flex;justify-content:space-between;font-size:10.5px;opacity:.8;margin-top:4px}
+
+main{padding:10px 10px calc(74px + env(safe-area-inset-bottom,0px));max-width:920px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:11px 12px;margin-bottom:9px}
+.ct{display:flex;align-items:center;gap:7px;margin:0 0 9px}
+.ct b{font-size:13px;font-weight:600;letter-spacing:-.2px}
+.ct .no{width:19px;height:19px;border-radius:6px;background:var(--acc2);color:var(--acc);
+  font-size:11px;font-weight:600;display:grid;place-items:center;flex:none}
+.ct .sp{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* ── 입력 ── */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.f{display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:9px;
+  padding:5px 9px;background:#fbfcfd;min-width:0;transition:.12s}
 .f2{grid-column:1/-1}
-.f span{font-size:11px;color:var(--dim);flex:none;white-space:nowrap}
-.f input,.f select{border:0;background:transparent;font-family:inherit;font-size:15px;color:var(--ink);width:100%;min-width:0;padding:3px 0;text-align:right}
-.f select{text-align:left;direction:rtl}
+.f span{font-size:10.5px;color:var(--dim);flex:none;white-space:nowrap;font-weight:500}
+.f input,.f select{border:0;background:transparent;font-family:inherit;font-size:15.5px;font-weight:600;
+  color:var(--ink);width:100%;min-width:0;padding:2px 0;text-align:right;letter-spacing:-.2px}
+.f select{text-align:left;direction:rtl;font-size:13px}
 .f input:focus,.f select:focus{outline:none}
-.f:focus-within{border-color:var(--acc);box-shadow:0 0 0 2px #dbeaf9}
-.hint{font-size:11px;color:var(--dim);margin:4px 0 0;line-height:1.35}
-table{border-collapse:collapse;width:100%;margin:4px 0;font-size:13px}
-th,td{border:1px solid var(--line);padding:3px 6px;text-align:left}
-th{background:var(--soft);font-weight:600;font-size:11.5px}
-td.n{text-align:right;font-variant-numeric:tabular-nums}
-.big{font-weight:600;color:var(--acc)}
-.box{border-left:3px solid var(--acc);background:#e6f1fb;padding:5px 9px;margin:5px 0;border-radius:0 5px 5px 0;font-size:12px}
-.warn{border-left-color:var(--red);background:#fcebeb}
-.ok{border-left-color:var(--teal);background:#e1f5ee}
-.note{border-left-color:var(--amb);background:#faeeda}
-.cols{display:grid;grid-template-columns:1fr;gap:0}
-.ckg{display:grid;grid-template-columns:1fr 1fr;gap:0 8px}
+.f:focus-within{border-color:var(--acc);background:#fff;box-shadow:0 0 0 3px rgba(27,95,168,.12)}
+.hint{font-size:10.5px;color:var(--dim);margin:7px 0 0;line-height:1.4}
+
+/* ── 결과 ── */
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:9px}
+.tile{background:var(--acc2);border-radius:10px;padding:8px 9px;text-align:center}
+.tile em{display:block;font-style:normal;font-size:10px;color:var(--acc);opacity:.85;font-weight:500}
+.tile strong{display:block;font-size:16.5px;font-weight:700;color:var(--navy);letter-spacing:-.4px;margin-top:2px}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line2);font-size:13px}
+.kv:last-child{border-bottom:0}
+.kv em{font-style:normal;color:var(--sub);flex:none}
+.kv b{font-weight:600;text-align:right;font-variant-numeric:tabular-nums;letter-spacing:-.2px}
+.al{display:flex;gap:8px;align-items:flex-start;border-radius:9px;padding:7px 10px;margin-bottom:6px;font-size:12px;line-height:1.4}
+.al i{width:6px;height:6px;border-radius:99px;margin-top:5px;flex:none}
+.al b{font-weight:600}
+.a-ok{background:var(--okbg);color:#0b5b3e} .a-ok i{background:var(--ok)}
+.a-note{background:var(--warnbg);color:#7d4b00} .a-note i{background:var(--warn)}
+.a-warn{background:var(--danbg);color:#8e1e18} .a-warn i{background:var(--dan)}
+
+/* ── 체크리스트 ── */
+.sh{display:flex;align-items:center;gap:7px;margin:11px 0 3px}
+.sh:first-child{margin-top:0}
+.sh span{font-size:11.5px;font-weight:600;color:var(--acc)}
+.sh .pill{margin-left:auto;font-size:10px;font-weight:600;color:var(--sub);
+  background:var(--line2);border-radius:99px;padding:1px 8px;font-variant-numeric:tabular-nums}
+.sh .pill.full{background:var(--okbg);color:var(--ok)}
+.ckg{display:grid;grid-template-columns:1fr 1fr;gap:0 9px}
 body.desc .ckg{grid-template-columns:1fr}
-.ck{display:flex;gap:6px;align-items:flex-start;padding:2px 0;border-bottom:1px dashed #ebe9e1;min-width:0}
-.ck input{margin-top:2px;width:16px;height:16px;flex:none;accent-color:#185fa5}
-.ck b{font-weight:400;font-size:12.5px;word-break:keep-all}
-.ck small{display:none;color:var(--sub);font-size:11px;line-height:1.3}
-body.desc .ck small{display:block}
-.tg{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--sub);margin-left:6px}
-.tg input{width:15px;height:15px;accent-color:#185fa5}
-.prog{font-size:11.5px;color:var(--sub);font-weight:400}
-pre{background:#1c1c1a;color:#e8e6df;padding:8px 9px;border-radius:5px;font-size:10.5px;line-height:1.35;overflow-x:auto;white-space:pre;margin:4px 0}
-.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
-button{font-family:inherit;font-size:12.5px;padding:6px 11px;border:1px solid var(--line);background:#fff;border-radius:5px;cursor:pointer}
-button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
-@media(min-width:700px){.wrap{padding:16px 20px 40px}.fg{grid-template-columns:repeat(4,1fr)}.cols{grid-template-columns:1fr 1fr;gap:0 20px}}
-@media(max-width:520px){.sm{display:none}}
-@media print{body{background:#fff}.wrap{max-width:none;padding:0}.btns,.tg{display:none}.ck small{display:block}}
+.ck{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--line2);
+  min-width:0;cursor:pointer;user-select:none}
+.ck input{position:absolute;opacity:0;width:0;height:0}
+.bx{width:19px;height:19px;border:1.5px solid #c6ccd4;border-radius:6px;flex:none;
+  display:grid;place-items:center;background:#fff;transition:.12s;margin-top:1px}
+.ck input:checked + .bx{background:var(--acc);border-color:var(--acc)}
+.ck input:checked + .bx::after{content:"";width:4.5px;height:8.5px;border:solid #fff;border-width:0 2px 2px 0;
+  transform:rotate(45deg);margin-bottom:2px}
+.tx{min-width:0}
+.tx b{display:block;font-weight:500;font-size:12.5px;word-break:keep-all;line-height:1.35}
+.tx small{display:none;color:var(--dim);font-size:10.5px;line-height:1.35;margin-top:1px}
+body.desc .tx small{display:block}
+.ck input:checked ~ .tx b{color:var(--dim);font-weight:400}
+body.only .ck.done{display:none}
+.tg{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--sub);cursor:pointer}
+.tg input{position:absolute;opacity:0;width:0;height:0}
+.tg .sw{width:30px;height:17px;border-radius:99px;background:#d3d8de;position:relative;transition:.15s;flex:none}
+.tg .sw::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:99px;
+  background:#fff;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.tg input:checked + .sw{background:var(--acc)}
+.tg input:checked + .sw::after{transform:translateX(13px)}
+
+pre{background:#12202f;color:#dbe4ee;padding:9px 10px;border-radius:9px;font-size:10.5px;
+  line-height:1.4;overflow-x:auto;white-space:pre;margin:0;
+  font-family:ui-monospace,Consolas,monospace}
+.fn{font-size:10.5px;color:var(--dim);margin:7px 0 0;word-break:break-all}
+.ghost{font-size:11.5px;padding:6px 12px;border:1px solid var(--line);background:#fff;
+  border-radius:8px;font-family:inherit;color:var(--sub);cursor:pointer;margin-top:8px}
+
+/* ── 하단 고정 바 ── */
+.bb{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,255,.96);
+  backdrop-filter:blur(8px);border-top:1px solid var(--line);
+  padding:9px 10px calc(9px + env(safe-area-inset-bottom,0px));display:flex;gap:7px;max-width:920px;margin:0 auto}
+.bb button{flex:1;font-family:inherit;font-size:13px;font-weight:600;padding:11px 8px;
+  border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;cursor:pointer}
+.bb button.p{flex:1.5;background:var(--acc);color:#fff;border-color:var(--acc)}
+.bb button:active{transform:scale(.98)}
+
+@media(min-width:700px){
+  main{padding:14px 16px 90px}
+  .fg{grid-template-columns:repeat(4,1fr)}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
+}
+@media print{
+  body{background:#fff}.hd{position:static}.bb,.ghost,.tg{display:none}
+  main{padding:0}.card{break-inside:avoid;border-color:#ccc}
+  .tx small{display:block}.ckg{grid-template-columns:1fr 1fr}
+}
 </style>
 
-<div class="wrap">
-<div class="top"><h1>BOS 현장 배치 계산기</h1><span class="badge" id="fp">v1.1</span><em>여밈대 하부 1지점 · 전후 비교</em></div>
-
-<h2>1. 현장 입력</h2>
-<div class="fg">
-  <div class="f f2"><span>현장명</span><input type="text" id="site" placeholder="의왕 풍경채 108동 1702"></div>
-  <div class="f"><span>가로 m</span><input type="number" id="roomW" value="3.6" step="0.1"></div>
-  <div class="f"><span>세로 m</span><input type="number" id="roomD" value="3.0" step="0.1"></div>
-  <div class="f"><span>천장 m</span><input type="number" id="ceil" value="2.3" step="0.05"></div>
-  <div class="f"><span>창폭 m</span><input type="number" id="winW" value="2.4" step="0.1"></div>
-  <div class="f"><span>창높이 m</span><input type="number" id="winH" value="2.1" step="0.1"></div>
-  <div class="f"><span>여밈대X m</span><input type="number" id="mx" value="1.8" step="0.1"></div>
-  <div class="f"><span>높이 h m</span><input type="number" id="h" value="0.55" step="0.05"></div>
-  <div class="f"><span>시야 mm</span><input type="number" id="fov" value="500" step="50"></div>
-  <div class="f"><span>fps</span><input type="number" id="fps" value="120" step="30"></div>
-  <div class="f"><span>센서</span><select id="sensor">
-    <option value="23.5" selected>APS-C 23.5</option><option value="22.3">캐논 22.3</option>
-    <option value="36">풀프레임 36</option><option value="17.3">MFT 17.3</option></select></div>
-  <div class="f"><span>배경판</span><select id="board">
-    <option value="auto" selected>자동</option><option value="port">A1 세로</option><option value="land">A1 가로</option></select></div>
-</div>
-<p class="hint">가로=창과 나란한 방향 · 세로=창에서 안쪽 깊이 · 여밈대X=왼쪽 벽에서 · h=여밈대 하부 측정높이 · 시야=배경판 기준</p>
-
-<h2>2. 배치 결과</h2>
-<div id="warns"></div>
-<table>
-  <tr><th style="width:38%">항목</th><th>값</th></tr>
-  <tr><td>배경판 / 카메라</td><td id="r_side" class="big">—</td></tr>
-  <tr><td>여밈대 ↔ 배경판</td><td class="n big" id="r_dbg">—</td></tr>
-  <tr><td>여밈대 ↔ 카메라</td><td class="n big" id="r_dcam">—</td></tr>
-  <tr><td>조명 ↔ 배경판</td><td class="n" id="r_dl">—</td></tr>
-  <tr><td>시선 ↔ 창면</td><td class="n">0.25 m</td></tr>
-  <tr><td>배경판 상/중/하</td><td class="n" id="r_bd">—</td></tr>
-  <tr><td>카메라 높이</td><td class="n big" id="r_cam">—</td></tr>
-  <tr><td>조명 1</td><td class="n big" id="r_l1">—</td></tr>
-  <tr><td>조명 2</td><td class="n big" id="r_l2">—</td></tr>
-</table>
-<table>
-  <tr><th style="width:38%">렌즈</th><th>값</th></tr>
-  <tr><td>필요 초점거리</td><td class="n big" id="r_f">—</td></tr>
-  <tr><td>여밈대 실효시야</td><td class="n big" id="r_efov">—</td></tr>
-  <tr><td>총거리 / 분해능</td><td class="n" id="r_res">—</td></tr>
-  <tr><td>감도 (표준 대비)</td><td class="n big" id="r_sens">—</td></tr>
-</table>
-
-<h2>3. 체크리스트 <span class="prog" id="prog"></span>
-  <label class="tg"><input type="checkbox" id="showdesc"> 설명</label></h2>
-<div class="cols">
-  <div><h3>카메라 ZV-E10</h3><div id="ck_cam" class="ckg"></div>
-       <h3>조명 SL-60W ×2</h3><div id="ck_led" class="ckg"></div></div>
-  <div><h3>촬영 조건</h3><div id="ck_cond" class="ckg"></div>
-       <h3>수리 후 재방문</h3><div id="ck_after" class="ckg"></div></div>
+<div class="hd">
+  <div class="r1"><h1>BOS 현장 배치 계산기</h1><span class="v" id="fp">v2.0</span></div>
+  <div class="pbar"><i id="pb"></i></div>
+  <div class="st"><span>여밈대 하부 1지점 · 수리 전후 비교</span><span id="prog">0 / 30</span></div>
 </div>
 
-<h2>4. 현장 카드</h2>
-<pre id="card">—</pre>
-<div class="btns">
+<main>
+
+<section class="card">
+  <div class="ct"><span class="no">1</span><b>현장 입력</b></div>
+  <div class="fg">
+    <div class="f f2"><span>현장명</span><input type="text" id="site" placeholder="의왕 풍경채 108동 1702"></div>
+    <div class="f"><span>가로 m</span><input type="number" id="roomW" value="3.6" step="0.1" inputmode="decimal"></div>
+    <div class="f"><span>세로 m</span><input type="number" id="roomD" value="3.0" step="0.1" inputmode="decimal"></div>
+    <div class="f"><span>천장 m</span><input type="number" id="ceil" value="2.3" step="0.05" inputmode="decimal"></div>
+    <div class="f"><span>창폭 m</span><input type="number" id="winW" value="2.4" step="0.1" inputmode="decimal"></div>
+    <div class="f"><span>창높이 m</span><input type="number" id="winH" value="2.1" step="0.1" inputmode="decimal"></div>
+    <div class="f"><span>여밈대X m</span><input type="number" id="mx" value="1.8" step="0.1" inputmode="decimal"></div>
+    <div class="f"><span>높이 h m</span><input type="number" id="h" value="0.55" step="0.05" inputmode="decimal"></div>
+    <div class="f"><span>시야 mm</span><input type="number" id="fov" value="500" step="50" inputmode="numeric"></div>
+    <div class="f"><span>fps</span><input type="number" id="fps" value="120" step="30" inputmode="numeric"></div>
+    <div class="f"><span>센서</span><select id="sensor">
+      <option value="23.5" selected>APS-C 23.5</option><option value="22.3">캐논 22.3</option>
+      <option value="36">풀프레임 36</option><option value="17.3">MFT 17.3</option></select></div>
+    <div class="f"><span>배경판</span><select id="board">
+      <option value="auto" selected>자동</option><option value="port">A1 세로</option><option value="land">A1 가로</option></select></div>
+  </div>
+  <p class="hint">가로=창과 나란한 방향 · 세로=창에서 안쪽 깊이 · 여밈대X=왼쪽 벽에서 · h=여밈대 하부 측정높이</p>
+</section>
+
+<section class="card">
+  <div class="ct"><span class="no">2</span><b>배치 결과</b></div>
+  <div id="warns"></div>
+  <div class="tiles">
+    <div class="tile"><em>초점거리</em><strong id="r_f">—</strong></div>
+    <div class="tile"><em>실효시야</em><strong id="r_efov">—</strong></div>
+    <div class="tile"><em>감도</em><strong id="r_sens">—</strong></div>
+  </div>
+  <div class="kv"><em>배경판 / 카메라</em><b id="r_side">—</b></div>
+  <div class="kv"><em>여밈대 ↔ 배경판</em><b id="r_dbg">—</b></div>
+  <div class="kv"><em>여밈대 ↔ 카메라</em><b id="r_dcam">—</b></div>
+  <div class="kv"><em>조명 ↔ 배경판</em><b id="r_dl">—</b></div>
+  <div class="kv"><em>시선 ↔ 창면</em><b>0.25 m</b></div>
+  <div class="kv"><em>배경판 상/중/하</em><b id="r_bd">—</b></div>
+  <div class="kv"><em>카메라 높이</em><b id="r_cam">—</b></div>
+  <div class="kv"><em>조명 1</em><b id="r_l1">—</b></div>
+  <div class="kv"><em>조명 2</em><b id="r_l2">—</b></div>
+  <div class="kv"><em>총거리 / 분해능</em><b id="r_res">—</b></div>
+</section>
+
+<section class="card">
+  <div class="ct"><span class="no">3</span><b>설치 체크리스트</b>
+    <span class="sp">
+      <label class="tg"><input type="checkbox" id="showdesc"><span class="sw"></span>설명</label>
+      <label class="tg"><input type="checkbox" id="onlyleft"><span class="sw"></span>남은 것</label>
+    </span></div>
+  <div class="cols">
+    <div>
+      <div class="sh"><span>카메라 ZV-E10</span><span class="pill" id="p_ck_cam">0/0</span></div>
+      <div id="ck_cam" class="ckg"></div>
+      <div class="sh"><span>조명 SL-60W ×2</span><span class="pill" id="p_ck_led">0/0</span></div>
+      <div id="ck_led" class="ckg"></div>
+    </div>
+    <div>
+      <div class="sh"><span>촬영 조건</span><span class="pill" id="p_ck_cond">0/0</span></div>
+      <div id="ck_cond" class="ckg"></div>
+      <div class="sh"><span>수리 후 재방문</span><span class="pill" id="p_ck_after">0/0</span></div>
+      <div id="ck_after" class="ckg"></div>
+    </div>
+  </div>
+  <button class="ghost" onclick="resetCk()">체크 초기화</button>
+</section>
+
+<section class="card">
+  <div class="ct"><span class="no">4</span><b>현장 카드</b></div>
+  <pre id="card">—</pre>
+  <p class="fn" id="fname">—</p>
+</section>
+
+<section class="card">
+  <div class="ct"><span class="no">5</span><b>처리 명령</b></div>
+  <pre id="cmd">—</pre>
+  <button class="ghost" onclick="copyCmd()">명령 복사</button>
+  <div class="al a-warn" style="margin-top:9px"><i></i><span>수리 후에는 수리 전 출력값 <b>vmax</b>를 <b>--vmax</b>로 그대로 넣어야 개선이 보입니다.</span></div>
+</section>
+
+</main>
+
+<div class="bb">
   <button class="p" onclick="saveFile()">내 파일에 저장</button>
-  <button onclick="copyCard()">복사</button>
-  <button onclick="resetCk()">체크 초기화</button>
-</div>
-<p class="hint" id="fname">—</p>
-
-<h2>5. 처리 명령</h2>
-<pre id="cmd">—</pre>
-<div class="btns"><button onclick="copyCmd()">명령 복사</button></div>
-<div class="box warn">수리 후에는 수리 전 출력값 <b>vmax</b>를 <code>--vmax</code>로 그대로 넣어야 개선이 보입니다.</div>
+  <button onclick="copyCard()">카드 복사</button>
 </div>
 
 <script>
-var BUILD = "v1.2 / 2026-08-17";
+var BUILD = "v2.0 / 2026-08-17";
 document.getElementById('fp').textContent = BUILD;
 
 var CK = {
@@ -154,17 +249,21 @@ var CK = {
   ["광역 1컷 추가","여밈대 전체 — 풍선효과 확인(내부용)"]
  ]
 };
+var TT={ck_cam:"카메라 ZV-E10", ck_led:"조명 SL-60W x2", ck_cond:"촬영 조건", ck_after:"수리 후 재방문"};
 
 function buildCk(){
   Object.keys(CK).forEach(function(k){
-    var html = "";
+    var html="";
     CK[k].forEach(function(it,i){
-      html += '<label class="ck"><input type="checkbox" id="'+k+'_'+i+'" onchange="save()">'
-            + '<span><b>'+it[0]+'</b>' + (it[1]?'<small>'+it[1]+'</small>':'') + '</span></label>';
+      html += '<label class="ck"><input type="checkbox" id="'+k+'_'+i+'" onchange="tick(this)">'
+            + '<span class="bx"></span><span class="tx"><b>'+it[0]+'</b>'
+            + (it[1]?'<small>'+it[1]+'</small>':'') + '</span></label>';
     });
-    document.getElementById(k).innerHTML = html;
+    document.getElementById(k).innerHTML=html;
   });
 }
+function tick(el){ el.closest('.ck').classList.toggle('done', el.checked); save(); }
+
 function num(id){ return parseFloat(document.getElementById(id).value) || 0; }
 function m(x){ return x.toFixed(2)+" m"; }
 function today(){ var d=new Date(),p=function(n){return (n<10?"0":"")+n;};
@@ -217,10 +316,11 @@ function calc(){
   $('r_l2', l2.toFixed(2)+" m · 위 "+t2.toFixed(0)+"°");
   $('r_f', f.toFixed(0)+" mm"); $('r_efov', efov.toFixed(0)+" mm");
   $('r_res', m(dtot)+" · "+mmpx.toFixed(3)+" mm/px");
-  $('r_sens', sens.toFixed(0)+"% "+(sens>=95?"표준":(sens>=65?"허용":"낮음")));
+  $('r_sens', sens.toFixed(0)+"%");
 
-  var wh=""; W.forEach(function(w){ wh+='<div class="box '+w[2]+'"><b>'+w[0]+'</b> — '+w[1]+'</div>'; });
-  if(!W.length) wh='<div class="box ok"><b>제약 없음</b> — 표준 배치 적용 가능</div>';
+  var wh="";
+  W.forEach(function(w){ wh+='<div class="al a-'+w[2]+'"><i></i><span><b>'+w[0]+'</b> · '+w[1]+'</span></div>'; });
+  if(!W.length) wh='<div class="al a-ok"><i></i><span><b>제약 없음</b> · 표준 배치를 그대로 적용할 수 있습니다</span></div>';
   document.getElementById('warns').innerHTML=wh;
 
   document.getElementById('card').textContent =
@@ -251,25 +351,36 @@ var FIELDS=['site','roomW','roomD','ceil','winW','winH','mx','h','fov','sensor',
 function save(){
   var o={}; FIELDS.forEach(function(f){ o[f]=document.getElementById(f).value; });
   Object.keys(CK).forEach(function(k){ CK[k].forEach(function(_,i){ o[k+'_'+i]=document.getElementById(k+'_'+i).checked; }); });
-  o._desc = document.getElementById('showdesc').checked;
+  o._desc=document.getElementById('showdesc').checked;
+  o._only=document.getElementById('onlyleft').checked;
   try{ localStorage.setItem('bos_layout', JSON.stringify(o)); }catch(e){}
   updProg();
 }
 function load(){
   var o; try{ o=JSON.parse(localStorage.getItem('bos_layout')||'{}'); }catch(e){ o={}; }
   FIELDS.forEach(function(f){ if(o[f]!==undefined) document.getElementById(f).value=o[f]; });
-  Object.keys(CK).forEach(function(k){ CK[k].forEach(function(_,i){ if(o[k+'_'+i]) document.getElementById(k+'_'+i).checked=true; }); });
+  Object.keys(CK).forEach(function(k){ CK[k].forEach(function(_,i){
+    var el=document.getElementById(k+'_'+i);
+    if(o[k+'_'+i]){ el.checked=true; el.closest('.ck').classList.add('done'); } }); });
   if(o._desc){ document.getElementById('showdesc').checked=true; document.body.classList.add('desc'); }
+  if(o._only){ document.getElementById('onlyleft').checked=true; document.body.classList.add('only'); }
 }
 function updProg(){
   var t=0,c=0;
-  Object.keys(CK).forEach(function(k){ CK[k].forEach(function(_,i){ t++; if(document.getElementById(k+'_'+i).checked) c++; }); });
-  var el=document.getElementById('prog');
-  el.textContent=c+" / "+t+(c===t?" 완료":"");
-  el.style.color=(c===t)?"#0f6e56":"#5f5e5a";
+  Object.keys(CK).forEach(function(k){
+    var st=0;
+    CK[k].forEach(function(_,i){ if(document.getElementById(k+'_'+i).checked) st++; });
+    var p=document.getElementById('p_'+k);
+    p.textContent=st+"/"+CK[k].length;
+    p.classList.toggle('full', st===CK[k].length);
+    t+=CK[k].length; c+=st;
+  });
+  document.getElementById('prog').textContent=c+" / "+t+(c===t?" 완료":"");
+  document.getElementById('pb').style.width=(t?c/t*100:0)+"%";
 }
 function resetCk(){
-  Object.keys(CK).forEach(function(k){ CK[k].forEach(function(_,i){ document.getElementById(k+'_'+i).checked=false; }); });
+  Object.keys(CK).forEach(function(k){ CK[k].forEach(function(_,i){
+    var el=document.getElementById(k+'_'+i); el.checked=false; el.closest('.ck').classList.remove('done'); }); });
   save();
 }
 function put(t){
@@ -278,7 +389,6 @@ function put(t){
 }
 function copyCard(){ put(document.getElementById('card').textContent); }
 function copyCmd(){ put(document.getElementById('cmd').textContent); }
-
 function fileName(){
   var s=(document.getElementById('site').value||"현장명미입력").trim();
   s=s.replace(/[\\/:*?"<>|\r\n\t]/g,"_").replace(/\s+/g," ").slice(0,60);
@@ -286,7 +396,6 @@ function fileName(){
 }
 function fullText(){
   var L=[document.getElementById('card').textContent, "", "[체크리스트]"];
-  var TT={ck_cam:"카메라 ZV-E10", ck_led:"조명 SL-60W x2", ck_cond:"촬영 조건", ck_after:"수리 후 재방문"};
   Object.keys(CK).forEach(function(k){
     L.push("", "< "+TT[k]+" >");
     CK[k].forEach(function(it,i){
@@ -297,11 +406,10 @@ function fullText(){
   return L.join("\n");
 }
 function saveFile(){
-  var name=fileName();
   var blob=new Blob(["﻿"+fullText()], {type:"text/plain;charset=utf-8"});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
-  a.href=url; a.download=name; a.style.display='none';
+  a.href=url; a.download=fileName(); a.style.display='none';
   document.body.appendChild(a); a.click();
   setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 2000);
 }
@@ -313,7 +421,8 @@ FIELDS.forEach(function(f){
   el.addEventListener('change', function(){ calc(); save(); });
 });
 document.getElementById('showdesc').addEventListener('change', function(){
-  document.body.classList.toggle('desc', this.checked); save();
-});
+  document.body.classList.toggle('desc', this.checked); save(); });
+document.getElementById('onlyleft').addEventListener('change', function(){
+  document.body.classList.toggle('only', this.checked); save(); });
 document.addEventListener('visibilitychange', function(){ if(!document.hidden) calc(); });
 </script>
