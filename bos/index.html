@@ -70,7 +70,6 @@ main{padding:10px 10px calc(74px + env(safe-area-inset-bottom,0px));max-width:92
   background:var(--line2);border-radius:99px;padding:1px 8px;font-variant-numeric:tabular-nums}
 .sh .pill.full{background:var(--okbg);color:var(--ok)}
 .ckg{display:grid;grid-template-columns:1fr 1fr;gap:0 9px}
-body.desc .ckg{grid-template-columns:1fr}
 .ck{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--line2);
   min-width:0;cursor:pointer;user-select:none}
 .ck input{position:absolute;opacity:0;width:0;height:0}
@@ -81,7 +80,7 @@ body.desc .ckg{grid-template-columns:1fr}
   transform:rotate(45deg);margin-bottom:2px}
 .tx{min-width:0}
 .tx b{display:block;font-weight:500;font-size:12.5px;word-break:keep-all;line-height:1.35}
-.tx small{display:none;color:var(--dim);font-size:10.5px;line-height:1.35;margin-top:1px}
+.tx small{display:none;color:var(--dim);font-size:10px;line-height:1.3;margin-top:1px;word-break:keep-all}
 body.desc .tx small{display:block}
 .ck input:checked ~ .tx b{color:var(--dim);font-weight:400}
 body.only .ck.done{display:none}
@@ -152,27 +151,7 @@ pre{background:#12202f;color:#dbe4ee;padding:9px 10px;border-radius:9px;font-siz
 </section>
 
 <section class="card">
-  <div class="ct"><span class="no">2</span><b>배치 결과</b></div>
-  <div id="warns"></div>
-  <div class="tiles">
-    <div class="tile"><em>초점거리</em><strong id="r_f">—</strong></div>
-    <div class="tile"><em>실효시야</em><strong id="r_efov">—</strong></div>
-    <div class="tile"><em>감도</em><strong id="r_sens">—</strong></div>
-  </div>
-  <div class="kv"><em>배경판 / 카메라</em><b id="r_side">—</b></div>
-  <div class="kv"><em>여밈대 ↔ 배경판</em><b id="r_dbg">—</b></div>
-  <div class="kv"><em>여밈대 ↔ 카메라</em><b id="r_dcam">—</b></div>
-  <div class="kv"><em>조명 ↔ 배경판</em><b id="r_dl">—</b></div>
-  <div class="kv"><em>시선 ↔ 창면</em><b>0.25 m</b></div>
-  <div class="kv"><em>배경판 상/중/하</em><b id="r_bd">—</b></div>
-  <div class="kv"><em>카메라 높이</em><b id="r_cam">—</b></div>
-  <div class="kv"><em>조명 1</em><b id="r_l1">—</b></div>
-  <div class="kv"><em>조명 2</em><b id="r_l2">—</b></div>
-  <div class="kv"><em>총거리 / 분해능</em><b id="r_res">—</b></div>
-</section>
-
-<section class="card">
-  <div class="ct"><span class="no">3</span><b>설치 체크리스트</b>
+  <div class="ct"><span class="no">2</span><b>설치 체크리스트</b>
     <span class="sp">
       <label class="tg"><input type="checkbox" id="showdesc"><span class="sw"></span>설명</label>
       <label class="tg"><input type="checkbox" id="onlyleft"><span class="sw"></span>남은 것</label>
@@ -192,6 +171,26 @@ pre{background:#12202f;color:#dbe4ee;padding:9px 10px;border-radius:9px;font-siz
     </div>
   </div>
   <button class="ghost" onclick="resetCk()">체크 초기화</button>
+</section>
+
+<section class="card">
+  <div class="ct"><span class="no">3</span><b>배치 결과</b></div>
+  <div id="warns"></div>
+  <div class="tiles">
+    <div class="tile"><em>초점거리</em><strong id="r_f">—</strong></div>
+    <div class="tile"><em>실효시야</em><strong id="r_efov">—</strong></div>
+    <div class="tile"><em>감도</em><strong id="r_sens">—</strong></div>
+  </div>
+  <div class="kv"><em>배경판 / 카메라</em><b id="r_side">—</b></div>
+  <div class="kv"><em>여밈대 ↔ 배경판</em><b id="r_dbg">—</b></div>
+  <div class="kv"><em>여밈대 ↔ 카메라</em><b id="r_dcam">—</b></div>
+  <div class="kv"><em>조명 ↔ 배경판</em><b id="r_dl">—</b></div>
+  <div class="kv"><em>시선 ↔ 창면</em><b>0.25 m</b></div>
+  <div class="kv"><em>배경판 상/중/하</em><b id="r_bd">—</b></div>
+  <div class="kv"><em>카메라 높이</em><b id="r_cam">—</b></div>
+  <div class="kv"><em>조명 1</em><b id="r_l1">—</b></div>
+  <div class="kv"><em>조명 2</em><b id="r_l2">—</b></div>
+  <div class="kv"><em>총거리 / 분해능</em><b id="r_res">—</b></div>
 </section>
 
 <section class="card">
@@ -215,12 +214,12 @@ pre{background:#12202f;color:#dbe4ee;padding:9px 10px;border-radius:9px;font-siz
 </div>
 
 <script>
-var BUILD = "v2.0 / 2026-08-17";
+var BUILD = "v2.1 / 2026-08-17";
 document.getElementById('fp').textContent = BUILD;
 
 var CK = {
  ck_cam:[
-  ["손떨림보정 OFF","가짜 화살표의 최대 원인. 렌즈 OSS도 메뉴에서 끄기"],
+  ["손떨림보정 OFF",""],
   ["촬영모드 M",""],["초점 MF·배경판","AF 재탐색 시 전 프레임 무효"],
   ["WB 수동","화이트밸런스 고정"],["조리개 f/5.6",""],
   ["셔터 1/500 s","밝으면 f/8, 어두우면 ISO 6400"],
