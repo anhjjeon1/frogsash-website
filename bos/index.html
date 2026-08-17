@@ -31,9 +31,11 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}
 .ok{border-left-color:var(--teal);background:#e1f5ee}
 .note{border-left-color:var(--amb);background:#faeeda}
 .cols{display:grid;grid-template-columns:1fr;gap:0}
-.ck{display:flex;gap:7px;align-items:flex-start;padding:2px 0;border-bottom:1px dashed #ebe9e1}
+.ckg{display:grid;grid-template-columns:1fr 1fr;gap:0 8px}
+body.desc .ckg{grid-template-columns:1fr}
+.ck{display:flex;gap:6px;align-items:flex-start;padding:2px 0;border-bottom:1px dashed #ebe9e1;min-width:0}
 .ck input{margin-top:2px;width:16px;height:16px;flex:none;accent-color:#185fa5}
-.ck b{font-weight:400;font-size:13px}
+.ck b{font-weight:400;font-size:12.5px;word-break:keep-all}
 .ck small{display:none;color:var(--sub);font-size:11px;line-height:1.3}
 body.desc .ck small{display:block}
 .tg{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--sub);margin-left:6px}
@@ -96,58 +98,60 @@ button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
 <h2>3. 체크리스트 <span class="prog" id="prog"></span>
   <label class="tg"><input type="checkbox" id="showdesc"> 설명</label></h2>
 <div class="cols">
-  <div><h3>카메라 ZV-E10</h3><div id="ck_cam"></div>
-       <h3>조명 SL-60W ×2</h3><div id="ck_led"></div></div>
-  <div><h3>촬영 조건</h3><div id="ck_cond"></div>
-       <h3>수리 후 재방문</h3><div id="ck_after"></div></div>
+  <div><h3>카메라 ZV-E10</h3><div id="ck_cam" class="ckg"></div>
+       <h3>조명 SL-60W ×2</h3><div id="ck_led" class="ckg"></div></div>
+  <div><h3>촬영 조건</h3><div id="ck_cond" class="ckg"></div>
+       <h3>수리 후 재방문</h3><div id="ck_after" class="ckg"></div></div>
 </div>
 
 <h2>4. 현장 카드</h2>
 <pre id="card">—</pre>
 <div class="btns">
-  <button class="p" onclick="copyCard()">복사</button>
-  <button onclick="window.print()">인쇄</button>
+  <button class="p" onclick="saveFile()">내 파일에 저장</button>
+  <button onclick="copyCard()">복사</button>
   <button onclick="resetCk()">체크 초기화</button>
 </div>
+<p class="hint" id="fname">—</p>
 
 <h2>5. 처리 명령</h2>
 <pre id="cmd">—</pre>
+<div class="btns"><button onclick="copyCmd()">명령 복사</button></div>
 <div class="box warn">수리 후에는 수리 전 출력값 <b>vmax</b>를 <code>--vmax</code>로 그대로 넣어야 개선이 보입니다.</div>
 </div>
 
 <script>
-var BUILD = "v1.1 / 2026-08-17";
+var BUILD = "v1.2 / 2026-08-17";
 document.getElementById('fp').textContent = BUILD;
 
 var CK = {
  ck_cam:[
-  ["손떨림 보정 OFF","가짜 화살표의 최대 원인. 렌즈 OSS도 메뉴에서 끄기"],
-  ["촬영모드 M",""],["초점 MF · 배경판 고정","AF 재탐색 시 전 프레임 무효"],
-  ["화이트밸런스 수동",""],["조리개 f/5.6",""],
+  ["손떨림보정 OFF","가짜 화살표의 최대 원인. 렌즈 OSS도 메뉴에서 끄기"],
+  ["촬영모드 M",""],["초점 MF·배경판","AF 재탐색 시 전 프레임 무효"],
+  ["WB 수동","화이트밸런스 고정"],["조리개 f/5.6",""],
   ["셔터 1/500 s","밝으면 f/8, 어두우면 ISO 6400"],
-  ["ISO 3200 · 오토 끔",""],["S&Q 120 fps","파일은 24p. 처리 시 --capture-fps 120"],
+  ["ISO 3200 고정","오토 ISO 끔"],["S&Q 120 fps","파일은 24p. 처리 시 --capture-fps 120"],
   ["최고 비트레이트","압축 노이즈가 가짜 변위가 됨"],
-  ["줌 위치 테이프 표시","수리 후 복원용"]
+  ["줌 위치 테이프","수리 후 복원용"]
  ],
  ck_led:[
   ["출력 100% 고정","디밍하면 PWM 플리커 → 화면 맥동"],
-  ["밝기는 거리로 조절",""],["색온도 5600K",""],
+  ["밝기=거리로","디밍 대신 조명을 앞뒤로"],["색온도 5600K",""],
   ["배경판만 비춤","렌즈 방향 금지(플레어)"],
-  ["기류 경로에서 이격","60W 발열이 자체 열기류를 만듦"],
-  ["반사 하이라이트 없음","있으면 각도를 더 벌릴 것"]
+  ["기류에서 이격","60W 발열이 자체 열기류를 만듦"],
+  ["반사 없음","하이라이트 보이면 각도를 더 벌릴 것"]
  ],
  ck_cond:[
-  ["창짝 닫힘",""],["함석판으로 유리 차단","창짝 틈만 경로 격리"],
-  ["송풍기 ΔP 5~10 Pa",""],["열풍 실내 +15~20℃","50~60℃면 부력류가 지배"],
-  ["100mm 스케일바 실측","인쇄 배율 확인"],["배경판 평평하게",""],
-  ["삼각대 위치 바닥 표시","재현용"],
-  ["무유동 3초 먼저 촬영","기준영상용 — 바람 없어야 함"],
-  ["촬영 중 보행 금지",""]
+  ["창짝 닫힘",""],["함석판 유리차단","창짝 틈만 경로 격리"],
+  ["송풍기 5~10Pa","ΔP 확보"],["열풍 +15~20℃","50~60℃면 부력류가 지배"],
+  ["스케일바 실측","100mm — 인쇄 배율 확인"],["배경판 평평하게",""],
+  ["삼각대 위치 표시","바닥에 테이프 — 재현용"],
+  ["무유동 3초 선촬영","기준영상용 — 바람 없어야 함"],
+  ["보행 금지","촬영 중 삼각대 주변"]
  ],
  ck_after:[
-  ["현장 카드 수치로 복원",""],["동일 줌 위치",""],["동일 노출값",""],
-  ["--vmax 동일값 사용","안 하면 개선이 안 보임"],
-  ["여밈대 광역 1컷 추가","풍선효과 확인 — 내부용"]
+  ["카드 수치로 복원",""],["동일 줌 위치",""],["동일 노출값",""],
+  ["--vmax 동일값","안 하면 개선이 안 보임"],
+  ["광역 1컷 추가","여밈대 전체 — 풍선효과 확인(내부용)"]
  ]
 };
 
@@ -229,11 +233,14 @@ function calc(){
 "조명2등 배경판에서 "+dl.toFixed(2)+"m 벌림 "+ang.toFixed(0)+"° (둘다 실내쪽)\n"+
 "배경판 "+kind+"  상"+btop.toFixed(2)+" 중"+h.toFixed(2)+" 하"+Math.max(0,bbot).toFixed(2)+"\n"+
 "카메라 "+h.toFixed(2)+"  조명1 "+l1.toFixed(2)+"(아래"+t1.toFixed(0)+"°)  조명2 "+l2.toFixed(2)+"(위"+t2.toFixed(0)+"°)\n"+
-"초점 "+f.toFixed(0)+"mm  시야 "+fov.toFixed(0)+"→실효 "+efov.toFixed(0)+"mm  감도 "+sens.toFixed(0)+"%\n"+
-"노출 f/5.6 · 1/500 · ISO3200 · S&Q "+fps.toFixed(0)+"fps · SteadyShot OFF\n"+
+"초점 "+f.toFixed(0)+"mm  시야 "+fov.toFixed(0)+"→실효 "+efov.toFixed(0)+"mm\n"+
+"감도 "+sens.toFixed(0)+"%  분해능 "+mmpx.toFixed(3)+" mm/px\n"+
+"노출 f/5.6 · 1/500 · ISO3200\n"+
+"     S&Q "+fps.toFixed(0)+"fps · SteadyShot OFF\n"+
 "조명 SL-60W x2 · 100% 고정 · 5600K\n"+
 "------------------------------\n"+
 "vmax(수리전 출력) = ______";
+  document.getElementById('fname').textContent = "저장 파일명 : " + fileName();
 
   document.getElementById('cmd').textContent =
 "# 수리 전\npy -3 bos_piv.py \"수리전.mp4\" --fov-mm "+fov.toFixed(0)+" --capture-fps "+fps.toFixed(0)+" --detail fine --layout stack\n\n"+
@@ -265,10 +272,38 @@ function resetCk(){
   Object.keys(CK).forEach(function(k){ CK[k].forEach(function(_,i){ document.getElementById(k+'_'+i).checked=false; }); });
   save();
 }
-function copyCard(){
-  var t=document.getElementById('card').textContent;
+function put(t){
   if(navigator.clipboard) navigator.clipboard.writeText(t);
   else{ var a=document.createElement('textarea'); a.value=t; document.body.appendChild(a); a.select(); document.execCommand('copy'); a.remove(); }
+}
+function copyCard(){ put(document.getElementById('card').textContent); }
+function copyCmd(){ put(document.getElementById('cmd').textContent); }
+
+function fileName(){
+  var s=(document.getElementById('site').value||"현장명미입력").trim();
+  s=s.replace(/[\\/:*?"<>|\r\n\t]/g,"_").replace(/\s+/g," ").slice(0,60);
+  return s + "_BOS계산기.txt";
+}
+function fullText(){
+  var L=[document.getElementById('card').textContent, "", "[체크리스트]"];
+  var TT={ck_cam:"카메라 ZV-E10", ck_led:"조명 SL-60W x2", ck_cond:"촬영 조건", ck_after:"수리 후 재방문"};
+  Object.keys(CK).forEach(function(k){
+    L.push("", "< "+TT[k]+" >");
+    CK[k].forEach(function(it,i){
+      L.push((document.getElementById(k+"_"+i).checked ? "[v] " : "[ ] ") + it[0]);
+    });
+  });
+  L.push("", "[처리 명령]", document.getElementById('cmd').textContent);
+  return L.join("\n");
+}
+function saveFile(){
+  var name=fileName();
+  var blob=new Blob(["﻿"+fullText()], {type:"text/plain;charset=utf-8"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download=name; a.style.display='none';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 2000);
 }
 
 buildCk(); load(); calc(); updProg();
