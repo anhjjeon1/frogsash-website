@@ -206,6 +206,74 @@ pre{background:#12202f;color:#dbe4ee;padding:9px 10px;border-radius:9px;font-siz
   <div class="al a-warn" style="margin-top:9px"><i></i><span>수리 후에는 수리 전 출력값 <b>vmax</b>를 <b>--vmax</b>로 그대로 넣어야 개선이 보입니다.</span></div>
 </section>
 
+<style>
+.irgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:9px 0}
+.irpane{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fbfcfd}
+.irhd{display:flex;align-items:center;gap:8px;padding:6px 9px;font-size:11.5px;font-weight:600;
+  color:var(--sub);border-bottom:1px solid var(--line2)}
+.filebtn{margin-left:auto;font-size:11px;font-weight:600;color:var(--acc);background:var(--acc2);
+  border-radius:99px;padding:3px 10px;cursor:pointer}
+.filebtn input{display:none}
+.irbox{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+  background:#11151a;overflow:hidden}
+.irpane canvas{display:block;width:100%;height:100%;object-fit:contain;touch-action:none}
+.irst{padding:5px 9px;font-size:10.5px;color:var(--dim);font-variant-numeric:tabular-nums;
+  border-top:1px solid var(--line2)}
+.irtools{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px}
+.irtools button{flex:1;min-width:104px}
+.irtools button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+</style>
+
+<section class="card">
+  <div class="ct"><span class="no">6</span><b>열화상 전후 분석</b></div>
+
+  <div class="al a-warn"><i></i><span>FLIR <b>그레이스케일</b>로 찍고 온도 스케일을 <b>수동 고정</b>한 이미지만 쓰십시오. 자동 스케일 이미지는 전후 비교가 불가능합니다.</span></div>
+
+  <div class="fg">
+    <div class="f"><span>스케일 최저 °C</span><input type="number" id="ir_tmin" value="20" step="1" inputmode="decimal"></div>
+    <div class="f"><span>스케일 최고 °C</span><input type="number" id="ir_tmax" value="60" step="1" inputmode="decimal"></div>
+    <div class="f"><span>기준온도 °C</span><input type="number" id="ir_thr" value="40" step="1" inputmode="decimal"></div>
+    <div class="f"><span>극성</span><select id="ir_pol">
+      <option value="w" selected>White Hot</option><option value="b">Black Hot</option></select></div>
+    <div class="f"><span>주입 °C</span><input type="number" id="ir_inj" value="60" step="1" inputmode="decimal"></div>
+    <div class="f"><span>경과 s</span><input type="number" id="ir_el" value="60" step="10" inputmode="numeric"></div>
+    <div class="f"><span>실온 °C</span><input type="number" id="ir_amb" value="25" step="0.5" inputmode="decimal"></div>
+    <div class="f"><span>기준치수 mm</span><input type="number" id="ir_cal" value="60" step="5" inputmode="numeric"></div>
+  </div>
+
+  <div class="irgrid">
+    <div class="irpane">
+      <div class="irhd">수리 전<label class="filebtn">불러오기<input type="file" id="ir_fa" accept="image/*"></label></div>
+      <div class="irbox"><canvas id="ir_ca"></canvas></div>
+      <div class="irst" id="ir_sa">이미지를 불러오세요</div>
+    </div>
+    <div class="irpane">
+      <div class="irhd">수리 후<label class="filebtn">불러오기<input type="file" id="ir_fb" accept="image/*"></label></div>
+      <div class="irbox"><canvas id="ir_cb"></canvas></div>
+      <div class="irst" id="ir_sb">이미지를 불러오세요</div>
+    </div>
+  </div>
+
+  <div class="irtools">
+    <button class="ghost" id="ir_mroi">① ROI 드래그</button>
+    <button class="ghost" id="ir_mcal">② 기준치수 2점</button>
+    <button class="ghost" onclick="irReset()">영역 초기화</button>
+  </div>
+
+  <div class="tiles">
+    <div class="tile"><em>ΔTmax</em><strong id="ir_dmax">—</strong></div>
+    <div class="tile"><em>기준초과 면적</em><strong id="ir_darea">—</strong></div>
+    <div class="tile"><em>해상도</em><strong id="ir_scale">—</strong></div>
+  </div>
+  <div class="kv"><em>수리 전 Tmax / 평균</em><b id="ir_ka">—</b></div>
+  <div class="kv"><em>수리 후 Tmax / 평균</em><b id="ir_kb">—</b></div>
+  <div class="kv"><em>기준초과 면적 전 → 후</em><b id="ir_kc">—</b></div>
+  <div id="ir_warn" style="margin-top:9px"></div>
+
+  <button class="ghost" onclick="irCard()">증빙 카드 PNG 저장</button>
+  <p class="hint">이미지는 브라우저 안에서만 처리되며 외부로 전송되지 않습니다 · ROI는 수리 전 화면에서 지정하면 수리 후에 같은 좌표로 적용됩니다 · 표면 온도는 유량에 비례하지 않으므로 <b>차단율 %로 환산하지 마십시오</b>.</p>
+</section>
+
 </main>
 
 <div class="bb">
@@ -214,7 +282,7 @@ pre{background:#12202f;color:#dbe4ee;padding:9px 10px;border-radius:9px;font-siz
 </div>
 
 <script>
-var BUILD = "v2.1 / 2026-08-17";
+var BUILD = "v2.2 / 2026-08-17";
 document.getElementById('fp').textContent = BUILD;
 
 var CK = {
@@ -424,4 +492,251 @@ document.getElementById('showdesc').addEventListener('change', function(){
 document.getElementById('onlyleft').addEventListener('change', function(){
   document.body.classList.toggle('only', this.checked); save(); });
 document.addEventListener('visibilitychange', function(){ if(!document.hidden) calc(); });
+</script>
+
+<script>
+/* ── 6. 열화상 전후 분석 (완전 클라이언트 · 외부 전송 없음) ── */
+(function(){
+var $=function(i){return document.getElementById(i)};
+var A=null,B=null,roi=null,cal=[],mode=null,MAXW=1200;
+var IRF=['ir_tmin','ir_tmax','ir_thr','ir_pol','ir_inj','ir_el','ir_amb','ir_cal'];
+
+var IRON=[[0,0,0,0],[.15,35,0,80],[.30,110,0,110],[.45,180,20,70],
+          [.60,230,80,20],[.75,250,150,0],[.90,255,220,60],[1,255,255,255]];
+function iron(u){
+  if(!(u>0))u=0; if(u>1)u=1;
+  for(var i=1;i<IRON.length;i++){
+    if(u<=IRON[i][0]){
+      var a=IRON[i-1],b=IRON[i],t=(b[0]-a[0])?(u-a[0])/(b[0]-a[0]):0;
+      return [a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t,a[3]+(b[3]-a[3])*t];
+    }
+  }
+  return [255,255,255];
+}
+function N(){
+  var lo=+$('ir_tmin').value, hi=+$('ir_tmax').value;
+  if(!isFinite(lo))lo=20; if(!isFinite(hi))hi=60; if(hi<=lo)hi=lo+1;
+  var th=+$('ir_thr').value; if(!isFinite(th))th=40;
+  return {lo:lo,hi:hi,thr:th,pol:$('ir_pol').value};
+}
+function tAt(d,i,n){
+  var g=(d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114)/255;
+  if(n.pol==='b')g=1-g;
+  return n.lo+(n.hi-n.lo)*g;
+}
+function mmpp(){
+  if(cal.length<2)return 0;
+  var dx=cal[1].x-cal[0].x, dy=cal[1].y-cal[0].y, px=Math.sqrt(dx*dx+dy*dy);
+  var mm=+$('ir_cal').value;
+  return (px>0&&isFinite(mm)&&mm>0)?mm/px:0;
+}
+
+function loadImg(which,file){
+  if(!file)return;
+  var img=new Image();
+  img.onload=function(){
+    var w=img.naturalWidth,h=img.naturalHeight;
+    if(w>MAXW){h=Math.round(h*MAXW/w);w=MAXW;}
+    var c=document.createElement('canvas');c.width=w;c.height=h;
+    var x=c.getContext('2d');x.drawImage(img,0,0,w,h);
+    var o={w:w,h:h,data:x.getImageData(0,0,w,h).data};
+    if(which==='a'){A=o;roi=null;cal=[];} else {B=o;}
+    URL.revokeObjectURL(img.src);
+    irAll();
+  };
+  img.onerror=function(){alert('이미지를 읽지 못했습니다.');};
+  img.src=URL.createObjectURL(file);
+}
+
+function roiFor(o){
+  if(!roi||!A)return null;
+  if(o===A)return roi;
+  var sx=o.w/A.w, sy=o.h/A.h;
+  return {x:roi.x*sx,y:roi.y*sy,w:roi.w*sx,h:roi.h*sy};
+}
+
+function paint(o,cv,r,pts){
+  if(!o){cv.width=8;cv.height=8;return;}
+  var n=N();
+  var off=document.createElement('canvas');off.width=o.w;off.height=o.h;
+  var ox=off.getContext('2d'),im=ox.createImageData(o.w,o.h);
+  var src=o.data,dst=im.data,T=new Float32Array(o.w*o.h);
+  for(var p=0,i=0;i<src.length;i+=4,p++){
+    var t=tAt(src,i,n);T[p]=t;
+    var c=iron((t-n.lo)/(n.hi-n.lo));
+    dst[i]=c[0];dst[i+1]=c[1];dst[i+2]=c[2];dst[i+3]=255;
+  }
+  for(var y=1;y<o.h-1;y++)for(var x=1;x<o.w-1;x++){
+    var q=y*o.w+x;
+    if(T[q]>=n.thr&&(T[q-1]<n.thr||T[q+1]<n.thr||T[q-o.w]<n.thr||T[q+o.w]<n.thr)){
+      var j=q*4;dst[j]=0;dst[j+1]=234;dst[j+2]=255;dst[j+3]=255;
+    }
+  }
+  ox.putImageData(im,0,0);
+  var dw=Math.min(o.w,720),dh=Math.round(o.h*dw/o.w);
+  cv.width=dw;cv.height=dh;
+  var cx=cv.getContext('2d');cx.drawImage(off,0,0,dw,dh);
+  var s=dw/o.w;
+  if(r){cx.strokeStyle='#3ad1ff';cx.lineWidth=2;cx.setLineDash([7,5]);
+    cx.strokeRect(r.x*s,r.y*s,r.w*s,r.h*s);cx.setLineDash([]);}
+  if(pts)pts.forEach(function(pt){
+    cx.strokeStyle='#7cff9b';cx.lineWidth=2;
+    cx.beginPath();cx.moveTo(pt.x*s-7,pt.y*s);cx.lineTo(pt.x*s+7,pt.y*s);
+    cx.moveTo(pt.x*s,pt.y*s-7);cx.lineTo(pt.x*s,pt.y*s+7);cx.stroke();
+  });
+  if(pts&&pts.length===2){cx.strokeStyle='#7cff9b';cx.lineWidth=1.5;
+    cx.beginPath();cx.moveTo(pts[0].x*s,pts[0].y*s);cx.lineTo(pts[1].x*s,pts[1].y*s);cx.stroke();}
+  return off;
+}
+
+function stats(o,r){
+  var n=N(),x0=0,y0=0,x1=o.w,y1=o.h;
+  if(r){x0=Math.max(0,Math.round(r.x));y0=Math.max(0,Math.round(r.y));
+        x1=Math.min(o.w,Math.round(r.x+r.w));y1=Math.min(o.h,Math.round(r.y+r.h));}
+  if(x1<=x0||y1<=y0){x0=0;y0=0;x1=o.w;y1=o.h;}
+  var mx=-1e9,sum=0,cnt=0,ov=0;
+  for(var y=y0;y<y1;y++)for(var x=x0;x<x1;x++){
+    var t=tAt(o.data,(y*o.w+x)*4,n);
+    if(t>mx)mx=t; sum+=t;cnt++; if(t>=n.thr)ov++;
+  }
+  return {max:mx,mean:cnt?sum/cnt:0,over:ov,cnt:cnt};
+}
+
+var SA=null,SB=null;
+function irAll(){
+  paint(A,$('ir_ca'),roiFor(A),cal);
+  paint(B,$('ir_cb'),roiFor(B),null);
+  var n=N(),m=mmpp(),warn=[];
+  $('ir_scale').textContent = m?(1/m).toFixed(2)+' px/mm':'미보정';
+  SA=A?stats(A,roiFor(A)):null; SB=B?stats(B,roiFor(B)):null;
+
+  function areaTxt(s){ return m ? (s.over*m*m).toFixed(0)+' mm²' : s.over.toLocaleString()+' px'; }
+  $('ir_sa').textContent = A?(A.w+'×'+A.h+(roi?' · ROI 적용':' · 전체')):'이미지를 불러오세요';
+  $('ir_sb').textContent = B?(B.w+'×'+B.h+(roi?' · ROI 적용':' · 전체')):'이미지를 불러오세요';
+  $('ir_ka').textContent = SA?SA.max.toFixed(1)+' / '+SA.mean.toFixed(1)+' °C':'—';
+  $('ir_kb').textContent = SB?SB.max.toFixed(1)+' / '+SB.mean.toFixed(1)+' °C':'—';
+  $('ir_kc').textContent = (SA&&SB)?areaTxt(SA)+'  →  '+areaTxt(SB):'—';
+  $('ir_dmax').textContent = (SA&&SB)?(SB.max-SA.max).toFixed(1)+' °C':'—';
+  $('ir_darea').textContent = (SA&&SB)?((m?(SB.over-SA.over)*m*m:(SB.over-SA.over)).toFixed(0)+(m?' mm²':' px')):'—';
+
+  if(A&&B&&(A.w!==B.w||A.h!==B.h))
+    warn.push(['a-warn','전·후 <b>이미지 크기가 다릅니다</b>. 카메라를 고정하지 않았다면 비교가 무효입니다. ROI는 비율로 환산했습니다.']);
+  if(!m) warn.push(['a-note','기준치수 2점을 찍지 않아 면적이 <b>px</b>로만 나옵니다. mm²가 필요하면 ② 버튼으로 알려진 치수를 지정하십시오.']);
+  if(!roi&&A) warn.push(['a-note','ROI 미지정 — <b>이미지 전체</b>로 계산 중입니다. 여밈대 하부만 보려면 ① 버튼으로 드래그하십시오.']);
+  if(SA&&SA.max>=N().hi-0.2) warn.push(['a-warn','수리 전 Tmax가 <b>스케일 상한에 붙었습니다</b>. 포화되어 실제 최고온도는 더 높습니다 — 스케일 최고를 올려 재촬영하십시오.']);
+  if(SA&&SB&&SA.over===0&&SB.over===0) warn.push(['a-note','양쪽 모두 기준온도 초과 영역이 없습니다. 기준온도를 낮추거나 주입 온도·경과 시간을 확인하십시오.']);
+  $('ir_warn').innerHTML = warn.map(function(w){return '<div class="al '+w[0]+'"><i></i><span>'+w[1]+'</span></div>';}).join('');
+  irSave();
+}
+
+/* ── 화면 좌표 → 이미지 좌표 ── */
+function pos(e,cv,o){
+  /* canvas는 1:1 박스 안에서 object-fit:contain 으로 그려지므로 레터박스 보정 필요 */
+  var b=cv.getBoundingClientRect();
+  var ar=o.w/o.h, cw, ch;
+  if(b.width/b.height > ar){ ch=b.height; cw=ch*ar; } else { cw=b.width; ch=cw/ar; }
+  var ox=b.left+(b.width-cw)/2, oy=b.top+(b.height-ch)/2;
+  return {x:(e.clientX-ox)*o.w/cw, y:(e.clientY-oy)*o.h/ch};
+}
+var drag=null;
+var ca=$('ir_ca');
+ca.addEventListener('pointerdown',function(e){
+  if(!A||!mode)return; e.preventDefault();
+  try{ca.setPointerCapture(e.pointerId);}catch(err){}
+  var p=pos(e,ca,A);
+  if(mode==='cal'){
+    if(cal.length>=2)cal=[];
+    cal.push(p); irAll();
+    if(cal.length===2)setMode(null);
+    return;
+  }
+  drag={x0:p.x,y0:p.y};
+});
+ca.addEventListener('pointermove',function(e){
+  if(!drag||!A)return;
+  var p=pos(e,ca,A);
+  roi={x:Math.min(drag.x0,p.x),y:Math.min(drag.y0,p.y),
+       w:Math.abs(p.x-drag.x0),h:Math.abs(p.y-drag.y0)};
+  paint(A,ca,roi,cal);
+});
+ca.addEventListener('pointerup',function(){
+  if(!drag)return; drag=null;
+  if(roi&&(roi.w<6||roi.h<6))roi=null;
+  setMode(null); irAll();
+});
+
+function setMode(m){
+  mode=m;
+  $('ir_mroi').classList.toggle('on',m==='roi');
+  $('ir_mcal').classList.toggle('on',m==='cal');
+}
+$('ir_mroi').addEventListener('click',function(){setMode(mode==='roi'?null:'roi');});
+$('ir_mcal').addEventListener('click',function(){cal=[];setMode(mode==='cal'?null:'cal');irAll();});
+window.irReset=function(){roi=null;cal=[];setMode(null);irAll();};
+
+$('ir_fa').addEventListener('change',function(){loadImg('a',this.files[0]);});
+$('ir_fb').addEventListener('change',function(){loadImg('b',this.files[0]);});
+IRF.forEach(function(f){$(f).addEventListener('input',irAll);$(f).addEventListener('change',irAll);});
+
+/* ── 저장/복원 (설정만, 이미지는 저장하지 않음) ── */
+function irSave(){
+  try{var o={};IRF.forEach(function(f){o[f]=$(f).value});
+    localStorage.setItem('bos_ir',JSON.stringify(o));}catch(e){}
+}
+try{
+  var s=JSON.parse(localStorage.getItem('bos_ir')||'{}');
+  IRF.forEach(function(f){if(s[f]!==undefined)$(f).value=s[f];});
+}catch(e){}
+
+/* ── 증빙 카드 ── */
+window.irCard=function(){
+  if(!A||!B||!SA||!SB){alert('수리 전·후 이미지를 모두 불러오십시오.');return;}
+  var m=mmpp(),n=N();
+  var W=1000,H=660,c=document.createElement('canvas');c.width=W;c.height=H;
+  var x=c.getContext('2d');
+  x.fillStyle='#fff';x.fillRect(0,0,W,H);
+  x.fillStyle='#0f2d52';x.fillRect(0,0,W,64);
+  x.fillStyle='#fff';x.font='600 22px Pretendard,sans-serif';
+  x.fillText('열화상 전후 비교 — 여밈대 하부',24,40);
+  x.font='400 13px Pretendard,sans-serif';x.fillStyle='rgba(255,255,255,.75)';
+  var site=($('site')&&$('site').value)||'';
+  x.fillText(site+'  ·  '+new Date().toLocaleString('ko-KR'),24,56);
+
+  var ia=paint(A,document.createElement('canvas'),roiFor(A),null);
+  var ib=paint(B,document.createElement('canvas'),roiFor(B),null);
+  function thumb(off,dx){
+    var tw=456,th=Math.round(off.height*tw/off.width);
+    if(th>300){th=300;tw=Math.round(off.width*th/off.height);}
+    x.drawImage(off,dx,92,tw,th);
+    x.strokeStyle='#d5dae1';x.lineWidth=1;x.strokeRect(dx+.5,92.5,tw,th);
+    return th;
+  }
+  x.fillStyle='#5c6672';x.font='600 13px Pretendard,sans-serif';
+  x.fillText('수리 전',24,86);x.fillText('수리 후',516,86);
+  var h1=thumb(ia,24),h2=thumb(ib,516);
+  var y=92+Math.max(h1,h2)+34;
+
+  function row(label,val,yy){
+    x.fillStyle='#5c6672';x.font='400 15px Pretendard,sans-serif';x.fillText(label,24,yy);
+    x.fillStyle='#151b23';x.font='600 17px Pretendard,sans-serif';
+    x.textAlign='right';x.fillText(val,976,yy);x.textAlign='left';
+    x.strokeStyle='#eef0f4';x.beginPath();x.moveTo(24,yy+11);x.lineTo(976,yy+11);x.stroke();
+  }
+  function area(s){return m?(s.over*m*m).toFixed(0)+' mm²':s.over.toLocaleString()+' px';}
+  row('스케일 / 극성 / 기준온도', n.lo+'~'+n.hi+' °C · '+($('ir_pol').value==='w'?'White Hot':'Black Hot')+' · '+n.thr+' °C', y);
+  row('주입 온도 / 경과 / 실온', $('ir_inj').value+' °C · '+$('ir_el').value+' s · '+$('ir_amb').value+' °C', y+34);
+  row('Tmax  전 → 후', SA.max.toFixed(1)+' → '+SB.max.toFixed(1)+' °C   ('+(SB.max-SA.max).toFixed(1)+')', y+68);
+  row('평균  전 → 후', SA.mean.toFixed(1)+' → '+SB.mean.toFixed(1)+' °C', y+102);
+  row('기준초과 면적  전 → 후', area(SA)+' → '+area(SB), y+136);
+
+  x.fillStyle='#98a1ac';x.font='400 12px Pretendard,sans-serif';
+  x.fillText('표면 온도는 유량에 비례하지 않습니다. 차단율 %로 환산하지 마십시오. · 청개구리샤시 사내 자료',24,H-20);
+
+  var a=document.createElement('a');
+  a.download='열화상_전후_'+(site?site.replace(/[\\/:*?"<>|]/g,'')+'_':'')+new Date().toISOString().slice(0,10)+'.png';
+  a.href=c.toDataURL('image/png');a.click();
+};
+
+irAll();
+})();
 </script>
