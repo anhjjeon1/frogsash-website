@@ -1,0 +1,371 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BOS 현장 배치 계산기</title>
+<style>
+:root{--ink:#1c1c1a;--sub:#5f5e5a;--line:#d7d5cc;--bg:#fff;--acc:#185fa5;--teal:#0f6e56;--red:#a32d2d;--amb:#854f0b;--soft:#f4f2ec}
+*{box-sizing:border-box}
+body{margin:0;background:#eceae3;color:var(--ink);font-family:"Pretendard","Malgun Gothic",sans-serif;font-size:15px;line-height:1.6}
+.wrap{max-width:980px;margin:0 auto;background:var(--bg);padding:22px 26px 60px}
+h1{font-size:21px;font-weight:600;margin:0 0 2px}
+h2{font-size:17px;font-weight:600;margin:30px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+h3{font-size:14.5px;font-weight:600;margin:18px 0 6px;color:var(--acc)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px;color:var(--sub);margin-bottom:16px}
+.badge{background:#e6f1fb;color:#0c447c;padding:2px 9px;border-radius:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+label{display:block;font-size:12.5px;color:var(--sub);margin-bottom:3px}
+input[type=number],input[type=text],select{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;font-size:15px;font-family:inherit;background:#fff;color:var(--ink)}
+input:focus,select:focus{outline:2px solid #b5d4f4;border-color:var(--acc)}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left}
+th{background:var(--soft);font-weight:600}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.big{font-size:17px;font-weight:600;color:var(--acc)}
+.box{border-left:4px solid var(--acc);background:#e6f1fb;padding:10px 14px;margin:10px 0;border-radius:0 6px 6px 0}
+.warn{border-left-color:var(--red);background:#fcebeb}
+.ok{border-left-color:var(--teal);background:#e1f5ee}
+.note{border-left-color:var(--amb);background:#faeeda}
+.ck{display:flex;gap:9px;align-items:flex-start;padding:5px 0;border-bottom:1px dashed #e6e4dc}
+.ck input{margin-top:3px;width:17px;height:17px;flex:none;accent-color:#185fa5}
+.ck span{font-size:14px}
+.ck small{display:block;color:var(--sub);font-size:12.5px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:0 26px}
+button{font-family:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--line);background:#fff;border-radius:6px;cursor:pointer}
+button:hover{background:var(--soft)}
+button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+pre{background:#1c1c1a;color:#e8e6df;padding:12px 14px;border-radius:6px;font-size:12.5px;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+.prog{font-size:13px;color:var(--sub)}
+@media print{body{background:#fff}.wrap{max-width:none;padding:0}button,.noprint{display:none}}
+</style>
+
+<div class="wrap">
+<h1>BOS 현장 배치 계산기</h1>
+<div class="bar">
+  <span class="badge" id="fp">v1.0</span>
+  <span>여밈대 하부 1지점 · 수리 전후 비교용</span>
+  <span class="noprint" style="margin-left:auto"><button onclick="location.reload()">↻ 새로고침</button></span>
+</div>
+
+<h2>1. 현장 입력</h2>
+<div class="grid">
+  <div><label>현장명</label><input type="text" id="site" placeholder="예: 의왕 풍경채 108동 1702"></div>
+  <div><label>실내 가로 — 창과 나란한 방향 (m)</label><input type="number" id="roomW" value="3.6" step="0.1" min="1"></div>
+  <div><label>실내 세로 — 창에서 안쪽 깊이 (m)</label><input type="number" id="roomD" value="3.0" step="0.1" min="1"></div>
+  <div><label>천장 높이 (m)</label><input type="number" id="ceil" value="2.3" step="0.05" min="1.8"></div>
+  <div><label>창호 폭 (m)</label><input type="number" id="winW" value="2.4" step="0.1" min="0.3"></div>
+  <div><label>창호 높이 (m)</label><input type="number" id="winH" value="2.1" step="0.1" min="0.3"></div>
+  <div><label>여밈대 위치 — 왼쪽 벽에서 (m)</label><input type="number" id="mx" value="1.8" step="0.1" min="0"></div>
+  <div><label>여밈대 하부 측정 높이 h (m)</label><input type="number" id="h" value="0.55" step="0.05" min="0.2"></div>
+  <div><label>목표 시야 — 배경판 기준 (mm)</label><input type="number" id="fov" value="500" step="50" min="200"></div>
+  <div><label>센서 규격</label><select id="sensor">
+    <option value="23.5" selected>APS-C 소니·니콘·후지 (23.5mm)</option>
+    <option value="22.3">APS-C 캐논 (22.3mm)</option>
+    <option value="36">풀프레임 (36mm)</option>
+    <option value="17.3">마이크로포서즈 (17.3mm)</option>
+  </select></div>
+  <div><label>촬영 fps — S&amp;Q면 120</label><input type="number" id="fps" value="120" step="30" min="24"></div>
+  <div><label>배경판 규격</label><select id="board">
+    <option value="auto" selected>자동 (세로 우선)</option>
+    <option value="port">A1 세로 (841mm)</option>
+    <option value="land">A1 가로 (594mm)</option>
+  </select></div>
+</div>
+
+<h2>2. 배치 결과</h2>
+<div id="warns"></div>
+
+<h3>평면 — 위에서 본 배치</h3>
+<table>
+  <tr><th style="width:44%">항목</th><th style="width:26%">값</th><th>비고</th></tr>
+  <tr><td>배경판 위치</td><td class="n big" id="r_bgside">—</td><td id="n_bgside">여밈대 기준</td></tr>
+  <tr><td>여밈대 ↔ 배경판</td><td class="n big" id="r_dbg">—</td><td id="n_dbg"></td></tr>
+  <tr><td>여밈대 ↔ 카메라</td><td class="n big" id="r_dcam">—</td><td id="n_dcam"></td></tr>
+  <tr><td>시선 ↔ 창면 간격</td><td class="n" id="r_off">—</td><td>실내 쪽으로</td></tr>
+  <tr><td>조명 ↔ 배경판 (수평)</td><td class="n" id="r_dl">—</td><td>2등 공통</td></tr>
+  <tr><td>조명 벌림각</td><td class="n" id="r_ang">—</td><td id="n_ang">시선에서 실내 쪽으로</td></tr>
+</table>
+
+<h3>높이</h3>
+<table>
+  <tr><th style="width:44%">항목</th><th style="width:26%">바닥 기준 (m)</th><th>기울기</th></tr>
+  <tr><td>배경판 상단</td><td class="n" id="r_btop">—</td><td rowspan="3" id="r_bkind" style="vertical-align:middle"></td></tr>
+  <tr><td>배경판 중심 = 여밈대 h</td><td class="n big" id="r_bmid">—</td></tr>
+  <tr><td>배경판 하단</td><td class="n" id="r_bbot">—</td></tr>
+  <tr><td>카메라</td><td class="n big" id="r_cam">—</td><td>수평</td></tr>
+  <tr><td>조명 1 (위)</td><td class="n big" id="r_l1">—</td><td class="n" id="r_t1">—</td></tr>
+  <tr><td>조명 2 (아래)</td><td class="n big" id="r_l2">—</td><td class="n" id="r_t2">—</td></tr>
+</table>
+
+<h3>렌즈</h3>
+<table>
+  <tr><th style="width:44%">항목</th><th style="width:26%">값</th><th>비고</th></tr>
+  <tr><td>카메라 ↔ 배경판 (총거리)</td><td class="n" id="r_dtot">—</td><td></td></tr>
+  <tr><td>필요 초점거리</td><td class="n big" id="r_f">—</td><td id="n_f">줌 링을 돌려 배경판이 화면에 꽉 차게</td></tr>
+  <tr><td>여밈대 실효 시야</td><td class="n big" id="r_efov">—</td><td>이 구간만 잡힙니다</td></tr>
+  <tr><td>화면 분해능</td><td class="n" id="r_mmpx">—</td><td>1920px 기준</td></tr>
+  <tr><td>감도 (표준 1.5m 대비)</td><td class="n big" id="r_sens">—</td><td id="n_sens"></td></tr>
+</table>
+
+<h2>3. 설정 체크리스트 <span class="prog" id="prog"></span></h2>
+<div class="cols">
+<div>
+<h3>카메라 — SONY ZV-E10</h3>
+<div id="ck_cam"></div>
+<h3>조명 — GODOX SL-60W × 2</h3>
+<div id="ck_led"></div>
+</div>
+<div>
+<h3>촬영 조건</h3>
+<div id="ck_cond"></div>
+<h3>수리 후 재방문</h3>
+<div id="ck_after"></div>
+</div>
+</div>
+
+<h2>4. 현장 카드</h2>
+<div class="box note noprint">아래 내용을 복사해 두시면 <b>수리 후 재방문 때 같은 배치를 그대로 복원</b>할 수 있습니다.</div>
+<pre id="card">—</pre>
+<div class="noprint" style="display:flex;gap:8px;flex-wrap:wrap">
+  <button class="p" onclick="copyCard()">현장 카드 복사</button>
+  <button onclick="window.print()">인쇄 / PDF</button>
+  <button onclick="resetCk()">체크리스트 초기화</button>
+</div>
+
+<h2>5. 처리 명령</h2>
+<pre id="cmd">—</pre>
+<div class="box warn">수리 후 처리에는 <b>수리 전에서 출력된 <code>color scale vmax</code> 값을 <code>--vmax</code>로 그대로</b> 넣으세요. 안 넣으면 색 기준이 달라져 개선이 보이지 않습니다.</div>
+
+</div>
+
+<script>
+var BUILD = "v1.0 / 2026-08-17";
+document.getElementById('fp').textContent = BUILD;
+
+var CK = {
+ ck_cam:[
+  ["손떨림 보정(SteadyShot) OFF","가짜 화살표의 최대 원인. ZV-E10은 IBIS 없음, 렌즈 OSS만 메뉴에서 끄기"],
+  ["촬영모드 M (수동)",""],
+  ["초점 MF — 배경판에 고정","AF가 재탐색하면 전 프레임 무효"],
+  ["화이트밸런스 수동 고정",""],
+  ["조리개 f/5.6",""],
+  ["셔터 1/500 s","밝으면 f/8, 어두우면 ISO 6400"],
+  ["ISO 3200 — 오토 ISO 끔",""],
+  ["S&Q 120 fps","파일은 24p로 저장됨. 처리 때 --capture-fps 120"],
+  ["기록설정 최고 비트레이트","압축 노이즈가 가짜 변위가 됨"],
+  ["줌 위치 마스킹테이프 표시","수리 후 같은 위치 복원용"]
+ ],
+ ck_led:[
+  ["출력 100% 고정 — 디밍 금지","낮추면 PWM 플리커 → 화면 전체 맥동"],
+  ["밝기는 조명 거리로만 조절",""],
+  ["색온도 5600K 고정",""],
+  ["배경판만 비춤 — 렌즈 방향 금지","플레어"],
+  ["기류 경로에서 이격","60W 발열이 자체 열기류를 만들어 가짜 신호가 됨"],
+  ["반사 하이라이트 없음 확인","있으면 각도를 더 벌릴 것"]
+ ],
+ ck_cond:[
+  ["창짝 닫힘","닫힌 틈으로 새는 것만 유효"],
+  ["함석판으로 유리 차단","창짝 틈만 경로 격리"],
+  ["송풍기 ΔP 5~10 Pa","압력 구동 확보"],
+  ["열풍 실내 +15~20℃","트레이서용. 50~60℃는 부력류가 지배해 버림"],
+  ["배경판 100mm 스케일바 자로 실측","인쇄 배율 확인"],
+  ["배경판 폼보드에 평평하게",""],
+  ["삼각대 다리 위치 바닥에 표시","재현용"],
+  ["무유동 구간 3초 이상 먼저 촬영","기준영상용 — 이때 바람 없어야 함"],
+  ["촬영 중 삼각대 주변 보행 금지",""]
+ ],
+ ck_after:[
+  ["저장된 현장 카드 수치로 복원",""],
+  ["동일 줌 위치(테이프)",""],
+  ["동일 노출값",""],
+  ["처리 시 --vmax 동일값 사용","안 하면 개선이 안 보임"],
+  ["여밈대 전체 광역 1컷 추가","하부를 막으면 다른 틈으로 몰릴 수 있음(풍선효과) — 내부 확인용"]
+ ]
+};
+
+function buildCk(){
+  Object.keys(CK).forEach(function(k){
+    var el = document.getElementById(k), html = "";
+    CK[k].forEach(function(it, i){
+      var id = k + "_" + i;
+      html += '<label class="ck"><input type="checkbox" id="'+id+'" onchange="save()">'
+            + '<span>'+it[0] + (it[1] ? '<small>'+it[1]+'</small>' : '') + '</span></label>';
+    });
+    el.innerHTML = html;
+  });
+}
+
+function num(id){ return parseFloat(document.getElementById(id).value) || 0; }
+function m(x){ return x.toFixed(2) + " m"; }
+function today(){
+  var d = new Date(), p = function(n){ return (n<10?"0":"") + n; };
+  return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate());
+}
+
+function calc(){
+  var roomW=num('roomW'), roomD=num('roomD'), ceil=num('ceil');
+  var mx=num('mx'), h=num('h'), fov=num('fov'), sw=parseFloat(document.getElementById('sensor').value);
+  var fps=num('fps'), boardSel=document.getElementById('board').value;
+  var W=[], off=0.25, MARGIN=0.30;
+
+  // ---- 평면: 창과 나란한 방향 확보 길이
+  var leftAvail  = Math.max(0, mx - MARGIN);
+  var rightAvail = Math.max(0, roomW - mx - MARGIN);
+  var camLeft = leftAvail > rightAvail;              // 카메라를 넓은 쪽에
+  var camAvail = camLeft ? leftAvail : rightAvail;
+  var bgAvail  = camLeft ? rightAvail : leftAvail;
+
+  var k = Math.min(bgAvail/1.5, camAvail/2.3, 1);
+  if (!isFinite(k) || k <= 0) k = 0.01;
+  var dbg = 1.5*k, dcam = 2.3*k;
+  if (k < 1) W.push(["축소 배치", "가로 길이가 부족해 표준(1.5 / 2.3 m)에서 "+(k*100).toFixed(0)+"% 로 축소했습니다.", "note"]);
+  if (dbg < 0.8) W.push(["감도 부족", "여밈대↔배경판이 "+m(dbg)+" 로 0.8 m 미만입니다. 신호가 약해 열풍 온도를 더 올리거나 촬영 위치를 재검토하세요.", "warn"]);
+
+  // ---- 조명 벌림각 (실내 깊이 제약)
+  var ang = 40, dl = 1.1;
+  var needD = off + dl*Math.sin(ang*Math.PI/180) + 0.30;
+  if (roomD < needD){
+    var s = (roomD - off - 0.30)/dl;
+    ang = Math.max(15, Math.min(45, Math.asin(Math.max(0.1, Math.min(1, s)))*180/Math.PI));
+    W.push(["조명 각도 축소", "실내 깊이가 부족해 벌림각을 "+ang.toFixed(0)+"° 로 줄였습니다. 반사 하이라이트가 보이면 조명을 더 멀리 두세요.", "note"]);
+  }
+
+  // ---- 배경판 규격
+  var half = 0.4205, kind = "A1 세로 (841mm)";
+  if (boardSel === "land" || (boardSel === "auto" && h - 0.4205 < 0.05)) { half = 0.297; kind = "A1 가로 (594mm)"; }
+  if (boardSel === "port") { half = 0.4205; kind = "A1 세로 (841mm)"; }
+  var bbot = h - half, btop = h + half;
+  if (bbot < 0.02) W.push(["배경판 바닥 간섭", "측정 높이 h 가 낮아 배경판 하단이 바닥 아래입니다. h 를 "+ (half+0.05).toFixed(2) +" m 이상으로 올리거나 판을 잘라 쓰세요.", "warn"]);
+  if (btop > ceil - 0.05) W.push(["배경판 천장 간섭", "배경판 상단이 천장에 닿습니다.", "warn"]);
+
+  // ---- 조명 높이
+  var l1 = Math.min(h + 0.50, ceil - 0.20);
+  var l2 = Math.max(h - 0.45, 0.15);
+  var t1 = Math.atan((l1 - h)/dl)*180/Math.PI;
+  var t2 = Math.atan((h - l2)/dl)*180/Math.PI;
+  if (l1 < h + 0.50 - 0.001) W.push(["조명1 높이 제한", "천장 때문에 "+m(l1)+" 로 낮췄습니다. 기울기를 "+t1.toFixed(0)+"° 로 눕히세요.", "note"]);
+  if (l2 > h - 0.45 + 0.001) W.push(["조명2 높이 제한", "바닥 때문에 "+m(l2)+" 입니다. 스탠드 최저 높이보다 낮으면 조명을 바닥에 눕혀 위로 향하게 하세요.", "note"]);
+
+  // ---- 렌즈
+  var dtot = dbg + dcam;
+  var f = sw * (dtot*1000) / fov;
+  var efov = fov * dcam / dtot;
+  var mmpx = fov / 1920;
+  if (f > 210) W.push(["초점거리 초과", "필요 "+f.toFixed(0)+"mm 로 55-210 범위를 넘습니다. 목표 시야를 "+Math.ceil(sw*dtot*1000/210/10)*10+"mm 이상으로 넓히세요.", "warn"]);
+  if (f < 55)  W.push(["초점거리 미만", "필요 "+f.toFixed(0)+"mm 로 55mm 미만입니다. 목표 시야를 좁히거나 카메라를 더 멀리 두세요.", "warn"]);
+
+  var sens = dbg/1.5*100;
+
+  // ---- 출력
+  var $ = function(id,v){ document.getElementById(id).textContent = v; };
+  $('r_bgside', camLeft ? "오른쪽" : "왼쪽");
+  document.getElementById('n_bgside').textContent = "카메라는 " + (camLeft ? "왼쪽" : "오른쪽") + " (넓은 쪽)";
+  $('r_dbg', m(dbg));  $('r_dcam', m(dcam));
+  document.getElementById('n_dbg').textContent  = "표준 1.50 m";
+  document.getElementById('n_dcam').textContent = "표준 2.30 m";
+  $('r_off', "0.25 m");
+  $('r_dl', m(dl));  $('r_ang', ang.toFixed(0) + "°");
+  $('r_btop', btop.toFixed(2));  $('r_bmid', h.toFixed(2));  $('r_bbot', Math.max(0,bbot).toFixed(2));
+  $('r_bkind', kind);
+  $('r_cam', h.toFixed(2));
+  $('r_l1', l1.toFixed(2));  $('r_l2', l2.toFixed(2));
+  $('r_t1', "아래로 " + t1.toFixed(0) + "°");
+  $('r_t2', "위로 " + t2.toFixed(0) + "°");
+  $('r_dtot', m(dtot));
+  $('r_f', f.toFixed(0) + " mm");
+  $('r_efov', efov.toFixed(0) + " mm");
+  $('r_mmpx', mmpx.toFixed(3) + " mm/px");
+  $('r_sens', sens.toFixed(0) + " %");
+  document.getElementById('n_sens').textContent = sens >= 95 ? "표준" : (sens >= 65 ? "허용 — 열풍 온도로 보완" : "낮음 — 재배치 검토");
+
+  var wh = "";
+  W.forEach(function(w){ wh += '<div class="box '+w[2]+'"><b>'+w[0]+'</b> — '+w[1]+'</div>'; });
+  if (!W.length) wh = '<div class="box ok"><b>제약 없음</b> — 표준 배치를 그대로 적용할 수 있습니다.</div>';
+  document.getElementById('warns').innerHTML = wh;
+
+  // ---- 현장 카드
+  var site = document.getElementById('site').value || "(현장명 미입력)";
+  var card =
+"[BOS 배치 카드]  " + site + "\n" +
+"작성 " + today() + "   " + BUILD + "\n" +
+"------------------------------------------------------------\n" +
+"방 가로 " + num('roomW').toFixed(2) + " m / 세로 " + roomD.toFixed(2) + " m / 천장 " + ceil.toFixed(2) + " m\n" +
+"창호 " + num('winW').toFixed(2) + " x " + num('winH').toFixed(2) + " m,  여밈대 위치 " + mx.toFixed(2) + " m\n" +
+"측정 높이 h = " + h.toFixed(2) + " m   (여밈대 하부 1지점)\n" +
+"------------------------------------------------------------\n" +
+"[평면]\n" +
+"  배경판 : " + (camLeft ? "오른쪽" : "왼쪽") + "  여밈대에서 " + dbg.toFixed(2) + " m\n" +
+"  카메라 : " + (camLeft ? "왼쪽" : "오른쪽") + "  여밈대에서 " + dcam.toFixed(2) + " m\n" +
+"  시선은 창면에서 0.25 m 실내 쪽\n" +
+"  조명 2등 : 배경판에서 " + dl.toFixed(2) + " m,  벌림각 " + ang.toFixed(0) + "°  (둘 다 실내 쪽)\n" +
+"[높이]\n" +
+"  배경판 " + kind + "  상단 " + btop.toFixed(2) + " / 중심 " + h.toFixed(2) + " / 하단 " + Math.max(0,bbot).toFixed(2) + "\n" +
+"  카메라 " + h.toFixed(2) + "  (수평)\n" +
+"  조명1  " + l1.toFixed(2) + "  아래로 " + t1.toFixed(0) + "°\n" +
+"  조명2  " + l2.toFixed(2) + "  위로 " + t2.toFixed(0) + "°\n" +
+"[렌즈]\n" +
+"  총거리 " + dtot.toFixed(2) + " m -> 초점거리 " + f.toFixed(0) + " mm\n" +
+"  배경판 시야 " + fov.toFixed(0) + " mm -> 여밈대 실효 " + efov.toFixed(0) + " mm\n" +
+"  분해능 " + mmpx.toFixed(3) + " mm/px,  감도 " + sens.toFixed(0) + "%\n" +
+"[노출]  f/5.6 · 1/500 s · ISO 3200 · S&Q " + fps.toFixed(0) + "fps · SteadyShot OFF\n" +
+"[조명]  GODOX SL-60W x2 · 출력 100% 고정 · 5600K\n" +
+"------------------------------------------------------------\n" +
+"수리 후 재방문 시 위 수치 그대로 복원. 줌 위치 테이프 확인.\n" +
+"vmax(수리 전 출력값) = ______  <- 수리 후 처리에 --vmax 로 사용";
+  document.getElementById('card').textContent = card;
+
+  document.getElementById('cmd').textContent =
+"# 수리 전\n" +
+"py -3 bos_piv.py \"수리전.mp4\" --fov-mm " + fov.toFixed(0) + " --capture-fps " + fps.toFixed(0) + " --detail fine --layout stack\n\n" +
+"# 수리 후  (vmax 는 위 실행에서 출력된 값)\n" +
+"py -3 bos_piv.py \"수리후.mp4\" --fov-mm " + fov.toFixed(0) + " --capture-fps " + fps.toFixed(0) + " --detail fine --layout stack --vmax 0.000";
+}
+
+var FIELDS = ['site','roomW','roomD','ceil','winW','winH','mx','h','fov','sensor','fps','board'];
+function save(){
+  var o = {};
+  FIELDS.forEach(function(f){ o[f] = document.getElementById(f).value; });
+  Object.keys(CK).forEach(function(k){
+    CK[k].forEach(function(_, i){ var id=k+"_"+i; o[id] = document.getElementById(id).checked; });
+  });
+  try{ localStorage.setItem('bos_layout', JSON.stringify(o)); }catch(e){}
+  updProg();
+}
+function load(){
+  var o;
+  try{ o = JSON.parse(localStorage.getItem('bos_layout')||'{}'); }catch(e){ o={}; }
+  FIELDS.forEach(function(f){ if(o[f]!==undefined) document.getElementById(f).value = o[f]; });
+  Object.keys(CK).forEach(function(k){
+    CK[k].forEach(function(_, i){ var id=k+"_"+i; if(o[id]) document.getElementById(id).checked = true; });
+  });
+}
+function updProg(){
+  var t=0,c=0;
+  Object.keys(CK).forEach(function(k){
+    CK[k].forEach(function(_, i){ t++; if(document.getElementById(k+"_"+i).checked) c++; });
+  });
+  var el=document.getElementById('prog');
+  el.textContent = c + " / " + t + (c===t ? "  — 전부 확인됨" : "");
+  el.style.color = (c===t) ? "#0f6e56" : "#5f5e5a";
+}
+function resetCk(){
+  Object.keys(CK).forEach(function(k){
+    CK[k].forEach(function(_, i){ document.getElementById(k+"_"+i).checked = false; });
+  });
+  save();
+}
+function copyCard(){
+  var t = document.getElementById('card').textContent;
+  if (navigator.clipboard) navigator.clipboard.writeText(t);
+  else { var a=document.createElement('textarea'); a.value=t; document.body.appendChild(a); a.select(); document.execCommand('copy'); a.remove(); }
+}
+
+buildCk();
+load();
+calc();
+updProg();
+FIELDS.forEach(function(f){
+  var el = document.getElementById(f);
+  el.addEventListener('input', function(){ calc(); save(); });
+  el.addEventListener('change', function(){ calc(); save(); });
+});
+document.addEventListener('visibilitychange', function(){ if(!document.hidden) calc(); });
+</script>
