@@ -8,3 +8,6 @@
 
 # 로컬 메모
 README.txt
+
+# 내부 메모 (공개 배포 금지)
+images/*.txt
