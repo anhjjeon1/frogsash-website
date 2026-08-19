@@ -134,6 +134,35 @@ pre{background:#12202f;color:#dbe4ee;padding:9px 10px;border-radius:9px;font-siz
   main{padding:0}.card{break-inside:avoid;border-color:#ccc}
   .tx small{display:block}.ckg{grid-template-columns:1fr 1fr}
 }
+
+/* ── 3D 배치 뷰 ── */
+.v3d{margin-top:11px;border-top:1px solid var(--line2);padding-top:10px}
+.v3dbar{display:flex;gap:5px;margin-bottom:7px;flex-wrap:wrap;align-items:center}
+.v3dbar button{font-family:inherit;font-size:11px;padding:5px 10px;border:1px solid var(--line);
+  background:#fff;color:var(--sub);border-radius:7px;cursor:pointer}
+.v3dbar button.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.v3dbar .ic{margin-left:auto;font-size:13px;line-height:1;padding:5px 9px}
+#v3d{width:100%;display:block;border:1px solid var(--line);border-radius:10px;
+  background:#fafbfc;touch-action:none;cursor:grab}
+#v3d.grab{cursor:grabbing}
+.v3dlg{display:flex;flex-wrap:wrap;gap:3px 11px;margin-top:7px;font-size:10.5px;color:var(--sub)}
+.v3dlg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.v3dnt{font-size:10.5px;color:var(--dim);margin:7px 0 0;line-height:1.4}
+.v3dnt b{color:var(--sub)}
+/* ── 측정장소 · 파생 높이 ── */
+.seg{margin-left:auto;display:flex;gap:4px}
+.seg button{font-family:inherit;font-size:11px;padding:4px 11px;border:1px solid var(--line);
+  background:#fff;color:var(--sub);border-radius:7px;cursor:pointer}
+.seg button.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.f.lock{background:#f0f2f5;border-style:dashed;border-color:#d5dae1}
+.f.lock input{color:var(--dim)}
+.f.derive{background:var(--acc2);border-color:#bcd3ea}
+.f.derive b{font-size:15.5px;font-weight:700;color:var(--navy);width:100%;text-align:right;
+  letter-spacing:-.2px;font-variant-numeric:tabular-nums}
+.pl{display:flex;gap:8px;align-items:flex-start;border-radius:9px;padding:8px 10px;margin-top:9px;
+  font-size:11.5px;line-height:1.5;background:var(--acc2);color:#123f6d}
+.pl i{width:6px;height:6px;border-radius:99px;background:var(--acc);margin-top:6px;flex:none}
+.pl b{font-weight:700}
 </style>
 
 <div class="hd">
@@ -145,7 +174,11 @@ pre{background:#12202f;color:#dbe4ee;padding:9px 10px;border-radius:9px;font-siz
 <main>
 
 <section class="card">
-  <div class="ct"><span class="no">1</span><b>현장 입력</b></div>
+  <div class="ct"><span class="no">1</span><b>현장 입력</b>
+    <span class="seg" id="seg">
+      <button type="button" data-pl="home" class="on">실거주지</button>
+      <button type="button" data-pl="lab">실험실</button>
+    </span></div>
   <div class="fg">
     <div class="f f2"><span>현장명</span><input type="text" id="site" placeholder="의왕 풍경채 108동 1702"></div>
     <div class="f"><span>가로 m</span><input type="number" id="roomW" value="3.6" step="0.1" inputmode="decimal"></div>
@@ -154,8 +187,11 @@ pre{background:#12202f;color:#dbe4ee;padding:9px 10px;border-radius:9px;font-siz
     <div class="f"><span>창폭 m</span><input type="number" id="winW" value="2.4" step="0.1" inputmode="decimal"></div>
     <div class="f"><span>창높이 m</span><input type="number" id="winH" value="2.1" step="0.1" inputmode="decimal"></div>
     <div class="f"><span>여밈대X m</span><input type="number" id="mx" value="1.8" step="0.1" inputmode="decimal"></div>
-    <div class="f"><span>높이 h m</span><input type="number" id="h" value="0.55" step="0.05" inputmode="decimal"></div>
+    <div class="f"><span>창틀바닥 m</span><input type="number" id="sill" value="0.49" step="0.01" min="0.25" inputmode="decimal"></div>
+    <div class="f"><span>창틀두께 m</span><input type="number" id="frameT" value="0.06" step="0.005" min="0.02" inputmode="decimal"></div>
+    <div class="f derive"><span>장비높이 h</span><b id="r_h">—</b></div>
     <div class="f"><span>시야 mm</span><input type="number" id="fov" value="500" step="50" inputmode="numeric"></div>
+    <div class="f"><span>벌림각 °</span><input type="number" id="ang" value="40" step="5" min="10" max="60" inputmode="numeric"></div>
     <div class="f"><span>fps</span><input type="number" id="fps" value="120" step="30" inputmode="numeric"></div>
     <div class="f"><span>센서</span><select id="sensor">
       <option value="23.5" selected>APS-C 23.5</option><option value="22.3">캐논 22.3</option>
@@ -163,7 +199,12 @@ pre{background:#12202f;color:#dbe4ee;padding:9px 10px;border-radius:9px;font-siz
     <div class="f"><span>배경판</span><select id="board">
       <option value="auto" selected>자동</option><option value="port">A1 세로</option><option value="land">A1 가로</option></select></div>
   </div>
-  <p class="hint">가로=창과 나란한 방향 · 세로=창에서 안쪽 깊이 · 여밈대X=왼쪽 벽에서 · h=여밈대 하부 측정높이</p>
+  <p class="hint">가로=창과 나란한 방향 · 세로=창에서 안쪽 깊이 · 여밈대X=왼쪽 벽에서
+    · 창틀바닥=<b>마루 마감면</b>에서 창틀 하단까지(통상 0.25 m 이상) · <b>장비높이 h = 창틀바닥 + 창틀두께</b>(= 하부 창틀 위면 = 여밈대 하부 = 열기 유출면).
+    카메라·배경판·조명·열화상 높이가 모두 h를 따라 움직입니다.
+    치수는 모두 <b>m</b> 단위이고, <b>시야</b>(처리 명령의 <code>--fov-mm</code>·분해능 mm/px와 짝)와
+    <b>센서</b>(규격 표기)만 mm 입니다.</p>
+  <div class="pl" id="plnote"><i></i><span></span></div>
 </section>
 
 <section class="card">
@@ -201,12 +242,36 @@ pre{background:#12202f;color:#dbe4ee;padding:9px 10px;border-radius:9px;font-siz
   <div class="kv"><em>여밈대 ↔ 배경판</em><b id="r_dbg">—</b></div>
   <div class="kv"><em>여밈대 ↔ 카메라</em><b id="r_dcam">—</b></div>
   <div class="kv"><em>조명 ↔ 배경판</em><b id="r_dl">—</b></div>
+  <div class="kv"><em>배경판 조도 (필요 1,230)</em><b id="r_lux">—</b></div>
   <div class="kv"><em>시선 ↔ 창면</em><b>0.25 m</b></div>
   <div class="kv"><em>배경판 상/중/하</em><b id="r_bd">—</b></div>
-  <div class="kv"><em>카메라 높이</em><b id="r_cam">—</b></div>
+  <div class="kv"><em>장비 높이 h (창틀바닥+두께)</em><b id="r_cam">—</b></div>
   <div class="kv"><em>조명 1</em><b id="r_l1">—</b></div>
   <div class="kv"><em>조명 2</em><b id="r_l2">—</b></div>
   <div class="kv"><em>총거리 / 분해능</em><b id="r_res">—</b></div>
+  <div class="v3d">
+    <div class="v3dbar" id="v3dbar">
+      <button type="button" data-v3="iso" class="on">등각</button>
+      <button type="button" data-v3="top">평면도</button>
+      <button type="button" data-v3="front">정면도</button>
+      <button type="button" data-v3="bos">BOS 시점</button>
+      <button type="button" class="ic" id="v3dflip" title="열화상 좌우 반전">⇄</button>
+    </div>
+    <canvas id="v3d"></canvas>
+    <div class="v3dlg">
+      <span><i style="background:#1b5fa8"></i>여밈대·실효시야</span>
+      <span><i style="background:#2b3440"></i>배경판</span>
+      <span><i style="background:#0f2d52"></i>BOS 카메라</span>
+      <span><i style="background:#d99311"></i>조명 2등</span>
+      <span><i style="background:#7b4bc4"></i>열화상 3각도</span>
+      <span><i style="background:#b3261e"></i>충돌·접촉</span>
+    </div>
+    <div id="v3dwarn" style="margin-top:7px"></div>
+    <p class="v3dnt">드래그 회전 · 휠/핀치 확대 · <b>⇄</b>는 열화상 좌우 반전 (창짝 A가 가리는 쪽을 30°로)<br>
+    바닥의 원은 <b>촬영자 발자리</b>(몸 반경 0.25 m, 카메라 뒤 0.35 m) — 배경판·조명 스탠드까지
+    <b>0.35 m 미만은 접촉 위험</b>, 0.55 m 미만은 주의입니다. 열화상 구간에는 조명이 꺼져 있으므로 그림자는 판정하지 않습니다.</p>
+    <button class="ghost" type="button" onclick="save3D()">3D 배치도 PNG 저장</button>
+  </div>
 </section>
 
 <section class="card">
@@ -372,7 +437,7 @@ pre{background:#12202f;color:#dbe4ee;padding:9px 10px;border-radius:9px;font-siz
 </div>
 
 <script>
-var BUILD = "v2.3 / 2026-08-17";
+var BUILD = "v3.0 / 2026-08-18";
 document.getElementById('fp').textContent = BUILD;
 
 var CK = {
@@ -390,6 +455,7 @@ var CK = {
   ["밝기=거리로","디밍 대신 조명을 앞뒤로"],["색온도 5600K",""],
   ["배경판만 비춤","렌즈 방향 금지(플레어)"],
   ["기류에서 이격","60W 발열이 자체 열기류를 만듦"],
+  ["멀티탭 스위치","열화상 구간에 전원으로 OFF — 다이얼 금지"],
   ["반사 없음","하이라이트 보이면 각도를 더 벌릴 것"]
  ],
  ck_cond:[
@@ -397,6 +463,7 @@ var CK = {
   ["송풍기 5~10Pa","ΔP 확보"],["열풍 +15~20℃","50~60℃면 부력류가 지배"],
   ["스케일바 실측","100mm — 인쇄 배율 확인"],["배경판 평평하게",""],
   ["삼각대 위치 표시","바닥에 테이프 — 재현용"],
+  ["열화상 발자리 테이프","촬영자 몸통 자리 3점 — 배경판·조명에 닿지 않는 선"],
   ["무유동 3초 선촬영","기준영상용 — 바람 없어야 함"],
   ["보행 금지","촬영 중 삼각대 주변"]
  ],
@@ -428,10 +495,12 @@ function today(){ var d=new Date(),p=function(n){return (n<10?"0":"")+n;};
 
 function calc(){
   var roomW=num('roomW'), roomD=num('roomD'), ceil=num('ceil');
-  var mx=num('mx'), h=num('h'), fov=num('fov'), fps=num('fps');
+  var mx=num('mx'), fov=num('fov'), fps=num('fps');
+  var sill=num('sill'), frameT=num('frameT'), h=sill+frameT;
   var sw=parseFloat(document.getElementById('sensor').value);
   var boardSel=document.getElementById('board').value;
   var W=[], off=0.25, MG=0.30;
+  if(sill<0.25) W.push(["창틀바닥 확인","마루 마감면에서 창틀 하단까지는 통상 0.25 m 이상입니다 — 실측값을 다시 확인하세요","note"]);
 
   var la=Math.max(0,mx-MG), ra=Math.max(0,roomW-mx-MG);
   var camLeft = la>ra;
@@ -441,7 +510,7 @@ function calc(){
   if(k<1) W.push(["축소 배치","가로 부족 — 표준의 "+(k*100).toFixed(0)+"%로 축소","note"]);
   if(dbg<0.8) W.push(["감도 부족","배경판이 "+m(dbg)+"(0.8 m 미만). 열풍 온도를 올리거나 위치 재검토","warn"]);
 
-  var ang=40, dl=1.1, needD=off+dl*Math.sin(ang*Math.PI/180)+0.30;
+  var ang=Math.max(10,Math.min(60,num('ang')||40)), dl=1.1, needD=off+dl*Math.sin(ang*Math.PI/180)+0.30;
   if(roomD<needD){ var s=(roomD-off-0.30)/dl;
     ang=Math.max(15,Math.min(45,Math.asin(Math.max(0.1,Math.min(1,s)))*180/Math.PI));
     W.push(["조명 각도 축소","깊이 부족 — 벌림각 "+ang.toFixed(0)+"°","note"]); }
@@ -450,13 +519,28 @@ function calc(){
   if(boardSel==="land"||(boardSel==="auto"&&h-0.4205<0.05)){ half=0.297; kind="A1 가로"; }
   if(boardSel==="port"){ half=0.4205; kind="A1 세로"; }
   var bbot=h-half, btop=h+half;
-  if(bbot<0.02) W.push(["배경판 바닥 간섭","h를 "+(half+0.05).toFixed(2)+" m 이상으로","warn"]);
-  if(btop>ceil-0.05) W.push(["배경판 천장 간섭","상단이 천장에 닿음","warn"]);
+  if(bbot<0.02){ bbot=0.02; btop=bbot+2*half;
+    W.push(["배경판 편심","측정높이 "+h.toFixed(2)+"m가 낮아 판을 바닥에 세웁니다 — 판 중심 "+((bbot+btop)/2).toFixed(2)+"m","note"]); }
+  if(btop>ceil-0.05){ btop=ceil-0.05; bbot=Math.max(0.02,btop-2*half);
+    W.push(["배경판 천장 간섭","상단을 내렸습니다 — 판 중심 "+((bbot+btop)/2).toFixed(2)+"m","note"]); }
+  var efovH=(fov*dcam/(dbg+dcam))/1000*9/16;
+  if(h-efovH/2 < bbot-0.005)
+    W.push(["프레임 하단 이탈","BOS 화면 아래쪽이 배경판을 벗어납니다 — 시야를 "
+      +Math.floor((h-bbot)*2*16/9*1000/10)*10+"mm 이하로 줄이거나 측정높이를 올리세요","warn"]);
+  if(h+efovH/2 > btop+0.005)
+    W.push(["프레임 상단 이탈","BOS 화면 위쪽이 배경판을 벗어납니다 — 시야를 줄이세요","warn"]);
 
   var l1=Math.min(h+0.50, ceil-0.20), l2=Math.max(h-0.45, 0.15);
   var t1=Math.atan((l1-h)/dl)*180/Math.PI, t2=Math.atan((h-l2)/dl)*180/Math.PI;
   if(l1<h+0.50-0.001) W.push(["조명1 높이 제한","천장 때문에 "+m(l1)+" · 기울기 "+t1.toFixed(0)+"°","note"]);
   if(l2>h-0.45+0.001) W.push(["조명2 높이 제한",m(l2)+" · 스탠드보다 낮으면 바닥에 눕혀 위로","note"]);
+
+  var D1=Math.sqrt(dl*dl+(l1-h)*(l1-h)), D2=Math.sqrt(dl*dl+(h-l2)*(h-l2));
+  var lux=4500*dl*Math.cos(ang*Math.PI/180)*(1/(D1*D1*D1)+1/(D2*D2*D2));
+  var NEED=250*5.6*5.6/((1/500)*3200);
+  if(lux<NEED) W.push(["조도 부족",Math.round(lux)+" lux < 필요 "+Math.round(NEED)+" lux — 벌림각을 줄이거나 조명을 배경판에 붙이세요","warn"]);
+  if(ang<20) W.push(["정반사 위험","벌림각 "+ang.toFixed(0)+"° — 배경판에 하이라이트가 보이면 각도를 다시 벌리세요","note"]);
+  if(ang>55) W.push(["조도 쏠림","벌림각 "+ang.toFixed(0)+"° — 입사각이 커서 배경판 한쪽이 어두워집니다","note"]);
 
   var dtot=dbg+dcam, f=sw*(dtot*1000)/fov, efov=fov*dcam/dtot, mmpx=fov/1920;
   if(f>210) W.push(["초점거리 초과",f.toFixed(0)+"mm — 시야를 "+Math.ceil(sw*dtot*1000/210/10)*10+"mm 이상으로","warn"]);
@@ -467,13 +551,28 @@ function calc(){
   $('r_side', (camLeft?"오른쪽":"왼쪽") + " / " + (camLeft?"왼쪽":"오른쪽"));
   $('r_dbg', m(dbg)); $('r_dcam', m(dcam));
   $('r_dl', m(dl)+" · 벌림 "+ang.toFixed(0)+"°");
-  $('r_bd', btop.toFixed(2)+" / "+h.toFixed(2)+" / "+Math.max(0,bbot).toFixed(2)+"  "+kind);
-  $('r_cam', h.toFixed(2)+" m");
+  $('r_lux', Math.round(lux).toLocaleString()+" lux");
+  $('r_bd', btop.toFixed(2)+" / "+((bbot+btop)/2).toFixed(2)+" / "+bbot.toFixed(2)+"  "+kind);
+  $('r_cam', h.toFixed(3)+" m");
+  $('r_h', h.toFixed(3));
   $('r_l1', l1.toFixed(2)+" m · 아래 "+t1.toFixed(0)+"°");
-  $('r_l2', l2.toFixed(2)+" m · 위 "+t2.toFixed(0)+"°");
+  $('r_l2', l2.toFixed(2)+" m · "+(t2>=0?"위 ":"아래 ")+Math.abs(t2).toFixed(0)+"°");
   $('r_f', f.toFixed(0)+" mm"); $('r_efov', efov.toFixed(0)+" mm");
   $('r_res', m(dtot)+" · "+mmpx.toFixed(3)+" mm/px");
   $('r_sens', sens.toFixed(0)+"%");
+  window.SCENE={
+    roomW:roomW, roomD:roomD, ceil:ceil, mx:mx, h:h, off:off,
+    winW:num('winW'), winH:num('winH'),
+    bgX: mx + (camLeft? dbg : -dbg),
+    camX: mx + (camLeft? -dcam : dcam),
+    dbg:dbg, dcam:dcam, dtot:dtot,
+    half:half, kind:kind, boardW:(half>0.35?0.594:0.841),
+    dl:dl, ang:ang, l1:l1, l2:l2,
+    fovm:fov/1000, efovm:efov/1000, irD:0.60,
+    sill:sill, frameT:frameT, place:PLACE, bz0:bbot, bz1:btop
+  };
+  if(window.draw3D) window.draw3D();
+
 
   var wh="";
   W.forEach(function(w){ wh+='<div class="al a-'+w[2]+'"><i></i><span><b>'+w[0]+'</b> · '+w[1]+'</span></div>'; });
@@ -483,13 +582,15 @@ function calc(){
   document.getElementById('card').textContent =
 "[BOS 배치] "+(document.getElementById('site').value||"(현장명)")+"   "+today()+"\n"+
 "방 "+roomW.toFixed(2)+"x"+roomD.toFixed(2)+" 천장 "+ceil.toFixed(2)+" / 창 "+num('winW').toFixed(2)+"x"+num('winH').toFixed(2)+"\n"+
-"여밈대X "+mx.toFixed(2)+"  측정높이 h="+h.toFixed(2)+"\n"+
+"측정장소 "+(PLACE==="lab"?"실험실(20x20x8 중앙)":"실거주지")+"\n"+
+"여밈대X "+mx.toFixed(2)+"  창틀바닥 "+sill.toFixed(2)+" + 창틀두께 "+frameT.toFixed(3)+"\n"+
+"장비높이 h="+h.toFixed(3)+" (하부 창틀 위면 = 여밈대 하부)\n"+
 "------------------------------\n"+
 "배경판 "+(camLeft?"오른":"왼")+"쪽 "+dbg.toFixed(2)+"m / 카메라 "+(camLeft?"왼":"오른")+"쪽 "+dcam.toFixed(2)+"m\n"+
 "시선은 창면에서 0.25m 실내쪽\n"+
-"조명2등 배경판에서 "+dl.toFixed(2)+"m 벌림 "+ang.toFixed(0)+"° (둘다 실내쪽)\n"+
+"조명2등 배경판에서 "+dl.toFixed(2)+"m 벌림 "+ang.toFixed(0)+"° (둘다 실내쪽)  조도 "+Math.round(lux)+"lux\n"+
 "배경판 "+kind+"  상"+btop.toFixed(2)+" 중"+h.toFixed(2)+" 하"+Math.max(0,bbot).toFixed(2)+"\n"+
-"카메라 "+h.toFixed(2)+"  조명1 "+l1.toFixed(2)+"(아래"+t1.toFixed(0)+"°)  조명2 "+l2.toFixed(2)+"(위"+t2.toFixed(0)+"°)\n"+
+"카메라 "+h.toFixed(3)+"  조명1 "+l1.toFixed(2)+"(아래"+t1.toFixed(0)+"°)  조명2 "+l2.toFixed(2)+"("+(t2>=0?"위":"아래")+Math.abs(t2).toFixed(0)+"°)\n"+
 "초점 "+f.toFixed(0)+"mm  시야 "+fov.toFixed(0)+"→실효 "+efov.toFixed(0)+"mm\n"+
 "감도 "+sens.toFixed(0)+"%  분해능 "+mmpx.toFixed(3)+" mm/px\n"+
 "노출 f/5.6 · 1/500 · ISO3200\n"+
@@ -504,10 +605,38 @@ function calc(){
 "# 수리 후 (vmax는 위 출력값)\npy -3 bos_piv.py \"수리후.mp4\" --fov-mm "+fov.toFixed(0)+" --capture-fps "+fps.toFixed(0)+" --detail fine --layout stack --vmax 0.000";
 }
 
-var FIELDS=['site','roomW','roomD','ceil','winW','winH','mx','h','fov','sensor','fps','board'];
+var FIELDS=['site','roomW','roomD','ceil','winW','winH','mx','sill','frameT','fov','ang','sensor','fps','board'];
+var ROOMF=['roomW','roomD','ceil','mx'];
+var PLACE='home', HOME={roomW:'3.6',roomD:'3.0',ceil:'2.3',mx:'1.8'};
+var SITEN={home:'의왕 풍경채', lab:'안양실험실'};
+var LAB ={roomW:'20',roomD:'20',ceil:'8',mx:'10'};
+var PLTXT={
+  home:'<b>실거주지</b> — 온도 신호원은 <b>찬 외기</b>입니다. 열화상을 <b>먼저</b> 찍고(열풍기·조명 OFF, 함석판 제거) 그 다음 BOS를 세팅합니다. 순서를 바꾸면 창틀이 데워져 그 회차 열화상을 못 씁니다.<br>조명은 BOS 세팅 때 처음 켜므로 열화상 구간에 복사열 영향이 없습니다.',
+  lab :'<b>실험실 목업</b> — 온도 신호원은 <b>열풍기</b>입니다. 열화상과 BOS를 <b>동시 촬영</b>하고 시간대로 나눠 씁니다.<br>'+
+       '<b>t=0</b> 멀티탭 OFF(조명)+실내등 ON+열풍기 ON+손뼉 → <b>0~25초</b> 열화상 3각도 → <b>t=30</b> 멀티탭 ON+실내등 OFF → <b>60초</b> 촬영자 퇴장 → <b>70~180초</b> BOS.<br>'+
+       '열화상 중 조명을 끄는 이유는 <b>60W COB 복사열이 창틀을 데우기</b> 때문입니다. 밝기 다이얼이 아니라 <b>멀티탭 전원</b>으로 끄세요(다이얼은 PWM 플리커 설정이 흐트러집니다).'
+};
+function setPlace(p, silent){
+  var se=document.getElementById('site');
+  if(silent){ if(se.value.trim()) SITEN[p]=se.value; else se.value=SITEN[p]||''; }
+  else { if(p!==PLACE) SITEN[PLACE]=se.value; se.value=SITEN[p]||''; }
+  if(p==='lab' && PLACE!=='lab') ROOMF.forEach(function(f){ HOME[f]=document.getElementById(f).value; });
+  PLACE=p;
+  var lab=(p==='lab'), src=lab?LAB:HOME;
+  ROOMF.forEach(function(f){
+    var el=document.getElementById(f);
+    el.value=src[f]; el.disabled=lab;
+    el.parentNode.classList.toggle('lock', lab);
+  });
+  var bs=document.querySelectorAll('#seg button');
+  Array.prototype.forEach.call(bs, function(b){ b.classList.toggle('on', b.getAttribute('data-pl')===p); });
+  document.querySelector('#plnote span').innerHTML=PLTXT[p];
+  if(!silent){ calc(); save(); }
+}
 function save(){
   var o={}; FIELDS.forEach(function(f){ o[f]=document.getElementById(f).value; });
   Object.keys(CK).forEach(function(k){ CK[k].forEach(function(_,i){ o[k+'_'+i]=document.getElementById(k+'_'+i).checked; }); });
+  o._place=PLACE; o._home=HOME; o._siten=SITEN;
   o._desc=document.getElementById('showdesc').checked;
   o._only=document.getElementById('onlyleft').checked;
   try{ localStorage.setItem('bos_layout', JSON.stringify(o)); }catch(e){}
@@ -515,7 +644,14 @@ function save(){
 }
 function load(){
   var o; try{ o=JSON.parse(localStorage.getItem('bos_layout')||'{}'); }catch(e){ o={}; }
+  if(o.h!==undefined && o.sill===undefined){        /* v2.3 이하 마이그레이션 */
+    o.sill=(parseFloat(o.h)-0.06).toFixed(2); o.frameT='0.06';
+  }
+  if(o.frameT!==undefined && parseFloat(o.frameT)>1)  /* v2.6 이하: mm 로 저장됨 */
+    o.frameT=(parseFloat(o.frameT)/1000).toFixed(3);
   FIELDS.forEach(function(f){ if(o[f]!==undefined) document.getElementById(f).value=o[f]; });
+  if(o._home) ROOMF.forEach(function(f){ if(o._home[f]!==undefined) HOME[f]=o._home[f]; });
+  if(o._siten){ if(o._siten.home) SITEN.home=o._siten.home; if(o._siten.lab) SITEN.lab=o._siten.lab; }
   Object.keys(CK).forEach(function(k){ CK[k].forEach(function(_,i){
     var el=document.getElementById(k+'_'+i);
     if(o[k+'_'+i]){ el.checked=true; el.closest('.ck').classList.add('done'); } }); });
@@ -571,7 +707,15 @@ function saveFile(){
   setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 2000);
 }
 
-buildCk(); load(); calc(); updProg();
+buildCk(); load();
+(function(){
+  var o={}; try{ o=JSON.parse(localStorage.getItem('bos_layout')||'{}'); }catch(e){}
+  setPlace(o._place==='lab'?'lab':'home', true);
+})();
+Array.prototype.forEach.call(document.querySelectorAll('#seg button'), function(b){
+  b.addEventListener('click', function(){ setPlace(b.getAttribute('data-pl')); });
+});
+calc(); updProg();
 FIELDS.forEach(function(f){
   var el=document.getElementById(f);
   el.addEventListener('input', function(){ calc(); save(); });
@@ -828,5 +972,405 @@ window.irCard=function(){
 };
 
 irAll();
+})();
+</script>
+<script>
+/* ── 3D 배치 뷰 (자체 투영 · 외부 라이브러리 없음) ── */
+(function(){
+var cv=null, ctx=null, W=0, H=0, DPR=1;
+var yaw=-0.62, pitch=0.42, zoom=1, mode='iso', flip=false;
+var drag=null, pdist=0;
+
+function $(i){ return document.getElementById(i); }
+function sub(a,b){ return [a[0]-b[0],a[1]-b[1],a[2]-b[2]]; }
+function dot(a,b){ return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]; }
+function cross(a,b){ return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]; }
+function norm(a){ var l=Math.sqrt(dot(a,a))||1; return [a[0]/l,a[1]/l,a[2]/l]; }
+function axpy(a,v,s){ return [a[0]+v[0]*s, a[1]+v[1]*s, a[2]+v[2]*s]; }
+function mid(a,b){ return [(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2]; }
+function mn(a){ return Math.min.apply(null,a); }
+function mx_(a){ return Math.max.apply(null,a); }
+
+function segD2(p,a,b){            /* 평면(바닥) 투영 거리 — 세워진 물체용 */
+  return segDist([p[0],p[1],0],[a[0],a[1],0],[b[0],b[1],0]);
+}
+function pd2(p,q){ var dx=p[0]-q[0], dy=p[1]-q[1]; return Math.sqrt(dx*dx+dy*dy); }
+function segDist(p,a,b){
+  var ab=sub(b,a), t=dot(sub(p,a),ab)/(dot(ab,ab)||1e-9);
+  t=Math.max(0,Math.min(1,t));
+  var d=sub(p,axpy(a,ab,t));
+  return Math.sqrt(dot(d,d));
+}
+
+var C={
+  floor:'#d8dee6', wall:'#e7ebf1', wline:'#c4ccd6',
+  glass:'#bcd8ec', frame:'#f8fafb', fline:'#a9b4c0',
+  tin:'#9aa5b1', base:'#cbd2da',
+  mull:'#1b5fa8', board:'#ffffff', bline:'#22303f', dotc:'#3d4752',
+  bos:'#0f2d52', led:'#d08e0c', ir:'#7b4bc4', irl:'#b49ad8', fru:'#7f9bbd',
+  dan:'#b3261e', dim:'#98a1ac', dimn:'#5f6a76', bg:'#dde3ea'
+};
+
+function boxF(F,c,sx,sy,sz,col){
+  var x0=c[0]-sx/2,x1=c[0]+sx/2,y0=c[1]-sy/2,y1=c[1]+sy/2,z0=c[2]-sz/2,z1=c[2]+sz/2;
+  var v=[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]];
+  [[0,1,2,3],[4,5,6,7],[0,1,5,4],[2,3,7,6],[1,2,6,5],[3,0,4,7]].forEach(function(q){
+    F.push({p:[v[q[0]],v[q[1]],v[q[2]],v[q[3]]], fill:col, stroke:col});
+  });
+}
+function rYZ(x,ya,za,yb,zb){ return [[x,ya,za],[x,yb,za],[x,yb,zb],[x,ya,zb]]; }
+function rXZ(y,xa,za,xb,zb){ return [[xa,y,za],[xb,y,za],[xb,y,zb],[xa,y,zb]]; }
+function rXY(z,xa,ya,xb,yb){ return [[xa,ya,z],[xb,ya,z],[xb,yb,z],[xa,yb,z]]; }
+function loop(L,p,col,w,d){ for(var i=0;i<p.length;i++) L.push({a:p[i],b:p[(i+1)%p.length],c:col,w:w||1,d:d}); }
+
+/* ───────── 씬 ───────── */
+function buildScene(S,eye){
+  var F=[],L=[],T=[],DO=[],WARN=[];
+  var RW=S.roomW, RD=S.roomD, CH=S.ceil, bos=(mode==='bos'), lab=(S.place==='lab');
+  var t=S.frameT;
+
+  /* 창틀 — 바닥높이 sill 기준 */
+  var wx0=Math.max(0,S.mx-S.winW/2), wx1=Math.min(RW,S.mx+S.winW/2);
+  var wz0=S.sill, wz1=S.sill+S.winH;
+  var gz0=wz0+t, gz1=Math.max(gz0+0.05, wz1-t);
+  var M=[S.mx,0,S.h];                       /* 측정점 = 하부 창틀 위면 = 여밈대 하부 */
+
+  /* 장비 위치 */
+  var deg = flip ? [45,0,-30] : [-45,0,30];
+  var irP = deg.map(function(a){
+    var r=a*Math.PI/180;
+    return [S.mx+S.irD*Math.sin(r), S.irD*Math.cos(r), S.h];
+  });
+  var bY=Math.max(S.off, S.boardW/2+0.03), bC=[S.bgX,bY,S.h], cP=[S.camX,S.off,S.h];
+  var sgn=(S.camX>S.bgX)?1:-1;
+  var lx=S.bgX+sgn*S.dl*Math.cos(S.ang*Math.PI/180), ly=S.off+S.dl*Math.sin(S.ang*Math.PI/180);
+
+  /* 표시 범위 — 큰 실험실에서도 장비 주변만 */
+  var fx=[S.bgX,S.camX,lx,wx0,wx1], fy=[0,ly,S.off,bY], fz=[0,S.l1,S.l2,(S.bz1!==undefined?S.bz1:S.h+S.half),wz1];
+  irP.forEach(function(p){ fx.push(p[0]); fy.push(p[1]); });
+  var bx0=Math.max(0,mn(fx)-0.6), bx1=Math.min(RW,mx_(fx)+0.6);
+  var by0=lab?-0.6:0, by1=Math.min(RD,mx_(fy)+0.6);
+  var bz1=Math.min(CH,mx_(fz)+0.35);
+
+  /* 바닥 */
+  F.push({p:rXY(0,bx0,by0,bx1,by1), fill:C.floor, stroke:C.wline});
+
+  if(lab){
+    /* 실험실 목업 — 벽 없음, 받침대 + 뒷면 함석판 */
+    if(wz0>0.02) boxF(F,[S.mx,-0.02,wz0/2],(wx1-wx0)*0.92,0.30,wz0,C.base);
+    F.push({p:rXZ(-0.10,wx0+t*0.5,gz0-0.03,S.mx,gz1+0.03), fill:C.tin, stroke:'#7d8794'});
+    F.push({p:rXZ(-0.10,S.mx,gz0-0.03,wx1-t*0.5,gz1+0.03), fill:C.tin, stroke:'#7d8794'});
+    T.push({p:[S.mx,-0.11,gz1+0.10], t:'함석판(뒷면)', c:'#6f7986', s:9.5, pr:3});
+  } else {
+    /* 실거주지 — 벽에 설치 */
+    var pw0=Math.max(bx0,wx0-1.8), pw1=Math.min(bx1,wx1+1.8);
+    if(wx0>pw0) F.push({p:rXZ(0,pw0,0,wx0,bz1), fill:C.wall, stroke:C.wline});
+    if(wx1<pw1) F.push({p:rXZ(0,wx1,0,pw1,bz1), fill:C.wall, stroke:C.wline});
+    if(wz0>0.01) F.push({p:rXZ(0,wx0,0,wx1,wz0), fill:C.wall, stroke:C.wline});
+    if(wz1<bz1) F.push({p:rXZ(0,wx0,wz1,wx1,bz1), fill:C.wall, stroke:C.wline});
+    if(RW<8&&RD<8){
+      [{n:[0,-1,0],c:[RW/2,RD,CH/2],p:rXZ(RD,0,0,RW,CH)},
+       {n:[1,0,0],c:[0,RD/2,CH/2],p:rYZ(0,0,0,RD,CH)},
+       {n:[-1,0,0],c:[RW,RD/2,CH/2],p:rYZ(RW,0,0,RD,CH)}].forEach(function(w){
+        if(dot(w.n,sub(eye,w.c))>0) F.push({p:w.p, fill:C.wall, stroke:C.wline});
+      });
+    }
+  }
+
+  /* 창틀 프로파일 4변 + 유리 2장 + 여밈대 */
+  F.push({p:rXZ(-0.02,wx0,gz0,S.mx,gz1), fill:C.glass, stroke:C.fline});
+  F.push({p:rXZ(-0.02,S.mx,gz0,wx1,gz1), fill:C.glass, stroke:C.fline});
+  F.push({p:rXZ(-0.03,wx0,wz0,wx1,gz0), fill:C.frame, stroke:C.fline});
+  F.push({p:rXZ(-0.03,wx0,gz1,wx1,wz1), fill:C.frame, stroke:C.fline});
+  F.push({p:rXZ(-0.03,wx0,gz0,wx0+t,gz1), fill:C.frame, stroke:C.fline});
+  F.push({p:rXZ(-0.03,wx1-t,gz0,wx1,gz1), fill:C.frame, stroke:C.fline});
+  F.push({p:rXZ(-0.04,S.mx-0.035,gz0,S.mx+0.035,gz1), fill:C.mull, stroke:C.mull});
+  L.push({a:[S.mx,0,gz0], b:[S.mx,0,gz1], c:C.mull, w:2});
+  T.push({p:[S.mx,-0.05,gz0+(gz1-gz0)*0.78], t:'여밈대', c:C.mull, s:10, pr:2});
+
+  /* 유출면 — 하부 창틀 위면 (= 측정 높이 h) */
+  L.push({a:[wx0+t,0,S.h], b:[wx1-t,0,S.h], c:C.dan, w:2.2});
+  T.push({p:[S.mx+(S.camX>S.mx?0.42:-0.42),0,S.h+0.085], t:'유출면 (하부 창틀 위면)', c:C.dan, s:9.5, pr:3});
+  DO.push({p:M, wr:0.035, c:C.mull, ring:1});
+
+  /* 배경판 */
+  var z0=(S.bz0!==undefined?S.bz0:S.h-S.half), z1=(S.bz1!==undefined?S.bz1:S.h+S.half);
+  var bp=rYZ(S.bgX, bY-S.boardW/2, z0, bY+S.boardW/2, z1);
+  var bad=(S.bgX<0.03||S.bgX>RW-0.03);
+  F.push({p:bp, fill:C.board, stroke:bad?C.dan:C.bline});
+  loop(L,bp,bad?C.dan:C.bline,2);
+  for(var i=0;i<12;i++) for(var j=0;j<17;j++)
+    DO.push({p:[S.bgX, bY-S.boardW/2+S.boardW*(i+0.5)/12, z0+(z1-z0)*(j+0.5)/17], wr:0.007, c:C.dotc});
+  T.push({p:[S.bgX,bY,z1+0.12], t:'배경판 '+S.kind, c:bad?C.dan:C.bline, s:10, pr:2});
+  if(bad) WARN.push(['배경판 벽 충돌','배경판이 방 밖으로 나갑니다 — 가로 공간 부족']);
+
+  /* BOS 카메라 · 프러스텀 */
+  var cbad=(S.camX<0.05||S.camX>RW-0.05);
+  if(!bos){
+    boxF(F,cP,0.13,0.15,0.10, cbad?C.dan:C.bos);
+    boxF(F,[S.camX+(S.bgX>S.camX?0.10:-0.10),S.off,S.h],0.09,0.07,0.07, cbad?C.dan:'#2c4a70');
+    T.push({p:[S.camX,S.off,S.h+0.19], t:'BOS 카메라', c:cbad?C.dan:C.bos, s:10, pr:2});
+    var fw=S.fovm/2, fh=S.fovm*9/32;
+    var fr=rYZ(S.bgX, bY-fw, S.h-fh, bY+fw, S.h+fh);
+    loop(L,fr,C.fru,1,[3,3]);
+    fr.forEach(function(q){ L.push({a:cP,b:q,c:C.fru,w:0.8,d:[3,3]}); });
+    L.push({a:bC,b:cP,c:C.bos,w:1.6,d:[7,4]});
+  }
+  if(cbad) WARN.push(['카메라 벽 충돌','카메라가 방 밖으로 나갑니다 — 시야를 넓히거나 축소 배치']);
+  var ew=S.efovm/2, eh=S.efovm*9/32;
+  loop(L,rYZ(S.mx,S.off-ew,S.h-eh,S.off+ew,S.h+eh),C.mull,1.4,[5,3]);
+  T.push({p:[S.mx,S.off,S.h+eh+0.06], t:'실효시야 '+(S.efovm*1000).toFixed(0), c:C.mull, s:9.5, pr:3});
+
+  /* 조명 2등 */
+  var lbad=(ly>RD-0.05);
+  if(lbad) WARN.push(['조명 벽 충돌','조명이 뒷벽을 넘습니다 — 벌림각을 줄이세요']);
+  [S.l1,S.l2].forEach(function(lz,k){
+    var P=[lx,ly,lz], col=lbad?C.dan:C.led;
+    boxF(F,P,0.13,0.13,0.16,col);
+    L.push({a:[lx,ly,0],b:P,c:col,w:1.4});          /* 스탠드 기둥 — 접촉 대상 */
+    L.push({a:P,b:bC,c:col,w:1.2,d:[4,3]});
+    T.push({p:[lx,ly,lz+(k?-0.18:0.18)], t:'조명'+(k+1)+' '+lz.toFixed(2), c:col, s:9.5, pr:2});
+  });
+
+  /* 열화상 3대 */
+  var TR=0.35, RAD=0.25, BAD=0.35, CAU=0.55;      /* 몸통 오프셋 · 몸 반경 · 접촉/주의 */
+  var wb={d:9,k:0}, wl={d:9,k:0}, tp0=null;
+  irP.forEach(function(P,k){
+    var aim=norm(sub(M,P)), tp=axpy(P,aim,-TR);   /* 촬영자 몸통 중심 */
+    var dB=segD2(tp,[S.bgX,bY-S.boardW/2],[S.bgX,bY+S.boardW/2]);
+    var dL=pd2(tp,[lx,ly]);
+    if(dB<wb.d){ wb={d:dB,k:k}; } if(dL<wl.d){ wl={d:dL,k:k}; }
+    var risk=Math.min(dB,dL), col=(risk<BAD)?C.dan:(risk<CAU?'#b07800':C.ir);
+    boxF(F,P,0.10,0.10,0.08,C.ir);
+    L.push({a:P,b:M,c:C.ir,w:1.1});
+    var rt=norm(cross(aim,[0,0,1])), hw=S.irD*0.4142, hh=S.irD*0.3057;
+    loop(L,[axpy(axpy(M,rt,hw),[0,0,1],-hh), axpy(axpy(M,rt,-hw),[0,0,1],-hh),
+            axpy(axpy(M,rt,-hw),[0,0,1],hh), axpy(axpy(M,rt,hw),[0,0,1],hh)],C.irl,0.9,[2,3]);
+    DO.push({p:[P[0],P[1],0], wr:0.035, c:C.ir, ring:1});
+    var cir=[]; for(var a=0;a<16;a++){ var th=a/16*6.2832;
+      cir.push([tp[0]+RAD*Math.cos(th), tp[1]+RAD*Math.sin(th), 0.004]); }
+    F.push({p:cir, fill:(risk<BAD?'rgba(179,38,30,.24)':(risk<CAU?'rgba(176,120,0,.18)':'rgba(123,75,196,.15)')), stroke:col});
+    if(k===1) tp0=tp;
+    T.push({p:[P[0],P[1],P[2]+0.16], t:(deg[k]>0?'+':'')+deg[k]+'°', c:col, s:10.5, pr:1});
+  });
+  if(tp0) T.push({p:[tp0[0],tp0[1]+0.34,0.02], t:'촬영자 발자리 (바닥 테이프)', c:C.ir, s:9.5, pr:4});
+  var lb=function(k){ return (deg[k]>0?'+':'')+deg[k]+'°'; };
+  if(wb.d<CAU) WARN.push([wb.d<BAD?'배경판 접촉 위험':'배경판 근접',
+    lb(wb.k)+' 촬영자 몸통이 배경판에서 '+wb.d.toFixed(2)+'m'
+    +(wb.d<BAD?' — 사선 각도를 30°로 줄이세요':' — 바닥 테이프로 자리를 고정하세요'), wb.d<BAD?'warn':'note']);
+  var lxOut=S.bgX-sgn*S.dl*Math.cos(S.ang*Math.PI/180);
+  var outOK=(lxOut>0.25 && lxOut<RW-0.25);
+  if(wl.d<CAU) WARN.push([wl.d<BAD?'조명 접촉 위험':'조명 근접',
+    lb(wl.k)+' 촬영자 몸통이 조명 스탠드에서 '+wl.d.toFixed(2)+'m'
+    +(wl.d<BAD
+      ? (outOK ? ' — 조명을 배경판 바깥쪽(왼쪽 '+lxOut.toFixed(2)+'m 지점)으로 옮기세요'
+               : ' — 방이 좁아 바깥쪽 이동 불가. 조명 벌림각을 '+S.ang.toFixed(0)+'°에서 줄여 창 쪽으로 붙이세요')
+      : ' — 퇴장 동선을 반대쪽으로'), wl.d<BAD?'warn':'note']);
+
+  /* 치수 */
+  function dim(a,b,txt,pr){
+    L.push({a:a,b:b,c:C.dimn,w:1,d:[2,2]});
+    T.push({p:mid(a,b), t:txt, c:C.dimn, s:9.5, box:1, pr:pr||3, dim:1});
+  }
+  if(!bos){
+    dim([S.mx,S.off,S.h],[S.bgX,S.off,S.h], S.dbg.toFixed(2)+'m');
+    dim([S.mx,S.off,S.h],[S.camX,S.off,S.h], S.dcam.toFixed(2)+'m');
+    dim([S.mx,0,0],[S.mx,0,S.h], '장비높이 '+S.h.toFixed(3), 2);
+    dim(M,irP[1], S.irD.toFixed(2)+'m');
+  }
+  return {F:F,L:L,T:T,D:DO,WARN:WARN,box:[bx0,bx1,by0,by1,0,bz1]};
+}
+
+/* ───────── 뷰 ───────── */
+function makeView(S,box){
+  var ctr=[(box[0]+box[1])/2,(box[2]+box[3])/2,(box[4]+box[5])/2], eye, tgt;
+  if(mode==='bos'){ eye=[S.camX,S.off,S.h]; tgt=[S.bgX,Math.max(S.off,S.boardW/2+0.03),S.h]; }
+  else{
+    var d=Math.max(box[1]-box[0],box[3]-box[2],box[5]-box[4])*2.4;
+    eye=[ctr[0]+d*Math.cos(pitch)*Math.sin(yaw), ctr[1]+d*Math.cos(pitch)*Math.cos(yaw), ctr[2]+d*Math.sin(pitch)];
+    tgt=ctr;
+  }
+  var fwd=norm(sub(tgt,eye)), u0=[0,0,1];
+  if(Math.abs(dot(fwd,u0))>0.999) u0=[0,-1,0];
+  var rt=norm(cross(u0,fwd));
+  return {eye:eye,fwd:fwd,rt:rt,up:cross(fwd,rt)};
+}
+function toCam(V,p){
+  var v=sub(p,V.eye), z=dot(v,V.fwd); if(z<0.05) z=0.05;
+  return [dot(v,V.rt)/z, dot(v,V.up)/z, z];
+}
+function setScale(V,S,w,h,box){
+  if(mode==='bos'){
+    var fw=Math.min(w*0.94, h*0.94*16/9);
+    return {f:(fw/2)/((S.fovm/2)/S.dtot), ox:w/2, oy:h/2, frame:[fw,fw*9/16]};
+  }
+  var u0=1e9,u1=-1e9,v0=1e9,v1=-1e9;
+  [[box[0],box[2],box[4]],[box[1],box[2],box[4]],[box[0],box[3],box[4]],[box[1],box[3],box[4]],
+   [box[0],box[2],box[5]],[box[1],box[2],box[5]],[box[0],box[3],box[5]],[box[1],box[3],box[5]]]
+  .forEach(function(p){
+    var q=toCam(V,p);
+    u0=Math.min(u0,q[0]); u1=Math.max(u1,q[0]); v0=Math.min(v0,q[1]); v1=Math.max(v1,q[1]);
+  });
+  var f=Math.min(w*0.90/Math.max(1e-6,u1-u0), h*0.86/Math.max(1e-6,v1-v0))*zoom;
+  return {f:f, ox:w/2-(u0+u1)/2*f, oy:h/2+(v0+v1)/2*f};
+}
+
+/* ───────── 렌더 ───────── */
+function render(g,w,h,S){
+  var V0=makeView(S,[0,S.roomW,0,S.roomD,0,S.ceil]);
+  var sc=buildScene(S,V0.eye);
+  var V=makeView(S,sc.box), SC=setScale(V,S,w,h,sc.box), bos=(mode==='bos');
+  if(!bos){ sc=buildScene(S,V.eye); }
+  function P(p){ var q=toCam(V,p); return [SC.ox+q[0]*SC.f, SC.oy-q[1]*SC.f, q[2]]; }
+
+  g.clearRect(0,0,w,h);
+  g.fillStyle=C.bg; g.fillRect(0,0,w,h);
+  g.lineJoin='round'; g.lineCap='round';
+
+  sc.F.forEach(function(f){
+    var s=0; f.p.forEach(function(p){ s+=toCam(V,p)[2]; }); f._d=s/f.p.length;
+  });
+  sc.F.sort(function(a,b){ return b._d-a._d; });
+  sc.F.forEach(function(f){
+    g.beginPath();
+    f.p.forEach(function(p,i){ var q=P(p); i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]); });
+    g.closePath();
+    g.fillStyle=f.fill; g.fill();
+    g.strokeStyle=f.stroke; g.lineWidth=0.8; g.stroke();
+  });
+  sc.L.forEach(function(l){
+    var a=P(l.a), b=P(l.b);
+    g.setLineDash(l.d||[]); g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1]);
+    g.strokeStyle=l.c; g.lineWidth=l.w; g.stroke(); g.setLineDash([]);
+  });
+  sc.D.forEach(function(d){
+    var q=P(d.p), r=Math.max(0.7, Math.min(3.6, d.wr*SC.f/q[2]));
+    g.beginPath(); g.arc(q[0],q[1],r,0,6.2832);
+    if(d.ring){ g.strokeStyle=d.c; g.lineWidth=1.8; g.stroke(); }
+    else { g.fillStyle=d.c; g.fill(); }
+  });
+
+  g.textAlign='center'; g.textBaseline='middle';
+  var put=[], slim=(w<420);
+  sc.T.filter(function(t){ return !(bos&&t.dim) && !(slim&&(t.pr||5)>=3); })
+      .sort(function(a,b){ return (a.pr||5)-(b.pr||5); })
+      .forEach(function(t){
+    var q=P(t.p);
+    g.font='600 '+t.s+'px "Pretendard","Malgun Gothic",system-ui,sans-serif';
+    var ww=g.measureText(t.t).width, x=q[0], y=q[1], n=0;
+    x=Math.max(ww/2+5, Math.min(w-ww/2-5, x));
+    while(n<14 && put.some(function(o){ return Math.abs(o.x-x)<(o.w+ww)/2+3 && Math.abs(o.y-y)<14; })){
+      y += (n%2 ? -1 : 1) * 14 * Math.ceil((n+1)/2); n++;
+    }
+    y=Math.max(11, Math.min(h-20, y));
+    if(Math.abs(y-q[1])>2){ g.setLineDash([1,2]); g.beginPath(); g.moveTo(q[0],q[1]); g.lineTo(x,y);
+      g.strokeStyle=t.c; g.lineWidth=0.7; g.globalAlpha=.5; g.stroke(); g.globalAlpha=1; g.setLineDash([]); }
+    put.push({x:x,y:y,w:ww});
+    if(t.box){ g.fillStyle='rgba(255,255,255,.93)'; g.fillRect(x-ww/2-4,y-7.5,ww+8,15); }
+    g.strokeStyle='#fff'; g.lineWidth=3.2; g.strokeText(t.t,x,y);
+    g.fillStyle=t.c; g.fillText(t.t,x,y);
+  });
+
+  if(bos && SC.frame){
+    var fw=SC.frame[0], fh=SC.frame[1], x0=(w-fw)/2, y0=(h-fh)/2;
+    g.fillStyle='rgba(203,212,222,.90)';
+    g.fillRect(0,0,w,y0); g.fillRect(0,y0+fh,w,h-y0-fh);
+    g.fillRect(0,y0,x0,fh); g.fillRect(x0+fw,y0,w-x0-fw,fh);
+    g.strokeStyle=C.bos; g.lineWidth=1.6; g.strokeRect(x0,y0,fw,fh);
+    g.textAlign='center'; g.textBaseline='middle';
+    g.font='600 10px "Pretendard","Malgun Gothic",system-ui,sans-serif';
+    [['프레임 폭 = 실효시야 '+(S.efovm*1000).toFixed(0)+'mm', y0+13],
+     ['창면에서 '+(S.off-S.efovm/2).toFixed(2)+' ~ '+(S.off+S.efovm/2).toFixed(2)+'m 구간', y0+28]]
+    .forEach(function(z){
+      g.strokeStyle='#fff'; g.lineWidth=3.2; g.strokeText(z[0],w/2,z[1]);
+      g.fillStyle=C.bos; g.fillText(z[0],w/2,z[1]);
+    });
+  }
+
+  var site=(document.getElementById('site').value||'').trim();
+  g.textAlign='left'; g.textBaseline='alphabetic';
+  g.font='500 9.5px "Pretendard","Malgun Gothic",system-ui,sans-serif';
+  g.fillStyle=C.dimn;
+  g.fillText((site?site+' · ':'')+(S.place==='lab'?'실험실 · ':'실거주지 · ')+today()+' · '+BUILD
+    +(bos?'   [BOS 카메라 실제 화각 16:9]':''), 8, h-8);
+
+  var wh='';
+  sc.WARN.forEach(function(x){ wh+='<div class="al a-'+(x[2]||'warn')+'"><i></i><span><b>'+x[0]+'</b> · '+x[1]+'</span></div>'; });
+  if(!sc.WARN.length) wh='<div class="al a-ok"><i></i><span><b>접촉 없음</b> · 촬영자 몸통이 배경판·조명 스탠드에서 충분히 떨어져 있습니다</span></div>';
+  var el=$('v3dwarn'); if(el) el.innerHTML=wh;
+}
+
+/* ───────── 구동 ───────── */
+function fit(){
+  DPR=Math.min(window.devicePixelRatio||1,2);
+  W=cv.clientWidth||320; H=Math.max(240,Math.min(Math.round(W*0.62),350));
+  cv.style.height=H+'px'; cv.width=W*DPR; cv.height=H*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.draw3D=function(){
+  if(!cv||!window.SCENE) return;
+  if(cv.clientWidth&&cv.clientWidth!==W) fit();
+  render(ctx,W,H,window.SCENE);
+};
+window.save3D=function(){
+  if(!cv||!window.SCENE) return;
+  var s=2, c=document.createElement('canvas');
+  c.width=W*s; c.height=H*s;
+  var g=c.getContext('2d'); g.setTransform(s,0,0,s,0,0);
+  render(g,W,H,window.SCENE);
+  var a=document.createElement('a');
+  a.download=((document.getElementById('site').value||'현장명미입력').trim()
+    .replace(/[\\/:*?"<>|\r\n\t]/g,'_').slice(0,50))+'_BOS배치도.png';
+  a.href=c.toDataURL('image/png'); a.click();
+};
+
+function init(){
+  cv=$('v3d'); if(!cv) return;
+  ctx=cv.getContext('2d'); fit();
+  var bar=$('v3dbar'), bs=bar.querySelectorAll('button[data-v3]');
+  Array.prototype.forEach.call(bs, function(b){
+    b.addEventListener('click', function(){
+      Array.prototype.forEach.call(bs, function(x){ x.classList.remove('on'); });
+      b.classList.add('on'); mode=b.getAttribute('data-v3'); zoom=1;
+      if(mode==='iso'){ yaw=-0.62; pitch=0.42; }
+      if(mode==='top'){ yaw=0; pitch=1.5688; }
+      if(mode==='front'){ yaw=0; pitch=0.02; }
+      draw3D();
+    });
+  });
+  $('v3dflip').addEventListener('click', function(){
+    flip=!flip; this.classList.toggle('on',flip); draw3D();
+  });
+  cv.addEventListener('pointerdown', function(e){
+    if(mode==='bos') return;
+    drag=[e.clientX,e.clientY]; cv.classList.add('grab');
+    try{ cv.setPointerCapture(e.pointerId); }catch(x){}
+  });
+  cv.addEventListener('pointermove', function(e){
+    if(!drag) return;
+    yaw-=(e.clientX-drag[0])*0.008;
+    pitch=Math.max(-0.25,Math.min(1.5688,pitch+(e.clientY-drag[1])*0.006));
+    drag=[e.clientX,e.clientY]; draw3D();
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(t){
+    cv.addEventListener(t, function(){ drag=null; cv.classList.remove('grab'); });
+  });
+  cv.addEventListener('wheel', function(e){
+    if(mode==='bos') return;
+    e.preventDefault(); zoom=Math.max(0.5,Math.min(3,zoom*(e.deltaY>0?0.9:1.11))); draw3D();
+  }, {passive:false});
+  cv.addEventListener('touchmove', function(e){
+    if(e.touches.length!==2||mode==='bos') return;
+    e.preventDefault();
+    var dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY;
+    var d=Math.sqrt(dx*dx+dy*dy);
+    if(pdist) { zoom=Math.max(0.5,Math.min(3,zoom*(d/pdist))); draw3D(); }
+    pdist=d;
+  }, {passive:false});
+  cv.addEventListener('touchend', function(){ pdist=0; });
+  window.addEventListener('resize', function(){ fit(); draw3D(); });
+  draw3D();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 </script>
