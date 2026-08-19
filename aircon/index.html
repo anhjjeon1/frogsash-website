@@ -698,7 +698,7 @@ function genPDF(){
     ${allPhotos.length?`<div style="font-weight:800;color:#0E7490;margin:14px 0 6px">■ FLIR 초음파 사진 (${allPhotos.length})</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">${allPhotos.map(o=>`<div><img src="${o.p}" style="width:100%;border-radius:6px;border:1px solid #E2E8F0"><div style="font-size:9.5px;color:#52677A;text-align:center">${o.name}</div></div>`).join('')}</div>`:''}
     <div style="margin-top:20px;padding-top:10px;border-top:1px solid #E2E8F0;font-size:10.5px;color:#94A3B8;text-align:center">
-      청개구리 에어컨 냉매누출 진단 · ☎ 1599-7380 · frogsash.co.kr · FLIR 초음파 카메라 기준 현장 진단 결과입니다</div>
+      청개구리 에어컨 냉매누출 진단 · ☎ 010-2322-0949 · frogsash.co.kr · FLIR 초음파 카메라 기준 현장 진단 결과입니다</div>
   </div>`;
   const el=document.createElement('div'); el.innerHTML=html;
   if(window.html2pdf){

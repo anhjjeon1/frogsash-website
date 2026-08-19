@@ -219,7 +219,7 @@ footer .ph{color:var(--brand-700);font-weight:800}
     <button class="btn btn-reset" id="btnReset">초기화</button>
     <button class="btn btn-pdf" id="btnSave"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF 저장</button>
   </div>
-  <footer>청개구리샤시 · <span class="ph">1599-7380</span> · frogsash.co.kr</footer>
+  <footer>청개구리샤시 · <span class="ph">010-2322-0949</span> · frogsash.co.kr</footer>
 </div>
 
 <div id="print-area"></div>
@@ -238,7 +238,7 @@ rules:[
 ],
 STORAGE_KEY:"frogsash_seal_v4",GAS_URL:"",GEMINI_PROXY_URL:"https://script.google.com/macros/s/AKfycbxkAACBKNNG76fEO5neH-Xw3Sg-DgN2DulIEo-taSxZU9zohpNUlWK65TtkmVehAZUX/exec",
 NOTICE:"본 측정은 상대적 밀폐·차음 개선 확인용이며, 법적 기밀성 등급(KS F 2292 통기량)과는 다른 지표입니다. 휴대폰 앱 측정 오차 ±3dB 내외.",
-COMPANY:"청개구리샤시 · 1599-7380 · frogsash.co.kr"};
+COMPANY:"청개구리샤시 · 010-2322-0949 · frogsash.co.kr"};
 
 var locations=[],chartMode="bar",aiMode="pro",lastGeminiText="";
 var REPAIR_ITEMS=["방풍캡시공","마구리판 모헤어 시공","풍지판 교체","창짝 잠금위치 수정","스크라이커 교체","창틀 사춤불량 수리"];
@@ -568,7 +568,7 @@ function buildPrint(){
     });
   });
   $("#print-area").innerHTML=
-     '<div class="pblock"><div class="r-head"><div class="r-title">창호 기밀성능 측정 결과 보고서</div><div class="r-org">청개구리샤시 · 1599-7380 · frogsash.co.kr</div></div></div>'
+     '<div class="pblock"><div class="r-head"><div class="r-title">창호 기밀성능 측정 결과 보고서</div><div class="r-org">청개구리샤시 · 010-2322-0949 · frogsash.co.kr</div></div></div>'
     +'<div class="pblock"><table class="r-info"><tr><th>현장 / 고객명</th><td>'+site+'</td><th>측정일자</th><td>'+date+'</td></tr><tr><th>측정 방식</th><td colspan="3">핑크노이즈 발생기와 소음측정기로 수리 전·후 평균소음도(LAeq)를 동일 음원·동일 거리 조건에서 측정</td></tr><tr><th>종합 평균 개선량</th><td colspan="3"><b>'+avgImp+' dB</b> &nbsp; '+escapeHtml(comment(parseFloat(avgImp)||0))+'</td></tr></table></div>'
     +'<div class="pblock"><div class="r-sec">1. 위치별 측정 결과 (LAeq 기준)</div><table class="r-res"><thead><tr><th style="text-align:left">측정 위치</th><th>수리 전(dB)</th><th>수리 후(dB)</th><th>개선량(dB)</th><th>판정</th></tr></thead><tbody>'+(tableRows||'<tr><td colspan="5">입력된 위치 없음</td></tr>')+'</tbody></table></div>'
     +aiBlock
