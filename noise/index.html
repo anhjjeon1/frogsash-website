@@ -177,7 +177,7 @@ footer .ph{color:var(--brand-700);font-weight:800}
 </head>
 <body>
 <header>
-  <div class="hbar"><h1 class="app-title"><span class="windico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h14a3 3 0 1 1-3 3"/><path d="M3 16h7a2.4 2.4 0 1 1-2.4 2.4"/></svg></span>창호 기밀성능 측정앱</h1><span class="ver" id="verBadge">V 2.9</span></div>
+  <div class="hbar"><h1 class="app-title"><span class="windico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h14a3 3 0 1 1-3 3"/><path d="M3 16h7a2.4 2.4 0 1 1-2.4 2.4"/></svg></span>창호 기밀성능 측정앱</h1><span class="ver" id="verBadge">V 3.0</span></div>
   <div class="steps"><div class="step" id="st1"></div><div class="step" id="st2"></div><div class="step" id="st3"></div></div>
 </header>
 
@@ -339,7 +339,7 @@ function startVoice(id,btn){
   try{rec.start()}catch(err){if(btn)btn.classList.remove("rec")}
 }
 function usSet(loc,kind,url){var side=kind.charAt(2)==="B"?"b":"a";var idx=parseInt(kind.slice(3));if(loc.us&&loc.us[idx])loc.us[idx][side]=url;}
-function addLocation(data){locations.push(data||{id:String(Date.now())+Math.random().toString(36).slice(2,6),name:"",before:[""],after:[""],beforePhoto:null,afterPhoto:null,placeLPhoto:null,placeRPhoto:null,repair:[],preNote:"",us:[{b:null,a:null}]});render();save()}
+function addLocation(data){locations.push(data||{id:String(Date.now())+Math.random().toString(36).slice(2,6),name:"",before:[""],after:[""],beforePhoto:null,afterPhoto:null,placeLPhoto:null,placeRPhoto:null,repair:[],preNote:"",us:[{b:null,a:null,lb:"",la:"",pos:""}]});render();save()}
 function delLocation(idStr){locations=locations.filter(function(l){return String(l.id)!==idStr});if(!locations.length)addLocation();else{render();save();}}
 
 function render(){
@@ -361,7 +361,7 @@ function render(){
       +'<div class="loc-res empty" id="res_'+loc.id+'"></div>'
       +'<div class="seg-label after"><span class="stepno">5</span>초음파 카메라 측정</div>'
       +loc.us.map(function(p,ui){return (ui>0?'<div class="us-pair-head"><span>초음파 측정 '+(ui+1)+'</span><button data-usdel="'+ui+'" data-id="'+loc.id+'">✕ 행 삭제</button></div>':'')
-        +'<div class="photo-row"><div class="photo-cell"><div class="photo-slot ratio34">'+photoHtml(p.b,"초음파 전","usB"+ui,loc.id,"초음파 수리 전")+'</div></div><div class="photo-cell"><div class="photo-slot ratio34">'+photoHtml(p.a,"초음파 후","usA"+ui,loc.id,"초음파 수리 후")+'</div></div></div>';}).join("")
+        +'<div class="photo-row"><div class="photo-cell"><div class="photo-slot ratio34">'+photoHtml(p.b,"초음파 전","usB"+ui,loc.id,"초음파 수리 전")+'</div></div><div class="photo-cell"><div class="photo-slot ratio34">'+photoHtml(p.a,"초음파 후","usA"+ui,loc.id,"초음파 수리 후")+'</div></div></div>'+'<div class="onoff" style="margin-top:5px"><div class="dbcell"><span class="mini-lab">레벨 전(dB)</span><input class="db" inputmode="decimal" placeholder="예:39" value="'+escapeHtml(p.lb||"")+'" data-id="'+loc.id+'" data-usf="lb" data-usi="'+ui+'"></div><div class="dbcell"><span class="mini-lab">레벨 후(dB)</span><input class="db" inputmode="decimal" placeholder="dB" value="'+escapeHtml(p.la||"")+'" data-id="'+loc.id+'" data-usf="la" data-usi="'+ui+'"></div></div>'+'<div class="dbcell" style="margin-top:6px"><span class="mini-lab">누기 위치</span><input class="inp" placeholder="예: 여밈대 상부" value="'+escapeHtml(p.pos||"")+'" data-id="'+loc.id+'" data-usf="pos" data-usi="'+ui+'"></div>';}).join("")
       +'<button class="us-add" data-usadd="'+loc.id+'">＋ 초음파 측정 추가</button></div></div>';
   }).join("");
   list.querySelectorAll("input[data-f]").forEach(function(inp){
@@ -380,8 +380,9 @@ function render(){
   list.querySelectorAll("[data-addphoto]").forEach(function(b){b.addEventListener("click",function(){var inp=list.querySelector('input[data-file="'+b.dataset.addphoto+'"][data-id="'+b.dataset.id+'"]');if(inp)inp.click()})});
   list.querySelectorAll("input[data-file]").forEach(function(inp){inp.addEventListener("change",function(e){var f=e.target.files[0];if(!f)return;var kind=inp.dataset.file,id=inp.dataset.id;readPhoto(f,function(url){var loc=locations.filter(function(l){return String(l.id)===id})[0];if(!loc)return;if(kind.indexOf("us")===0){usSet(loc,kind,url);render();}else{loc[kind+"Photo"]=url;render();}if(kind==="before"||kind==="after"){toast("사진에서 dB 분석 중…");ocrPhoto(url,function(db){var l2=locations.filter(function(l){return String(l.id)===id})[0];if(!l2)return;if(db!=null){l2[kind]=[String(db)];render();toast(db+" dB 자동입력("+(kind==="before"?"수리 전":"수리 후")+") — 필요시 수정하세요");}else{toast("사진에서 dB를 못 읽었어요");}})}})})});
   list.querySelectorAll("[data-delphoto]").forEach(function(b){b.addEventListener("click",function(){var loc=locations.filter(function(l){return String(l.id)===b.dataset.id})[0];if(!loc)return;var k=b.dataset.delphoto;if(k.indexOf("us")===0)usSet(loc,k,null);else loc[k+"Photo"]=null;render()})});
-  list.querySelectorAll("[data-usadd]").forEach(function(b){b.addEventListener("click",function(){var loc=locations.filter(function(l){return String(l.id)===b.dataset.usadd})[0];if(!loc)return;loc.us.push({b:null,a:null});render()})});
+  list.querySelectorAll("[data-usadd]").forEach(function(b){b.addEventListener("click",function(){var loc=locations.filter(function(l){return String(l.id)===b.dataset.usadd})[0];if(!loc)return;loc.us.push({b:null,a:null,lb:"",la:"",pos:""});render()})});
   list.querySelectorAll("[data-usdel]").forEach(function(b){b.addEventListener("click",function(){var loc=locations.filter(function(l){return String(l.id)===b.dataset.id})[0];if(!loc)return;loc.us.splice(parseInt(b.dataset.usdel),1);render()})});
+  list.querySelectorAll("input[data-usf]").forEach(function(inp){inp.addEventListener("input",function(){var loc=locations.filter(function(l){return String(l.id)===inp.dataset.id})[0];if(!loc)return;var i=parseInt(inp.dataset.usi);if(!loc.us||!loc.us[i])return;loc.us[i][inp.dataset.usf]=inp.value;renderAI();save();})});
   locations.forEach(updateLocResult);updateSummary();renderChart();
 }
 
@@ -416,7 +417,7 @@ function feel_(d){if(d>=10)return"체감상 소음이 절반 가까이 줄어드
 function dbScene_(d){if(d<25)return"속삭임 수준의 매우 정숙한 환경";if(d<35)return"조용한 도서관·심야 주택가 수준";if(d<45)return"조용한 주거 실내 수준";if(d<55)return"일반 사무실·냉장고 소음 수준";if(d<65)return"실내 일상 대화 수준";if(d<75)return"번화가·진공청소기 수준";return"교통 소음이 큰 매우 시끄러운 수준";}
 function aiReport(){
   var valid=locations.map(function(loc){return{loc:loc,c:computeLoc(loc)}}).filter(function(x){return x.c.ready});
-  var usCount=locations.filter(function(l){return l.us&&l.us.some(function(p){return p.b||p.a})}).length;
+  var usCount=locations.filter(function(l){return l.us&&l.us.some(function(p){return p.b||p.a||p.lb||p.la||p.pos})}).length;
   var repairByLoc=locations.map(function(loc){return{name:loc.name||"이름없는 위치",items:repairLabels(loc)}}).filter(function(x){return x.items.length});
   var preByLoc=locations.map(function(loc){return{name:loc.name||"이름없는 위치",note:(loc.preNote||"").trim()}}).filter(function(x){return x.note});
   if(!valid.length&&!usCount&&!repairByLoc.length&&!preByLoc.length)return null;
@@ -461,6 +462,7 @@ function aiReport(){
   }
   if(usCount){
     pro.push("[초음파] 누설 경로(틈새) 전·후 비교 자료 "+usCount+"개소 확보(정성 진단). 차폐 시공 효과 보조 입증용.");
+    var _usd=[];locations.forEach(function(loc){(loc.us||[]).forEach(function(p){if(p.pos||p.lb||p.la){var _d=(p.lb&&p.la&&!isNaN(+p.lb)&&!isNaN(+p.la))?(+p.lb-+p.la):null;var _s=(loc.name?("'"+loc.name+"' "):"")+(p.pos?(p.pos+" "):"")+((p.lb&&p.la)?(p.lb+"dB→"+p.la+"dB"+(_d!=null?("(Δ"+(_d>=0?"−":"+")+(Math.round(Math.abs(_d)*10)/10)+"dB)"):"")):(p.lb?("레벨 "+p.lb+"dB"):""));_usd.push(_s.trim());}})});if(_usd.length)pro.push("[초음파 레벨] "+_usd.join(" / ")+". ※ 음향카메라 레벨은 절대 소음도가 아닌 상대 비교값으로, 위치 특정·전후 변화 확인용(생활소음·법적등급과 무관).");
   }
   pro.push("[고지] "+CONFIG.NOTICE);
   pro.push("[측정기준] 측정값은 평균소음도(LAeq) 기준, 동일 음원·동일 시간·동일 거리/높이로 수리 전·후 측정. (최대 Lmax·최소 Lmin이 아닌 평균값 사용). 사진 OCR 인식값은 수동 보정 가능.");
@@ -498,7 +500,7 @@ function renderChart(){
 }
 
 function save(){
-  var data={cond:{date:$("#c_date").value},locations:locations.map(function(l){return{id:l.id,name:l.name,before:l.before,after:l.after,repair:l.repair,preNote:l.preNote||""}})};
+  var data={cond:{date:$("#c_date").value},locations:locations.map(function(l){return{id:l.id,name:l.name,before:l.before,after:l.after,repair:l.repair,preNote:l.preNote||"",us:(l.us||[]).map(function(u){return{lb:u.lb||"",la:u.la||"",pos:u.pos||""}})}})};
   try{localStorage.setItem(CONFIG.STORAGE_KEY,JSON.stringify(data))}catch(e){}
 }
 function load(){
@@ -508,7 +510,7 @@ function load(){
     if(d.cond){
       $("#c_date").value=d.cond.date||"";
     }
-    locations=(Array.isArray(d.locations)?d.locations:[]).map(function(l){["before","after"].forEach(function(k){if(!Array.isArray(l[k])||!l[k].length)l[k]=[""]});l.beforePhoto=l.beforePhoto||null;l.afterPhoto=l.afterPhoto||null;if(!Array.isArray(l.repair))l.repair=[];if(typeof l.preNote!=="string")l.preNote="";if(!Array.isArray(l.us)||!l.us.length)l.us=[{b:null,a:null}];return l});return true;
+    locations=(Array.isArray(d.locations)?d.locations:[]).map(function(l){["before","after"].forEach(function(k){if(!Array.isArray(l[k])||!l[k].length)l[k]=[""]});l.beforePhoto=l.beforePhoto||null;l.afterPhoto=l.afterPhoto||null;if(!Array.isArray(l.repair))l.repair=[];if(typeof l.preNote!=="string")l.preNote="";l.us=(Array.isArray(l.us)&&l.us.length?l.us:[{b:null,a:null}]).map(function(u){u=u||{};return{b:u.b||null,a:u.a||null,lb:typeof u.lb==="string"?u.lb:"",la:typeof u.la==="string"?u.la:"",pos:typeof u.pos==="string"?u.pos:""}});return l});return true;
   }catch(e){return false}
 }
 
@@ -558,10 +560,11 @@ function buildPrint(){
     var pairs=[];
     if(loc.placeLPhoto||loc.placeRPhoto) pairs.push({natural:false,row:[[loc.placeLPhoto,"전면 촬영"],[loc.placeRPhoto,"근접 촬영"]]});
     if(loc.beforePhoto||loc.afterPhoto) pairs.push({natural:true,row:[[loc.beforePhoto,"소음 측정 (수리 전)"],[loc.afterPhoto,"소음 측정 (수리 후)"]]});
-    (loc.us||[]).forEach(function(p,ui){ if(p.b||p.a){ var sfx=(loc.us.length>1?(" "+(ui+1)):""); pairs.push({natural:false,row:[[p.b,"초음파 (수리 전)"+sfx],[p.a,"초음파 (수리 후)"+sfx]]}); } });
+    (loc.us||[]).forEach(function(p,ui){ if(p.b||p.a||p.lb||p.la||p.pos){ var sfx=(loc.us.length>1?(" "+(ui+1)):""); pairs.push({natural:false,pos:p.pos||"",lb:p.lb||"",la:p.la||"",row:[[p.b,"초음파 (수리 전)"+sfx+(p.lb?" · "+p.lb+"dB":"")],[p.a,"초음파 (수리 후)"+sfx+(p.la?" · "+p.la+"dB":"")]]}); } });
     if(!pairs.length) return;
     photoBlocks+='<div class="pblock"><div class="r-ploc">측정 위치 · '+escapeHtml(loc.name||"-")+'</div></div>';
     pairs.forEach(function(pr){
+      if(pr.pos||pr.lb||pr.la){var _d=(pr.lb!==""&&pr.la!==""&&!isNaN(parseFloat(pr.lb))&&!isNaN(parseFloat(pr.la)))?(parseFloat(pr.lb)-parseFloat(pr.la)):null;var _b=[];if(pr.pos)_b.push("누기 위치: "+pr.pos);if(pr.lb!==""&&pr.la!=="")_b.push(pr.lb+"dB → "+pr.la+"dB"+(_d!=null?" (Δ"+(_d>=0?"−":"+")+(Math.round(Math.abs(_d)*10)/10)+"dB)":""));else if(pr.lb!=="")_b.push("레벨 "+pr.lb+"dB");if(_b.length)photoBlocks+='<div class="pblock"><div class="r-note">［초음파］ '+escapeHtml(_b.join(" · "))+'</div></div>';}
       photoBlocks+='<div class="pblock"><div class="r-photos'+(pr.natural?' r-natural':'')+'">'+pr.row.map(function(it){
         return '<div class="r-photo">'+(it[0]?'<img src="'+it[0]+'">':'<div class="r-noimg">사진 없음</div>')+'<div class="cap">'+it[1]+'</div></div>';
       }).join("")+'</div></div>';
