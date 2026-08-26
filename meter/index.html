@@ -205,8 +205,7 @@ details>summary::before{content:"⚙ ";}
     <button data-p="수리후" class="after"><span class="chk"></span>수리 후</button>
   </div>
   <div class="descbar" id="descbar">
-    <input class="descin before" id="descBefore" type="text" maxlength="40" placeholder="수리 전 조건 (예: 캡 없음)">
-    <input class="descin after" id="descAfter" type="text" maxlength="40" placeholder="수리 후 조건 (예: 방풍캡 부착)">
+    <input class="descin before" id="descNote" type="text" maxlength="40" placeholder="수리 전 조건 (예: 캡 없음)">
   </div>
 
   <div class="srcbar" id="srcbar">
@@ -388,6 +387,11 @@ if(![10,15,20].includes(cfg.win)) cfg.win=15; // 구버전 저장값(5/30) 보�
 if(![1,3].includes(cfg.reps)) cfg.reps=3;
 function phaseVal(){ return cfg.phase==="수리후"?"수리후":"수리전"; }
 function curDesc(){ return ((phaseVal()==="수리후"?cfg.descAfter:cfg.descBefore)||"").trim(); }
+// 단일 조건칸: 선택한 phase에 맞춰 값·안내문구·색을 바꿈(값은 phase별로 따로 저장)
+function refreshDescNote(){ const el=$("#descNote"); if(!el) return; const after=phaseVal()==="수리후";
+  el.value=((after?cfg.descAfter:cfg.descBefore)||"");
+  el.placeholder=after?"수리 후 조건 (예: 방풍캡 부착)":"수리 전 조건 (예: 캡 없음)";
+  el.classList.toggle("after",after); el.classList.toggle("before",!after); }
 function esc(s){ return String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m])); }
 function saveCfg(){localStorage.setItem(LS,JSON.stringify(cfg));}
 
@@ -1009,15 +1013,16 @@ segWire("#segReps","reps",Number);
     b.onclick=()=>{ if(mode==="settle"||mode==="measure"||mode==="gap"){ toast("측정 중에는 바꿀 수 없습니다"); return; }
       cfg.phase=b.dataset.p; saveCfg();
       el.querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+      refreshDescNote(); // 조건칸을 새 phase의 메모·안내문구로 전환
       cancelMeasure(); }; // 전환 시 대기 상태로 리셋(게이지 park·상태 초기화) → 새 phase 측정 준비
   });
   $("#subLbl").textContent=phaseVal()+" · "+tagStr({src:cfg.src,vol:volVal()})+" · "+cfg.weight+"가중";
 })();
-// 수리 전·후 실험조건 메모 — 각 phase의 측정 기록 첫 줄에 표시됨
+// 수리 전·후 실험조건 메모(단일칸, phase별 저장) — 측정 기록 첫 줄에 표시됨
 (function wireDesc(){
-  const b=$("#descBefore"), a=$("#descAfter");
-  if(b){ b.value=cfg.descBefore||""; b.oninput=()=>{ cfg.descBefore=b.value; saveCfg(); }; }
-  if(a){ a.value=cfg.descAfter||""; a.oninput=()=>{ cfg.descAfter=a.value; saveCfg(); }; }
+  const el=$("#descNote");
+  if(el){ el.oninput=()=>{ if(phaseVal()==="수리후") cfg.descAfter=el.value; else cfg.descBefore=el.value; saveCfg(); }; }
+  refreshDescNote();
 })();
 // 음원(주파수)·볼륨 태그 — 기록에 함께 저장되어 어떤 조건의 측정인지 구분됨
 (function wireSrc(){
