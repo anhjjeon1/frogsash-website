@@ -177,7 +177,7 @@ details>summary::before{content:"⚙ ";}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.25</div>
+  <div class="badge" id="verBadge">v1.26</div>
 </header>
 
 <div id="toast" class="toast"></div>
@@ -370,6 +370,20 @@ details>summary::before{content:"⚙ ";}
     <div id="specLegend" class="mini" style="margin-top:8px"></div>
     <button class="b-ghost hidden" id="specImg" style="width:100%;margin-top:10px">🖼 스펙트럼 이미지로 저장</button>
     <div class="note" id="specNote" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card">
+    <details id="refPanel">
+      <summary>측정 근거 · 참조 표준</summary>
+      <div class="note" style="margin-top:8px;line-height:1.75">
+        본 앱은 창호의 <b style="color:var(--txt)">상대적 밀폐·차음 개선</b>을 확인하는 보조 측정 도구입니다. 판정·해석은 아래 국제·국내 기준을 참조합니다.<br><br>
+        <b style="color:var(--txt)">▪ 실내소음 목표</b> — WHO 실내소음 권고: 수면 30 · 주간 거실 35 dB(A) <span style="opacity:.7">(WHO Community Noise Guidelines, 1999)</span><br>
+        <b style="color:var(--txt)">▪ 실내소음 규제선</b> — 국내 공동주택 실내소음도 45 dB(A) 이하 <span style="opacity:.7">(주택건설기준 등에 관한 규정)</span><br>
+        <b style="color:var(--txt)">▪ 차음 성능 평가</b> — ISO 16283-3(현장 외벽·창 레벨차) · ISO 717-1(Rw·Ctr) · ISO 10140(실험실 차음)<br>
+        <b style="color:var(--txt)">▪ 기밀성(통기량)</b> — KS F 2292 · EN 12207 <span style="opacity:.7">(차음과 별개 지표 · 압력챔버 인증 필요)</span><br><br>
+        <span style="opacity:.85">※ 본 앱은 위 표준의 <b style="color:var(--txt)">정식 시험이 아닌 참조 측정</b>입니다. 통기량·차음 <b style="color:var(--txt)">등급 인증은 공인기관</b>(KCL·KTL 등) 시험이 필요합니다.</span>
+      </div>
+    </details>
   </div>
 
   <div class="note legal">※ 폰 마이크 측정은 기기별 오차가 있습니다(±3dB 내외). 수리 전·후 <b style="color:var(--txt)">동일 조건</b>으로 재면 그 차이는 신뢰할 수 있습니다.
@@ -926,6 +940,12 @@ function buildReportHTML(){
    absBlock+
    (specImg?'<h2>주파수 스펙트럼 (수리 전·후)</h2>'+specImg+'<div class="note">저음(왼쪽)은 틈과 무관해 변화가 적고, 고음(오른쪽)이 내려간 만큼 누기 경로가 차단된 것입니다.</div>':'')+
    '<h2>측정 기록</h2><table><thead><tr><th>구분</th><th>조건 메모</th><th>dB</th><th>조건</th><th>3회</th><th>편차</th><th>시각</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+   '<h2>측정 근거 · 참조 표준</h2><div class="note">'+
+   '▪ 실내소음 목표 — WHO 실내소음 권고: 수면 30 · 주간 거실 35 dB(A) (WHO Community Noise Guidelines, 1999)<br>'+
+   '▪ 실내소음 규제선 — 국내 공동주택 실내소음도 45 dB(A) 이하 (주택건설기준 등에 관한 규정)<br>'+
+   '▪ 차음 성능 평가 — ISO 16283-3(현장 외벽·창 레벨차) · ISO 717-1(Rw·Ctr) · ISO 10140(실험실 차음)<br>'+
+   '▪ 기밀성(통기량) — KS F 2292 · EN 12207 (차음과 별개 지표 · 압력챔버 인증 필요)<br>'+
+   '※ 본 보고서는 위 표준의 정식 시험이 아닌 <b>참조 측정</b>입니다. 통기량·차음 등급 인증은 공인기관(KCL·KTL 등) 시험이 필요합니다.</div>'+
    '<h2>안내</h2><div class="note">※ 휴대폰·태블릿 마이크 측정으로 절대값은 ±3dB 내외 오차가 있으나, 수리 전·후를 <b>동일 조건</b>으로 재어 그 <b>차이(Δ)</b>는 신뢰할 수 있습니다. 본 측정은 상대적 밀폐·차음 개선 확인용이며 KS F 2292(통기량) 등급과는 다른 지표입니다. 본 보고서의 ‘소음에너지 차단율(%)’은 dB 감소량(Δ)을 소리 에너지 기준 비율로 환산한 값입니다.</div>'+
    '<div class="ft">frogsash.co.kr · ☎ 010-2322-0949</div></body></html>';
 }
