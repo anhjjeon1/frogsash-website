@@ -377,7 +377,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.40-lg5'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.40-lg6'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'LGCW_V70_LOG',SOURCE:'LGCW_V70_SRC',VERSION:'LGCW_APP_VERSION'};
 var SETTINGS_KEYS={SCRIPT:'LGCW_SCRIPT_URL',SHEET:'LGCW_SHEET_ID',SHEET_NAME:'LGCW_SHEET_NAME',WORKER:'LGCW_WORKER'};
 var DEFAULTS={
@@ -510,9 +510,11 @@ var App={
           sel.innerHTML='<option value="">시트 목록 로드 실패: '+(d.message||'')+'</option>';
           return;
         }
+        var EXCLUDE={'대시보드':1,'일매출':1,'전체공정표':1,'결제현황':1,'단가표':1,'2025년매출':1,'2026년매출':1,'출력일보':1,'건당수리':1,'정산현황':1};
         var html='';
         for(var i=0;i<d.sites.length;i++){
           var s=d.sites[i];
+          if(EXCLUDE[s.name]) continue;
           var selAttr=(s.name===current)?' selected':'';
           html+='<option value="'+s.name+'"'+selAttr+'>'+s.name+' ('+s.rowCount+'건)</option>';
         }
