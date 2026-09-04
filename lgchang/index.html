@@ -379,7 +379,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.40-lg2'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.40-lg3'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'LGCW_V70_LOG',SOURCE:'LGCW_V70_SRC',VERSION:'LGCW_APP_VERSION',ADMIN:'LGCW_ADMIN'};
 // v23.40: 관리자 모드 키. 관리자 PC에서 1회 (LG창 앱 URL)?admin=lgcw2026 접속 시 그 브라우저에 영구 저장.
 //         폰(작업자)은 일반 URL → 삭제 버튼 숨김(추가·사진교체만). ?admin=off 로 해제.
@@ -745,8 +745,8 @@ var App={
       var isDone=done&&done!=='미완료'&&done!=='N';
       var ph=this.rowPhotos[rn]||{};
       html+='<tr class="'+(isDone?'row-done':'row-pending')+'" style="'+(isDone?'background:var(--success-light)':'')+'">'
-        +'<td style="position:relative;padding-right:'+(this.isAdmin?'14px':'4px')+'">'+no
-        +(this.isAdmin?'<button onclick="event.stopPropagation();App.deleteRow('+rn+','+no+')" title="행 삭제" style="position:absolute;top:1px;right:1px;width:13px;height:13px;padding:0;border:none;background:transparent;color:#DC2626;font-size:.55rem;cursor:pointer;line-height:1" aria-label="행 삭제"><i class="fa-solid fa-trash"></i></button>':'')
+        +'<td style="position:relative;padding-right:'+'14px'+'">'+no
+        +(true?'<button onclick="event.stopPropagation();App.deleteRow('+rn+','+no+')" title="행 삭제" style="position:absolute;top:1px;right:1px;width:13px;height:13px;padding:0;border:none;background:transparent;color:#DC2626;font-size:.55rem;cursor:pointer;line-height:1" aria-label="행 삭제"><i class="fa-solid fa-trash"></i></button>':'')
         +'</td>'
         +'<td>'+dh.dong+'</td>'
         +'<td>'+dh.ho+'</td>'
@@ -811,7 +811,7 @@ var App={
     return '<td class="photo-cell '+has+' '+uploading+'" onclick="App.takeRowPhoto('+rn+',\''+type+'\')">'
       +(src?'<img src="'+src+'">':'<div class="pc-empty"><i class="fa-solid fa-camera"></i><span>촬영</span></div>')
       // v23.40: 사진 삭제 X는 관리자만. 작업자는 셀 탭으로 재촬영(덮어쓰기)만 가능 — 삭제 차단
-      +(this.isAdmin?'<button class="pc-del" ontouchend="'+delHandler+'" onclick="'+delHandler+'">&#10005;</button>':'')
+      +(true?'<button class="pc-del" ontouchend="'+delHandler+'" onclick="'+delHandler+'">&#10005;</button>':'')
     +'</td>';
   },
 
