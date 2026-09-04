@@ -369,7 +369,6 @@
       <button class="btn-send" onclick="App.openSheet()" style="flex:1"><i class="fa-solid fa-table"></i> 시트열기</button>
       <button onclick="App.savePdf()" style="flex:1;border:none;border-radius:var(--r);background:#0891B2;color:white;font-size:.74rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;padding:0 12px;letter-spacing:.3px;box-shadow:0 3px 0 rgba(0,0,0,.1),var(--shadow)"><i class="fa-solid fa-file-pdf"></i> PDF저장</button>
       <button class="btn-refresh" onclick="App.refresh()" style="flex:0 0 auto;padding:0 12px"><i class="fa-solid fa-rotate"></i> 새로고침</button>
-      <button id="btnResetAll" onclick="App.resetAll()" style="flex:0 0 auto;padding:0 12px;border:1.5px solid #FCA5A5;border-radius:var(--r);background:#fff;color:#DC2626;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer">전체삭제</button>
     </div>
   </div>
 </div>
@@ -379,7 +378,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.40-lg3'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.40-lg4'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'LGCW_V70_LOG',SOURCE:'LGCW_V70_SRC',VERSION:'LGCW_APP_VERSION',ADMIN:'LGCW_ADMIN'};
 // v23.40: 관리자 모드 키. 관리자 PC에서 1회 (LG창 앱 URL)?admin=lgcw2026 접속 시 그 브라우저에 영구 저장.
 //         폰(작업자)은 일반 URL → 삭제 버튼 숨김(추가·사진교체만). ?admin=off 로 해제.
