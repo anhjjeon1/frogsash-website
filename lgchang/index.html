@@ -50,7 +50,7 @@
     .sec{padding:14px 14px 10px;margin:0}
     .sec.sec-tight{padding:14px 4px 10px}
     .sec-head{display:flex;align-items:center;gap:7px;margin-bottom:10px;min-height:22px}
-    .sec-num{width:22px;height:22px;border-radius:4px;background:#0F172A;color:white;font-family:'Outfit';font-size:.68rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .sec-num{width:22px;height:22px;border-radius:50%;background:#15803D;color:white;font-family:'Outfit';font-size:.68rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .sec-title{font-size:.8rem;font-weight:800;color:var(--text)}
     .sec-sub{font-size:.55rem;color:var(--text-dim);margin-left:4px}
 
@@ -279,7 +279,7 @@
         &middot; 작업자 이름만 A / B / C 입력 후 저장<br><br>
         <b>현장 선택 (v23.3 신규)</b><br>
         &middot; 섹션 ① 상단 <b>현장 선택</b> 드롭다운에서 시트 선택<br>
-        &middot; 군산미장 / 경산하양 / 광주중흥 / 동탄 / ... / 감일제일 (14개)<br>
+        &middot; 광명롯데트리우스 / 광명현대트리우스 (현장 늘어나면 시트 탭 추가)<br>
         &middot; 시트 변경 시 데이터·필터 자동 초기화 후 재로드<br><br>
         <b>데이터 불러오기 (A/B/C 작업자)</b><br>
         &middot; <i class="fa-solid fa-cloud-arrow-down"></i> '구글시트에서 불러오기' 탭 → 하자리스트 로드<br>
@@ -379,7 +379,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.40'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.40-lg1'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'LGCW_V70_LOG',SOURCE:'LGCW_V70_SRC',VERSION:'LGCW_APP_VERSION',ADMIN:'LGCW_ADMIN'};
 // v23.40: 관리자 모드 키. 관리자 PC에서 1회 (LG창 앱 URL)?admin=lgcw2026 접속 시 그 브라우저에 영구 저장.
 //         폰(작업자)은 일반 URL → 삭제 버튼 숨김(추가·사진교체만). ?admin=off 로 해제.
@@ -388,7 +388,7 @@ var SETTINGS_KEYS={SCRIPT:'LGCW_SCRIPT_URL',SHEET:'LGCW_SHEET_ID',SHEET_NAME:'LG
 var DEFAULTS={
   SCRIPT:'https://script.google.com/macros/s/AKfycbwaNdrl99A84PRTgVpgJayIzulAAZCArW8oLsQiOxX-WaPQDJFSkr5DNCBznkjCI3vS/exec',
   SHEET:'1Cg_hbquxA2xeZ6znpzZbYXXQoF1wAn8M4t6k6gC3LHU',
-  SHEET_NAME:'군산미장'
+  SHEET_NAME:'광명롯데트리우스'
 };
 
 var App={
