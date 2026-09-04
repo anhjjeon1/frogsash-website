@@ -298,7 +298,6 @@
         &middot; <i class="fa-solid fa-table"></i> 시트열기: 구글시트를 새 탭으로 바로 열기<br>
         &middot; <i class="fa-solid fa-file-pdf"></i> PDF저장: 브라우저 인쇄 → 'PDF로 저장' 선택 (내 파일 → 다운로드)<br>
         &middot; <i class="fa-solid fa-rotate"></i> 새로고침: 구글시트에서 최신 데이터 동기화<br>
-        &middot; 전체삭제: 로컬 모든 데이터 삭제 (확인 팝업 있음)<br><br>
         <b>마이그레이션 (v17 이하 이력 있는 경우)</b><br>
         &middot; 설정 패널 하단 '기존 사진 → Drive 이미지 마이그레이션' 버튼<br>
         &middot; 구버전에 base64로 저장된 사진을 Drive URL + =IMAGE() 수식으로 일괄 변환
@@ -378,11 +377,8 @@
 </div>
 
 <script>
-var APP_VERSION='v23.40-lg4'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
-var STORAGE={LOG:'LGCW_V70_LOG',SOURCE:'LGCW_V70_SRC',VERSION:'LGCW_APP_VERSION',ADMIN:'LGCW_ADMIN'};
-// v23.40: 관리자 모드 키. 관리자 PC에서 1회 (LG창 앱 URL)?admin=lgcw2026 접속 시 그 브라우저에 영구 저장.
-//         폰(작업자)은 일반 URL → 삭제 버튼 숨김(추가·사진교체만). ?admin=off 로 해제.
-var ADMIN_KEY='lgcw2026';
+var APP_VERSION='v23.40-lg5'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var STORAGE={LOG:'LGCW_V70_LOG',SOURCE:'LGCW_V70_SRC',VERSION:'LGCW_APP_VERSION'};
 var SETTINGS_KEYS={SCRIPT:'LGCW_SCRIPT_URL',SHEET:'LGCW_SHEET_ID',SHEET_NAME:'LGCW_SHEET_NAME',WORKER:'LGCW_WORKER'};
 var DEFAULTS={
   SCRIPT:'https://script.google.com/macros/s/AKfycbwaNdrl99A84PRTgVpgJayIzulAAZCArW8oLsQiOxX-WaPQDJFSkr5DNCBznkjCI3vS/exec',
@@ -400,23 +396,10 @@ var App={
   lastDeleted:null, // v23.14: 마지막 삭제 행 1건 보관 (복구용, 새로고침 시 휘발)
 
   // === 초기화 ===
-  isAdmin:false, // v23.40: 관리자(삭제 전권) 여부 — _resolveAdmin에서 판정
   init:function(){
-    // v23.40: 관리자 모드 게이트 — URL ?admin=KEY → localStorage 영구 / ?admin=off 해제
-    try{
-      var qs=new URLSearchParams(location.search);
-      if(qs.has('admin')){
-        var a=qs.get('admin');
-        if(a===ADMIN_KEY){ localStorage.setItem(STORAGE.ADMIN,'1'); }
-        else if(a==='off'||a==='0'){ localStorage.removeItem(STORAGE.ADMIN); }
-      }
-    }catch(e){}
-    this.isAdmin=(localStorage.getItem(STORAGE.ADMIN)==='1');
-    // v23.28: 헤더 버전 배지를 APP_VERSION에 동적 바인딩 (하드코딩 누락 방지)
+    // 헤더 버전 배지를 APP_VERSION에 동적 바인딩
     var vb=document.getElementById('verBadge');
-    if(vb) vb.textContent=APP_VERSION.toUpperCase()+(this.isAdmin?' 🔧':'');
-    // 관리자 아니면 전체삭제 버튼 숨김 (작업자 삭제 차단)
-    if(!this.isAdmin){ var rb=document.getElementById('btnResetAll'); if(rb) rb.style.display='none'; }
+    if(vb) vb.textContent=APP_VERSION.toUpperCase();
     // v23.26: 앱 부팅 시 버전 체크 → 옛 SCRIPT URL 자동 갱신 (작업자 ⚙ 수동 갱신 불필요)
     var savedVer=localStorage.getItem(STORAGE.VERSION);
     if(savedVer!==APP_VERSION){
@@ -809,7 +792,7 @@ var App={
     var delHandler="event.stopPropagation();event.preventDefault();App.delRowPhoto("+rn+",'"+type+"');return false;";
     return '<td class="photo-cell '+has+' '+uploading+'" onclick="App.takeRowPhoto('+rn+',\''+type+'\')">'
       +(src?'<img src="'+src+'">':'<div class="pc-empty"><i class="fa-solid fa-camera"></i><span>촬영</span></div>')
-      // v23.40: 사진 삭제 X는 관리자만. 작업자는 셀 탭으로 재촬영(덮어쓰기)만 가능 — 삭제 차단
+      // 사진 삭제 X = 누구나. 셀 탭으로 재촬영(덮어쓰기)도 가능
       +(true?'<button class="pc-del" ontouchend="'+delHandler+'" onclick="'+delHandler+'">&#10005;</button>':'')
     +'</td>';
   },
