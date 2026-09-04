@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>LG창 현장관리앱</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1F2937">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <style>
+    :root{
+      /* 3-color professional palette: Slate (primary) + Cyan (accent) + Neutral */
+      --primary:#0F172A;--primary-dark:#020617;--primary-mid:#334155;--primary-light:#CBD5E1;--primary-pale:#F1F5F9;
+      --accent:#0891B2;--accent-dark:#0E7490;--accent-light:#CFFAFE;--accent-pale:#ECFEFF;
+      --success:#059669;--success-light:#ECFDF5;
+      --danger:#DC2626;--danger-light:#FEE2E2;
+      --bg:#F8FAFC;--surface:#FFFFFF;--surface-alt:#F1F5F9;
+      --text:#0F172A;--text-sub:#475569;--text-dim:#94A3B8;--text-muted:#CBD5E1;
+      --border:#E2E8F0;--border-light:#F1F5F9;
+      --shadow:0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);
+      --shadow-md:0 4px 6px rgba(15,23,42,.05),0 2px 4px rgba(15,23,42,.04);
+      --shadow-lg:0 10px 25px rgba(15,23,42,.08),0 4px 10px rgba(15,23,42,.04);
+      --shadow-3d:0 2px 0 rgba(15,23,42,.12);
+      --r:8px;--r-sm:6px;--r-lg:12px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body,html{height:100%;background:var(--bg);overflow:hidden}
+    body{font-family:'Noto Sans KR','Outfit',sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+    .app{max-width:520px;margin:0 auto;height:100%;background:var(--surface);box-shadow:var(--shadow-lg);overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column}
+    .app::-webkit-scrollbar{width:3px}
+    .app::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+    header{background:linear-gradient(180deg,#0F172A,#1E293B);color:white;padding:14px 16px;position:relative;box-shadow:0 2px 8px rgba(15,23,42,.25);display:flex;align-items:center;justify-content:center}
+    header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:#0891B2}
+    header h1{font-family:'Noto Sans KR';font-size:.88rem;font-weight:800;letter-spacing:.5px;text-shadow:0 1px 2px rgba(0,0,0,.15)}
+    header .ver{font-family:'JetBrains Mono';font-size:.6rem;color:#67E8F9;font-weight:600;position:absolute;right:16px;letter-spacing:.5px}
+    header .settings-btn{position:absolute;left:14px;font-size:1.1rem;cursor:pointer;opacity:.8}
+    header .settings-btn:active{opacity:1}
+
+    .content{flex:1;overflow-y:auto;background:var(--bg)}
+    .sec{padding:14px 14px 10px;margin:0}
+    .sec.sec-tight{padding:14px 4px 10px}
+    .sec-head{display:flex;align-items:center;gap:7px;margin-bottom:10px;min-height:22px}
+    .sec-num{width:22px;height:22px;border-radius:4px;background:#0F172A;color:white;font-family:'Outfit';font-size:.68rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .sec-title{font-size:.8rem;font-weight:800;color:var(--text)}
+    .sec-sub{font-size:.55rem;color:var(--text-dim);margin-left:4px}
+
+    /* SETTINGS */
+    .settings-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(2px);z-index:9998;display:none;align-items:flex-start;justify-content:center;padding:40px 16px}
+    .settings-overlay.show{display:flex}
+    .settings-box{background:var(--surface);border-radius:var(--r-lg);max-width:460px;width:100%;padding:18px 20px;box-shadow:var(--shadow-lg)}
+    .settings-box h3{font-size:.78rem;font-weight:800;margin-bottom:12px;color:var(--text);display:flex;align-items:center;gap:6px}
+    .settings-box .sf{margin-bottom:8px}
+    .settings-box .sf label{display:block;font-size:.52rem;font-weight:700;color:var(--text-sub);margin-bottom:2px}
+    .settings-box .sf input{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.68rem;font-family:'Noto Sans KR';font-weight:500;background:var(--surface);color:var(--text);outline:none}
+    .settings-box .sf input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+    .settings-box .sf input::placeholder{color:var(--text-muted);font-size:.6rem}
+    .settings-box .sf .sf-hint{font-size:.46rem;color:var(--text-dim);margin-top:2px}
+    .settings-btns{display:flex;gap:6px;margin-top:12px}
+    .settings-btns button{flex:1;padding:9px;border:none;border-radius:var(--r-sm);font-size:.66rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;box-shadow:var(--shadow-3d)}
+    .settings-btns button:active{transform:translateY(1px);box-shadow:none}
+    .settings-btns .btn-save{background:#0F172A;color:white}
+    .settings-btns .btn-cancel{background:var(--surface);color:var(--text-sub);border:1px solid var(--border)}
+    .conn-status{margin-top:8px;padding:6px 10px;border-radius:var(--r-sm);font-size:.56rem;font-weight:700;text-align:center}
+    .conn-status.ok{background:var(--success-light);color:var(--success)}
+    .conn-status.err{background:var(--danger-light);color:var(--danger)}
+
+    /* WORKER BADGE */
+    .worker-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;background:var(--info-light);color:var(--info);font-size:.5rem;font-weight:700}
+
+    /* FORM */
+    .form-grid{display:flex;flex-direction:column;gap:6px}
+    .form-row{display:grid;gap:6px}
+    .field-inline{position:relative}
+    .field-inline label{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:.42rem;font-weight:700;color:var(--text-sub);letter-spacing:.5px;pointer-events:none;margin:0}
+    .field-inline input{width:100%;padding:9px 28px 9px 10px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.85rem;font-family:'Noto Sans KR';font-weight:800;background:var(--surface);color:var(--text);outline:none;transition:all .2s}
+    .field-inline input.has-mic{padding-left:10px;padding-right:44px;text-align:left}
+    .field-inline input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+    .field-inline input::placeholder{color:var(--text-muted);font-weight:400;font-size:.7rem}
+    .field-inline.locked input{background:#F1F5F9;border-color:#CBD5E1;color:#0F172A}
+    .field-inline .has-mic + .mic-btn + label{right:4px;font-size:.38rem}
+    .mic-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);background:#fff;color:#64748B;cursor:pointer;font-size:.7rem;padding:0;font-family:inherit;position:absolute;right:14px;top:50%;transform:translateY(-50%);z-index:2;transition:all .2s}
+    .mic-btn:active{transform:translateY(-50%) scale(.92)}
+    .mic-btn.listening{background:linear-gradient(135deg,#E74C3C,#FF6B6B);border-color:#E74C3C;color:#fff;animation:mic-pulse 1.2s ease-in-out infinite}
+    @keyframes mic-pulse{0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,.55)}50%{box-shadow:0 0 0 6px rgba(231,76,60,0)}}
+    .mic-btn.unsupported{display:none!important}
+
+    /* LOG TABLE */
+    .table-wrap{width:100%;overflow-x:auto;overflow-y:auto;max-height:400px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);-webkit-overflow-scrolling:touch;box-shadow:var(--shadow-md)}
+    .log-table{width:100%;border-collapse:collapse;font-size:.68rem}
+    .log-table th{background:#0F172A;color:white;padding:5px 1px;border:1px solid #1E293B;font-weight:700;white-space:nowrap;position:sticky;top:0;z-index:10;font-size:.56rem;letter-spacing:.2px}
+    .log-table td{padding:3px 1px;border:1px solid var(--border-light);text-align:center;vertical-align:middle;font-size:.65rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+    .log-table td.td-memo{text-align:left;white-space:normal;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-height:4.2em;word-break:break-all;font-weight:700;cursor:pointer;font-size:.68rem}
+    .photo-cell{padding:0!important;width:48px;height:48px;position:relative;cursor:pointer;background:var(--surface-alt)}
+    .photo-cell img{width:100%;height:100%;object-fit:cover;display:block}
+    .photo-cell .pc-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:48px;gap:2px;color:#94A3B8}
+    .photo-cell .pc-empty i{font-size:14px}
+    .photo-cell .pc-empty span{font-size:.36rem;color:#94A3B8;font-weight:600;letter-spacing:.3px}
+    .photo-cell.has-photo .pc-empty{display:none}
+    .photo-cell .pc-del{position:absolute;top:0;right:0;width:20px;height:20px;background:var(--danger);color:white;border:none;border-radius:0 0 0 5px;font-size:12px;font-weight:900;line-height:1;padding:0;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:10;box-shadow:0 2px 4px rgba(0,0,0,.35);touch-action:manipulation}
+    .photo-cell.has-photo .pc-del{display:flex}
+    .photo-cell.uploading::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center}
+    .photo-cell.uploading::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;z-index:6}
+    .log-table tbody tr:nth-child(even){background:var(--surface-alt)}
+    .log-table .order-num{font-weight:800;color:var(--primary);font-size:.55rem;font-family:'JetBrains Mono'}
+    /* v23.32: 완료/미완료 글자색 구분 (폰 스크롤 중 한눈에 식별) — 완료=초록 / 미완료=빨강 */
+    .log-table tbody tr.row-done td{color:#059669!important}
+    .log-table tbody tr.row-pending td{color:#DC2626!important}
+    .log-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;min-height:22px;padding:0 10px}
+    .log-head h3{font-size:.8rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px;margin:0}
+    .log-count{font-size:.56rem;font-weight:400;color:var(--text-dim)}
+    .log-empty{text-align:center;padding:16px;color:var(--text-muted);font-size:.65rem}
+
+    /* BOTTOM BAR */
+    .bottom-bar{padding:8px 14px 12px;background:var(--surface);flex-shrink:0;border-top:1px solid var(--border);box-shadow:0 -2px 8px rgba(0,0,0,.04)}
+    .bottom-bar .btn-row{display:flex;gap:6px}
+    .bottom-bar button{flex:1;height:38px;border-radius:var(--r);border:none;font-weight:800;font-size:.72rem;cursor:pointer;font-family:'Noto Sans KR';letter-spacing:.3px;transition:all .1s;box-shadow:0 3px 0 rgba(0,0,0,.1),var(--shadow)}
+    .bottom-bar button:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.1)}
+    .btn-send{background:#0F172A;color:white}
+    .btn-new{background:linear-gradient(180deg,#F8FAFC,#E2E8F0);color:var(--text)}
+    .btn-refresh{background:#fff;color:#334155;border:1.5px solid #CBD5E1!important}
+
+    /* TOAST & LOADER */
+    .toast{position:fixed;bottom:68px;left:50%;transform:translateX(-50%) translateY(20px);padding:10px 22px;border-radius:var(--r);font-size:.7rem;font-weight:700;z-index:10000;opacity:0;transition:all .3s;pointer-events:none;max-width:90%;text-align:center;white-space:nowrap;box-shadow:var(--shadow-lg)}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .toast.success{background:#059669;color:white}
+    .toast.error{background:var(--danger);color:white}
+    .toast.info{background:var(--primary);color:white}
+    #loader{position:fixed;inset:0;background:rgba(255,255,255,.88);backdrop-filter:blur(4px);z-index:9999;display:none;flex-direction:column;justify-content:center;align-items:center}
+    .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    #loader p{margin-top:10px;font-weight:700;font-size:.8rem;color:var(--primary)}
+    .hidden-inputs{position:absolute;width:0;height:0;overflow:hidden}
+
+    /* MEMO POPUP */
+    .memo-popup-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(2px);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px}
+    .memo-popup-overlay.show{display:flex}
+    .memo-popup{background:var(--surface);border-radius:var(--r-lg);max-width:460px;width:100%;padding:18px 20px;box-shadow:var(--shadow-lg);position:relative}
+    .memo-popup-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1.5px solid var(--border)}
+    .memo-popup-head .mp-title{font-size:.7rem;font-weight:800;color:var(--text)}
+    .memo-popup-head .mp-loc{font-size:.58rem;color:var(--text-sub);font-weight:600}
+    .memo-popup-close{width:28px;height:28px;border:none;border-radius:50%;background:var(--danger);color:white;font-size:14px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 4px rgba(239,68,68,.3)}
+    .memo-popup-body{font-size:1rem;font-weight:700;color:var(--text);line-height:1.6;word-break:break-all}
+
+    /* UPLOAD BUTTONS */
+    .btn-cloud{width:100%;padding:13px;border:none;border-radius:var(--r);background:#0F172A;color:white;font-size:.78rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;letter-spacing:.3px;transition:all .15s}
+    .btn-cloud:active{transform:translateY(1px);background:#020617}
+    .btn-cloud.secondary{background:#fff;color:#0F172A;border:1.5px solid #CBD5E1}
+    .btn-cloud.secondary:active{background:#F1F5F9}
+    .btn-upload-excel{width:100%;margin-top:6px;padding:10px;border:1.5px dashed var(--border);border-radius:var(--r-sm);background:var(--surface-alt);color:var(--text-sub);font-size:.62rem;font-weight:700;font-family:'Noto Sans KR';cursor:pointer;text-align:center}
+    .btn-upload-excel:active{background:var(--primary-pale);border-color:var(--primary)}
+    .loaded-info{font-size:.64rem;font-weight:700;color:#0F172A;text-align:center;padding:10px;border:1.5px solid #CBD5E1;border-radius:var(--r-sm);background:#F8FAFC}
+    .loaded-info i{color:#0891B2;margin-right:4px}
+    .loaded-sub{font-size:.48rem;color:var(--text-dim);margin-top:2px}
+
+    @media print{
+      *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+      body,html,.app{height:auto!important;overflow:visible!important;background:#fff!important}
+      .app{max-width:100%!important;box-shadow:none!important;display:block!important}
+      /* 헤더/하단/오버레이/입력 폼 모두 숨김 */
+      header,.bottom-bar,.settings-overlay,.memo-popup-overlay,#loader,.toast,.hidden-inputs,button,.no-print{display:none!important}
+      /* 섹션 1(하자 리스트 불러오기) 통째로 숨김 - 첫 페이지 빈 영역 제거 */
+      #sec-load,.sec:first-of-type{display:none!important}
+      .content{overflow:visible!important}
+      .sec{box-shadow:none!important;border:none!important;padding:0!important;margin:0!important}
+      #secLog{padding:0!important}
+      .log-head{display:none!important}
+      .table-wrap{max-height:none!important;overflow:visible!important;border:none!important;border-radius:0!important;box-shadow:none!important}
+      /* 표 - 페이지 단위 반복 헤더 */
+      .log-table{font-size:9.5pt!important;table-layout:fixed!important;width:100%!important}
+      .log-table thead{display:table-header-group!important}
+      .log-table tr{page-break-inside:avoid!important}
+      .log-table th{background:#E2E8F0!important;color:#0F172A!important;border:1px solid #475569!important;font-weight:800!important;padding:6px 3px!important;position:static!important;font-size:9pt!important;text-align:center!important}
+      .log-table td{padding:5px 3px!important;border:1px solid #94A3B8!important;color:#0F172A!important;white-space:normal!important;word-break:break-word!important;text-align:center!important;vertical-align:middle!important;font-size:9pt!important;font-weight:500!important}
+      .log-table td.td-memo{text-align:left!important;-webkit-line-clamp:unset!important;max-height:none!important;display:table-cell!important;font-weight:600!important;padding:5px 6px!important}
+      .log-table tbody tr:nth-child(even){background:#F8FAFC!important}
+      /* v21.8: A4 컬럼 비율 재조정 (No/동/호 확대 + 하자내용 적정 + 사진 3컬럼 17%씩) */
+      .log-table th:nth-child(1),.log-table td:nth-child(1){width:5%!important}
+      .log-table th:nth-child(2),.log-table td:nth-child(2){width:6%!important}
+      .log-table th:nth-child(3),.log-table td:nth-child(3){width:7%!important}
+      .log-table th:nth-child(4),.log-table td:nth-child(4){width:9%!important}
+      .log-table th:nth-child(5),.log-table td:nth-child(5){width:22%!important}
+      .log-table th:nth-child(6),.log-table td:nth-child(6){width:17%!important}
+      .log-table th:nth-child(7),.log-table td:nth-child(7){width:17%!important}
+      .log-table th:nth-child(8),.log-table td:nth-child(8){width:17%!important}
+      /* v21.10: A4 가로(landscape) + 사진 셀 height 186px (124→186, 1.5배 추가) — 가로 1.4배 자연확대와 결합 */
+      .photo-cell{width:auto!important;height:186px!important;padding:2px!important;background:#fff!important}
+      .photo-cell img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}
+      .photo-cell:not(.has-photo){background:#F1F5F9!important}
+      .photo-cell .pc-empty,.photo-cell .pc-del{display:none!important}
+      @page{size:A4 landscape;margin:8mm}
+    }
+  </style>
+</head>
+<body>
+
+<div id="loader"><div class="spinner"></div><p id="loaderText">처리 중...</p></div>
+<div class="toast" id="toast"></div>
+
+<!-- 하자내용 팝업 -->
+<div class="memo-popup-overlay" id="memoPopup" onclick="App.closeMemoPopup(event)">
+  <div class="memo-popup" onclick="event.stopPropagation()">
+    <div class="memo-popup-head">
+      <div><div class="mp-title" id="mpTitle"></div><div class="mp-loc" id="mpLoc"></div></div>
+      <button class="memo-popup-close" onclick="App.closeMemoPopup()">&#10005;</button>
+    </div>
+    <div class="memo-popup-body" id="mpBody"></div>
+  </div>
+</div>
+
+<!-- 설정 패널 -->
+<div class="settings-overlay" id="settingsOverlay" onclick="App.closeSettings(event)">
+  <div class="settings-box" onclick="event.stopPropagation()">
+    <h3>&#9881; 연결 설정</h3>
+    <div class="sf">
+      <label>Apps Script URL</label>
+      <input type="text" id="setScriptUrl" placeholder="https://script.google.com/macros/s/...">
+      <div class="sf-hint">GAS 배포 URL (웹 앱으로 배포 후 복사)</div>
+    </div>
+    <div class="sf">
+      <label>Google Sheet ID</label>
+      <input type="text" id="setSheetId" placeholder="스프레드시트 URL에서 /d/ 뒤의 ID">
+      <div class="sf-hint">예: 1RzeZJAQh0ACC3YzkEJ5L21ak06wDp-MTHc3M5QFnlsg</div>
+    </div>
+    <div class="sf">
+      <label>시트명</label>
+      <input type="text" id="setSheetName" placeholder="시트 탭 이름 (예: 하남강일)">
+    </div>
+    <div class="sf">
+      <label>작업자 이름</label>
+      <input type="text" id="setWorker" placeholder="A, B, C 등">
+      <div class="sf-hint">사진 파일명에 작업자 이름이 포함됩니다</div>
+    </div>
+    <div class="settings-btns">
+      <button class="btn-cancel" onclick="App.closeSettings()">취소</button>
+      <button class="btn-save" onclick="App.saveSettings()">저장</button>
+    </div>
+    <div class="conn-status" id="connStatus" style="display:none"></div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="btn-cancel" style="width:100%;background:#334155;color:#fff;font-weight:700;border:none" onclick="App.migratePhotos()">기존 사진 → Drive 이미지 마이그레이션</button>
+      <div class="sf-hint" style="margin-top:6px">v17 이하 base64 사진을 Drive URL+IMAGE 수식으로 일괄 변환 (사진 많으면 수 분 소요)</div>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <div class="content">
+    <header>
+      <span class="settings-btn" onclick="App.toggleSettings()">&#9881;</span>
+      <h1>LG창 현장관리앱</h1>
+      <div class="ver" id="verBadge">V23.27</div>
+    </header>
+
+    <!-- 1. 하자 리스트 불러오기 -->
+    <div class="sec" id="sec-load">
+      <div class="sec-head" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:7px">
+          <span class="sec-num">1</span>
+          <span class="sec-title">하자 리스트 불러오기</span>
+          <span class="worker-badge" id="workerBadge" style="display:none"></span>
+        </div>
+        <span onclick="document.getElementById('appGuide').style.display=document.getElementById('appGuide').style.display==='none'?'block':'none'" style="font-size:.5rem;color:var(--primary);font-weight:700;cursor:pointer;border:1px solid var(--primary);border-radius:4px;padding:2px 6px;background:var(--primary-pale)">사용설명서</span>
+      </div>
+
+      <div id="appGuide" style="display:none;margin-bottom:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.58rem;line-height:1.6;color:var(--text-sub)">
+        <div style="font-weight:800;color:var(--primary-dark);margin-bottom:6px;font-size:.65rem">LG창 현장관리 사용설명서</div>
+        <b>최초 설정 (1회)</b><br>
+        &middot; 좌측 상단 <i class="fa-solid fa-gear"></i> 설정 버튼 탭<br>
+        &middot; Script URL / Sheet ID는 자동 입력됨 (워크북 1개 = 14개 현장)<br>
+        &middot; 작업자 이름만 A / B / C 입력 후 저장<br><br>
+        <b>현장 선택 (v23.3 신규)</b><br>
+        &middot; 섹션 ① 상단 <b>현장 선택</b> 드롭다운에서 시트 선택<br>
+        &middot; 군산미장 / 경산하양 / 광주중흥 / 동탄 / ... / 감일제일 (14개)<br>
+        &middot; 시트 변경 시 데이터·필터 자동 초기화 후 재로드<br><br>
+        <b>데이터 불러오기 (A/B/C 작업자)</b><br>
+        &middot; <i class="fa-solid fa-cloud-arrow-down"></i> '구글시트에서 불러오기' 탭 → 하자리스트 로드<br>
+        &middot; 동/호 숫자 입력 → 해당 세대 하자 자동 필터<br>
+        &middot; 매칭 0건이면 아래 <b>+ 새 하자</b> 폼에서 음성으로 신규 추가<br>
+        &middot; 우측 <i class="fa-solid fa-microphone"></i> 마이크 버튼: 음성으로 숫자 입력 가능<br>
+        &middot; '210' 처럼 앞 0 없이 입력해도 '0210'과 일치<br>
+        &middot; <b>✅ 완료 숨김 (v23.3 신규)</b>: 섹션 ② 우측 토글로 완료된 하자 숨김/보임 전환<br><br>
+        <b>사진 촬영 (v23.3 시트 양식 통일)</b><br>
+        &middot; 수리전/수리후/확인서 <i class="fa-solid fa-camera"></i> 탭 → 사진 촬영<br>
+        &middot; 촬영 즉시 Google Drive 업로드 + 구글시트 셀에 이미지 자동 표시<br>
+        &middot; 시트 양식: <b>H열=수리전, I열=수리후, J열=완료확인서</b> (14개 시트 통일)<br>
+        &middot; 저장 경로: <b>A.LG창(현장관리) / {현장} / {동}-{호} /</b> (예: 광명롯데트리우스/201-1504/)<br>
+        &middot; 다른 작업자는 '새로고침'으로 최신 사진 확인<br><br>
+        <b>하단 버튼</b><br>
+        &middot; <i class="fa-solid fa-table"></i> 시트열기: 구글시트를 새 탭으로 바로 열기<br>
+        &middot; <i class="fa-solid fa-file-pdf"></i> PDF저장: 브라우저 인쇄 → 'PDF로 저장' 선택 (내 파일 → 다운로드)<br>
+        &middot; <i class="fa-solid fa-rotate"></i> 새로고침: 구글시트에서 최신 데이터 동기화<br>
+        &middot; 전체삭제: 로컬 모든 데이터 삭제 (확인 팝업 있음)<br><br>
+        <b>마이그레이션 (v17 이하 이력 있는 경우)</b><br>
+        &middot; 설정 패널 하단 '기존 사진 → Drive 이미지 마이그레이션' 버튼<br>
+        &middot; 구버전에 base64로 저장된 사진을 Drive URL + =IMAGE() 수식으로 일괄 변환
+      </div>
+
+      <!-- 현장(시트) 선택 드롭다운 — v23.3 -->
+      <div id="siteSelectWrap" style="margin-bottom:8px">
+        <label style="display:block;font-size:.55rem;font-weight:700;color:var(--text-sub);margin-bottom:3px;letter-spacing:.3px">현장 선택</label>
+        <select id="siteSelect" onchange="App.changeSite(this.value)" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.78rem;font-family:'Noto Sans KR';font-weight:700;background:var(--surface);color:var(--text);outline:none;cursor:pointer;appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22%230891B2%22><path d=%22M7 10l5 5 5-5z%22/></svg>');background-repeat:no-repeat;background-position:right 8px center;padding-right:30px">
+          <option value="">시트 목록 불러오는 중...</option>
+        </select>
+        <div class="sf-hint" id="siteSelectHint" style="font-size:.5rem;color:var(--text-dim);margin-top:3px">현장을 선택하면 해당 시트가 자동 로드됩니다</div>
+      </div>
+
+      <!-- 로드된 상태 -->
+      <div id="loadedInfo" style="display:none">
+        <div class="loaded-info"><i class="fa-solid fa-circle-check"></i><span id="loadedSheetName"></span> · <span id="loadedRowCount"></span>건 로드됨
+          <div class="loaded-sub" id="loadedTime"></div>
+        </div>
+      </div>
+
+      <!-- 로드 버튼 -->
+      <div id="loadControls">
+        <button class="btn-cloud" onclick="App.loadFromSheet()"><i class="fa-solid fa-cloud-arrow-down"></i> 구글시트에서 불러오기</button>
+        <button class="btn-cloud secondary" style="margin-top:8px" onclick="document.getElementById('fileInput').click()"><i class="fa-solid fa-folder-open"></i> 엑셀 파일 → 구글시트 업로드</button>
+        <input type="file" id="fileInput" accept=".xlsx,.xlsm,.xls,.csv" hidden onchange="App.uploadExcelToSheet(this)">
+      </div>
+    </div>
+
+    <!-- 2. 하자 리스트 (동/호 필터) -->
+    <div class="sec sec-tight" id="secLog">
+      <div class="log-head" style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px">
+        <h3 style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
+          <span class="sec-num">2</span>
+          <span style="font-size:.78rem;font-weight:800">하자 리스트</span>
+          <span class="log-count" id="logCount" style="font-size:.6rem;color:var(--text-dim);font-weight:600">(0건)</span>
+        </h3>
+        <button id="btnToggleDone" onclick="App.toggleHideCompleted()" style="font-size:.55rem;font-weight:700;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap">✅ 완료 숨김</button>
+        <button id="btnRestore" onclick="App.restoreLast()" title="방금 삭제한 행 즉시 복구 (텍스트만, 사진은 Drive 휴지통에서 별도 복원)" style="font-size:.55rem;font-weight:700;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap;margin-left:4px">↶ 복구</button>
+        <input type="hidden" id="fSite">
+      </div>
+      <!-- 동/호 필터 -->
+      <div class="no-print" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px;align-items:center">
+        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fDong" placeholder="동" inputmode="numeric" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micDong" onclick="App.startVoiceInput('fDong','micDong')" aria-label="동 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
+        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fHo" placeholder="호" inputmode="numeric" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micHo" onclick="App.startVoiceInput('fHo','micHo')" aria-label="호 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
+      </div>
+      <!-- 새 하자 인라인 입력 (위치·하자내용 음성) -->
+      <div class="no-print" style="display:grid;grid-template-columns:1fr 2fr auto;gap:4px;margin-bottom:8px;align-items:center;padding:8px 6px 6px;background:var(--accent-pale);border:1px solid var(--accent-light);border-radius:var(--r);position:relative">
+        <span style="position:absolute;top:-7px;left:8px;font-size:.5rem;font-weight:800;color:var(--accent-dark);background:var(--surface);padding:1px 5px;border-radius:3px;letter-spacing:.3px">+ 새 하자</span>
+        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="addLoc" placeholder="위치" style="font-size:.7rem;padding:7px 26px 7px 7px"><button class="mic-btn" id="addMicLoc" onclick="App.startVoiceForField('addLoc','addMicLoc','text')" aria-label="위치 음성" style="width:22px;height:22px;font-size:.6rem;right:4px"><i class="fa-solid fa-microphone"></i></button></div>
+        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="addMemo" placeholder="하자내용" style="font-size:.7rem;padding:7px 26px 7px 7px"><button class="mic-btn" id="addMicMemo" onclick="App.startVoiceForField('addMemo','addMicMemo','text')" aria-label="내용 음성" style="width:22px;height:22px;font-size:.6rem;right:4px"><i class="fa-solid fa-microphone"></i></button></div>
+        <button id="btnSaveNew" onclick="App.saveNewDefect()" style="padding:7px 9px;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';border:none;border-radius:var(--r);background:#0891B2;color:white;cursor:pointer;white-space:nowrap;letter-spacing:.2px;box-shadow:var(--shadow-3d)" title="구글시트에 추가"><i class="fa-solid fa-floppy-disk"></i></button>
+      </div>
+      <div class="table-wrap">
+        <table class="log-table">
+          <thead><tr>
+            <th style="width:20px">No</th><th style="width:24px">동</th><th style="width:30px">호</th><th style="width:36px">위치</th><th>하자내용</th><th style="width:46px">수리전</th><th style="width:46px">수리후</th><th style="width:46px">확인서</th>
+          </tr></thead>
+          <tbody id="logBody"><tr><td colspan="8" class="log-empty">구글시트에서 데이터를 불러오세요</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 하단 버튼 -->
+  <div class="bottom-bar">
+    <div class="btn-row">
+      <button class="btn-send" onclick="App.openSheet()" style="flex:1"><i class="fa-solid fa-table"></i> 시트열기</button>
+      <button onclick="App.savePdf()" style="flex:1;border:none;border-radius:var(--r);background:#0891B2;color:white;font-size:.74rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer;padding:0 12px;letter-spacing:.3px;box-shadow:0 3px 0 rgba(0,0,0,.1),var(--shadow)"><i class="fa-solid fa-file-pdf"></i> PDF저장</button>
+      <button class="btn-refresh" onclick="App.refresh()" style="flex:0 0 auto;padding:0 12px"><i class="fa-solid fa-rotate"></i> 새로고침</button>
+      <button id="btnResetAll" onclick="App.resetAll()" style="flex:0 0 auto;padding:0 12px;border:1.5px solid #FCA5A5;border-radius:var(--r);background:#fff;color:#DC2626;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';cursor:pointer">전체삭제</button>
+    </div>
+  </div>
+</div>
+
+<div class="hidden-inputs">
+  <input type="file" id="fCapture" accept="image/*" onchange="App.onRowPhoto(this)">
+</div>
+
+<script>
+var APP_VERSION='v23.40'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var STORAGE={LOG:'LGCW_V70_LOG',SOURCE:'LGCW_V70_SRC',VERSION:'LGCW_APP_VERSION',ADMIN:'LGCW_ADMIN'};
+// v23.40: 관리자 모드 키. 관리자 PC에서 1회 (LG창 앱 URL)?admin=lgcw2026 접속 시 그 브라우저에 영구 저장.
+//         폰(작업자)은 일반 URL → 삭제 버튼 숨김(추가·사진교체만). ?admin=off 로 해제.
+var ADMIN_KEY='lgcw2026';
+var SETTINGS_KEYS={SCRIPT:'LGCW_SCRIPT_URL',SHEET:'LGCW_SHEET_ID',SHEET_NAME:'LGCW_SHEET_NAME',WORKER:'LGCW_WORKER'};
+var DEFAULTS={
+  SCRIPT:'https://script.google.com/macros/s/AKfycbwaNdrl99A84PRTgVpgJayIzulAAZCArW8oLsQiOxX-WaPQDJFSkr5DNCBznkjCI3vS/exec',
+  SHEET:'1Cg_hbquxA2xeZ6znpzZbYXXQoF1wAn8M4t6k6gC3LHU',
+  SHEET_NAME:'군산미장'
+};
+
+var App={
+  sourceData:[],
+  colMap:{},
+  rowPhotos:{}, // {rowNum: {before:'url/base64', after:'', confirm:''}}
+  uploadingCells:{}, // {rowNum_type: true} 업로드 중인 셀 추적
+  sourceSheetName:'',
+  hideCompleted:true, // v23.3: 완료 행 숨김 (기본 true), 토글 시 false로
+  lastDeleted:null, // v23.14: 마지막 삭제 행 1건 보관 (복구용, 새로고침 시 휘발)
+
+  // === 초기화 ===
+  isAdmin:false, // v23.40: 관리자(삭제 전권) 여부 — _resolveAdmin에서 판정
+  init:function(){
+    // v23.40: 관리자 모드 게이트 — URL ?admin=KEY → localStorage 영구 / ?admin=off 해제
+    try{
+      var qs=new URLSearchParams(location.search);
+      if(qs.has('admin')){
+        var a=qs.get('admin');
+        if(a===ADMIN_KEY){ localStorage.setItem(STORAGE.ADMIN,'1'); }
+        else if(a==='off'||a==='0'){ localStorage.removeItem(STORAGE.ADMIN); }
+      }
+    }catch(e){}
+    this.isAdmin=(localStorage.getItem(STORAGE.ADMIN)==='1');
+    // v23.28: 헤더 버전 배지를 APP_VERSION에 동적 바인딩 (하드코딩 누락 방지)
+    var vb=document.getElementById('verBadge');
+    if(vb) vb.textContent=APP_VERSION.toUpperCase()+(this.isAdmin?' 🔧':'');
+    // 관리자 아니면 전체삭제 버튼 숨김 (작업자 삭제 차단)
+    if(!this.isAdmin){ var rb=document.getElementById('btnResetAll'); if(rb) rb.style.display='none'; }
+    // v23.26: 앱 부팅 시 버전 체크 → 옛 SCRIPT URL 자동 갱신 (작업자 ⚙ 수동 갱신 불필요)
+    var savedVer=localStorage.getItem(STORAGE.VERSION);
+    if(savedVer!==APP_VERSION){
+      localStorage.setItem(SETTINGS_KEYS.SCRIPT,DEFAULTS.SCRIPT);
+      localStorage.setItem(STORAGE.VERSION,APP_VERSION);
+      if(savedVer){
+        var self=this;
+        setTimeout(function(){self.toast('새 버전 '+APP_VERSION+' 적용 ✓ (서버 URL 자동 갱신)','success',4000);},800);
+      }
+    }
+    this.loadLocalData();
+    this.renderLog();
+    var w=this.getSetting('WORKER');
+    if(w){document.getElementById('workerBadge').textContent=w;document.getElementById('workerBadge').style.display='inline-flex';}
+    // v23.3: 현장 시트 목록 자동 로딩 (1회)
+    this.loadSiteList();
+    // 기본값이 있으므로 설정 패널 자동 열기 불필요
+    // PWA 서비스워커 강제 업데이트 후 등록
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.getRegistrations().then(function(regs){
+        var p=regs.map(function(r){return r.unregister();});
+        return Promise.all(p);
+      }).then(function(){
+        return navigator.serviceWorker.register('sw.js',{updateViaCache:'none'});
+      }).then(function(reg){
+        reg.update();
+      }).catch(function(){});
+      // 캐시 전체 삭제 (이전 SW 캐시 잔존 방지)
+      if(window.caches) caches.keys().then(function(n){n.forEach(function(k){caches.delete(k);});});
+    }
+  },
+
+  toast:function(m,t,d){t=t||'info';d=d||2500;var e=document.getElementById('toast');e.textContent=m;e.className='toast '+t+' show';clearTimeout(e._t);e._t=setTimeout(function(){e.classList.remove('show');},d);},
+  showLoader:function(msg){document.getElementById('loaderText').textContent=msg||'처리 중...';document.getElementById('loader').style.display='flex';},
+  hideLoader:function(){document.getElementById('loader').style.display='none';},
+
+  // === 설정 ===
+  getSetting:function(key){return localStorage.getItem(SETTINGS_KEYS[key])||(DEFAULTS[key]||'');},
+  setSetting:function(key,val){localStorage.setItem(SETTINGS_KEYS[key],val);},
+
+  toggleSettings:function(){
+    var ov=document.getElementById('settingsOverlay');
+    if(ov.classList.contains('show')){this.closeSettings();return;}
+    document.getElementById('setScriptUrl').value=this.getSetting('SCRIPT')||DEFAULTS.SCRIPT||'';
+    document.getElementById('setSheetId').value=this.getSetting('SHEET')||DEFAULTS.SHEET||'';
+    document.getElementById('setSheetName').value=this.getSetting('SHEET_NAME')||DEFAULTS.SHEET_NAME||'';
+    document.getElementById('setWorker').value=this.getSetting('WORKER');
+    document.getElementById('connStatus').style.display='none';
+    ov.classList.add('show');
+  },
+  closeSettings:function(e){
+    if(e&&e.target!==document.getElementById('settingsOverlay'))return;
+    document.getElementById('settingsOverlay').classList.remove('show');
+  },
+  saveSettings:function(){
+    var url=document.getElementById('setScriptUrl').value.trim();
+    var sid=document.getElementById('setSheetId').value.trim();
+    var sn=document.getElementById('setSheetName').value.trim();
+    var w=document.getElementById('setWorker').value.trim();
+    // Sheets URL 통째로 붙여넣은 경우 ID만 자동 추출 (v20.2)
+    var m=sid.match(/\/d\/([a-zA-Z0-9_-]{20,})/);
+    if(m){sid=m[1];document.getElementById('setSheetId').value=sid;}
+    if(!url||!sid){this.toast('Script URL과 Sheet ID는 필수입니다','error');return;}
+    this.setSetting('SCRIPT',url);
+    this.setSetting('SHEET',sid);
+    this.setSetting('SHEET_NAME',sn);
+    this.setSetting('WORKER',w);
+    if(w){document.getElementById('workerBadge').textContent=w;document.getElementById('workerBadge').style.display='inline-flex';}
+    // 연결 테스트
+    var self=this;
+    var cs=document.getElementById('connStatus');
+    cs.textContent='연결 테스트 중...';cs.className='conn-status';cs.style.display='block';
+    fetch(url+'?action=read&sheetId='+encodeURIComponent(sid)+'&sheetName='+encodeURIComponent(sn))
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.status==='ok'){
+          cs.textContent='연결 성공! ('+d.count+'건) - 데이터 갱신 중...';cs.className='conn-status ok';
+          self.toast('설정 저장 완료','success');
+          // v21.1: 옛 캐시 정리 + 새 시트 데이터로 자동 갱신
+          self.sourceData=[];self.rowPhotos={};
+          // v23.3: 시트 목록도 다시 로드 (Sheet ID 바뀐 경우 대응)
+          self.loadSiteList();
+          setTimeout(function(){App.closeSettings();self.loadFromSheet();},1500);
+        }else{
+          cs.textContent='오류: '+d.message;cs.className='conn-status err';
+        }
+      })
+      .catch(function(err){
+        cs.textContent='연결 실패: '+err.message;cs.className='conn-status err';
+      });
+  },
+
+  // === v23.3: 현장 시트 목록 로딩 ===
+  loadSiteList:function(){
+    var url=this.getSetting('SCRIPT');
+    var sid=this.getSetting('SHEET');
+    var sel=document.getElementById('siteSelect');
+    if(!url||!sid){
+      sel.innerHTML='<option value="">설정에서 SCRIPT/SHEET ID 확인 필요</option>';
+      return;
+    }
+    var self=this;
+    var current=this.getSetting('SHEET_NAME');
+    fetch(url+'?action=listSheets&sheetId='+encodeURIComponent(sid))
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.status!=='ok'){
+          sel.innerHTML='<option value="">시트 목록 로드 실패: '+(d.message||'')+'</option>';
+          return;
+        }
+        var html='';
+        for(var i=0;i<d.sites.length;i++){
+          var s=d.sites[i];
+          var selAttr=(s.name===current)?' selected':'';
+          html+='<option value="'+s.name+'"'+selAttr+'>'+s.name+' ('+s.rowCount+'건)</option>';
+        }
+        sel.innerHTML=html||'<option value="">시트 없음</option>';
+        // 첫 로드 시 자동 데이터 호출
+        if(!self.sourceData.length && current){
+          self.loadFromSheet();
+        }
+      })
+      .catch(function(err){
+        sel.innerHTML='<option value="">연결 실패: '+err.message+'</option>';
+      });
+  },
+
+  changeSite:function(siteName){
+    if(!siteName) return;
+    var prev=this.getSetting('SHEET_NAME');
+    if(siteName===prev && this.sourceData.length) return; // 같은 시트면 재로드 안 함
+    this.setSetting('SHEET_NAME',siteName);
+    // 옛 데이터 정리 후 재로드
+    this.sourceData=[];this.rowPhotos={};
+    document.getElementById('fDong').value='';
+    document.getElementById('fHo').value='';
+    this.toast(siteName+' 시트 로딩 중...','info');
+    this.loadFromSheet();
+  },
+
+  // === 구글시트에서 불러오기 ===
+  loadFromSheet:function(){
+    var url=this.getSetting('SCRIPT');
+    var sid=this.getSetting('SHEET');
+    var sn=this.getSetting('SHEET_NAME');
+    if(!url||!sid){this.toast('Script URL 또는 Sheet ID가 없습니다','error');return;}
+    var self=this;
+    this.showLoader('구글시트 불러오는 중...');
+    fetch(url+'?action=read&sheetId='+encodeURIComponent(sid)+'&sheetName='+encodeURIComponent(sn))
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.status!=='ok') throw new Error(d.message||'불러오기 실패');
+        self.sourceData=[];
+        for(var i=0;i<d.rows.length;i++){
+          var row=d.rows[i];
+          row._idx=i;
+          if(!row._rowNum) row._rowNum=i+2;
+          self.sourceData.push(row);
+          // 사진 URL 복원
+          if(row._photos){
+            var rn=row._rowNum;
+            if(!self.rowPhotos[rn]) self.rowPhotos[rn]={};
+            if(row._photos.before) self.rowPhotos[rn].before=row._photos.before;
+            if(row._photos.after) self.rowPhotos[rn].after=row._photos.after;
+            if(row._photos.confirm) self.rowPhotos[rn].confirm=row._photos.confirm;
+          }
+        }
+        if(d.rows.length>0) self.detectCols(d.rows[0]);
+        self.sourceSheetName=d.sheetName||sn||'';
+        // 현장명 설정
+        if(self.sourceSheetName){
+          document.getElementById('fSite').value=self.sourceSheetName;
+          localStorage.setItem('LGCW_SITE',self.sourceSheetName);
+        }
+        self.saveLocalData();
+        // UI 업데이트
+        document.getElementById('loadedInfo').style.display='block';
+        document.getElementById('loadControls').style.display='none';
+        document.getElementById('loadedSheetName').textContent=self.sourceSheetName;
+        document.getElementById('loadedRowCount').textContent=d.count;
+        var now=new Date();
+        document.getElementById('loadedTime').textContent='마지막 동기화: '+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+        self.renderLog();
+        self.toast(d.count+'건 로드 완료!','success');
+      })
+      .catch(function(err){self.toast('오류: '+err.message,'error');})
+      .finally(function(){self.hideLoader();});
+  },
+
+  // === 엑셀 → 구글시트 업로드 ===
+  uploadExcelToSheet:function(input){
+    var file=input.files&&input.files[0];if(!file)return;
+    var url=this.getSetting('SCRIPT');
+    var sid=this.getSetting('SHEET');
+    if(!url||!sid){this.toast('Script URL 또는 Sheet ID가 없습니다','error');return;}
+    var self=this;
+    this.showLoader('엑셀 읽는 중...');
+    var r=new FileReader();
+    r.onload=function(e){
+      try{
+        var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+        var sheetName=wb.SheetNames[0];
+        var ws=wb.Sheets[sheetName];
+        var json=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+        if(json.length<2) throw new Error('데이터가 없습니다');
+        var headers=json[0].map(function(h){return String(h);});
+        var rows=json.slice(1).map(function(row){
+          return headers.map(function(_,idx){return row[idx]!==undefined?String(row[idx]):'';});
+        });
+        // 시트명 결정 (설정에 있으면 사용, 없으면 엑셀 시트명)
+        var targetSheet=self.getSetting('SHEET_NAME')||sheetName;
+        document.getElementById('loaderText').textContent='구글시트에 업로드 중... ('+rows.length+'건)';
+        return fetch(url,{
+          method:'POST',
+          headers:{'Content-Type':'text/plain'},
+          body:JSON.stringify({action:'upload',sheetId:sid,sheetName:targetSheet,headers:headers,rows:rows})
+        }).then(function(r){return r.json();}).then(function(d){
+          if(d.status!=='ok') throw new Error(d.message||'업로드 실패');
+          // 시트명 저장
+          self.setSetting('SHEET_NAME',targetSheet);
+          self.toast(d.count+'건 구글시트 업로드 완료!','success',3000);
+          // 바로 불러오기
+          self.loadFromSheet();
+        });
+      }catch(err){self.toast('오류: '+err.message,'error');self.hideLoader();}
+    };
+    r.readAsArrayBuffer(file);
+    input.value='';
+  },
+
+  // === 새로고침 ===
+  refresh:function(){
+    if(!this.getSetting('SCRIPT')){this.toast('설정을 먼저 완료하세요','error');return;}
+    this.loadFromSheet();
+  },
+
+  // === 컬럼 감지 ===
+  detectCols:function(row){
+    var keys=Object.keys(row).filter(function(k){return k.charAt(0)!=='_';});
+    var used={};
+    function find(){
+      var kws=Array.prototype.slice.call(arguments);
+      for(var i=0;i<keys.length;i++){if(used[keys[i]])continue;var k=keys[i].replace(/\s/g,'');for(var j=0;j<kws.length;j++){if(k===kws[j]){used[keys[i]]=true;return keys[i];}}}
+      for(var i2=0;i2<keys.length;i2++){if(used[keys[i2]])continue;var k2=keys[i2].replace(/\s/g,'');for(var j2=0;j2<kws.length;j2++){if(k2.indexOf(kws[j2])>=0){used[keys[i2]]=true;return keys[i2];}}}
+      return '';
+    }
+    this.colMap={
+      no:find('NO','No','번호','하자No','하자번호'),
+      date:find('순번','접수일','날짜'),
+      dong:find('동','dong'),
+      ho:find('호수','호','ho'),
+      unit:find('동호','동/호','세대'),
+      loc:find('위치','실명'),
+      type:find('유형','하자유형'),
+      memo:find('하자내용','내용','비고','상세내용'),
+      work:find('상세분류','공종','공사'),
+      comp:find('업체명','업체','시공업체','시공'),
+      site:find('현장명','현장'),
+      photoBefore:find('수리전'),
+      photoAfter:find('수리후'),
+      photoConfirm:find('완료확인서','확인서'),
+      doneDate:find('완료일'),
+      done:find('완료')
+    };
+  },
+
+  gv:function(row,f){var c=this.colMap[f];return c?String(row[c]||'').trim():'';},
+  parseDH:function(row){
+    var d=this.gv(row,'dong'),h=this.gv(row,'ho');
+    if(!d&&!h){var u=this.gv(row,'unit');var m=u.match(/(\d+)\s*동?\s*[-\/]?\s*(\d+)\s*호?/);if(m){d=m[1];h=m[2];}}
+    return{dong:d,ho:h}; // v23.30: 시트 값 그대로 (옛 숫자 외 제거 정규식 폐기 — '1BF', 'B동', '201호' 정상 표시)
+  },
+
+  // === 하자 리스트 렌더링 ===
+  renderLog:function(){
+    if(!this.sourceData.length){
+      document.getElementById('logCount').textContent='(0건)';
+      document.getElementById('logBody').innerHTML='<tr><td colspan="10" class="log-empty">구글시트에서 데이터를 불러오세요</td></tr>';
+      return;
+    }
+    // v23.30: 문자열 부분 일치 검색 (옛 parseInt 비교 폐기 — '1'로 검색해도 '1BF' 매칭)
+    var qD=document.getElementById('fDong').value.trim().toLowerCase();
+    var qH=document.getElementById('fHo').value.trim().toLowerCase();
+    var filtered=[],doneHidden=0;
+    for(var i=0;i<this.sourceData.length;i++){
+      var row=this.sourceData[i];
+      var dh=this.parseDH(row);
+      var rD=String(dh.dong||'').toLowerCase();
+      var rH=String(dh.ho||'').toLowerCase();
+      if(qD&&rD.indexOf(qD)===-1)continue;
+      if(qH&&rH.indexOf(qH)===-1)continue;
+      // v23.3: 완료 행 숨김
+      var rowDone=this.gv(row,'done')||'';
+      var rowIsDone=rowDone&&rowDone!=='미완료'&&rowDone!=='N';
+      if(this.hideCompleted&&rowIsDone){doneHidden++;continue;}
+      filtered.push(row);
+    }
+    var cntTxt='('+filtered.length+'/'+this.sourceData.length+'건';
+    if(doneHidden>0) cntTxt+=', 완료 '+doneHidden+'건 숨김';
+    cntTxt+=')';
+    document.getElementById('logCount').textContent=cntTxt;
+    // 토글 버튼 표기 갱신
+    var btn=document.getElementById('btnToggleDone');
+    if(btn){
+      btn.textContent=this.hideCompleted?'✅ 완료 숨김':'👁 완료 보임';
+      btn.style.background=this.hideCompleted?'var(--surface)':'var(--accent-pale)';
+    }
+    if(!filtered.length){
+      // v23.3: 동·호 입력했는데 매칭 0건 → 새 하자 폼 안내
+      var hint=(qD||qH)
+        ? '해당 동/호 하자 없음 — 위 <b>+ 새 하자</b> 폼에서 음성으로 추가하세요'
+        : '구글시트에서 데이터를 불러오세요';
+      document.getElementById('logBody').innerHTML='<tr><td colspan="10" class="log-empty" style="padding:14px 8px;line-height:1.5">'+hint+'</td></tr>';
+      return;
+    }
+    var html='';
+    for(var j=0;j<filtered.length;j++){
+      var r=filtered[j];
+      var rn=r._rowNum||0;
+      var no=this.gv(r,'no')||j+1;
+      var dh=this.parseDH(r);
+      var loc=this.gv(r,'loc')||'-';
+      var memo=this.gv(r,'memo')||'-';
+      var done=this.gv(r,'done')||'';
+      var isDone=done&&done!=='미완료'&&done!=='N';
+      var ph=this.rowPhotos[rn]||{};
+      html+='<tr class="'+(isDone?'row-done':'row-pending')+'" style="'+(isDone?'background:var(--success-light)':'')+'">'
+        +'<td style="position:relative;padding-right:'+(this.isAdmin?'14px':'4px')+'">'+no
+        +(this.isAdmin?'<button onclick="event.stopPropagation();App.deleteRow('+rn+','+no+')" title="행 삭제" style="position:absolute;top:1px;right:1px;width:13px;height:13px;padding:0;border:none;background:transparent;color:#DC2626;font-size:.55rem;cursor:pointer;line-height:1" aria-label="행 삭제"><i class="fa-solid fa-trash"></i></button>':'')
+        +'</td>'
+        +'<td>'+dh.dong+'</td>'
+        +'<td>'+dh.ho+'</td>'
+        +'<td>'+loc+'</td>'
+        +'<td class="td-memo" onclick="App.showMemo('+no+',\''+loc.replace(/'/g,"\\'")+'\',this.textContent)">'+memo+'</td>'
+        +this._photoCell(rn,'before',ph.before)
+        +this._photoCell(rn,'after',ph.after)
+        +this._photoCell(rn,'confirm',ph.confirm)
+      +'</tr>';
+    }
+    document.getElementById('logBody').innerHTML=html;
+  },
+
+  // v23.3: 완료 행 숨김 토글
+  toggleHideCompleted:function(){
+    this.hideCompleted=!this.hideCompleted;
+    this.renderLog();
+  },
+
+  // v23.14: 마지막 삭제 행 즉시 복구 (메모리 1건, 사진은 Drive 휴지통 별도 복원)
+  restoreLast:function(){
+    if(!this.lastDeleted){
+      this.toast('복구할 항목 없음 (이전 삭제 후 새로고침했거나 기록 없음)','info',3500);
+      return;
+    }
+    var ld=this.lastDeleted;
+    if(!ld.data.dong||!ld.data.ho||!ld.data.memo){
+      this.toast('복구 데이터 부족 — 시트 버전 기록 사용 권장','error');
+      return;
+    }
+    var url=this.getSetting('SCRIPT');
+    var sid=this.getSetting('SHEET');
+    var sn=this.getSetting('SHEET_NAME');
+    if(!url||!sid){this.toast('설정을 먼저 완료하세요','error');return;}
+    var self=this;
+    this.showLoader('복구 중...');
+    var payload={
+      action:'appendRow',
+      sheetId:sid, sheetName:sn,
+      worker:this.getSetting('WORKER')||'',
+      data:ld.data
+    };
+    fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.status!=='ok')throw new Error(d.message||'복구 실패');
+        var msg='복구 완료 (No.'+d.no+', 시트 끝에 추가)';
+        if(ld.hadPhotos)msg+=' · 사진은 Drive 휴지통에서 복원';
+        self.toast(msg,'success',4000);
+        self.lastDeleted=null;
+        self.loadFromSheet();
+      })
+      .catch(function(err){self.toast('복구 실패: '+err.message,'error',4000);})
+      .finally(function(){self.hideLoader();});
+  },
+
+  _photoCell:function(rn,type,src){
+    var has=src?'has-photo':'';
+    var uploading=this.uploadingCells[rn+'_'+type]?'uploading':'';
+    // v21.7: 폰 X 버튼 터치 인식 강화 — touchend가 click보다 먼저 발화하도록
+    var delHandler="event.stopPropagation();event.preventDefault();App.delRowPhoto("+rn+",'"+type+"');return false;";
+    return '<td class="photo-cell '+has+' '+uploading+'" onclick="App.takeRowPhoto('+rn+',\''+type+'\')">'
+      +(src?'<img src="'+src+'">':'<div class="pc-empty"><i class="fa-solid fa-camera"></i><span>촬영</span></div>')
+      // v23.40: 사진 삭제 X는 관리자만. 작업자는 셀 탭으로 재촬영(덮어쓰기)만 가능 — 삭제 차단
+      +(this.isAdmin?'<button class="pc-del" ontouchend="'+delHandler+'" onclick="'+delHandler+'">&#10005;</button>':'')
+    +'</td>';
+  },
+
+  // === 사진 촬영 → 즉시 Drive 업로드 ===
+  takeRowPhoto:function(rn,type){
+    this._pendingRow=rn;this._pendingType=type;
+    var f=document.getElementById('fCapture');f.value='';f.click();
+  },
+
+  onRowPhoto:function(input){
+    var file=input.files&&input.files[0];
+    if(!file||!this._pendingRow)return;
+    var rn=this._pendingRow,type=this._pendingType,self=this;
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var img=new Image();
+      img.onload=function(){
+        // v23.29: 1920px·0.92 고화질 — GAS savePhoto가 Drive 업로드 흐름을 쓰므로 셀 50000자 한계 무관
+        // GAS가 base64 setValue로 회귀하면 fallback 점진 압축이 안전선까지 자동 축소
+        var SAFETY=45000; // base64 길이 안전 한계 (GAS 셀 setValue 폴백용)
+        var attempts=[
+          {mW:1920,q:0.92}, // 고화질 — 사람 눈으로 원본과 구별 불가
+          {mW:1280,q:0.85}, // 표준
+          {mW:1024,q:0.7},
+          {mW:800,q:0.6},
+          {mW:640,q:0.55},
+          {mW:480,q:0.5}
+        ];
+        var b='',used=null;
+        for(var ai=0;ai<attempts.length;ai++){
+          var a=attempts[ai];
+          var sc=img.width>a.mW?a.mW/img.width:1;
+          var c=document.createElement('canvas');c.width=img.width*sc;c.height=img.height*sc;
+          c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+          b=c.toDataURL('image/jpeg',a.q);
+          used=a;
+          // 첫 시도(1920·0.92)는 무조건 통과 — GAS가 Drive 업로드 흐름이면 크기 무관
+          // 2번째 이후만 SAFETY 검사 (GAS가 옛 base64 setValue 흐름인 경우 폴백)
+          if(ai===0)break;
+          if(b.length<=SAFETY)break;
+        }
+        // 로컬에 즉시 표시
+        if(!self.rowPhotos[rn]) self.rowPhotos[rn]={};
+        self.rowPhotos[rn][type]=b;
+        self.renderLog();
+        // GAS 업로드
+        self.uploadPhoto(rn,type,b);
+      };img.src=e.target.result;
+    };reader.readAsDataURL(file);
+  },
+
+  uploadPhoto:function(rn,type,base64){
+    var url=this.getSetting('SCRIPT');
+    var sid=this.getSetting('SHEET');
+    var sn=this.getSetting('SHEET_NAME');
+    if(!url||!sid){this.toast('설정을 먼저 완료하세요','error');return;}
+    var self=this;
+    this.uploadingCells[rn+'_'+type]=true;
+    this.renderLog();
+    this.toast('시트 저장 중...','info',3000);
+    var xhr=new XMLHttpRequest();
+    xhr.open('POST',url,true);
+    xhr.onload=function(){
+      delete self.uploadingCells[rn+'_'+type];
+      try{
+        var d=JSON.parse(xhr.responseText);
+        if(d.status==='ok'){
+          self.toast(d.autoDone?'저장 완료 + 완료일/완료 자동기록':'저장 완료','success',2500);
+          if(d.autoDone){ setTimeout(function(){self.loadFromSheet();},800); }
+        }else{
+          self.toast('저장 실패: '+(d.message||''),'error',6000);
+        }
+      }catch(e){
+        self.toast('전송 완료 (확인 필요)','info',3000);
+      }
+      self.renderLog();
+    };
+    xhr.onerror=function(){
+      delete self.uploadingCells[rn+'_'+type];
+      self.toast('저장 실패: 네트워크 오류','error',5000);
+      self.renderLog();
+    };
+    xhr.send(JSON.stringify({action:'savePhoto',sheetId:sid,sheetName:sn,rowNum:rn,photoType:type,base64:base64}));
+  },
+
+  // === 사진 삭제 (v20.8) — Drive 파일 trash + 시트 셀(_data 포함) 비우기 ===
+  delRowPhoto:function(rn,type){
+    var typeKR={before:'수리전',after:'수리후',confirm:'확인서'}[type]||type;
+    if(!confirm(typeKR+' 사진을 삭제하시겠습니까?\n(Drive 파일과 시트 데이터 모두 삭제됩니다)')) return;
+    var url=this.getSetting('SCRIPT');
+    var sid=this.getSetting('SHEET');
+    var sn=this.getSetting('SHEET_NAME');
+    if(!url||!sid){this.toast('설정을 먼저 완료하세요','error');return;}
+    var self=this;
+    this.uploadingCells[rn+'_'+type]=true;
+    this.renderLog();
+    this.toast('삭제 중...','info',3000);
+    var xhr=new XMLHttpRequest();
+    xhr.open('POST',url,true);
+    xhr.timeout=30000;
+    xhr.onload=function(){
+      delete self.uploadingCells[rn+'_'+type];
+      var raw=xhr.responseText||'(빈 응답)';
+      try{
+        var d=JSON.parse(raw);
+        if(d.status==='ok'){
+          if(self.rowPhotos[rn]) self.rowPhotos[rn][type]='';
+          self.toast(typeKR+' 사진 삭제 완료','success',2500);
+        }else{
+          self.toast('삭제 실패: '+(d.message||''),'error',5000);
+        }
+      }catch(e){
+        self.toast('삭제 실패: 응답 파싱 오류','error',5000);
+      }
+      self.renderLog();
+    };
+    xhr.onerror=function(){
+      delete self.uploadingCells[rn+'_'+type];
+      self.toast('삭제 실패: 네트워크 오류','error',5000);
+      self.renderLog();
+    };
+    xhr.ontimeout=function(){
+      delete self.uploadingCells[rn+'_'+type];
+      self.toast('삭제 타임아웃','error',5000);
+      self.renderLog();
+    };
+    xhr.send(JSON.stringify({action:'deletePhoto',sheetId:sid,sheetName:sn,rowNum:rn,photoType:type}));
+  },
+
+  // === 행 삭제 (v20.8) — 사진 일괄 trash + 행 통째 제거 ===
+  deleteRow:function(rn,no){
+    if(!confirm('No.'+no+' 행을 삭제하시겠습니까?\n(사진 포함 모든 데이터 삭제)\n\n※ 실수 시 상단 ↶ 복구 버튼으로 즉시 복구 가능 (텍스트만, 사진은 Drive 휴지통 수동)')) return;
+    // v23.14: 삭제 직전 행 데이터를 메모리에 보관 (복구용)
+    var srcRow=null;
+    for(var i=0;i<this.sourceData.length;i++){
+      if(this.sourceData[i]._rowNum===rn){srcRow=this.sourceData[i];break;}
+    }
+    if(srcRow){
+      var ph=srcRow._photos||{};
+      this.lastDeleted={
+        no:no,
+        data:{
+          dong:this.gv(srcRow,'dong'),
+          ho:this.gv(srcRow,'ho'),
+          loc:this.gv(srcRow,'loc'),
+          type:this.gv(srcRow,'type'),
+          memo:this.gv(srcRow,'memo')
+        },
+        hadPhotos:!!(ph.before||ph.after||ph.confirm),
+        deletedAt:Date.now()
+      };
+    }
+    var url=this.getSetting('SCRIPT');
+    var sid=this.getSetting('SHEET');
+    var sn=this.getSetting('SHEET_NAME');
+    if(!url||!sid){this.toast('설정을 먼저 완료하세요','error');return;}
+    var self=this;
+    this.showLoader('행 삭제 중...');
+    var xhr=new XMLHttpRequest();
+    xhr.open('POST',url,true);
+    xhr.timeout=30000;
+    xhr.onload=function(){
+      self.hideLoader();
+      try{
+        var d=JSON.parse(xhr.responseText);
+        if(d.status==='ok'){
+          self.toast('No.'+no+' 삭제 완료','success',1500);
+          // 시트에서 행이 빠지면 _rowNum이 어긋나므로 전체 다시 로드
+          setTimeout(function(){self.loadFromSheet();},500);
+        }else{
+          self.toast('삭제 실패: '+(d.message||''),'error');
+        }
+      }catch(e){
+        self.toast('삭제 실패: 응답 파싱 오류','error');
+      }
+    };
+    xhr.onerror=function(){
+      self.hideLoader();
+      self.toast('삭제 실패: 네트워크 오류','error');
+    };
+    xhr.ontimeout=function(){
+      self.hideLoader();
+      self.toast('삭제 타임아웃','error');
+    };
+    xhr.send(JSON.stringify({action:'deleteRow',sheetId:sid,sheetName:sn,rowNum:rn}));
+  },
+
+  // === 하자내용 팝업 ===
+  showMemo:function(no,loc,memo){
+    document.getElementById('mpTitle').textContent='No.'+no+' 하자내용';
+    document.getElementById('mpLoc').textContent=loc;
+    document.getElementById('mpBody').textContent=memo;
+    document.getElementById('memoPopup').classList.add('show');
+  },
+  closeMemoPopup:function(e){
+    if(e&&e.target!==document.getElementById('memoPopup'))return;
+    document.getElementById('memoPopup').classList.remove('show');
+  },
+
+  // === 음성 텍스트 후처리: "침실일/방이" → "침실1/방2" (v20.4) ===
+  _normalizeNumWords:function(text){
+    if(!text) return text;
+    var nm={'일':'1','이':'2','삼':'3','사':'4','오':'5'};
+    return text.replace(/(침실|화장실|방)\s?([일이삼사오])(?=$|\s|[,.])/g,function(_,p,n){return p+nm[n];});
+  },
+
+  // === 음성 입력 (동/호 숫자) ===
+  _koreanToDigits:function(text){
+    var map={'공':'0','영':'0','빵':'0','일':'1','하나':'1','이':'2','둘':'2','삼':'3','셋':'3','사':'4','넷':'4','오':'5','다섯':'5','육':'6','여섯':'6','칠':'7','일곱':'7','팔':'8','여덟':'8','구':'9','아홉':'9','십':'10','백':'100','천':'1000'};
+    var digits='';
+    for(var i=0;i<text.length;i++){var c=text.charAt(i);if(/[0-9]/.test(c))digits+=c;}
+    if(digits)return digits;
+    // 한글 숫자 → 자리별 변환 (단순 치환: 일공일 → 101)
+    var out='';
+    for(var j=0;j<text.length;j++){
+      var ch=text.charAt(j);
+      if(map[ch]!==undefined&&map[ch].length===1)out+=map[ch];
+    }
+    return out;
+  },
+  startVoiceInput:function(inputId,micId){
+    var Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!Rec){this.toast('음성인식 미지원 브라우저입니다','error');return;}
+    var self=this;
+    var input=document.getElementById(inputId);
+    var mic=document.getElementById(micId);
+    if(mic.classList.contains('listening')){return;}
+    var rec=new Rec();
+    rec.lang='ko-KR';rec.continuous=false;rec.interimResults=false;rec.maxAlternatives=3;
+    mic.classList.add('listening');
+    this.toast('숫자를 말씀하세요 (예: "101")','info',2000);
+    rec.onresult=function(e){
+      var got='';
+      for(var a=0;a<e.results[0].length;a++){
+        var t=e.results[0][a].transcript;
+        var d=self._koreanToDigits(t);
+        if(d){got=d;break;}
+      }
+      mic.classList.remove('listening');
+      if(got){
+        input.value=got;
+        self.renderLog();
+        self.toast('인식: '+got,'success',1500);
+      }else{
+        self.toast('숫자 인식 실패','error');
+      }
+    };
+    rec.onerror=function(e){mic.classList.remove('listening');self.toast('음성 오류: '+(e.error||''),'error');};
+    rec.onend=function(){mic.classList.remove('listening');};
+    try{rec.start();}catch(err){mic.classList.remove('listening');self.toast('음성인식 시작 실패','error');}
+  },
+
+  // === PDF 저장 (브라우저 인쇄 → PDF로 저장) ===
+  savePdf:function(){
+    if(!this.sourceData.length){this.toast('데이터가 없습니다','error');return;}
+    this.toast('인쇄 대화상자가 열립니다. 대상에서 "PDF로 저장" 선택','info',4000);
+    setTimeout(function(){ window.print(); }, 400);
+  },
+
+  // === 필드별 음성 입력 (mode: 'digit' | 'text') ===
+  startVoiceForField:function(inputId,micId,mode){
+    var Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!Rec){this.toast('음성인식 미지원 브라우저','error');return;}
+    var self=this;
+    var input=document.getElementById(inputId);
+    var mic=document.getElementById(micId);
+    if(mic.classList.contains('listening')){return;}
+    var rec=new Rec();
+    rec.lang='ko-KR';rec.continuous=false;rec.interimResults=false;rec.maxAlternatives=3;
+    mic.classList.add('listening');
+    var hint=mode==='digit'?'숫자를 말씀하세요':'음성으로 말씀하세요';
+    this.toast(hint,'info',1500);
+    rec.onresult=function(e){
+      mic.classList.remove('listening');
+      var alts=[];
+      for(var a=0;a<e.results[0].length;a++) alts.push(e.results[0][a].transcript);
+      var picked='';
+      if(mode==='digit'){
+        for(var i=0;i<alts.length;i++){
+          var d=self._koreanToDigits(alts[i]);
+          if(d){picked=d;break;}
+        }
+      }else{
+        picked=self._normalizeNumWords(alts[0]||'');
+      }
+      if(picked){
+        input.value=picked;
+        self.toast('인식: '+picked,'success',1200);
+      }else{
+        self.toast('인식 실패','error');
+      }
+    };
+    rec.onerror=function(e){mic.classList.remove('listening');self.toast('음성 오류: '+(e.error||''),'error');};
+    rec.onend=function(){mic.classList.remove('listening');};
+    try{rec.start();}catch(err){mic.classList.remove('listening');self.toast('음성 시작 실패','error');}
+  },
+
+  // === 새 하자 GAS 시트에 인라인 추가 (v21.0) ===
+  saveNewDefect:function(){
+    // 동/호는 필터값에서 가져옴
+    var dong=document.getElementById('fDong').value.trim();
+    var ho=document.getElementById('fHo').value.trim();
+    var loc=document.getElementById('addLoc').value.trim();
+    var memo=document.getElementById('addMemo').value.trim();
+    if(!dong||!ho){this.toast('동/호 필터를 먼저 입력하세요','error');return;}
+    if(!memo){this.toast('하자내용을 입력하세요','error');return;}
+
+    var url=this.getSetting('SCRIPT');
+    var sid=this.getSetting('SHEET');
+    var sn=this.getSetting('SHEET_NAME');
+    if(!url||!sid){this.toast('연결 설정을 먼저 완료하세요','error');return;}
+
+    var self=this;
+    var btn=document.getElementById('btnSaveNew');
+    btn.disabled=true;
+    var oldHtml=btn.innerHTML;
+    btn.innerHTML='<i class="fa-solid fa-circle-notch fa-spin"></i>';
+    this.showLoader('GAS 시트에 추가 중...');
+
+    var payload={
+      action:'appendRow',
+      sheetId:sid,
+      sheetName:sn,
+      worker:this.getSetting('WORKER')||'',
+      data:{ dong:dong, ho:ho, loc:loc, memo:memo }
+    };
+
+    // v20.5: LockService 충돌 시 자동 2회 재시도 (백오프 1.5s, 3s)
+    var maxRetry=2;
+    var attempt=function(retryCount){
+      fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
+        .then(function(r){return r.json();})
+        .then(function(d){
+          if(d.status!=='ok'){
+            if(retryCount<maxRetry && d.message && d.message.indexOf('다른 작업자')>=0){
+              var delay=retryCount===0?1500:3000;
+              self.showLoader('잠시 후 재시도 중... ('+(retryCount+1)+'/'+maxRetry+')');
+              setTimeout(function(){attempt(retryCount+1);},delay);
+              return;
+            }
+            throw new Error(d.message||'추가 실패');
+          }
+          self.toast('추가 완료! (No.'+d.no+')','success',2200);
+          document.getElementById('addLoc').value='';
+          document.getElementById('addMemo').value='';
+          self.loadFromSheet();
+          setTimeout(function(){document.getElementById('addLoc').focus();},400);
+        })
+        .catch(function(err){
+          self.toast('오류: '+err.message,'error',4000);
+        })
+        .finally(function(){
+          self.hideLoader();
+          btn.disabled=false;
+          btn.innerHTML=oldHtml;
+        });
+    };
+    attempt(0);
+  },
+
+  // === 기존 base64 사진 → Drive URL 마이그레이션 ===
+  migratePhotos:function(){
+    var url=this.getSetting('SCRIPT');
+    var sid=this.getSetting('SHEET');
+    var sn=this.getSetting('SHEET_NAME');
+    if(!url||!sid){this.toast('Script URL / Sheet ID 먼저 설정','error');return;}
+    if(!confirm('기존 base64 사진을 Drive 이미지로 일괄 변환합니다.\n사진이 많으면 수 분 소요될 수 있습니다. 진행하시겠습니까?')) return;
+    var self=this;
+    this.showLoader('사진 마이그레이션 중... (수 분 소요 가능)');
+    var xhr=new XMLHttpRequest();
+    xhr.open('POST',url,true);
+    xhr.timeout=300000;
+    xhr.onload=function(){
+      self.hideLoader();
+      try{
+        var d=JSON.parse(xhr.responseText);
+        if(d.status==='ok'){
+          self.toast('마이그레이션 완료: '+d.migrated+'건 변환'+(d.errors?(', '+d.errors+'건 실패'):''),'success',5000);
+          setTimeout(function(){self.loadFromSheet();},1000);
+        }else{
+          self.toast('실패: '+(d.message||''),'error');
+        }
+      }catch(e){self.toast('응답 파싱 실패','error');}
+    };
+    xhr.onerror=function(){self.hideLoader();self.toast('네트워크 오류','error');};
+    xhr.ontimeout=function(){self.hideLoader();self.toast('타임아웃 (사진이 너무 많음)','error');};
+    xhr.send(JSON.stringify({action:'migratePhotos',sheetId:sid,sheetName:sn}));
+  },
+
+  // === 전체 초기화 ===
+  resetAll:function(){
+    if(!confirm('모든 데이터를 초기화하시겠습니까?\n(하자리스트, 사진, 현장명 모두 삭제)')) return;
+    localStorage.removeItem(STORAGE.SOURCE);
+    localStorage.removeItem('LGCW_SITE');
+    this.sourceData=[];this.rowPhotos={};this.sourceSheetName='';
+    document.getElementById('fSite').value='';
+    document.getElementById('fDong').value='';
+    document.getElementById('fHo').value='';
+    document.getElementById('loadedInfo').style.display='none';
+    document.getElementById('loadControls').style.display='block';
+    this.renderLog();
+    this.toast('초기화 완료. 구글시트에서 다시 불러오세요','success');
+  },
+
+  // === 구글시트 새 탭 열기 (v21.9) ===
+  openSheet:function(){
+    var sid=this.getSetting('SHEET');
+    if(!sid){this.toast('시트 ID가 설정되지 않았습니다','error');return;}
+    var url='https://docs.google.com/spreadsheets/d/'+sid+'/edit';
+    window.open(url,'_blank');
+  },
+
+  // === 로컬 데이터 저장/복원 ===
+  saveLocalData:function(){
+    try{
+      var s=[];
+      for(var i=0;i<this.sourceData.length;i++){
+        var c={};var ks=Object.keys(this.sourceData[i]);
+        for(var j=0;j<ks.length;j++) c[ks[j]]=this.sourceData[i][ks[j]];
+        s.push(c);
+      }
+      localStorage.setItem(STORAGE.SOURCE,JSON.stringify({data:s,sheetName:this.sourceSheetName||''}));
+    }catch(e){}
+  },
+  loadLocalData:function(){
+    try{
+      var s=JSON.parse(localStorage.getItem(STORAGE.SOURCE)||'null');
+      if(s&&s.data&&s.data.length){
+        this.sourceData=[];
+        for(var i=0;i<s.data.length;i++){s.data[i]._idx=i;if(!s.data[i]._rowNum) s.data[i]._rowNum=i+2;this.sourceData.push(s.data[i]);}
+        this.detectCols(s.data[0]);
+        this.sourceSheetName=s.sheetName||'';
+        document.getElementById('loadedInfo').style.display='block';
+        document.getElementById('loadControls').style.display='none';
+        document.getElementById('loadedSheetName').textContent=this.sourceSheetName||'이전 데이터';
+        document.getElementById('loadedRowCount').textContent=this.sourceData.length;
+        document.getElementById('loadedTime').textContent='캐시된 데이터 (새로고침 권장)';
+        // 현장명 복원
+        var site=localStorage.getItem('LGCW_SITE');
+        if(site) document.getElementById('fSite').value=site;
+        // 사진 URL 복원 (sourceData 내 _photos)
+        for(var k=0;k<this.sourceData.length;k++){
+          var row=this.sourceData[k];
+          if(row._photos){
+            var rn=row._rowNum;
+            if(!this.rowPhotos[rn]) this.rowPhotos[rn]={};
+            if(row._photos.before) this.rowPhotos[rn].before=row._photos.before;
+            if(row._photos.after) this.rowPhotos[rn].after=row._photos.after;
+            if(row._photos.confirm) this.rowPhotos[rn].confirm=row._photos.confirm;
+          }
+        }
+      }
+    }catch(e){}
+  }
+};
+
+window.onload=function(){App.init();};
+</script>
+</body>
+</html>
