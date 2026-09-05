@@ -200,7 +200,8 @@
       .photo-cell .pc-empty,.photo-cell .pc-del{display:none!important}
       .print-only{display:block!important}
       #printHeader{margin:0 0 7px 0;text-align:center;border-bottom:2px solid #15803D;padding-bottom:5px}
-      #printHeader .ph-title{font-size:15pt!important;font-weight:800!important;color:#15803D!important}
+      #printHeader .ph-company{font-size:18pt!important;font-weight:800!important;color:#15803D!important;letter-spacing:1px!important}
+      #printHeader .ph-title{font-size:11.5pt!important;font-weight:700!important;color:#444!important;margin-top:1px!important}
       #printHeader .ph-meta{font-size:10.5pt!important;color:#333!important;margin-top:3px!important}
       #printHeader .ph-meta span{margin:0 16px!important}
       @page{size:A4 portrait;margin:8mm 6mm}
@@ -358,6 +359,7 @@
         <button id="btnSaveNew" onclick="App.saveNewDefect()" style="padding:7px 9px;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';border:none;border-radius:var(--r);background:#0891B2;color:white;cursor:pointer;white-space:nowrap;letter-spacing:.2px;box-shadow:var(--shadow-3d)" title="구글시트에 추가"><i class="fa-solid fa-floppy-disk"></i></button>
       </div>
       <div id="printHeader" class="print-only">
+        <div class="ph-company">청개구리샤시</div>
         <div class="ph-title">LG창 현장관리(종합)_LIVE</div>
         <div class="ph-meta"><span>현장명: <b id="phSite"></b></span><span>작업일: <b id="phDate"></b></span></div>
       </div>
@@ -387,7 +389,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.40-lg10'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.40-lg11'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'LGCW_V70_LOG',SOURCE:'LGCW_V70_SRC',VERSION:'LGCW_APP_VERSION'};
 var SETTINGS_KEYS={SCRIPT:'LGCW_SCRIPT_URL',SHEET:'LGCW_SHEET_ID',SHEET_NAME:'LGCW_SHEET_NAME',WORKER:'LGCW_WORKER'};
 var DEFAULTS={
