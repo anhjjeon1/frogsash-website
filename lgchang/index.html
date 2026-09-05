@@ -162,6 +162,7 @@
     .loaded-info i{color:#0891B2;margin-right:4px}
     .loaded-sub{font-size:.48rem;color:var(--text-dim);margin-top:2px}
 
+    .print-only{display:none}
     @media print{
       *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
       body,html,.app{height:auto!important;overflow:visible!important;background:#fff!important}
@@ -197,6 +198,11 @@
       .photo-cell img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}
       .photo-cell:not(.has-photo){background:#F1F5F9!important;height:18px!important}
       .photo-cell .pc-empty,.photo-cell .pc-del{display:none!important}
+      .print-only{display:block!important}
+      #printHeader{margin:0 0 7px 0;text-align:center;border-bottom:2px solid #15803D;padding-bottom:5px}
+      #printHeader .ph-title{font-size:15pt!important;font-weight:800!important;color:#15803D!important}
+      #printHeader .ph-meta{font-size:10.5pt!important;color:#333!important;margin-top:3px!important}
+      #printHeader .ph-meta span{margin:0 16px!important}
       @page{size:A4 landscape;margin:8mm}
     }
   </style>
@@ -351,6 +357,10 @@
         <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="addMemo" placeholder="하자내용" style="font-size:.7rem;padding:7px 26px 7px 7px"><button class="mic-btn" id="addMicMemo" onclick="App.startVoiceForField('addMemo','addMicMemo','text')" aria-label="내용 음성" style="width:22px;height:22px;font-size:.6rem;right:4px"><i class="fa-solid fa-microphone"></i></button></div>
         <button id="btnSaveNew" onclick="App.saveNewDefect()" style="padding:7px 9px;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';border:none;border-radius:var(--r);background:#0891B2;color:white;cursor:pointer;white-space:nowrap;letter-spacing:.2px;box-shadow:var(--shadow-3d)" title="구글시트에 추가"><i class="fa-solid fa-floppy-disk"></i></button>
       </div>
+      <div id="printHeader" class="print-only">
+        <div class="ph-title">LG창 현장관리(종합)_LIVE</div>
+        <div class="ph-meta"><span>현장명: <b id="phSite"></b></span><span>작업일: <b id="phDate"></b></span></div>
+      </div>
       <div class="table-wrap">
         <table class="log-table">
           <thead><tr>
@@ -377,7 +387,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.40-lg8'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.40-lg9'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'LGCW_V70_LOG',SOURCE:'LGCW_V70_SRC',VERSION:'LGCW_APP_VERSION'};
 var SETTINGS_KEYS={SCRIPT:'LGCW_SCRIPT_URL',SHEET:'LGCW_SHEET_ID',SHEET_NAME:'LGCW_SHEET_NAME',WORKER:'LGCW_WORKER'};
 var DEFAULTS={
@@ -1051,6 +1061,8 @@ var App={
   // === PDF 저장 (브라우저 인쇄 → PDF로 저장) ===
   savePdf:function(){
     if(!this.sourceData.length){this.toast('데이터가 없습니다','error');return;}
+    var ph=document.getElementById('phSite'); if(ph) ph.textContent=this.sourceSheetName||document.getElementById('fSite').value||'';
+    var pd=document.getElementById('phDate'); if(pd){ var d=new Date(); pd.textContent=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
     this.toast('인쇄 대화상자가 열립니다. 대상에서 "PDF로 저장" 선택','info',4000);
     setTimeout(function(){ window.print(); }, 400);
   },
