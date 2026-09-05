@@ -377,7 +377,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.40-lg6'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.40-lg7'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'LGCW_V70_LOG',SOURCE:'LGCW_V70_SRC',VERSION:'LGCW_APP_VERSION'};
 var SETTINGS_KEYS={SCRIPT:'LGCW_SCRIPT_URL',SHEET:'LGCW_SHEET_ID',SHEET_NAME:'LGCW_SHEET_NAME',WORKER:'LGCW_WORKER'};
 var DEFAULTS={
@@ -519,8 +519,8 @@ var App={
           html+='<option value="'+s.name+'"'+selAttr+'>'+s.name+' ('+s.rowCount+'건)</option>';
         }
         sel.innerHTML=html||'<option value="">시트 없음</option>';
-        // 첫 로드 시 자동 데이터 호출
-        if(!self.sourceData.length && current){
+        // v23.40-lg7: 캐시가 있어도 켤 때마다 최신 데이터 자동 새로고침 (사진/완료 누락 방지)
+        if(current){
           self.loadFromSheet();
         }
       })
