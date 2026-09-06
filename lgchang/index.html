@@ -391,7 +391,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.40-lg12'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.40-lg13'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'LGCW_V70_LOG',SOURCE:'LGCW_V70_SRC',VERSION:'LGCW_APP_VERSION'};
 var SETTINGS_KEYS={SCRIPT:'LGCW_SCRIPT_URL',SHEET:'LGCW_SHEET_ID',SHEET_NAME:'LGCW_SHEET_NAME',WORKER:'LGCW_WORKER'};
 var DEFAULTS={
@@ -896,9 +896,17 @@ var App={
   },
 
   // === 사진 삭제 (v20.8) — Drive 파일 trash + 시트 셀(_data 포함) 비우기 ===
+  _delPw:'',
+  _getDelPw:function(){
+    if(this._delPw) return this._delPw;
+    var pw=prompt('🔒 삭제하려면 비밀번호를 입력하세요:');
+    if(pw===null||pw==='') return null;
+    this._delPw=pw; return pw;
+  },
   delRowPhoto:function(rn,type){
     var typeKR={before:'수리전',after:'수리후',confirm:'확인서'}[type]||type;
     if(!confirm(typeKR+' 사진을 삭제하시겠습니까?\n(Drive 파일과 시트 데이터 모두 삭제됩니다)')) return;
+    var pw=this._getDelPw(); if(pw===null){this.toast('비밀번호가 필요합니다','error');return;}
     var url=this.getSetting('SCRIPT');
     var sid=this.getSetting('SHEET');
     var sn=this.getSetting('SHEET_NAME');
@@ -919,7 +927,7 @@ var App={
           if(self.rowPhotos[rn]) self.rowPhotos[rn][type]='';
           self.toast(typeKR+' 사진 삭제 완료','success',2500);
         }else{
-          self.toast('삭제 실패: '+(d.message||''),'error',5000);
+          if(d.pwFail){self._delPw='';} self.toast('삭제 실패: '+(d.message||''),'error',5000);
         }
       }catch(e){
         self.toast('삭제 실패: 응답 파싱 오류','error',5000);
@@ -936,12 +944,13 @@ var App={
       self.toast('삭제 타임아웃','error',5000);
       self.renderLog();
     };
-    xhr.send(JSON.stringify({action:'deletePhoto',sheetId:sid,sheetName:sn,rowNum:rn,photoType:type}));
+    xhr.send(JSON.stringify({action:'deletePhoto',sheetId:sid,sheetName:sn,rowNum:rn,photoType:type,pw:pw}));
   },
 
   // === 행 삭제 (v20.8) — 사진 일괄 trash + 행 통째 제거 ===
   deleteRow:function(rn,no){
     if(!confirm('No.'+no+' 행을 삭제하시겠습니까?\n(사진 포함 모든 데이터 삭제)\n\n※ 실수 시 상단 ↶ 복구 버튼으로 즉시 복구 가능 (텍스트만, 사진은 Drive 휴지통 수동)')) return;
+    var pw=this._getDelPw(); if(pw===null){this.toast('비밀번호가 필요합니다','error');return;}
     // v23.14: 삭제 직전 행 데이터를 메모리에 보관 (복구용)
     var srcRow=null;
     for(var i=0;i<this.sourceData.length;i++){
@@ -980,7 +989,7 @@ var App={
           // 시트에서 행이 빠지면 _rowNum이 어긋나므로 전체 다시 로드
           setTimeout(function(){self.loadFromSheet();},500);
         }else{
-          self.toast('삭제 실패: '+(d.message||''),'error');
+          if(d.pwFail){self._delPw='';} self.toast('삭제 실패: '+(d.message||''),'error');
         }
       }catch(e){
         self.toast('삭제 실패: 응답 파싱 오류','error');
@@ -994,7 +1003,7 @@ var App={
       self.hideLoader();
       self.toast('삭제 타임아웃','error');
     };
-    xhr.send(JSON.stringify({action:'deleteRow',sheetId:sid,sheetName:sn,rowNum:rn}));
+    xhr.send(JSON.stringify({action:'deleteRow',sheetId:sid,sheetName:sn,rowNum:rn,pw:pw}));
   },
 
   // === 하자내용 팝업 ===
