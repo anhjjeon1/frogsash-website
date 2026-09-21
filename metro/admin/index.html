@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>관리자 모드 켜는 중…</title>
+<style>
+  html,body{height:100%;margin:0}
+  body{display:flex;align-items:center;justify-content:center;
+       font-family:'Noto Sans KR',-apple-system,sans-serif;background:#0f172a;color:#fff}
+  .box{text-align:center;padding:24px}
+  .t{font-size:1.1rem;font-weight:800;margin-bottom:6px}
+  .s{font-size:.8rem;color:#94a3b8}
+  a{color:#38bdf8}
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="t">🔧 관리자 모드 켜는 중…</div>
+    <div class="s">잠시 후 앱으로 이동합니다.</div>
+    <div class="s" style="margin-top:12px">
+      자동 이동이 안 되면 <a href="../">여기</a>를 누르세요.
+    </div>
+  </div>
+<script>
+  // 메트로 현장관리앱 관리자 모드 진입 페이지.
+  // frogsash.co.kr/metro/admin 접속 시 이 브라우저에 관리자 권한을 영구 저장하고
+  // 앱(../)으로 되돌려보낸다. (해제는 frogsash.co.kr/metro?admin=off)
+  try{ localStorage.setItem('METRO_ADMIN','1'); }catch(e){}
+  location.replace('../');
+</script>
+</body>
+</html>
