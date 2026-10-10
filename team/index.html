@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v2.2.0';
+const APP_VER = 'v2.2.1';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3835,7 +3835,8 @@ function badge(s){const e=$('tSync'),n=pending();
   e.className=n?'ing':'ok';e.textContent=n?'대기 '+n:'함께 입력 중';}
 let kickT;function kick(){badge();clearTimeout(kickT);kickT=setTimeout(sync,1200);}
 function setAddrUI(v){const a=$('fAddr');if(a&&document.activeElement!==a)a.value=v||'';const c=$('addrCompactText');if(c)c.textContent=v||'';jobTitle();}
-function jobTitle(){const j=T.jobs[T.cur];$('tJobT').textContent=j?(j.title||'새 현장'):'현장 없음';}
+const disp=s=>(!s||s==='새 현장')?'현장명':s;
+function jobTitle(){const j=T.jobs[T.cur];$('tJobT').textContent=j?disp(j.title):'현장 없음';}
 async function sync(){
   if(T.busy||!T.cur||!T.cfg.pin||!navigator.onLine){badge();return;}
   T.busy=true;badge('ing');
@@ -3856,7 +3857,7 @@ async function sync(){
       m.known[k]=r.t||Date.now();changed=true;});
     (res.kv||[]).forEach(r=>{
       if(r.k==='m.deleted'&&r.v==='1')gone=true;
-      if(r.k==='m.addr'&&r.t>m.addrT&&!m.addrDirty){m.addr=r.v;m.addrT=r.t;if(T.jobs[id])T.jobs[id].title=r.v||'새 현장';L.set('team_jobs',T.jobs);setAddrUI(r.v);}});
+      if(r.k==='m.addr'&&r.t>m.addrT&&!m.addrDirty){m.addr=r.v;m.addrT=r.t;if(T.jobs[id])T.jobs[id].title=r.v||'현장명';L.set('team_jobs',T.jobs);setAddrUI(r.v);}});
     m.rev=res.rev||m.rev;T.err='';
     if(gone){T.jobs[id].title=DEL;L.set('team_jobs',T.jobs);T.busy=false;toast('상대가 이 현장을 삭제했습니다',true,3500);await leaveJob();return;}
     if(changed)rerender();
@@ -3895,12 +3896,12 @@ async function openJob(id,userAction){
   if(userAction){try{reset();}catch(e){}window.scrollTo(0,0);}
   rerender();const a=$('fAddr');if(a)a.value=T.meta.addr||'';setAddrUI(T.meta.addr);jobTitle();badge();sync();
 }
-function newJob(){const id=uid('j_');T.jobs[id]={id:id,title:'새 현장',t:Date.now()};L.set('team_jobs',T.jobs);return id;}
+function newJob(){const id=uid('j_');T.jobs[id]={id:id,title:'현장명',t:Date.now()};L.set('team_jobs',T.jobs);return id;}
 async function leaveJob(){const l=Object.values(T.jobs).filter(j=>j.title!==DEL).sort((a,b)=>b.t-a.t);T.cur=null;await openJob(l.length?l[0].id:newJob(),true);}
 T.newJob=async()=>{T.closeMo();await openJob(newJob(),true);toast('새 현장을 만들었습니다. 주소를 입력하세요');};
 T.pickJob=async id=>{T.closeMo();if(id!==T.cur)await openJob(id,true);};
 T.delJob=async id=>{const j=T.jobs[id];if(!j)return;
-  if(!confirm('"'+(j.title||'새 현장')+'" 현장을 삭제할까요?'+String.fromCharCode(10)+'두 사람 모두의 목록에서 사라집니다.'))return;
+  if(!confirm('"'+disp(j.title)+'" 현장을 삭제할까요?'+String.fromCharCode(10)+'두 사람 모두의 목록에서 사라집니다.'))return;
   if(T.cfg.pin){if(!navigator.onLine){toast('인터넷에 연결된 뒤 다시 삭제해 주십시오',true);return;}
     try{await waitIdle();const r=await api({a:'sync',job:{id:id,title:DEL},since:0,items:[],kv:[{k:'m.deleted',v:'1',t:Date.now(),by:T.cfg.name}]});if(r.error)throw new Error(r.message||r.error);}
     catch(e){toast('삭제하지 못했습니다: '+(e.message||e),true,3500);return;}}
@@ -3913,7 +3914,7 @@ async function pullJobs(){if(!T.cfg.pin||!navigator.onLine)return;try{const r=aw
 const esc2=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 function drawJobs(){const l=Object.values(T.jobs).filter(j=>j.title!==DEL).sort((a,b)=>b.t-a.t);
   $('teamMoBody').innerHTML='<div class="mo-h" style="color:#1B6B28">📍 현장 선택</div><button class="tbtn" style="margin-top:0" onclick="T.newJob()">＋ 새 현장</button>'+
-    l.map(j=>'<div class="tjob'+(j.id===T.cur?' cur':'')+'" onclick="T.pickJob(\''+j.id+'\')"><b>'+esc2(j.title||'새 현장')+'<small>'+new Date(j.t).toLocaleString('ko-KR')+(j.id===T.cur?' · 지금 열린 현장':'')+'</small></b><button class="tdel" onclick="event.stopPropagation();T.delJob(\''+j.id+'\')">삭제</button></div>').join('');}
+    l.map(j=>'<div class="tjob'+(j.id===T.cur?' cur':'')+'" onclick="T.pickJob(\''+j.id+'\')"><b>'+esc2(disp(j.title))+'<small>'+new Date(j.t).toLocaleString('ko-KR')+(j.id===T.cur?' · 지금 열린 현장':'')+'</small></b><button class="tdel" onclick="event.stopPropagation();T.delJob(\''+j.id+'\')">삭제</button></div>').join('');}
 function drawCfg(){$('teamMoBody').innerHTML='<div class="mo-h" style="color:#1B6B28">⚙ 팀 설정</div>'+
   '<label>이름</label><input id="tName" value="'+esc2(T.cfg.name)+'" placeholder="리스트에 작성자로 표시됩니다">'+
   '<label>담당 분야</label><div class="tchips" id="tRole"><span class="tchip'+(T.cfg.role==='창호'?' on':'')+'" data-v="창호">창호</span><span class="tchip'+(T.cfg.role==='내장·기타'?' on':'')+'" data-v="내장·기타">내장 · 기타</span></div>'+
@@ -3981,7 +3982,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{
   if(g){g.insertAdjacentHTML('beforeend','<div id="t3row"><div class="tc" id="tcRoom" data-l="위치" onclick="A.toggleRoom()"><b>위치</b></div><div class="tc" id="tcWork" data-l="공종" onclick="T.cellSel()"><b>공종</b></div><div class="tc" id="tcType" data-l="하자내용" onclick="T.cellSel()"><b>하자내용</b></div></div>');setInterval(paint3,400);}
   const ai=$('btnRunAI'),nx=$('btnNext');
   if(ai&&nx){const row=ai.closest('.il'),box=nx.parentElement;row.id='tAiRow';box.id='tNextBox';row.appendChild(box);}
-  a.addEventListener('input',()=>{if(!T.cur||!T.jobs[T.cur])return;const m=T.meta;m.addr=a.value;m.addrT=Date.now();m.addrDirty=true;T.jobs[T.cur].title=a.value.trim()||'새 현장';T.jobs[T.cur].t=Date.now();L.set('team_jobs',T.jobs);L.set('team_meta_'+T.cur,m);jobTitle();kick();});
+  a.addEventListener('input',()=>{if(!T.cur||!T.jobs[T.cur])return;const m=T.meta;m.addr=a.value;m.addrT=Date.now();m.addrDirty=true;T.jobs[T.cur].title=a.value.trim()||'현장명';T.jobs[T.cur].t=Date.now();L.set('team_jobs',T.jobs);L.set('team_meta_'+T.cur,m);jobTitle();kick();});
   const saved=L.get('team_cur',null);
   await openJob(saved&&T.jobs[saved]&&T.jobs[saved].title!==DEL?saved:newJob(),false);
   if(!T.cfg.name||!T.cfg.role||!T.cfg.pin)T.openMo('cfg');
