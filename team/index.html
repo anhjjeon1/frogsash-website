@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v2.2.4';
+const APP_VER = 'v2.2.5';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3777,6 +3777,9 @@ A.ask=key=>A.cbAsk(key);
 #tAiRow{flex-wrap:nowrap;gap:6px}
 #tAiRow #tNextBox{flex-shrink:0;margin-left:auto}
 #btnRunAI+span{display:none!important}
+/* AI분석 단추를 다음입력 단추와 같은 높이·글자 크기로 */
+#btnRunAI{padding:4px 10px!important;font-size:.6rem!important;font-weight:700!important;line-height:normal!important;min-height:0!important;height:auto!important;border-radius:20px!important}
+#btnRunAI i{font-size:.6rem!important}
 #teamFoot{text-align:center;font-size:.68rem;color:#6B7B8F;font-weight:700;margin:10px 0 4px}
 </style>
 <div class="mo" id="teamMo"><div class="mo-b"><div id="teamMoBody"></div><button class="mo-cls" onclick="T.closeMo()">닫기</button></div></div>
