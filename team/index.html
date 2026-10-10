@@ -1982,9 +1982,6 @@ input[type="file"]{
   <button class="ab pdf" onclick="A.pdf()" style="width:auto;border-radius:var(--r);padding:9px 16px;font-size:.78rem;font-weight:800;background:var(--p);color:#fff;border:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(10,107,92,.25);white-space:nowrap;flex-shrink:0">
     <i class="fa-solid fa-file-arrow-down"></i> 전체 저장 (PDF)
   </button>
-  <button onclick="A.openChatBot()" style="border-radius:var(--r);padding:9px 18px;font-size:.78rem;font-weight:800;background:linear-gradient(135deg,#1E3A5F,#2C5282);color:#fff;border:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(30,58,95,.25);white-space:nowrap;flex-shrink:0">
-    <i class="fa-solid fa-robot"></i> 쳇봇상담
-  </button>
 </div>
 
 <div id="teamFoot">청개구리샤시 · 📞 010-2322-0949</div>
@@ -2220,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v2.0.0';
+const APP_VER = 'v2.0.1';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3745,7 +3742,7 @@ A.ask=key=>A.cbAsk(key);
 <!-- ══════════════ 팀 기능 (2인 동시 입력) — 이전 사전점검 앱 위에 얹음 ══════════════ -->
 <style>
 /* 유료 관련 화면 요소는 보이지 않게 한다 */
-#btnBuy,#passStatus,.quota-bar,#upgradeCard,#passTag,#lMode,#moPayGuide,#moRefund,#footerInfo{display:none!important}
+#chatbotMo,#btnBuy,#passStatus,.quota-bar,#upgradeCard,#passTag,#lMode,#moPayGuide,#moRefund,#footerInfo{display:none!important}
 #teamBar{display:flex;align-items:center;gap:6px;padding:7px 12px;background:#fff;border-bottom:1px solid #E8ECF1}
 #teamBar button{font-family:inherit;border:1px solid #D5DBE3;background:#fff;border-radius:16px;padding:6px 11px;font-size:.72rem;font-weight:700;color:#334155;cursor:pointer}
 #tJobBtn{flex:1;min-width:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
