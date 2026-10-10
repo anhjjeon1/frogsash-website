@@ -12,24 +12,39 @@ body{margin:0;font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-
 header{position:sticky;top:0;z-index:20;background:var(--p);color:#fff;padding:9px 12px;display:flex;align-items:center;gap:8px}
 header .ttl{flex:1;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 header button{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:6px;padding:6px 9px;font-size:13px}
+.ver{font-size:12px;opacity:.85;white-space:nowrap}
 #sync{font-size:12px;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,.2);white-space:nowrap}
 #sync.ok{background:#22C55E}#sync.ing{background:#F59E0B}#sync.off{background:#94A3B8}#sync.err{background:#DC2626}
-.wrap{max-width:860px;margin:0 auto;padding:10px 10px 90px}
-.card{background:#fff;border:1px solid var(--b);border-radius:10px;padding:12px;margin-bottom:10px}
+.wrap{max-width:640px;margin:0 auto;padding:10px 10px 40px}
+.card,.sec{background:#fff;border:1px solid var(--b);border-radius:12px;padding:12px;margin-bottom:10px}
+.sec-t{font-weight:800;font-size:15.5px;margin-bottom:9px;display:flex;align-items:center;gap:8px}
+.sec-t .n{display:inline-flex;width:24px;height:24px;border-radius:50%;background:var(--p);color:#fff;align-items:center;justify-content:center;font-size:13px}
+.sec-t .rt{margin-left:auto;font-size:12.5px;font-weight:400;color:var(--m)}
 h2{font-size:15px;color:var(--p);margin:0 0 8px}
 label{display:block;font-size:12.5px;color:var(--m);margin:8px 0 3px}
-input[type=text],input[type=password],input[type=date],input[type=url],select,textarea{width:100%;border:1px solid var(--b);border-radius:7px;padding:9px;font-size:15px;font-family:inherit;background:#fff}
-textarea{min-height:64px;resize:vertical}
+input[type=text],input[type=password],input[type=date],input[type=url],select,textarea{width:100%;border:1px solid var(--b);border-radius:8px;padding:10px;font-size:16px;font-family:inherit;background:#fff}
+textarea{min-height:58px;resize:vertical}
 .row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
-.btn{display:inline-block;border:0;border-radius:8px;padding:11px 14px;font-size:15px;font-weight:700;background:var(--p);color:#fff}
-.btn.g{background:#E2E8F0;color:#1E293B}.btn.r{background:#FEE2E2;color:var(--r)}.btn.w{width:100%}
+.btn{display:inline-block;border:0;border-radius:10px;padding:13px 14px;font-size:16px;font-weight:800;background:var(--p);color:#fff}
+.btn.g{background:#E2E8F0;color:#1E293B;font-weight:700}.btn.r{background:#FEE2E2;color:var(--r)}.btn.w{width:100%}.btn.s{padding:9px 12px;font-size:14px}
+.btn.ai{background:#1D4ED8}
 .btn:disabled{opacity:.5}
-.tabs{position:sticky;top:44px;z-index:15;display:flex;background:#fff;border-bottom:1px solid var(--b);overflow-x:auto}
-.tabs button{flex:1;border:0;background:none;padding:11px 8px;font-size:14px;white-space:nowrap;color:var(--m);border-bottom:3px solid transparent}
-.tabs button.on{color:var(--p);font-weight:700;border-bottom-color:var(--p)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1px solid var(--b);border-radius:16px;padding:7px 11px;font-size:14px;background:#fff}
+.chip{border:1px solid var(--b);border-radius:18px;padding:8px 13px;font-size:15px;background:#fff}
 .chip.on{background:var(--p);color:#fff;border-color:var(--p)}
+.selbtn{width:100%;text-align:left;border:1.5px solid var(--b);border-radius:8px;padding:11px;font-size:16px;background:#fff;color:var(--m)}
+.selbtn.sel{border-color:var(--p);color:var(--p);font-weight:800}
+.inm{position:relative}.inm textarea{padding-right:54px}
+.micb{position:absolute;right:6px;top:6px;width:44px;height:44px;border-radius:50%;border:0;background:var(--pl);font-size:20px}
+.micb.on{background:var(--r)}
+.pbox{flex:1;border:2px dashed var(--b);border-radius:10px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--m);font-size:14px;font-weight:700;background:#fff center/cover no-repeat;position:relative}
+.pbox i{font-style:normal;font-size:26px}
+.pbox input{position:absolute;inset:0;opacity:0}
+.tags{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:8px 0 2px}
+.tg{font-size:13px;border-radius:5px;padding:2px 8px;color:#fff;background:var(--p)}.tg.t1{background:#0F766E}.tg.t2{background:var(--o)}
+details{margin-top:8px}summary{font-size:13.5px;color:var(--bl);padding:6px 0}
+.ban{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:8px 10px;font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.ban b{flex:1}
 .ck{display:inline-flex;align-items:center;gap:5px;margin:4px 12px 4px 0;font-size:14px;color:var(--t)}
 .ck input{width:19px;height:19px}
 table.g{border-collapse:collapse;width:100%;font-size:13px}
@@ -41,25 +56,23 @@ table.g td.c.x{color:var(--r)}table.g td.c.d{color:var(--o)}table.g td.c.o{color
 table.g input{border:0;padding:6px 2px;text-align:center;font-size:14px;min-width:46px}
 .sx{overflow-x:auto}
 .it{display:flex;gap:10px;padding:10px;border:1px solid var(--b);border-radius:10px;background:#fff;margin-bottom:8px}
-.it .no{font-weight:800;color:var(--p);min-width:26px}
+.it .no{font-weight:800;color:var(--p);min-width:22px}
 .it .bd{flex:1;min-width:0}
-.it .hd{font-weight:700;font-size:14px}
-.it .ph{font-size:13px;color:#334155;margin-top:2px;white-space:pre-wrap;overflow-wrap:anywhere}
+.it .hd{font-weight:700;font-size:14.5px}
+.it .ph{font-size:13.5px;color:#334155;margin-top:2px;white-space:pre-wrap;overflow-wrap:anywhere}
 .it .by{font-size:11.5px;color:var(--m);margin-top:3px}
 .it img{width:58px;height:58px;object-fit:cover;border-radius:6px;border:1px solid var(--b)}
 .tag{display:inline-block;font-size:11.5px;border-radius:4px;padding:1px 6px;margin-right:4px;color:#fff}
 .tag.c0{background:var(--r)}.tag.c1{background:var(--o)}.tag.c2{background:var(--bl)}
-.fab{position:fixed;right:16px;bottom:18px;z-index:18;border-radius:28px;padding:14px 20px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
-#ed{position:fixed;inset:0;z-index:40;background:#F3F5F4;overflow-y:auto;display:none}
-#ed .bar{position:sticky;top:0;background:var(--p);color:#fff;padding:9px 12px;display:flex;align-items:center;gap:8px;z-index:2}
-#ed .bar b{flex:1}
-#ed .bar button{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:6px;padding:7px 12px;font-size:14px;font-weight:700}
-.pbox{flex:1;border:1.5px dashed var(--b);border-radius:8px;height:130px;display:flex;align-items:center;justify-content:center;color:var(--m);font-size:13px;background:#fff center/cover no-repeat;position:relative}
-.pbox input{position:absolute;inset:0;opacity:0}
-#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:rgba(15,23,42,.92);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:60;display:none;max-width:88%;text-align:center}
+#more{position:fixed;inset:0;z-index:40;background:#F3F5F4;overflow-y:auto;display:none}
+#more .bar{position:sticky;top:0;background:var(--p);color:#fff;padding:9px 12px;display:flex;align-items:center;gap:8px;z-index:3}
+#more .bar b{flex:1}
+#more .bar button{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:6px;padding:7px 12px;font-size:14px;font-weight:700}
+.tabs{position:sticky;top:46px;z-index:2;display:flex;background:#fff;border-bottom:1px solid var(--b)}
+.tabs button{flex:1;border:0;background:none;padding:11px 8px;font-size:14px;color:var(--m);border-bottom:3px solid transparent}
+.tabs button.on{color:var(--p);font-weight:700;border-bottom-color:var(--p)}
+#toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:rgba(15,23,42,.92);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:60;display:none;max-width:88%;text-align:center}
 .note{font-size:12.5px;color:var(--m)}
-.sum td{font-size:14px}
-.ver{font-size:12px;opacity:.85;white-space:nowrap}.mic{float:right;border:1px solid var(--p);background:#fff;color:var(--p);border-radius:14px;padding:4px 11px;font-size:13px;font-weight:700;margin-top:-4px}.mic.on{background:var(--r);border-color:var(--r);color:#fff}
 </style>
 </head>
 <body>
@@ -90,7 +103,6 @@ table.g input{border:0;padding:6px 2px;text-align:center;font-size:14px;min-widt
     <p class="note" id="cMsg"></p>
   </div>
   <button class="btn w" onclick="A.saveSetup()">저장</button>
-  <p class="note" style="text-align:center;margin-top:14px">청개구리샤시 · <span id="verTxt"></span></p>
 </div>
 
 <!-- 현장 목록 -->
@@ -99,60 +111,76 @@ table.g input{border:0;padding:6px 2px;text-align:center;font-size:14px;min-widt
   <div id="jobList" style="margin-top:10px"></div>
 </div>
 
-<!-- 현장 -->
+<!-- 현장: 한 화면에서 위에서 아래로 입력 -->
 <div id="vJob" style="display:none">
-  <div class="tabs" id="tabs">
-    <button data-t="0" class="on">개요</button><button data-t="1">항목</button><button data-t="2">창호표</button><button data-t="3">내장표</button><button data-t="4">보고서</button>
-  </div>
   <div class="wrap">
-    <div id="t0"></div>
-    <div id="t1" style="display:none"></div>
-    <div id="t2" style="display:none"></div>
-    <div id="t3" style="display:none"></div>
-    <div id="t4" style="display:none"></div>
-  </div>
-  <button class="btn fab" id="fab" style="display:none" onclick="A.edit()">＋ 항목 추가</button>
-</div>
 
-<!-- 항목 편집 -->
-<div id="ed">
-  <div class="bar"><button onclick="A.closeEd()">닫기</button><b id="edTtl">항목</b><button onclick="A.saveEd()">저장</button></div>
-  <div class="wrap">
-    <div class="card">
-      <label>구분</label>
-      <div class="chips" id="eCls"><span class="chip" data-v="하자">하자</span><span class="chip" data-v="재측정">입주 후 재측정 대상</span><span class="chip" data-v="참고">참고 사항</span></div>
-      <label>위치</label>
-      <div class="chips" id="eRoom"></div>
-      <div class="row">
-        <div><label>공종</label><select id="eWork"></select></div>
-        <div><label>세부</label><select id="eSub"></select></div>
+    <div class="sec">
+      <div class="sec-t"><span class="n">1</span> 현장</div>
+      <input type="text" data-k="m.apt" placeholder="단지 이름">
+      <div class="row" style="margin-top:8px">
+        <input type="text" data-k="m.unit" placeholder="동 · 호수">
+        <button class="btn g s" style="flex:0 0 auto" onclick="A.more(0)">세대 정보 · 점검표</button>
       </div>
-      <label>유형</label><select id="eType"></select>
     </div>
-    <div class="card">
-      <label>사진</label>
+
+    <div class="sec" id="form">
+      <div class="ban" id="edBan" style="display:none"><b id="edBanT"></b><button class="btn g s" onclick="A.reset()">취소</button><button class="btn r s" onclick="A.del()">삭제</button></div>
+
+      <div class="sec-t"><span class="n">2</span> 사진 촬영</div>
       <div class="row">
-        <div class="pbox" id="eP1"><span>사진 1 · 전체 모습</span><input type="file" accept="image/*" onchange="A.photo(1,this)"></div>
-        <div class="pbox" id="eP2"><span>사진 2 · 가까이</span><input type="file" accept="image/*" onchange="A.photo(2,this)"></div>
+        <div class="pbox" id="eP1"><span><i>📷</i><br>멀리서 찍기</span><input type="file" accept="image/*" onchange="A.photo(1,this)"></div>
+        <div class="pbox" id="eP2"><span><i>🔍</i><br>가까이 찍기</span><input type="file" accept="image/*" onchange="A.photo(2,this)"></div>
       </div>
-      <label>현상 <button type="button" class="mic" id="bMic" onclick="A.mic()">🎤 말로 입력</button></label><textarea id="ePhen" placeholder="어디에 무엇이 어떻게 되어 있는지 — 말하거나 적으면 위치와 공종을 자동으로 찾습니다"></textarea>
-      <label>측정값 (측정한 경우만)</label><input type="text" id="eMeas" placeholder="예: 수직 편차 ○mm (레이저 레벨)">
-      <button class="btn g w" id="bAI" style="margin-top:10px" onclick="A.ai()">AI 초안 작성 (판정 근거 · 처리 방법)</button>
+
+      <div class="sec-t" style="margin-top:14px"><span class="n">3</span> 하자 정보</div>
+      <button type="button" class="selbtn" id="roomBtn" onclick="A.toggleRoom()">위치 선택 ▾</button>
+      <div class="chips" id="eRoom" style="display:none;margin-top:8px"></div>
+      <div class="inm" style="margin-top:8px">
+        <textarea id="ePhen" placeholder="하자내용 (예: 창호 수직수평 불량)"></textarea>
+        <button type="button" class="micb" id="bMic" onclick="A.mic()" aria-label="말로 입력">🎤</button>
+      </div>
+      <div class="tags" id="tags"></div>
+      <div class="chips" id="eCls" style="margin-top:6px"><span class="chip" data-v="하자">하자</span><span class="chip" data-v="재측정">입주 후 재측정</span><span class="chip" data-v="참고">참고</span></div>
+
+      <details id="selBox"><summary>공종 직접 고르기</summary>
+        <div class="row"><select id="eWork"></select><select id="eSub"></select></div>
+        <select id="eType" style="margin-top:8px"></select>
+      </details>
+      <details id="dt"><summary>상세 (측정값 · 판정 근거 · 처리 방법)</summary>
+        <button class="btn ai w s" id="bAI" onclick="A.ai()">🤖 AI 초안 작성</button>
+        <label>측정값 (측정한 경우만)</label><input type="text" id="eMeas" placeholder="예: 수직 편차 ○mm (레이저 레벨)">
+        <label>판정 근거</label><textarea id="eBasis"></textarea>
+        <label>시공사의 통상 처리 방법</label><textarea id="eFix"></textarea>
+        <label>보수 요청 때 확인할 점</label><textarea id="eAsk"></textarea>
+        <div id="eWhenBox"><label>재측정 권장 시기</label><input type="text" id="eWhen" placeholder="예: 입주 후 첫 겨울"></div>
+      </details>
+
+      <button class="btn w" style="margin-top:12px" onclick="A.save()">✔ 리스트에 저장</button>
     </div>
-    <div class="card">
-      <label>판정 근거</label><textarea id="eBasis"></textarea>
-      <label>시공사의 통상 처리 방법</label><textarea id="eFix"></textarea>
-      <label>보수 요청 때 확인할 점</label><textarea id="eAsk"></textarea>
-      <div id="eWhenBox"><label>재측정 권장 시기</label><input type="text" id="eWhen" placeholder="예: 입주 후 첫 겨울"></div>
+
+    <div class="sec">
+      <div class="sec-t"><span class="n">4</span> 점검 리스트 <span id="lCnt">0</span>건
+        <span class="rt"><span class="chips" id="fil" style="display:inline-flex"><span class="chip on" data-v="" style="padding:4px 10px;font-size:13px">전체</span><span class="chip" data-v="me" style="padding:4px 10px;font-size:13px">내 것</span></span></span>
+      </div>
+      <div id="items"></div>
     </div>
-    <button class="btn r w" id="bDel" onclick="A.delEd()">이 항목 삭제</button>
+
+    <button class="btn w" onclick="A.report()">📄 전체 저장 (PDF 보고서)</button>
+  </div>
+
+  <!-- 세대 정보 · 점검표 (선택 입력) -->
+  <div id="more">
+    <div class="bar"><button onclick="A.closeMore()">닫기</button><b>세대 정보 · 점검표</b></div>
+    <div class="tabs" id="tabs"><button data-t="0" class="on">세대 정보</button><button data-t="2">창호표</button><button data-t="3">내장표</button></div>
+    <div class="wrap"><div id="t0"></div><div id="t2" style="display:none"></div><div id="t3" style="display:none"></div></div>
   </div>
 </div>
 
 <div id="toast"></div>
 
 <script>
-const APP_VERSION='v1.1.3';
+const APP_VERSION='v1.2.0';
 const DEFAULT_GAS='https://script.google.com/macros/s/AKfycbyIo86UrFvE5W82FdSiZTjwB6N1QOEIjm4DTzhU-lgmd-OiSeYE1ACPRATVd_dOBPBl/exec';
 const WM={"도배공사":{"도배":["들뜸","마감불량","흠집/찍힘","면불량","오염","이음불량","흠집","미시공","파손","이색/변색"]},"타일공사":{"타일":["줄눈불량","틈새","구배불량","단차","들뜸","미시공","파손","마감불량","오염","흠집/찍힘"],"폴리싱타일":["파손","들뜸","줄눈불량","단차","틈새","오염","마감불량"],"아트월타일":["틈새","파손","마감불량","단차","흠집/찍힘","미시공","들뜸"],"타일코킹":["코킹불량","미시공","틈새","흠집/찍힘","마감불량"],"마블씰":["들뜸","틈새","단차","미시공","흠집/찍힘"]},"PL창호공사":{"PL창호":["고정불량","미시공","수직수평불량","흠집/찍힘","개폐불량","파손","틈새"],"분합창":["미시공","흠집/찍힘","고정불량","수직수평불량","개폐불량","파손"],"터닝도어":["미시공","개폐불량","흠집/찍힘","고정불량","틈새","파손"],"대피창":["개폐불량","고정불량","코킹불량","미시공"],"PL방충망":["개폐불량","미시공","수직수평불량","파손"]},"주방가구공사":{"주방상/하부장":["수직수평불량","미시공","개폐불량","흠집/찍힘","마감불량","고정불량","틈새"],"아일랜드장":["수직수평불량","개폐불량","미시공","흠집/찍힘","마감불량","틈새"],"냉장고장":["흠집/찍힘","수직수평불량","틈새","미시공","마감불량"],"고급장식장":["개폐불량","고정불량","수직수평불량","틈새","미시공"],"씽크볼":["미시공","마감불량","틈새","고정불량"]},"일반가구공사":{"신발장":["흠집/찍힘","미시공","틈새","수직수평불량","마감불량","개폐불량"],"붙박이장":["흠집/찍힘","미시공","수직수평불량","개폐불량","틈새","마감불량"],"화장대":["미시공","흠집/찍힘","마감불량","틈새","개폐불량","수직수평불량"],"현관팬트리도어/틀":["흠집/찍힘","수직수평불량","틈새","미시공","마감불량"],"복도팬트리도어/틀":["흠집/찍힘","틈새","수직수평불량","마감불량","미시공"],"아트월판넬":["틈새","마감불량","미시공","흠집/찍힘","파손"],"드레스룸도어/틀":["흠집/찍힘","틈새","마감불량","미시공","수직수평불량"]},"마루공사":{"강마루":["들뜸","틈새","오염","단차","파손","마감불량","미시공"],"마루코킹":["코킹불량","미시공","들뜸","틈새","오염"],"걸레받이":["틈새","파손","마감불량","미시공","들뜸","단차"]},"목창호공사":{"목문틀":["흠집/찍힘","틈새","미시공","수직수평불량","고정불량","마감불량"],"목문짝":["개폐불량","흠집/찍힘","고정불량","수직수평불량","틈새","마감불량"],"공틀":["틈새","수직수평불량","오염","미시공"]},"도장공사":{"도장":["마감불량","면불량","도장불량","균열","오염","미시공","들뜸"],"현관문틀도장":["도장불량","마감불량","오염","면불량","균열"],"외벽도장":["면불량","마감불량","균열","도장불량","오염"]},"준공청소공사":{"준공청소":["오염"]},"코킹공사":{"코킹":["코킹불량","미시공","틈새","오염","마감불량"]},"중문공사":{"슬라이딩도어/틀":["개폐불량","고정불량","마감불량","미시공","틈새","흠집/찍힘"],"스윙도어/틀":["마감불량","고정불량","개폐불량","미시공","흠집/찍힘","틈새"]},"기계설비공사":{"위생도기류":["고정불량","마감불량","작동불량","미시공","누수"],"수전류":["고정불량","미시공","작동불량","마감불량","누수"],"설비":["마감불량","미시공","악취","작동불량","누수"],"욕실액세서리":["고정불량","미시공","마감불량","수직수평불량"],"배수드레인":["마감불량","미시공","고정불량","작동불량","배수불량"]},"전기공사":{"콘센트":["작동불량","고정불량","수직수평불량","미시공","들뜸"],"스위치":["작동불량","수직수평불량","고정불량","미시공"],"네트워크스위치":["작동불량","수직수평불량","고정불량"]},"내장목공사":{"석고보드":["고정불량","마감불량","들뜸","단차","틈새"],"천정몰딩":["틈새","흠집/찍힘","마감불량","고정불량","오염"]},"방화문공사":{"현관문":["미시공","개폐불량","흠집/찍힘","고정불량","틈새"],"대피공간방화문":["미시공","개폐불량","고정불량","흠집/찍힘","틈새"],"실외기실문짝/틀":["개폐불량","고정불량","미시공","틈새"]},"시스템가구공사":{"시스템가구":["고정불량","미시공","수직수평불량","틈새","마감불량"],"월판넬":["틈새","미시공","수직수평불량","단차"]},"주방상판공사":{"주방상판/코킹":["미시공","코킹불량","틈새","흠집/찍힘","파손"],"엔지니어드상판":["미시공","틈새","마감불량","코킹불량","파손"]},"조명공사":{"세대등기구":["수직수평불량","작동불량","고정불량","미시공","점등불량"]},"내부석공사":{"석재걸레받이":["틈새","미시공","마감불량","코킹불량","파손"],"디딤판":["틈새","미시공","단차","마감불량","파손"]},"욕실장공사":{"욕실장/코킹":["미시공","개폐불량","수직수평불량","고정불량","코킹불량"]},"유리공사":{"유리":["흠집","파손","미시공","오염","코킹불량"],"유리코킹":["코킹불량","미시공"]},"에어컨공사":{"실외기":["마감불량","미시공","작동불량","고정불량"],"시스템에어컨":["작동불량","고정불량","마감불량","누수"]},"루버창호공사":{"루버창/방충망":["미시공","고정불량","개폐불량","흠집/찍힘"]},"직영공사":{"직영":["마감불량","들뜸","미시공","누수","고정불량","틈새"]}};
 const ROOMS=['현관','거실','주방','침실1(안방)','침실2','침실3','드레스룸','공용 욕실','부부 욕실','발코니','다용도실','실외기실','팬트리','기타'];
@@ -178,7 +206,7 @@ function toast(m,ms){const t=$('toast');t.textContent=m;t.style.display='block';
 
 let cfg=LS.get('it_cfg',{name:'',role:'',gas:DEFAULT_GAS,pin:''});
 let jobs=LS.get('it_jobs',{});
-let cur=null,J=null,tab=0,edIt=null,syncing=false,kickT=null,lastErr='';
+let cur=null,J=null,edIt=null,isNew=true,syncing=false,kickT=null,lastErr='';
 
 /* ── 사진 보관 (IndexedDB) ── */
 let _db;
@@ -223,10 +251,8 @@ async function sync(){
     job.rev=res.rev||job.rev;
     LS.set('it_job_'+id,job);
     lastErr='';
-    // 사진 올리기
     const pend=(await pPending()).filter(p=>p.job===id).slice(0,3);
     for(const p of pend){const r=await api({a:'photoPut',job:id,id:p.id,data:p.data.split(',')[1]});if(r.ok){p.up=1;await pPut(p);}}
-    // 상대가 올린 사진 받기
     let got=0;
     for(const it of Object.values(job.items)){if(it.del)continue;for(const pid of [it.p1,it.p2]){if(!pid||got>=3)continue;if(await pGet(pid))continue;const r=await api({a:'photoGet',id:pid});if(r.ok){await pPut({id:pid,job:id,data:'data:image/jpeg;base64,'+r.data,up:1});got++;changed=true;}}}
     if(pend.length===3||got>=3)again=true;
@@ -243,7 +269,7 @@ window.addEventListener('offline',()=>setSync());
 /* ── 화면 전환 ── */
 function show(v){['vSetup','vList','vJob'].forEach(x=>$(x).style.display=x===v?'':'none');$('bBack').style.display=v==='vList'?'none':'';if(v!=='vJob'){$('hTitle').textContent='청개구리 사전점검 팀앱';}}
 const A={};
-A.setup=()=>{$('cName').value=cfg.name;$('cGas').value=cfg.gas;$('cPin').value=cfg.pin;pick('cRole',cfg.role);$('cMsg').textContent=lastErr?'최근 오류: '+lastErr:'';$('verTxt').textContent=APP_VERSION;show('vSetup');};
+A.setup=()=>{$('cName').value=cfg.name;$('cGas').value=cfg.gas;$('cPin').value=cfg.pin;pick('cRole',cfg.role);$('cMsg').textContent=lastErr?'최근 오류: '+lastErr:'';show('vSetup');};
 A.saveSetup=async()=>{
   const n=$('cName').value.trim(),role=picked('cRole'),gas=$('cGas').value.trim(),pin=$('cPin').value.trim();
   if(!n||!role){toast('이름과 담당 분야를 넣어 주십시오');return;}
@@ -255,27 +281,28 @@ A.saveSetup=async()=>{
 A.back=()=>{if(cur){saveJob();cur=null;J=null;}A.list();};
 A.list=async()=>{show('vList');setSync();renderJobs();if(cfg.gas&&navigator.onLine){try{const r=await api({a:'jobs'});if(r.ok){r.jobs.forEach(j=>{if(!jobs[j.id])jobs[j.id]={id:j.id,title:j.title,t:j.t};else if(j.t>jobs[j.id].t){jobs[j.id].title=j.title;jobs[j.id].t=j.t;}});LS.set('it_jobs',jobs);renderJobs();}}catch(e){}}};
 A.newJob=()=>{const id=uid('j_');jobs[id]={id:id,title:'새 현장',t:Date.now()};LS.set('it_jobs',jobs);A.open(id);const d=new Date();setKV('m.date',d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));applyKV();};
-A.open=id=>{loadJob(id);show('vJob');$('hTitle').textContent=jobTitle();buildTabs();A.tab(0);applyKV();renderItems();renderSum();setSync();sync();};
-A.tab=n=>{tab=n;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',+b.dataset.t===n));for(let i=0;i<5;i++)$('t'+i).style.display=i===n?'':'none';$('fab').style.display=n===1?'':'none';window.scrollTo(0,0);if(n===0)renderSum();};
+A.open=id=>{loadJob(id);show('vJob');$('more').style.display='none';$('hTitle').textContent=jobTitle();buildMore();formLoad(blank(''),true);applyKV();renderItems();renderSum();setSync();sync();window.scrollTo(0,0);};
+A.more=n=>{$('more').style.display='block';A.tab(n);renderSum();};
+A.closeMore=()=>{$('more').style.display='none';};
+A.tab=n=>{document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',+b.dataset.t===n));[0,2,3].forEach(i=>$('t'+i).style.display=i===n?'':'none');$('more').scrollTop=0;};
 $('tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)A.tab(+b.dataset.t);});
 function renderJobs(){const l=Object.values(jobs).sort((a,b)=>b.t-a.t);$('jobList').innerHTML=l.length?l.map(j=>`<div class="it" onclick="A.open('${j.id}')"><div class="bd"><div class="hd">${esc(j.title||'새 현장')}</div><div class="by">${new Date(j.t).toLocaleString('ko-KR')}</div></div><div style="align-self:center;color:var(--m)">▶</div></div>`).join(''):'<p class="note" style="text-align:center;margin-top:30px">현장이 없습니다. "새 현장"을 눌러 시작하십시오.</p>';}
 function pick(id,v){document.querySelectorAll('#'+id+' .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===v));}
 function picked(id){const c=document.querySelector('#'+id+' .chip.on');return c?c.dataset.v:'';}
-['cRole','eCls','eRoom'].forEach(id=>$(id).addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;pick(id,c.dataset.v);if(id==='eCls')$('eWhenBox').style.display=c.dataset.v==='재측정'?'':'none';}));
+['cRole','eCls','eRoom','fil'].forEach(id=>$(id).addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;pick(id,c.dataset.v);if(id==='eCls')clsChanged();if(id==='eRoom')setRoom(c.dataset.v);if(id==='fil')renderItems();}));
 
-/* ── 현장 탭 만들기 ── */
+/* ── 세대 정보 · 점검표 (선택 입력) ── */
 function fld(k,label,ph,type){return `<div><label>${label}</label><input type="${type||'text'}" data-k="${k}" placeholder="${ph||''}"></div>`;}
 function grid(pre,rows,cols){return `<div class="sx"><table class="g"><tr><th>위치</th>${cols.map(c=>`<th>${c.replace(/ /g,'<br>')}</th>`).join('')}</tr>${rows.map((r,i)=>`<tr><td class="l">${r}</td>${cols.map((c,j)=>`<td class="c" data-c="${pre}.${i}.${j}"></td>`).join('')}</tr>`).join('')}</table></div>`;}
-function buildTabs(){
+function buildMore(){
   $('t0').innerHTML=`
   <div class="card"><h2>세대 정보</h2>
-    ${fld('m.apt','단지 이름')}
-    <div class="row">${fld('m.unit','동 · 호수')}${fld('m.type','전용면적 · 타입')}</div>
-    <div class="row">${fld('m.floor','층 · 세대 위치','예: 12층 끝 세대')}${fld('m.dir','향')}</div>
-    <div class="row">${fld('m.builder','시공사')}${fld('m.movein','입주 예정일')}</div>
-    <div class="row">${fld('m.client','의뢰인')}${fld('m.date','점검일','','date')}</div>
-    <div class="row">${fld('m.time','점검 시간','예: 10시 ~ 15시')}${fld('m.no','보고서 번호')}</div>
+    <div class="row">${fld('m.type','전용면적 · 타입')}${fld('m.floor','층 · 세대 위치','예: 12층 끝 세대')}</div>
+    <div class="row">${fld('m.dir','향')}${fld('m.builder','시공사')}</div>
+    <div class="row">${fld('m.movein','입주 예정일')}${fld('m.client','의뢰인')}</div>
+    <div class="row">${fld('m.date','점검일','','date')}${fld('m.time','점검 시간','예: 10시 ~ 15시')}</div>
     <div class="row">${fld('m.insW','점검자 (창호)')}${fld('m.insN','점검자 (내장 · 기타)')}</div>
+    ${fld('m.no','보고서 번호')}
   </div>
   <div class="card"><h2>점검 조건</h2>
     <p class="note">측정한 값만 적습니다. 측정하지 않은 값은 비워 둡니다.</p>
@@ -287,8 +314,6 @@ function buildTabs(){
   <div class="card"><h2>점검 결과 요약 (자동 집계)</h2><div id="sum"></div></div>
   <div class="card"><h2>종합 소견</h2><textarea data-k="o.all" style="min-height:110px"></textarea></div>
   <div class="card"><h2>다음 점검 일정</h2>${SCHED.map((s,i)=>fld('s.'+i,s[0]+' 예정일','')).join('')}</div>`;
-  $('t1').innerHTML=`<div class="chips" id="fil" style="margin-bottom:10px"><span class="chip on" data-v="">전체</span><span class="chip" data-v="me">내가 쓴 것</span><span class="chip" data-v="하자">하자</span><span class="chip" data-v="재측정">재측정</span><span class="chip" data-v="참고">참고</span></div><div id="items"></div>`;
-  $('fil').addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;pick('fil',c.dataset.v);renderItems();});
   $('t2').innerHTML=`
   <div class="card"><h2>창별 상태 점검</h2><p class="note">칸을 누를 때마다 ○ 양호 → × 하자 → △ 입주 후 재측정 → － 해당 없음 순서로 바뀝니다.</p>${grid('w',W_ROWS,W_COLS)}</div>
   <div class="card"><h2>측정 기록</h2><p class="note">표면 온도는 실내외 온도 차가 충분할 때만 적습니다.</p><div class="sx"><table class="g"><tr><th>위치</th>${WM_COLS.map(c=>`<th>${c}</th>`).join('')}</tr>${WM_ROWS.map((r,i)=>`<tr><td class="l">${r}</td>${WM_COLS.map((c,j)=>`<td><input type="text" data-k="wm.${i}.${j}"></td>`).join('')}</tr>`).join('')}</table></div></div>
@@ -297,44 +322,54 @@ function buildTabs(){
   <div class="card"><h2>실별 마감 점검</h2><p class="note">칸을 누를 때마다 ○ → × → △ → － 순서로 바뀝니다.</p>${grid('n',N_ROWS,N_COLS)}</div>
   <div class="card"><h2>전기 · 설비 점검</h2><div class="sx"><table class="g"><tr><th>항목</th><th>결과</th><th>내용</th></tr>${E_ROWS.map((r,i)=>`<tr><td class="l">${r}</td><td class="c" data-c="e.${i}.r"></td><td><input type="text" data-k="e.${i}.t" style="text-align:left;min-width:150px;width:100%"></td></tr>`).join('')}</table></div></div>
   <div class="card"><h2>내장 · 기타 분야 소견</h2><textarea data-k="o.int" style="min-height:110px"></textarea></div>`;
-  $('t4').innerHTML=`
-  <div class="card"><h2>보고서</h2><p class="note">두 사람이 입력한 내용을 견본 양식대로 묶습니다. 새 창이 열리면 인쇄에서 "PDF로 저장"을 고르십시오. 사진을 모두 받은 뒤에 만드는 것이 좋습니다.</p><button class="btn w" onclick="A.report()">보고서 만들기</button></div>`;
 }
 $('vJob').addEventListener('input',e=>{const el=e.target,k=el.dataset&&el.dataset.k;if(!k)return;setKV(k,el.type==='checkbox'?(el.checked?'1':''):el.value);});
 $('vJob').addEventListener('click',e=>{const td=e.target.closest('[data-c]');if(!td)return;const k=td.dataset.c;const v=CYC[(CYC.indexOf(kv(k))+1)%CYC.length];setKV(k,v);paintCell(td,v);});
 function paintCell(td,v){td.textContent=v;td.className='c'+(v==='×'?' x':v==='△'?' d':v==='○'?' o':'');}
 function applyKV(){if(!J)return;document.querySelectorAll('#vJob [data-k]').forEach(el=>{if(el===document.activeElement)return;const v=kv(el.dataset.k);if(el.type==='checkbox')el.checked=v==='1';else if(el.value!==v)el.value=v;});document.querySelectorAll('#vJob [data-c]').forEach(td=>paintCell(td,kv(td.dataset.c)));}
 function counts(){const c={};GNAMES.forEach(g=>c[g]=[0,0,0]);liveItems().forEach(i=>{const k=CLS.indexOf(i.cls);if(k>=0)c[groupOf(i.work)][k]++;});return c;}
-function renderSum(){if(!J||!$('sum'))return;const c=counts();let tot=[0,0,0];$('sum').innerHTML=`<table class="g sum"><tr><th>분야</th><th>하자</th><th>재측정</th><th>참고</th><th>합계</th></tr>${GNAMES.map(g=>{c[g].forEach((n,i)=>tot[i]+=n);return `<tr><td class="l">${g}</td><td>${c[g][0]}</td><td>${c[g][1]}</td><td>${c[g][2]}</td><td>${c[g][0]+c[g][1]+c[g][2]}</td></tr>`;}).join('')}<tr><td class="l">합계</td><td>${tot[0]}</td><td>${tot[1]}</td><td>${tot[2]}</td><td>${tot[0]+tot[1]+tot[2]}</td></tr></table>`;}
-function renderItems(){if(!J||!$('items'))return;const f=picked('fil');const all=liveItems();const l=all.filter(i=>!f||(f==='me'?i.by===cfg.name:i.cls===f));
-  $('items').innerHTML=l.length?l.map(i=>`<div class="it" onclick="A.edit('${i.id}')"><div class="no">${all.indexOf(i)+1}</div><div class="bd"><div class="hd"><span class="tag c${CLS.indexOf(i.cls)}">${esc(i.cls)}</span>${esc(i.room)} · ${esc(i.sub||i.work||'')} ${esc(i.type||'')}</div><div class="ph">${esc(i.phen||'')}</div><div class="by">${esc(i.by||'')} (${esc(i.role||'')})</div></div>${i.p1?`<img data-p="${i.p1}" alt="">`:''}</div>`).join(''):'<p class="note" style="text-align:center;margin-top:30px">항목이 없습니다. 아래 "항목 추가"를 누르십시오.</p>';
+function renderSum(){if(!J||!$('sum'))return;const c=counts();let tot=[0,0,0];$('sum').innerHTML=`<table class="g"><tr><th>분야</th><th>하자</th><th>재측정</th><th>참고</th><th>합계</th></tr>${GNAMES.map(g=>{c[g].forEach((n,i)=>tot[i]+=n);return `<tr><td class="l">${g}</td><td>${c[g][0]}</td><td>${c[g][1]}</td><td>${c[g][2]}</td><td>${c[g][0]+c[g][1]+c[g][2]}</td></tr>`;}).join('')}<tr><td class="l">합계</td><td>${tot[0]}</td><td>${tot[1]}</td><td>${tot[2]}</td><td>${tot[0]+tot[1]+tot[2]}</td></tr></table>`;}
+function renderItems(){if(!J)return;const f=picked('fil');const all=liveItems();const l=all.filter(i=>!f||i.by===cfg.name).reverse();$('lCnt').textContent=all.length;
+  $('items').innerHTML=l.length?l.map(i=>`<div class="it" onclick="A.edit('${i.id}')"><div class="no">${all.indexOf(i)+1}</div><div class="bd"><div class="hd"><span class="tag c${CLS.indexOf(i.cls)}">${esc(i.cls)}</span>${esc(i.room)} · ${esc(i.sub||i.work||'')} ${esc(i.type||'')}</div><div class="ph">${esc(i.phen||'')}</div><div class="by">${esc(i.by||'')} (${esc(i.role||'')})</div></div>${i.p1||i.p2?`<img data-p="${i.p1||i.p2}" alt="">`:''}</div>`).join(''):'<p class="note" style="text-align:center;margin:14px 0">아직 저장한 항목이 없습니다.</p>';
   document.querySelectorAll('#items img[data-p]').forEach(async im=>{const p=await pGet(im.dataset.p);if(p)im.src=p.data;else im.style.opacity=.2;});}
 
-/* ── 항목 편집 ── */
+/* ── 하자 입력 (한 화면) ── */
+function blank(room){return {id:uid('i_'),c:Date.now(),by:cfg.name,role:cfg.role,cls:'하자',room:room||'',work:'',sub:'',type:'',phen:'',meas:'',basis:'',fix:'',ask:'',when:'',p1:'',p2:''};}
 function fillSel(el,arr,v,ph){el.innerHTML=`<option value="">${ph}</option>`+arr.map(x=>`<option${x===v?' selected':''}>${esc(x)}</option>`).join('');}
 function workOrder(){const mine=cfg.role==='창호'?GROUPS['창호']:[];return mine.concat(Object.keys(WM).filter(w=>!mine.includes(w)));}
-$('eWork').addEventListener('change',()=>{fillSel($('eSub'),Object.keys(WM[$('eWork').value]||{}),'','세부 선택');fillSel($('eType'),[],'','유형 선택');});
-$('eSub').addEventListener('change',()=>{fillSel($('eType'),(WM[$('eWork').value]||{})[$('eSub').value]||[],'','유형 선택');});
-function setPbox(n,data){const b=$('eP'+n);b.style.backgroundImage=data?`url(${data})`:'';b.querySelector('span').style.display=data?'none':'';}
-A.edit=async id=>{
-  const it=id?J.items[id]:null;
-  edIt=it?JSON.parse(JSON.stringify(it)):{id:uid('i_'),c:Date.now(),by:cfg.name,role:cfg.role,cls:'하자',room:'',work:'',sub:'',type:'',phen:'',meas:'',basis:'',fix:'',ask:'',when:'',p1:'',p2:''};
-  $('edTtl').textContent=it?'항목 수정':'새 항목';$('bDel').style.display=it?'':'none';
-  $('eRoom').innerHTML=ROOMS.map(r=>`<span class="chip" data-v="${r}">${r}</span>`).join('');
-  pick('eCls',edIt.cls);pick('eRoom',edIt.room);$('eWhenBox').style.display=edIt.cls==='재측정'?'':'none';
-  fillSel($('eWork'),workOrder(),edIt.work,'공종 선택');fillSel($('eSub'),Object.keys(WM[edIt.work]||{}),edIt.sub,'세부 선택');fillSel($('eType'),(WM[edIt.work]||{})[edIt.sub]||[],edIt.type,'유형 선택');
-  ['Phen','Meas','Basis','Fix','Ask','When'].forEach(k=>$('e'+k).value=edIt[k.toLowerCase()]||'');
-  for(const n of [1,2]){const p=await pGet(edIt['p'+n]);setPbox(n,p?p.data:'');}
-  $('ed').style.display='block';$('ed').scrollTop=0;
-};
-A.closeEd=()=>{if(_rec){try{_rec.stop();}catch(e){}}$('ed').style.display='none';edIt=null;};
+function setWST(w,s,t){fillSel($('eWork'),workOrder(),w,'공종 선택');fillSel($('eSub'),Object.keys(WM[w]||{}),s,'세부 선택');fillSel($('eType'),(WM[w]||{})[s]||[],t,'유형 선택');paintTags();}
+function paintTags(){const a=[$('eWork').value,$('eSub').value,$('eType').value].filter(Boolean);$('tags').innerHTML=a.length?'<span class="note">분류</span>'+a.map((x,i)=>`<span class="tg t${i}">${esc(x)}</span>`).join(''):'';}
+$('eWork').addEventListener('change',()=>setWST($('eWork').value,'',''));
+$('eSub').addEventListener('change',()=>setWST($('eWork').value,$('eSub').value,''));
+$('eType').addEventListener('change',paintTags);
+function setRoom(v){pick('eRoom',v);const b=$('roomBtn');b.textContent=v?'✔ '+v:'위치 선택 ▾';b.classList.toggle('sel',!!v);$('eRoom').style.display='none';}
+A.toggleRoom=()=>{const g=$('eRoom');g.style.display=g.style.display==='none'?'flex':'none';};
+function clsChanged(){$('eWhenBox').style.display=picked('eCls')==='재측정'?'':'none';}
+function setPbox(n,data){const b=$('eP'+n);b.style.backgroundImage=data?`url(${data})`:'';b.querySelector('span').style.display=data?'none':'';b.style.borderStyle=data?'solid':'dashed';}
+async function formLoad(it,asNew){
+  edIt=it;isNew=asNew;
+  $('edBan').style.display=asNew?'none':'flex';
+  if(!asNew)$('edBanT').textContent=(liveItems().findIndex(x=>x.id===it.id)+1)+'번 항목 수정 중';
+  if(!$('eRoom').children.length)$('eRoom').innerHTML=ROOMS.map(r=>`<span class="chip" data-v="${r}">${r}</span>`).join('');
+  pick('eCls',it.cls);clsChanged();setRoom(it.room);setWST(it.work,it.sub,it.type);
+  ['Phen','Meas','Basis','Fix','Ask','When'].forEach(k=>$('e'+k).value=it[k.toLowerCase()]||'');
+  $('dt').open=!!(it.meas||it.basis||it.fix||it.ask||it.when);$('selBox').open=false;
+  for(const n of [1,2]){const p=await pGet(it['p'+n]);setPbox(n,p?p.data:'');}
+}
+function formDirty(){return !!(edIt&&($('ePhen').value.trim()||edIt.p1||edIt.p2));}
+A.edit=id=>{const it=J.items[id];if(!it)return;formLoad(JSON.parse(JSON.stringify(it)),false);$('form').scrollIntoView({behavior:'smooth',block:'start'});};
+A.reset=()=>{formLoad(blank(''),true);};
 A.photo=async(n,inp)=>{const f=inp.files&&inp.files[0];inp.value='';if(!f||!edIt)return;try{const data=await resize(f,1280);const id=uid('p_');await pPut({id:id,job:cur,data:data,up:0});edIt['p'+n]=id;setPbox(n,data);}catch(e){toast('사진을 읽지 못했습니다');}};
 function readEd(){edIt.cls=picked('eCls')||'하자';edIt.room=picked('eRoom');edIt.work=$('eWork').value;edIt.sub=$('eSub').value;edIt.type=$('eType').value;['Phen','Meas','Basis','Fix','Ask','When'].forEach(k=>edIt[k.toLowerCase()]=$('e'+k).value.trim());}
-A.saveEd=()=>{readEd();if(!edIt.room){toast('위치를 골라 주십시오');return;}if(!edIt.phen&&!edIt.p1){toast('현상을 적거나 사진을 넣어 주십시오');return;}edIt.t=Date.now();edIt.eb=cfg.name;J.items[edIt.id]=edIt;J.dirtyI[edIt.id]=1;saveJob();A.closeEd();renderItems();renderSum();kick();toast('저장했습니다');};
-A.delEd=()=>{if(!edIt||!confirm('이 항목을 삭제할까요?'))return;const it=J.items[edIt.id];if(it){it.del=1;it.t=Date.now();J.dirtyI[it.id]=1;saveJob();}A.closeEd();renderItems();renderSum();kick();};
+A.save=()=>{if(_rec){try{_rec.stop();}catch(e){}}readEd();
+  if(!edIt.room){toast('위치를 골라 주십시오');$('eRoom').style.display='flex';return;}
+  if(!edIt.phen&&!edIt.p1&&!edIt.p2){toast('하자내용을 적거나 사진을 찍어 주십시오');return;}
+  edIt.t=Date.now();edIt.eb=cfg.name;J.items[edIt.id]=edIt;J.dirtyI[edIt.id]=1;saveJob();
+  const room=edIt.room;formLoad(blank(room),true);renderItems();renderSum();kick();toast('리스트에 저장했습니다');};
+A.del=()=>{if(!edIt||isNew||!confirm('이 항목을 삭제할까요?'))return;const it=J.items[edIt.id];if(it){it.del=1;it.t=Date.now();J.dirtyI[it.id]=1;saveJob();}A.reset();renderItems();renderSum();kick();};
 A.ai=async()=>{
   if(!cfg.gas){toast('AI 초안은 서버에 연결해야 쓸 수 있습니다');return;}
-  readEd();if(!edIt.phen&&!edIt.p1){toast('현상을 적거나 사진을 먼저 넣어 주십시오');return;}
+  readEd();if(!edIt.phen&&!edIt.p1&&!edIt.p2){toast('하자내용을 적거나 사진을 먼저 찍어 주십시오');return;}
   const b=$('bAI');b.disabled=true;b.textContent='AI 초안 작성 중…';
   try{
     const images=[];for(const n of [1,2]){const p=await pGet(edIt['p'+n]);if(p)images.push({mimeType:'image/jpeg',data:p.data.split(',')[1]});}
@@ -355,10 +390,11 @@ A.ai=async()=>{
     let d={};try{d=JSON.parse(String(r.text).replace(/```json|```/g,'').trim());if(Array.isArray(d))d=d[0]||{};}catch(e){const m=String(r.text).match(/\{[\s\S]*\}/);d=m?JSON.parse(m[0]):{};}
     if(!$('ePhen').value.trim()&&d.phen)$('ePhen').value=d.phen;
     if(d.basis)$('eBasis').value=d.basis;if(d.fix)$('eFix').value=d.fix;if(d.ask)$('eAsk').value=d.ask;
-    if(!$('eWork').value&&WM[d.work]){fillSel($('eWork'),workOrder(),d.work,'공종 선택');fillSel($('eSub'),Object.keys(WM[d.work]),WM[d.work][d.sub]?d.sub:'','세부 선택');fillSel($('eType'),(WM[d.work][d.sub]||[]),d.type,'유형 선택');}
+    if(!$('eWork').value&&WM[d.work])setWST(d.work,WM[d.work][d.sub]?d.sub:'',d.type||'');
+    $('dt').open=true;
     toast('AI 초안입니다. 읽어 보고 고쳐 주십시오',3500);
   }catch(e){toast('AI 초안 실패: '+(e.message||e),3500);}
-  b.disabled=false;b.textContent='AI 초안 작성 (판정 근거 · 처리 방법)';
+  b.disabled=false;b.textContent='🤖 AI 초안 작성';
 };
 
 /* ── 말로 입력 · 위치와 공종 자동 찾기 (이전 사전점검 앱에서 가져옴) ── */
@@ -432,15 +468,14 @@ function _matchWM(text){
 }
 const ROOM_KW=[['안방욕실','부부 욕실'],['부부욕실','부부 욕실'],['거실욕실','공용 욕실'],['공용욕실','공용 욕실'],['실외기실','실외기실'],['다용도실','다용도실'],['드레스룸','드레스룸'],['팬트리','팬트리'],['발코니','발코니'],['베란다','발코니'],['침실1','침실1(안방)'],['안방','침실1(안방)'],['침실2','침실2'],['침실3','침실3'],['거실','거실'],['주방','주방'],['부엌','주방'],['현관','현관']];
 function autoFill(text){
-  const t=_normKW(text);if(!t)return;const got=[];
-  if(!picked('eRoom')){const r=ROOM_KW.find(x=>t.includes(x[0]));if(r){pick('eRoom',r[1]);got.push(r[1]);}}
-  if(!$('eWork').value){const m=_matchWM(text);if(m.work){fillSel($('eWork'),workOrder(),m.work,'공종 선택');fillSel($('eSub'),Object.keys(WM[m.work]),m.sub,'세부 선택');fillSel($('eType'),(WM[m.work][m.sub]||[]),m.type,'유형 선택');got.push([m.work,m.sub,m.type].filter(Boolean).join(' > '));}}
-  if(got.length)toast('자동으로 찾았습니다: '+got.join(' / '));
+  const t=_normKW(text);if(!t)return;
+  if(!picked('eRoom')){const r=ROOM_KW.find(x=>t.includes(x[0]));if(r)setRoom(r[1]);}
+  if(!$('selBox').open){const m=_matchWM(text);if(m.work)setWST(m.work,m.sub,m.type);}
 }
-let _fillT;$('ePhen').addEventListener('input',()=>{clearTimeout(_fillT);_fillT=setTimeout(()=>autoFill($('ePhen').value),900);});
+let _fillT;$('ePhen').addEventListener('input',()=>{clearTimeout(_fillT);_fillT=setTimeout(()=>autoFill($('ePhen').value),700);});
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let _rec=null;
 if(!SR)$('bMic').style.display='none';
-function micOff(){$('bMic').classList.remove('on');$('bMic').textContent='🎤 말로 입력';_rec=null;}
+function micOff(){$('bMic').classList.remove('on');$('bMic').textContent='🎤';_rec=null;}
 A.mic=()=>{
   if(_rec){try{_rec.stop();}catch(e){}return;}
   try{
@@ -448,7 +483,7 @@ A.mic=()=>{
     r.onresult=e=>{const tx=Array.from(e.results).map(x=>x[0].transcript).join(' ').trim();if(!tx)return;const el=$('ePhen');el.value=(el.value?el.value.trim()+' ':'')+tx;autoFill(el.value);};
     r.onerror=e=>{toast(e.error==='not-allowed'?'마이크 사용을 허용해 주십시오':e.error==='no-speech'?'말소리를 듣지 못했습니다':'음성 입력 오류: '+e.error);};
     r.onend=micOff;
-    _rec=r;$('bMic').classList.add('on');$('bMic').textContent='■ 듣는 중 (누르면 멈춤)';r.start();
+    _rec=r;$('bMic').classList.add('on');$('bMic').textContent='■';r.start();
   }catch(e){micOff();toast('이 브라우저에서는 음성 입력을 쓸 수 없습니다');}
 };
 
@@ -459,12 +494,15 @@ A.report=async()=>{
   const all=liveItems(),ph={};
   for(const i of all)for(const pid of [i.p1,i.p2])if(pid){const p=await pGet(pid);if(p)ph[pid]=p.data;}
   const v=k=>esc(kv(k)),no=v('m.no'),base=new URL('.',location.href).href,c=counts();let tot=[0,0,0];
+  const has=pre=>Object.keys(J.kv).some(k=>pre.some(p=>k.indexOf(p)===0)&&J.kv[k].v);
+  const hasW=has(['w.','wm.','o.win']),hasN=has(['n.','e.','o.int']);
   const tbl=(pre,rows,cols)=>`<table><tr><th style="width:17%">위치</th>${cols.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map((r,i)=>`<tr class="h2"><td class="l">${r}</td>${cols.map((x,j)=>`<td class="c">${v(pre+'.'+i+'.'+j)}</td>`).join('')}</tr>`).join('')}</table>`;
   const box=t=>`<div class="box txt">${esc(t).replace(/\n/g,'<br>')}</div>`;
-  const rec=(i,n)=>`<div class="rec"><table><tr><td class="l" style="width:11%">번호</td><td style="width:10%" class="c">${n}</td><td class="l" style="width:11%">위치</td><td style="width:22%">${esc(i.room)}</td><td class="l" style="width:11%">분야</td><td>${esc([i.work,i.sub,i.type].filter(Boolean).join(' · '))}</td></tr><tr><td class="l">구분</td><td colspan="5">${CLS.map(x=>(x===i.cls?'■ ':'□ ')+(x==='재측정'?'입주 후 재측정 대상':x==='참고'?'참고 사항':x)).join('　　')}</td></tr></table><div class="photos">${[i.p1,i.p2].map((p,k)=>`<div class="ph">${ph[p]?`<img src="${ph[p]}">`:`<span>사진 ${k+1} 없음</span>`}</div>`).join('')}</div><table><tr><td class="l" style="width:22%">현상</td><td class="pre">${esc(i.phen)}</td></tr><tr><td class="l">측정값</td><td>${esc(i.meas)||'측정 없음'}</td></tr><tr><td class="l">판정 근거</td><td class="pre">${esc(i.basis)}</td></tr><tr><td class="l">시공사의 통상 처리 방법</td><td class="pre">${esc(i.fix)}</td></tr><tr><td class="l">보수 요청 때 확인할 점</td><td class="pre">${esc(i.ask)}</td></tr><tr><td class="l">작성</td><td>${esc(i.by)} (${esc(i.role)})</td></tr></table></div>`;
+  const rec=(i,n)=>`<div class="rec"><table><tr><td class="l" style="width:11%">번호</td><td style="width:10%" class="c">${n}</td><td class="l" style="width:11%">위치</td><td style="width:22%">${esc(i.room)}</td><td class="l" style="width:11%">분야</td><td>${esc([i.work,i.sub,i.type].filter(Boolean).join(' · '))}</td></tr><tr><td class="l">구분</td><td colspan="5">${CLS.map(x=>(x===i.cls?'■ ':'□ ')+(x==='재측정'?'입주 후 재측정 대상':x==='참고'?'참고 사항':x)).join('　　')}</td></tr></table><div class="photos">${[i.p1,i.p2].map((p,k)=>`<div class="ph">${ph[p]?`<img src="${ph[p]}">`:`<span>사진 ${k+1} 없음</span>`}</div>`).join('')}</div><table><tr><td class="l" style="width:22%">현상</td><td class="pre">${esc(i.phen)}</td></tr><tr><td class="l">측정값</td><td>${esc(i.meas)||'측정 없음'}</td></tr>${i.basis?`<tr><td class="l">판정 근거</td><td class="pre">${esc(i.basis)}</td></tr>`:''}${i.fix?`<tr><td class="l">시공사의 통상 처리 방법</td><td class="pre">${esc(i.fix)}</td></tr>`:''}${i.ask?`<tr><td class="l">보수 요청 때 확인할 점</td><td class="pre">${esc(i.ask)}</td></tr>`:''}<tr><td class="l">작성</td><td>${esc(i.by)} (${esc(i.role)})</td></tr></table></div>`;
   const css=`@page{size:A4;margin:14mm 14mm 13mm}*{box-sizing:border-box}body{font-family:'Malgun Gothic',sans-serif;font-size:9.8pt;line-height:1.55;color:#1a1a1a;margin:0}.page{break-after:page}.page:last-child{break-after:auto}h1{font-size:15pt;margin:0 0 8px;padding-bottom:6px;border-bottom:2.5px solid #1B6B3A;display:flex;justify-content:space-between;align-items:flex-end}h1 small{font-size:8.5pt;font-weight:normal;color:#64748B}h2{font-size:11.5pt;color:#1B6B3A;margin:14px 0 5px}p{margin:4px 0}.note{font-size:8.8pt;color:#475569}table{border-collapse:collapse;width:100%;margin:4px 0 8px}th,td{border:1px solid #94A3B8;padding:4px 6px;vertical-align:middle}th{background:#E7F1EA;font-weight:600;text-align:center;font-size:9.2pt}td.l{background:#F4F7F5;font-weight:600;width:19%;font-size:9.2pt}tr.h td{height:24px}tr.h2 td{height:28px}.c{text-align:center}.pre{white-space:pre-wrap}.box{border:1px solid #94A3B8}.txt{min-height:30mm;padding:6px 8px;white-space:normal}.cover{height:262mm;display:flex;flex-direction:column}.cover .top{display:flex;align-items:center;gap:12px}.cover .top img{height:54px}.brand{font-size:13pt;font-weight:700;color:#1B6B3A}.title{margin-top:46mm;text-align:center}.t1{font-size:30pt;font-weight:800;letter-spacing:2px}.t2{font-size:12.5pt;color:#1B6B3A;margin-top:8px;font-weight:600}.bar{height:5px;background:#1B6B3A;width:60mm;margin:14px auto 0}.info{margin-top:30mm}.info td{height:34px;font-size:10.5pt}.info td.l{width:24%;font-size:10.5pt}.foot{margin-top:auto;text-align:center;font-size:9.5pt;color:#475569;border-top:1px solid #CBD5E1;padding-top:8px}.rec{border:1.5px solid #1B6B3A;margin-bottom:9px;break-inside:avoid}.rec table{margin:0}.photos{display:flex}.ph{flex:1;height:62mm;border-right:1px solid #94A3B8;display:flex;align-items:center;justify-content:center;color:#94A3B8;font-size:8.8pt;overflow:hidden}.ph:last-child{border-right:none}.ph img{max-width:100%;max-height:100%;object-fit:contain}.sign td{height:40px}.pb{position:fixed;right:14px;top:14px;padding:12px 18px;font-size:15px;background:#1B6B3A;color:#fff;border:0;border-radius:8px}@media print{.pb{display:none}}`;
   const eq=EQUIP.filter((q,i)=>kv('q.'+i)==='1').concat(kv('q.etc')?[kv('q.etc')]:[]);
   const re=all.filter(i=>i.cls==='재측정');
+  let sec=2;const S=()=>(++sec);
   const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><base href="${base}"><title>${esc(jobTitle())} 사전점검 보고서</title><style>${css}</style></head><body>
 <button class="pb" onclick="window.print()">인쇄 · PDF로 저장</button>
 <div class="page cover"><div class="top"><img src="logo.jpg" onerror="this.style.display='none'" alt=""><div class="brand">청개구리샤시</div></div>
@@ -485,19 +523,19 @@ A.report=async()=>{
 <table><tr><th style="width:7%">번호</th><th style="width:15%">위치</th><th style="width:17%">분야</th><th>내용</th><th style="width:11%">구분</th><th style="width:11%">보수 확인</th></tr>${all.map((i,n)=>`<tr class="h2"><td class="c">${n+1}</td><td>${esc(i.room)}</td><td>${esc(i.sub||i.work)}</td><td>${esc((i.type?i.type+' — ':'')+(i.phen||'').split('\n')[0])}</td><td class="c">${esc(i.cls)}</td><td></td></tr>`).join('')||'<tr class="h2"><td colspan="6" class="c">기록한 항목이 없습니다.</td></tr>'}</table>
 <p class="note">"보수 확인" 칸은 시공사 보수 뒤 재점검할 때 적습니다.</p></div>
 
-<div class="page"><h1>3. 창호 분야 점검표 <small>담당: ${v('m.insW')||'청개구리샤시'}</small></h1><p class="note">표기: ○ 양호 / × 하자 / △ 입주 후 재측정 대상 / － 해당 없음</p>
+${hasW?`<div class="page"><h1>${S()}. 창호 분야 점검표 <small>담당: ${v('m.insW')||'청개구리샤시'}</small></h1><p class="note">표기: ○ 양호 / × 하자 / △ 입주 후 재측정 대상 / － 해당 없음</p>
 <h2>가. 창별 상태 점검</h2>${tbl('w',W_ROWS,W_COLS)}<h2>나. 측정 기록</h2>${tbl('wm',WM_ROWS,WM_COLS)}
 <p class="note">표면 온도는 실내외 온도 차가 충분할 때만 판정에 씁니다. 조건이 맞지 않으면 값을 적지 않고 "입주 후 재측정 대상"으로 표시합니다.</p>
-<h2>다. 창호 분야 소견</h2>${box(kv('o.win'))}</div>
+<h2>다. 창호 분야 소견</h2>${box(kv('o.win'))}</div>`:''}
 
-<div class="page"><h1>4. 내장 · 기타 분야 점검표 <small>담당: ${v('m.insN')||'건설 현장 전문가'}</small></h1><p class="note">표기: ○ 양호 / × 하자 / △ 입주 후 재측정 대상 / － 해당 없음</p>
+${hasN?`<div class="page"><h1>${S()}. 내장 · 기타 분야 점검표 <small>담당: ${v('m.insN')||'건설 현장 전문가'}</small></h1><p class="note">표기: ○ 양호 / × 하자 / △ 입주 후 재측정 대상 / － 해당 없음</p>
 <h2>가. 실별 마감 점검</h2>${tbl('n',N_ROWS,N_COLS)}
 <h2>나. 전기 · 설비 점검</h2><table><tr><th style="width:24%">항목</th><th style="width:12%">결과</th><th>내용</th></tr>${E_ROWS.map((r,i)=>`<tr class="h"><td class="l">${r}</td><td class="c">${v('e.'+i+'.r')}</td><td>${v('e.'+i+'.t')}</td></tr>`).join('')}</table>
-<h2>다. 내장 · 기타 분야 소견</h2>${box(kv('o.int'))}</div>
+<h2>다. 내장 · 기타 분야 소견</h2>${box(kv('o.int'))}</div>`:''}
 
-${all.length?`<div class="page"><h1>5. 항목별 기록지 <small>보고서 번호 ${no}</small></h1>${all.map((i,n)=>rec(i,n+1)).join('')}</div>`:''}
+${all.length?`<div class="page"><h1>${S()}. 항목별 기록지 <small>보고서 번호 ${no}</small></h1>${all.map((i,n)=>rec(i,n+1)).join('')}</div>`:''}
 
-<div class="page"><h1>6. 입주 후 재측정과 안내 <small>보고서 번호 ${no}</small></h1>
+<div class="page"><h1>${S()}. 입주 후 재측정과 안내 <small>보고서 번호 ${no}</small></h1>
 <h2>가. 입주 후 재측정 대상 항목</h2><p class="note">입주 전에는 난방을 하지 않고 실내외 온도 차가 작아, 결로 · 단열 · 외풍은 확정하기 어렵습니다. 아래 항목은 난방을 하는 계절에 다시 측정합니다.</p>
 <table><tr><th style="width:7%">번호</th><th style="width:17%">위치</th><th>재측정할 내용</th><th style="width:20%">권장 시기</th><th style="width:16%">재측정 결과</th></tr>${re.map(i=>`<tr class="h2"><td class="c">${all.indexOf(i)+1}</td><td>${esc(i.room)}</td><td>${esc(i.phen)}</td><td>${esc(i.when)}</td><td></td></tr>`).join('')||'<tr class="h2"><td colspan="5" class="c">해당 항목이 없습니다.</td></tr>'}</table>
 <h2>나. 다음 점검 일정</h2><table><tr><th style="width:26%">단계</th><th style="width:26%">시기</th><th>내용</th><th style="width:18%">예정일</th></tr>${SCHED.map((s,i)=>`<tr class="h"><td class="l">${s[0]}</td><td>${s[1]}</td><td>${s[2]}</td><td>${v('s.'+i)}</td></tr>`).join('')}</table>
@@ -508,8 +546,8 @@ ${all.length?`<div class="page"><h1>5. 항목별 기록지 <small>보고서 번�
   w.document.open();w.document.write(html);w.document.close();
 };
 
-/* ── 새 버전 자동 반영 ── */
-document.addEventListener('visibilitychange',async()=>{if(document.visibilityState!=='visible'||!/^https?:/.test(location.protocol))return;if($('ed').style.display==='block')return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/APP_VERSION='([^']+)'/);if(m&&m[1]!==APP_VERSION){saveJob();location.reload();}}catch(e){}});
+/* ── 새 버전 자동 반영 (입력 중에는 건드리지 않음) ── */
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState!=='visible'||!/^https?:/.test(location.protocol))return;if(cur&&(formDirty()||!isNew||$('more').style.display==='block'))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/APP_VERSION='([^']+)'/);if(m&&m[1]!==APP_VERSION){saveJob();location.reload();}}catch(e){}});
 
 /* ── 시작 ── */
 $('hVer').textContent=APP_VERSION;
