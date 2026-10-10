@@ -1783,7 +1783,7 @@ input[type="file"]{
 <!-- ── HEADER ── -->
 <header class="hd">
   <div class="hd-top" style="justify-content:center;align-items:center;padding:12px 14px 10px">
-    <div class="hd-title" style="font-size:1.26rem">청개구리 사전점검</div>
+    <button id="tCfgBtn" onclick="T.openMo('cfg')">⚙ 팀 설정</button><div class="hd-title" style="font-size:1.26rem">청개구리 사전점검</div>
     <span class="tag tag-v" id="verTag" data-ver onclick="A.devTap()" style="position:absolute;right:14px">v25.0</span>
     <span id="passTag" style="display:none">기부형 앱</span>
   </div>
@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v3.1.6';
+const APP_VER = 'v3.2.0';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3896,6 +3896,8 @@ async function sync(){
   if(!T.err&&T.cur===id){if(Object.keys(m.dirty).length||Object.keys(m.tomb).length||m.addrDirty)kick();else if(again){clearTimeout(kickT);kickT=setTimeout(sync,4000);}}
 }
 setInterval(()=>{if(document.visibilityState==='visible'&&T.cur)sync();},25000);
+/* 연결에 문제가 있을 때만 팀 설정 단추에 점으로 알린다 (노랑=보낼 것 대기, 빨강=연결 오류) */
+setInterval(()=>{const b=$('tCfgBtn'),s=$('tSync');if(b&&s)b.dataset.s=s.className;},700);
 window.addEventListener('online',()=>sync());
 window.addEventListener('offline',()=>badge());
 
@@ -3932,7 +3934,9 @@ function drawCfg(){$('teamMoBody').innerHTML='<div class="mo-h" style="color:#1B
   '<label>이름</label><input id="tName" value="'+esc2(T.cfg.name)+'" placeholder="리스트에 작성자로 표시됩니다">'+
   '<label>담당 분야</label><div class="tchips" id="tRole"><span class="tchip'+(T.cfg.role==='창호'?' on':'')+'" data-v="창호">창호</span><span class="tchip'+(T.cfg.role==='내장·기타'?' on':'')+'" data-v="내장·기타">내장 · 기타</span></div>'+
   '<label>팀 비밀번호 (4자 이상, 두 사람이 같은 값)</label><input id="tPin" type="password" autocomplete="off" value="'+esc2(T.cfg.pin)+'">'+
-  '<div class="tmsg" id="tMsg">'+(T.err?'최근 오류: '+esc2(T.err):'')+'</div><button class="tbtn" onclick="T.saveCfg()">저장</button>';
+  '<div class="tmsg" id="tMsg">'+(T.err?'최근 오류: '+esc2(T.err):'')+'</div><button class="tbtn" onclick="T.saveCfg()">저장</button>'+
+  '<div style="font-size:.72rem;color:#667085;margin-top:12px;text-align:center">연결 상태: '+esc2($('tSync').textContent)+'</div>'+
+  '<button class="tbtn" style="background:#F2F4F7!important;color:#344054;margin-top:8px" onclick="T.openMo(\'jobs\')">＋ 현장 목록 (새 현장 · 바꾸기 · 삭제)</button>';
   $('tRole').onclick=e=>{const c=e.target.closest('.tchip');if(!c)return;$('tRole').querySelectorAll('.tchip').forEach(x=>x.classList.toggle('on',x===c));};}
 T.openMo=async w=>{$('teamMo').classList.add('show');if(w==='cfg')drawCfg();else{drawJobs();await pullJobs();if($('teamMo').classList.contains('show')&&!$('tName'))drawJobs();}};
 T.closeMo=()=>$('teamMo').classList.remove('show');
@@ -4069,6 +4073,14 @@ body,button,input,textarea,select{font-family:'Pretendard','Noto Sans KR',-apple
 .hd-title::before{content:'';width:28px;height:28px;background:url(logo.jpg) center/128% no-repeat;flex-shrink:0}
 #verTag{position:absolute!important;right:12px!important;top:50%;transform:translateY(-50%);background:#F2F4F7!important;color:#667085!important;border:0!important;border-radius:20px!important;padding:3px 9px!important;font-size:.64rem!important;font-weight:600!important;backdrop-filter:none!important}
 
+/* 팀 설정 단추: 머리말 왼쪽 (현장 줄은 없앰) */
+#teamBar{display:none!important}
+#tCfgBtn{position:absolute;left:10px;top:50%;transform:translateY(-50%);border:0;background:#F2F4F7;border-radius:10px;padding:6px 9px;font-size:.7rem;font-weight:600;color:#344054;cursor:pointer;white-space:nowrap}
+#tCfgBtn::after{content:'';display:none;position:absolute;right:-2px;top:-2px;width:9px;height:9px;border-radius:50%;border:2px solid #fff}
+#tCfgBtn[data-s="ing"]::after{display:block;background:#F79009}
+#tCfgBtn[data-s="err"]::after{display:block;background:#D92D20}
+.hd{box-shadow:0 1px 0 #EAECF0}
+.hd-top{padding-bottom:8px!important}
 /* 팀 줄 */
 #teamBar{padding:4px 12px 6px!important;border-bottom:0!important;gap:8px!important;box-shadow:0 1px 0 #EAECF0}
 #teamBar button{border:0!important;background:#F2F4F7!important;border-radius:10px!important;padding:6px 10px!important;font-size:.76rem!important;font-weight:600!important;color:var(--ts)!important}
