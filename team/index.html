@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v3.1.4';
+const APP_VER = 'v3.1.5';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -4028,8 +4028,12 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{
   if(g){g.insertAdjacentHTML('beforeend','<div id="t3row"><div class="tc" id="tcRoom" data-l="위치" onclick="A.toggleRoom()"><b>위치</b></div><div class="tc" id="tcWork" data-l="공종" onclick="T.cellSel()"><b>공종</b></div><div class="tc" id="tcType" data-l="하자내용" onclick="T.cellSel()"><b>하자내용</b></div></div>');setInterval(paint3,400);}
   const ba=document.querySelector('.ba'),pdf=ba&&ba.querySelector('.ab.pdf');
   if(pdf){ba.id='tBtnRow';pdf.insertAdjacentHTML('beforebegin','<button id="tReview" onclick="T.review()"><i class="fa-solid fa-robot"></i> AI재검토</button><button id="tFile" onclick="T.saveFile()"><i class="fa-solid fa-folder-open"></i> 내파일저장</button>');pdf.innerHTML='<i class="fa-solid fa-file-arrow-down"></i> 전체저장';}
+  /* 동의 체크박스는 화면에서 빼고 항상 동의한 상태로 둔다 (점검팀 내부용) */
+  const ag=$('fAgree');
+  if(ag){const keep=()=>{if(!ag.checked){ag.checked=true;try{A.togSave();}catch(e){}}};try{localStorage.setItem('frog_agreed','true');}catch(e){}keep();setInterval(keep,1000);}
   const ai=$('btnRunAI'),nx=$('btnNext');
   if(ai&&nx){const row=ai.closest('.il'),box=nx.parentElement;row.id='tAiRow';box.id='tNextBox';row.appendChild(box);}
+  if(ag){const lb=ag.closest('label'),rw=lb&&lb.parentElement;if(rw)rw.style.display='none';}
   a.addEventListener('input',()=>{if(!T.cur||!T.jobs[T.cur])return;const m=T.meta;m.addr=a.value;m.addrT=Date.now();m.addrDirty=true;T.jobs[T.cur].title=a.value.trim()||'현장명';T.jobs[T.cur].t=Date.now();L.set('team_jobs',T.jobs);L.set('team_meta_'+T.cur,m);jobTitle();kick();});
   const saved=L.get('team_cur',null);
   await openJob(saved&&T.jobs[saved]&&T.jobs[saved].title!==DEL?saved:newJob(),false);
