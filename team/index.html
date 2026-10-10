@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v3.2.0';
+const APP_VER = 'v3.2.1';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3829,12 +3829,21 @@ async function idbDel(id){try{const d=await idb();d.transaction('lists','readwri
 
 function persist(){if(!T.cur)return;idbPut({id:T.cur,list:list.slice()});L.set('team_meta_'+T.cur,T.meta);}
 function counts(){$('lCnt').textContent=list.length;$('sgTx').textContent='저장 총 하자 : '+list.length+' 건';}
-function rerender(){list.sort((a,b)=>a.id-b.id);$('lBox').innerHTML='';list.forEach(renderItem);counts();}
+/* AI 분석 내용 첫 줄의 "[공종] … [세부] … [유형] …"이 AI의 최종 분류다. 이것을 항목의 공종·세부·유형으로 삼고,
+   내용에서는 그 줄을 지워 공종 줄이 한 번만(정확한 쪽만) 보이게 한다. 바뀌면 true */
+function normItem(it){
+  const m=/^\s*\[공종\]\s*(.*?)\s*\[세부\]\s*(.*?)\s*\[유형\]\s*(.*?)[ \t]*(?:\r?\n|$)/.exec(String(it.detail||''));
+  if(!m||!m[1])return false;
+  it.work=m[1];it.sub=m[2];it.type=m[3];
+  it.detail=String(it.detail).slice(m[0].length).replace(/^\s*\n/,'');
+  return true;
+}
+function rerender(){list.forEach(normItem);list.sort((a,b)=>a.id-b.id);$('lBox').innerHTML='';list.forEach(renderItem);counts();}
 function diff(){const m=T.meta,ids={};
   list.forEach(it=>{const k=String(it.id);ids[k]=1;if(!m.known[k]){m.known[k]=Date.now();m.dirty[k]=1;if(it.wImg)m.pup['p'+k+'w']=1;if(it.cImg&&it.cImg!==PH)m.pup['p'+k+'c']=1;}});
   Object.keys(m.known).forEach(k=>{if(!ids[k]){m.tomb[k]=Date.now();delete m.known[k];delete m.dirty[k];delete m.pup['p'+k+'w'];delete m.pup['p'+k+'c'];}});}
 /* 이전 앱의 저장 함수를 바꿔치기: 리스트가 바뀔 때마다 기기에 저장하고 서버로 보낸다 */
-saveList=function(){counts();if(!T.cur)return;diff();persist();kick();};
+saveList=function(){let ch=false;list.forEach(it=>{if(normItem(it))ch=true;});if(ch)rerender();counts();if(!T.cur)return;diff();persist();kick();};
 
 /* ── 서버 ── */
 async function api(body,signal){const r=await _of(gas(),{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(Object.assign({pin:T.cfg.pin},body)),signal:signal});if(!r.ok)throw new Error('서버 응답 '+r.status);return r.json();}
