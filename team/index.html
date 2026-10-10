@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>청개구리 사전점검 팀앱</title>
+<style>
+:root{--p:#1B6B3A;--pl:#E7F1EA;--b:#CBD5E1;--t:#1a1a1a;--m:#64748B;--r:#B91C1C;--o:#B45309;--bl:#1D4ED8}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:15px;color:var(--t);background:#F3F5F4;-webkit-text-size-adjust:100%}
+header{position:sticky;top:0;z-index:20;background:var(--p);color:#fff;padding:9px 12px;display:flex;align-items:center;gap:8px}
+header .ttl{flex:1;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header button{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:6px;padding:6px 9px;font-size:13px}
+#sync{font-size:12px;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,.2);white-space:nowrap}
+#sync.ok{background:#22C55E}#sync.ing{background:#F59E0B}#sync.off{background:#94A3B8}#sync.err{background:#DC2626}
+.wrap{max-width:860px;margin:0 auto;padding:10px 10px 90px}
+.card{background:#fff;border:1px solid var(--b);border-radius:10px;padding:12px;margin-bottom:10px}
+h2{font-size:15px;color:var(--p);margin:0 0 8px}
+label{display:block;font-size:12.5px;color:var(--m);margin:8px 0 3px}
+input[type=text],input[type=password],input[type=date],input[type=url],select,textarea{width:100%;border:1px solid var(--b);border-radius:7px;padding:9px;font-size:15px;font-family:inherit;background:#fff}
+textarea{min-height:64px;resize:vertical}
+.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
+.btn{display:inline-block;border:0;border-radius:8px;padding:11px 14px;font-size:15px;font-weight:700;background:var(--p);color:#fff}
+.btn.g{background:#E2E8F0;color:#1E293B}.btn.r{background:#FEE2E2;color:var(--r)}.btn.w{width:100%}
+.btn:disabled{opacity:.5}
+.tabs{position:sticky;top:44px;z-index:15;display:flex;background:#fff;border-bottom:1px solid var(--b);overflow-x:auto}
+.tabs button{flex:1;border:0;background:none;padding:11px 8px;font-size:14px;white-space:nowrap;color:var(--m);border-bottom:3px solid transparent}
+.tabs button.on{color:var(--p);font-weight:700;border-bottom-color:var(--p)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--b);border-radius:16px;padding:7px 11px;font-size:14px;background:#fff}
+.chip.on{background:var(--p);color:#fff;border-color:var(--p)}
+.ck{display:inline-flex;align-items:center;gap:5px;margin:4px 12px 4px 0;font-size:14px;color:var(--t)}
+.ck input{width:19px;height:19px}
+table.g{border-collapse:collapse;width:100%;font-size:13px}
+table.g th,table.g td{border:1px solid #94A3B8;padding:4px;text-align:center}
+table.g th{background:var(--pl);font-size:12px;font-weight:600}
+table.g td.l{background:#F4F7F5;text-align:left;font-weight:600;font-size:12.5px;white-space:nowrap}
+table.g td.c{height:38px;min-width:34px;font-size:18px;font-weight:700;cursor:pointer;user-select:none}
+table.g td.c.x{color:var(--r)}table.g td.c.d{color:var(--o)}table.g td.c.o{color:var(--p)}
+table.g input{border:0;padding:6px 2px;text-align:center;font-size:14px;min-width:46px}
+.sx{overflow-x:auto}
+.it{display:flex;gap:10px;padding:10px;border:1px solid var(--b);border-radius:10px;background:#fff;margin-bottom:8px}
+.it .no{font-weight:800;color:var(--p);min-width:26px}
+.it .bd{flex:1;min-width:0}
+.it .hd{font-weight:700;font-size:14px}
+.it .ph{font-size:13px;color:#334155;margin-top:2px;white-space:pre-wrap;overflow-wrap:anywhere}
+.it .by{font-size:11.5px;color:var(--m);margin-top:3px}
+.it img{width:58px;height:58px;object-fit:cover;border-radius:6px;border:1px solid var(--b)}
+.tag{display:inline-block;font-size:11.5px;border-radius:4px;padding:1px 6px;margin-right:4px;color:#fff}
+.tag.c0{background:var(--r)}.tag.c1{background:var(--o)}.tag.c2{background:var(--bl)}
+.fab{position:fixed;right:16px;bottom:18px;z-index:18;border-radius:28px;padding:14px 20px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+#ed{position:fixed;inset:0;z-index:40;background:#F3F5F4;overflow-y:auto;display:none}
+#ed .bar{position:sticky;top:0;background:var(--p);color:#fff;padding:9px 12px;display:flex;align-items:center;gap:8px;z-index:2}
+#ed .bar b{flex:1}
+#ed .bar button{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:6px;padding:7px 12px;font-size:14px;font-weight:700}
+.pbox{flex:1;border:1.5px dashed var(--b);border-radius:8px;height:130px;display:flex;align-items:center;justify-content:center;color:var(--m);font-size:13px;background:#fff center/cover no-repeat;position:relative}
+.pbox input{position:absolute;inset:0;opacity:0}
+#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:rgba(15,23,42,.92);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:60;display:none;max-width:88%;text-align:center}
+.note{font-size:12.5px;color:var(--m)}
+.sum td{font-size:14px}
+.mic{float:right;border:1px solid var(--p);background:#fff;color:var(--p);border-radius:14px;padding:4px 11px;font-size:13px;font-weight:700;margin-top:-4px}.mic.on{background:var(--r);border-color:var(--r);color:#fff}
+</style>
+</head>
+<body>
+
+<header>
+  <button id="bBack" style="display:none" onclick="A.back()">◀</button>
+  <div class="ttl" id="hTitle">청개구리 사전점검 팀앱</div>
+  <span id="sync" class="off">미연결</span>
+  <button onclick="A.setup()">설정</button>
+</header>
+
+<!-- 설정 -->
+<div class="wrap" id="vSetup" style="display:none">
+  <div class="card">
+    <h2>점검자 설정</h2>
+    <label>이름</label><input type="text" id="cName" placeholder="보고서 점검자 칸에 들어갑니다">
+    <label>담당 분야</label>
+    <div class="chips" id="cRole">
+      <span class="chip" data-v="창호">창호</span><span class="chip" data-v="내장·기타">내장 · 기타</span>
+    </div>
+  </div>
+  <div class="card">
+    <h2>함께 입력하기 (서버 연결)</h2>
+    <p class="note">두 사람이 같은 서버 주소와 같은 팀 비밀번호를 넣으면 같은 현장을 함께 입력합니다. 비워 두면 이 기기에만 저장됩니다.</p>
+    <label>서버 주소 (웹 앱 URL)</label><input type="url" id="cGas" placeholder="https://script.google.com/macros/s/…/exec">
+    <label>팀 비밀번호 (4자 이상)</label><input type="password" id="cPin" autocomplete="off">
+    <p class="note" id="cMsg"></p>
+  </div>
+  <button class="btn w" onclick="A.saveSetup()">저장</button>
+  <p class="note" style="text-align:center;margin-top:14px">청개구리샤시 · <span id="verTxt"></span></p>
+</div>
+
+<!-- 현장 목록 -->
+<div class="wrap" id="vList" style="display:none">
+  <button class="btn w" onclick="A.newJob()">＋ 새 현장</button>
+  <div id="jobList" style="margin-top:10px"></div>
+</div>
+
+<!-- 현장 -->
+<div id="vJob" style="display:none">
+  <div class="tabs" id="tabs">
+    <button data-t="0" class="on">개요</button><button data-t="1">항목</button><button data-t="2">창호표</button><button data-t="3">내장표</button><button data-t="4">보고서</button>
+  </div>
+  <div class="wrap">
+    <div id="t0"></div>
+    <div id="t1" style="display:none"></div>
+    <div id="t2" style="display:none"></div>
+    <div id="t3" style="display:none"></div>
+    <div id="t4" style="display:none"></div>
+  </div>
+  <button class="btn fab" id="fab" style="display:none" onclick="A.edit()">＋ 항목 추가</button>
+</div>
+
+<!-- 항목 편집 -->
+<div id="ed">
+  <div class="bar"><button onclick="A.closeEd()">닫기</button><b id="edTtl">항목</b><button onclick="A.saveEd()">저장</button></div>
+  <div class="wrap">
+    <div class="card">
+      <label>구분</label>
+      <div class="chips" id="eCls"><span class="chip" data-v="하자">하자</span><span class="chip" data-v="재측정">입주 후 재측정 대상</span><span class="chip" data-v="참고">참고 사항</span></div>
+      <label>위치</label>
+      <div class="chips" id="eRoom"></div>
+      <div class="row">
+        <div><label>공종</label><select id="eWork"></select></div>
+        <div><label>세부</label><select id="eSub"></select></div>
+      </div>
+      <label>유형</label><select id="eType"></select>
+    </div>
+    <div class="card">
+      <label>사진</label>
+      <div class="row">
+        <div class="pbox" id="eP1"><span>사진 1 · 전체 모습</span><input type="file" accept="image/*" onchange="A.photo(1,this)"></div>
+        <div class="pbox" id="eP2"><span>사진 2 · 가까이</span><input type="file" accept="image/*" onchange="A.photo(2,this)"></div>
+      </div>
+      <label>현상 <button type="button" class="mic" id="bMic" onclick="A.mic()">🎤 말로 입력</button></label><textarea id="ePhen" placeholder="어디에 무엇이 어떻게 되어 있는지 — 말하거나 적으면 위치와 공종을 자동으로 찾습니다"></textarea>
+      <label>측정값 (측정한 경우만)</label><input type="text" id="eMeas" placeholder="예: 수직 편차 ○mm (레이저 레벨)">
+      <button class="btn g w" id="bAI" style="margin-top:10px" onclick="A.ai()">AI 초안 작성 (판정 근거 · 처리 방법)</button>
+    </div>
+    <div class="card">
+      <label>판정 근거</label><textarea id="eBasis"></textarea>
+      <label>시공사의 통상 처리 방법</label><textarea id="eFix"></textarea>
+      <label>보수 요청 때 확인할 점</label><textarea id="eAsk"></textarea>
+      <div id="eWhenBox"><label>재측정 권장 시기</label><input type="text" id="eWhen" placeholder="예: 입주 후 첫 겨울"></div>
+    </div>
+    <button class="btn r w" id="bDel" onclick="A.delEd()">이 항목 삭제</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const APP_VERSION='v1.1.1';
+const DEFAULT_GAS='https://script.google.com/macros/s/AKfycbyIo86UrFvE5W82FdSiZTjwB6N1QOEIjm4DTzhU-lgmd-OiSeYE1ACPRATVd_dOBPBl/exec';
+const WM={"도배공사":{"도배":["들뜸","마감불량","흠집/찍힘","면불량","오염","이음불량","흠집","미시공","파손","이색/변색"]},"타일공사":{"타일":["줄눈불량","틈새","구배불량","단차","들뜸","미시공","파손","마감불량","오염","흠집/찍힘"],"폴리싱타일":["파손","들뜸","줄눈불량","단차","틈새","오염","마감불량"],"아트월타일":["틈새","파손","마감불량","단차","흠집/찍힘","미시공","들뜸"],"타일코킹":["코킹불량","미시공","틈새","흠집/찍힘","마감불량"],"마블씰":["들뜸","틈새","단차","미시공","흠집/찍힘"]},"PL창호공사":{"PL창호":["고정불량","미시공","수직수평불량","흠집/찍힘","개폐불량","파손","틈새"],"분합창":["미시공","흠집/찍힘","고정불량","수직수평불량","개폐불량","파손"],"터닝도어":["미시공","개폐불량","흠집/찍힘","고정불량","틈새","파손"],"대피창":["개폐불량","고정불량","코킹불량","미시공"],"PL방충망":["개폐불량","미시공","수직수평불량","파손"]},"주방가구공사":{"주방상/하부장":["수직수평불량","미시공","개폐불량","흠집/찍힘","마감불량","고정불량","틈새"],"아일랜드장":["수직수평불량","개폐불량","미시공","흠집/찍힘","마감불량","틈새"],"냉장고장":["흠집/찍힘","수직수평불량","틈새","미시공","마감불량"],"고급장식장":["개폐불량","고정불량","수직수평불량","틈새","미시공"],"씽크볼":["미시공","마감불량","틈새","고정불량"]},"일반가구공사":{"신발장":["흠집/찍힘","미시공","틈새","수직수평불량","마감불량","개폐불량"],"붙박이장":["흠집/찍힘","미시공","수직수평불량","개폐불량","틈새","마감불량"],"화장대":["미시공","흠집/찍힘","마감불량","틈새","개폐불량","수직수평불량"],"현관팬트리도어/틀":["흠집/찍힘","수직수평불량","틈새","미시공","마감불량"],"복도팬트리도어/틀":["흠집/찍힘","틈새","수직수평불량","마감불량","미시공"],"아트월판넬":["틈새","마감불량","미시공","흠집/찍힘","파손"],"드레스룸도어/틀":["흠집/찍힘","틈새","마감불량","미시공","수직수평불량"]},"마루공사":{"강마루":["들뜸","틈새","오염","단차","파손","마감불량","미시공"],"마루코킹":["코킹불량","미시공","들뜸","틈새","오염"],"걸레받이":["틈새","파손","마감불량","미시공","들뜸","단차"]},"목창호공사":{"목문틀":["흠집/찍힘","틈새","미시공","수직수평불량","고정불량","마감불량"],"목문짝":["개폐불량","흠집/찍힘","고정불량","수직수평불량","틈새","마감불량"],"공틀":["틈새","수직수평불량","오염","미시공"]},"도장공사":{"도장":["마감불량","면불량","도장불량","균열","오염","미시공","들뜸"],"현관문틀도장":["도장불량","마감불량","오염","면불량","균열"],"외벽도장":["면불량","마감불량","균열","도장불량","오염"]},"준공청소공사":{"준공청소":["오염"]},"코킹공사":{"코킹":["코킹불량","미시공","틈새","오염","마감불량"]},"중문공사":{"슬라이딩도어/틀":["개폐불량","고정불량","마감불량","미시공","틈새","흠집/찍힘"],"스윙도어/틀":["마감불량","고정불량","개폐불량","미시공","흠집/찍힘","틈새"]},"기계설비공사":{"위생도기류":["고정불량","마감불량","작동불량","미시공","누수"],"수전류":["고정불량","미시공","작동불량","마감불량","누수"],"설비":["마감불량","미시공","악취","작동불량","누수"],"욕실액세서리":["고정불량","미시공","마감불량","수직수평불량"],"배수드레인":["마감불량","미시공","고정불량","작동불량","배수불량"]},"전기공사":{"콘센트":["작동불량","고정불량","수직수평불량","미시공","들뜸"],"스위치":["작동불량","수직수평불량","고정불량","미시공"],"네트워크스위치":["작동불량","수직수평불량","고정불량"]},"내장목공사":{"석고보드":["고정불량","마감불량","들뜸","단차","틈새"],"천정몰딩":["틈새","흠집/찍힘","마감불량","고정불량","오염"]},"방화문공사":{"현관문":["미시공","개폐불량","흠집/찍힘","고정불량","틈새"],"대피공간방화문":["미시공","개폐불량","고정불량","흠집/찍힘","틈새"],"실외기실문짝/틀":["개폐불량","고정불량","미시공","틈새"]},"시스템가구공사":{"시스템가구":["고정불량","미시공","수직수평불량","틈새","마감불량"],"월판넬":["틈새","미시공","수직수평불량","단차"]},"주방상판공사":{"주방상판/코킹":["미시공","코킹불량","틈새","흠집/찍힘","파손"],"엔지니어드상판":["미시공","틈새","마감불량","코킹불량","파손"]},"조명공사":{"세대등기구":["수직수평불량","작동불량","고정불량","미시공","점등불량"]},"내부석공사":{"석재걸레받이":["틈새","미시공","마감불량","코킹불량","파손"],"디딤판":["틈새","미시공","단차","마감불량","파손"]},"욕실장공사":{"욕실장/코킹":["미시공","개폐불량","수직수평불량","고정불량","코킹불량"]},"유리공사":{"유리":["흠집","파손","미시공","오염","코킹불량"],"유리코킹":["코킹불량","미시공"]},"에어컨공사":{"실외기":["마감불량","미시공","작동불량","고정불량"],"시스템에어컨":["작동불량","고정불량","마감불량","누수"]},"루버창호공사":{"루버창/방충망":["미시공","고정불량","개폐불량","흠집/찍힘"]},"직영공사":{"직영":["마감불량","들뜸","미시공","누수","고정불량","틈새"]}};
+const ROOMS=['현관','거실','주방','침실1(안방)','침실2','침실3','드레스룸','공용 욕실','부부 욕실','발코니','다용도실','실외기실','팬트리','기타'];
+const W_ROWS=['거실','침실 1 (안방)','침실 2','침실 3','주방 · 다용도실','드레스룸','발코니 · 실외기실','욕실','기타'];
+const W_COLS=['창틀 수직·수평','창짝 개폐','잠금 장치','기밀재','유리','실리콘 마감','방충망','배수 구멍','표면 손상'];
+const WM_ROWS=['거실','침실 1 (안방)','침실 2','침실 3','주방 · 다용도실','기타'];
+const WM_COLS=['창 종류','수직 편차(mm)','수평 편차(mm)','유리 표면 온도(℃)','창틀 표면 온도(℃)','초음파 누기 위치'];
+const N_ROWS=['현관','거실','주방','침실 1 (안방)','침실 2','침실 3','드레스룸 · 팬트리','공용 욕실','부부 욕실','발코니 · 다용도실'];
+const N_COLS=['도배','바닥재','타일','도장','문 · 문틀','가구','걸레받이 · 몰딩','천장','실리콘 마감'];
+const E_ROWS=['스위치 · 콘센트 · 조명','분전반 · 통신 단자함','수전 · 급수 · 수압','배수 · 바닥 물매','양변기 · 세면기 · 욕조','난방 · 온도 조절기','환기 장치 · 주방 후드','현관문 · 도어록 · 인터폰','기타'];
+const EQUIP=['열화상 카메라','초음파 카메라','레이저 레벨','수평계 · 수직계','온습도계','소음 측정기','타진봉'];
+const SCHED=[['보수 확인 재점검','시공사 보수 뒤','총괄표 "보수 확인" 칸 점검'],['겨울 재측정','입주 후 첫 겨울','창호 결로 · 외풍 · 단열 측정'],['담보 기간 종료 전 점검','하자담보 기간 종료 전','마감 등 기간이 짧은 항목 재점검']];
+const CYC=['','○','×','△','－'];
+const CLS=['하자','재측정','참고'];
+const GROUPS={'창호':['PL창호공사','유리공사','루버창호공사'],'내장 · 마감':['도배공사','타일공사','마루공사','도장공사','코킹공사','내장목공사','내부석공사','준공청소공사'],'가구 · 문':['주방가구공사','일반가구공사','목창호공사','중문공사','방화문공사','시스템가구공사','욕실장공사','주방상판공사'],'전기 · 설비':['기계설비공사','전기공사','조명공사','에어컨공사']};
+const GNAMES=['창호','내장 · 마감','가구 · 문','전기 · 설비','기타'];
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){toast('기기 저장 공간이 부족합니다');}}};
+function toast(m,ms){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',ms||2600);}
+
+let cfg=LS.get('it_cfg',{name:'',role:'',gas:DEFAULT_GAS,pin:''});
+let jobs=LS.get('it_jobs',{});
+let cur=null,J=null,tab=0,edIt=null,syncing=false,kickT=null,lastErr='';
+
+/* ── 사진 보관 (IndexedDB) ── */
+let _db;
+function idb(){return _db||(_db=new Promise((res,rej)=>{const r=indexedDB.open('it_photos',1);r.onupgradeneeded=()=>r.result.createObjectStore('p',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}));}
+async function pGet(id){if(!id)return null;try{const d=await idb();return await new Promise(r=>{const q=d.transaction('p').objectStore('p').get(id);q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null);});}catch(e){return null;}}
+async function pPut(o){const d=await idb();return new Promise((r,j)=>{const tx=d.transaction('p','readwrite');tx.objectStore('p').put(o);tx.oncomplete=()=>r();tx.onerror=()=>j(tx.error);});}
+async function pPending(){try{const d=await idb();return await new Promise(r=>{const q=d.transaction('p').objectStore('p').getAll();q.onsuccess=()=>r((q.result||[]).filter(x=>!x.up));q.onerror=()=>r([]);});}catch(e){return [];}}
+function resize(file,max){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;const k=Math.min(1,max/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(img.src);res(c.toDataURL('image/jpeg',0.8));};img.onerror=rej;img.src=URL.createObjectURL(file);});}
+
+/* ── 현장 데이터 ── */
+function loadJob(id){cur=id;J=LS.get('it_job_'+id,{items:{},kv:{},dirtyI:{},dirtyK:{},rev:0});}
+function saveJob(){if(cur)LS.set('it_job_'+cur,J);}
+function kv(k){return J&&J.kv[k]?J.kv[k].v:'';}
+function setKV(k,v){J.kv[k]={v:v,t:Date.now(),by:cfg.name};J.dirtyK[k]=1;saveJob();if(k==='m.apt'||k==='m.unit'){jobs[cur].title=jobTitle();jobs[cur].t=Date.now();LS.set('it_jobs',jobs);$('hTitle').textContent=jobTitle();}kick();}
+function jobTitle(){const s=((kv('m.apt')||'')+' '+(kv('m.unit')||'')).trim();return s||'새 현장';}
+function liveItems(){return Object.values(J.items).filter(i=>!i.del).sort((a,b)=>(a.c||0)-(b.c||0));}
+function groupOf(w){for(const g in GROUPS)if(GROUPS[g].includes(w))return g;return '기타';}
+
+/* ── 서버 주고받기 ── */
+async function api(body){const r=await fetch(cfg.gas,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(Object.assign({pin:cfg.pin},body))});if(!r.ok)throw new Error('서버 응답 '+r.status);return r.json();}
+function setSync(s){const e=$('sync');const dirty=J?Object.keys(J.dirtyI).length+Object.keys(J.dirtyK).length:0;
+  if(!cfg.gas){e.className='off';e.textContent='이 기기만';return;}
+  if(s==='ing'){e.className='ing';e.textContent='보내는 중';return;}
+  if(!navigator.onLine){e.className='off';e.textContent='오프라인'+(dirty?' · 대기 '+dirty:'');return;}
+  if(s==='err'){e.className='err';e.textContent='연결 오류'+(dirty?' · 대기 '+dirty:'');return;}
+  e.className=dirty?'ing':'ok';e.textContent=dirty?'대기 '+dirty:'함께 입력 중';}
+function kick(){setSync();clearTimeout(kickT);kickT=setTimeout(sync,1200);}
+async function sync(){
+  if(!cfg.gas||!cur||syncing){setSync();return;}
+  if(!navigator.onLine){setSync();return;}
+  syncing=true;setSync('ing');
+  const id=cur,job=J;let changed=false,again=false;
+  try{
+    const di=Object.keys(job.dirtyI),dk=Object.keys(job.dirtyK);
+    const sI={},sK={};di.forEach(i=>sI[i]=job.items[i].t);dk.forEach(k=>sK[k]=job.kv[k].t);
+    const res=await api({a:'sync',job:{id:id,title:jobs[id]?jobs[id].title:''},since:job.rev,items:di.map(i=>job.items[i]),kv:dk.map(k=>({k:k,v:job.kv[k].v,t:job.kv[k].t,by:job.kv[k].by}))});
+    if(res.error)throw new Error(res.error==='bad_pin'?'팀 비밀번호가 다릅니다':(res.message||res.error));
+    di.forEach(i=>{if(job.items[i]&&job.items[i].t===sI[i])delete job.dirtyI[i];else again=true;});
+    dk.forEach(k=>{if(job.kv[k]&&job.kv[k].t===sK[k])delete job.dirtyK[k];else again=true;});
+    (res.items||[]).forEach(r=>{const l=job.items[r.id];if(!l||(!job.dirtyI[r.id]&&r.t>=l.t&&JSON.stringify(l)!==JSON.stringify(r))||r.t>l.t){job.items[r.id]=r;delete job.dirtyI[r.id];changed=true;}});
+    (res.kv||[]).forEach(r=>{const l=job.kv[r.k];if(!l||(!job.dirtyK[r.k]&&r.t>=l.t&&l.v!==r.v)||r.t>l.t){job.kv[r.k]={v:r.v,t:r.t,by:r.by};delete job.dirtyK[r.k];changed=true;}});
+    job.rev=res.rev||job.rev;
+    LS.set('it_job_'+id,job);
+    lastErr='';
+    // 사진 올리기
+    const pend=(await pPending()).filter(p=>p.job===id).slice(0,3);
+    for(const p of pend){const r=await api({a:'photoPut',job:id,id:p.id,data:p.data.split(',')[1]});if(r.ok){p.up=1;await pPut(p);}}
+    // 상대가 올린 사진 받기
+    let got=0;
+    for(const it of Object.values(job.items)){if(it.del)continue;for(const pid of [it.p1,it.p2]){if(!pid||got>=3)continue;if(await pGet(pid))continue;const r=await api({a:'photoGet',id:pid});if(r.ok){await pPut({id:pid,job:id,data:'data:image/jpeg;base64,'+r.data,up:1});got++;changed=true;}}}
+    if(pend.length===3||got>=3)again=true;
+    if(cur===id){if(changed){const t=jobTitle();if(jobs[id]&&jobs[id].title!==t){jobs[id].title=t;LS.set('it_jobs',jobs);$('hTitle').textContent=t;}applyKV();renderItems();renderSum();}setSync();}
+  }catch(e){lastErr=String(e.message||e);if(cur===id)setSync('err');}
+  syncing=false;
+  if(again)kick();
+}
+setInterval(()=>{if(document.visibilityState==='visible'&&cur)sync();},25000);
+window.addEventListener('online',()=>{if(cur)sync();});
+window.addEventListener('offline',()=>setSync());
+
+/* ── 화면 전환 ── */
+function show(v){['vSetup','vList','vJob'].forEach(x=>$(x).style.display=x===v?'':'none');$('bBack').style.display=v==='vList'?'none':'';if(v!=='vJob'){$('hTitle').textContent='청개구리 사전점검 팀앱';}}
+const A={};
+A.setup=()=>{$('cName').value=cfg.name;$('cGas').value=cfg.gas;$('cPin').value=cfg.pin;pick('cRole',cfg.role);$('cMsg').textContent=lastErr?'최근 오류: '+lastErr:'';$('verTxt').textContent=APP_VERSION;show('vSetup');};
+A.saveSetup=async()=>{
+  const n=$('cName').value.trim(),role=picked('cRole'),gas=$('cGas').value.trim(),pin=$('cPin').value.trim();
+  if(!n||!role){toast('이름과 담당 분야를 넣어 주십시오');return;}
+  if(gas&&pin.length<4){toast('팀 비밀번호는 4자 이상입니다');return;}
+  cfg={name:n,role:role,gas:gas,pin:pin};LS.set('it_cfg',cfg);
+  if(gas){$('cMsg').textContent='서버 확인 중…';try{const r=await api({a:'ping'});if(r.error){$('cMsg').textContent=r.error==='bad_pin'?'팀 비밀번호가 다릅니다.':'서버 오류: '+(r.message||r.error);return;}toast(r.created?'팀 비밀번호를 새로 정했습니다':'서버에 연결했습니다');}catch(e){$('cMsg').textContent='서버에 닿지 않습니다. 주소를 확인해 주십시오. 지금은 이 기기에만 저장됩니다.';}}
+  A.list();
+};
+A.back=()=>{if(cur){saveJob();cur=null;J=null;}A.list();};
+A.list=async()=>{show('vList');setSync();renderJobs();if(cfg.gas&&navigator.onLine){try{const r=await api({a:'jobs'});if(r.ok){r.jobs.forEach(j=>{if(!jobs[j.id])jobs[j.id]={id:j.id,title:j.title,t:j.t};else if(j.t>jobs[j.id].t){jobs[j.id].title=j.title;jobs[j.id].t=j.t;}});LS.set('it_jobs',jobs);renderJobs();}}catch(e){}}};
+A.newJob=()=>{const id=uid('j_');jobs[id]={id:id,title:'새 현장',t:Date.now()};LS.set('it_jobs',jobs);A.open(id);const d=new Date();setKV('m.date',d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));applyKV();};
+A.open=id=>{loadJob(id);show('vJob');$('hTitle').textContent=jobTitle();buildTabs();A.tab(0);applyKV();renderItems();renderSum();setSync();sync();};
+A.tab=n=>{tab=n;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',+b.dataset.t===n));for(let i=0;i<5;i++)$('t'+i).style.display=i===n?'':'none';$('fab').style.display=n===1?'':'none';window.scrollTo(0,0);if(n===0)renderSum();};
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)A.tab(+b.dataset.t);});
+function renderJobs(){const l=Object.values(jobs).sort((a,b)=>b.t-a.t);$('jobList').innerHTML=l.length?l.map(j=>`<div class="it" onclick="A.open('${j.id}')"><div class="bd"><div class="hd">${esc(j.title||'새 현장')}</div><div class="by">${new Date(j.t).toLocaleString('ko-KR')}</div></div><div style="align-self:center;color:var(--m)">▶</div></div>`).join(''):'<p class="note" style="text-align:center;margin-top:30px">현장이 없습니다. "새 현장"을 눌러 시작하십시오.</p>';}
+function pick(id,v){document.querySelectorAll('#'+id+' .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===v));}
+function picked(id){const c=document.querySelector('#'+id+' .chip.on');return c?c.dataset.v:'';}
+['cRole','eCls','eRoom'].forEach(id=>$(id).addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;pick(id,c.dataset.v);if(id==='eCls')$('eWhenBox').style.display=c.dataset.v==='재측정'?'':'none';}));
+
+/* ── 현장 탭 만들기 ── */
+function fld(k,label,ph,type){return `<div><label>${label}</label><input type="${type||'text'}" data-k="${k}" placeholder="${ph||''}"></div>`;}
+function grid(pre,rows,cols){return `<div class="sx"><table class="g"><tr><th>위치</th>${cols.map(c=>`<th>${c.replace(/ /g,'<br>')}</th>`).join('')}</tr>${rows.map((r,i)=>`<tr><td class="l">${r}</td>${cols.map((c,j)=>`<td class="c" data-c="${pre}.${i}.${j}"></td>`).join('')}</tr>`).join('')}</table></div>`;}
+function buildTabs(){
+  $('t0').innerHTML=`
+  <div class="card"><h2>세대 정보</h2>
+    ${fld('m.apt','단지 이름')}
+    <div class="row">${fld('m.unit','동 · 호수')}${fld('m.type','전용면적 · 타입')}</div>
+    <div class="row">${fld('m.floor','층 · 세대 위치','예: 12층 끝 세대')}${fld('m.dir','향')}</div>
+    <div class="row">${fld('m.builder','시공사')}${fld('m.movein','입주 예정일')}</div>
+    <div class="row">${fld('m.client','의뢰인')}${fld('m.date','점검일','','date')}</div>
+    <div class="row">${fld('m.time','점검 시간','예: 10시 ~ 15시')}${fld('m.no','보고서 번호')}</div>
+    <div class="row">${fld('m.insW','점검자 (창호)')}${fld('m.insN','점검자 (내장 · 기타)')}</div>
+  </div>
+  <div class="card"><h2>점검 조건</h2>
+    <p class="note">측정한 값만 적습니다. 측정하지 않은 값은 비워 둡니다.</p>
+    <div class="row">${fld('m.weather','날씨')}${fld('m.out','외기 온도 · 습도','℃ / %')}</div>
+    <div class="row">${fld('m.in','실내 온도 · 습도','℃ / %')}${fld('m.heat','난방 가동','가동 / 미가동')}</div>
+    <div class="row">${fld('m.util','전기 · 수도','사용 가능 / 일부 불가')}${fld('m.fin','마감 공사 상태','완료 / 일부 미완료')}</div>
+  </div>
+  <div class="card"><h2>사용 장비</h2>${EQUIP.map((q,i)=>`<label class="ck"><input type="checkbox" data-k="q.${i}">${q}</label>`).join('')}${fld('q.etc','기타 장비')}</div>
+  <div class="card"><h2>점검 결과 요약 (자동 집계)</h2><div id="sum"></div></div>
+  <div class="card"><h2>종합 소견</h2><textarea data-k="o.all" style="min-height:110px"></textarea></div>
+  <div class="card"><h2>다음 점검 일정</h2>${SCHED.map((s,i)=>fld('s.'+i,s[0]+' 예정일','')).join('')}</div>`;
+  $('t1').innerHTML=`<div class="chips" id="fil" style="margin-bottom:10px"><span class="chip on" data-v="">전체</span><span class="chip" data-v="me">내가 쓴 것</span><span class="chip" data-v="하자">하자</span><span class="chip" data-v="재측정">재측정</span><span class="chip" data-v="참고">참고</span></div><div id="items"></div>`;
+  $('fil').addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;pick('fil',c.dataset.v);renderItems();});
+  $('t2').innerHTML=`
+  <div class="card"><h2>창별 상태 점검</h2><p class="note">칸을 누를 때마다 ○ 양호 → × 하자 → △ 입주 후 재측정 → － 해당 없음 순서로 바뀝니다.</p>${grid('w',W_ROWS,W_COLS)}</div>
+  <div class="card"><h2>측정 기록</h2><p class="note">표면 온도는 실내외 온도 차가 충분할 때만 적습니다.</p><div class="sx"><table class="g"><tr><th>위치</th>${WM_COLS.map(c=>`<th>${c}</th>`).join('')}</tr>${WM_ROWS.map((r,i)=>`<tr><td class="l">${r}</td>${WM_COLS.map((c,j)=>`<td><input type="text" data-k="wm.${i}.${j}"></td>`).join('')}</tr>`).join('')}</table></div></div>
+  <div class="card"><h2>창호 분야 소견</h2><textarea data-k="o.win" style="min-height:110px"></textarea></div>`;
+  $('t3').innerHTML=`
+  <div class="card"><h2>실별 마감 점검</h2><p class="note">칸을 누를 때마다 ○ → × → △ → － 순서로 바뀝니다.</p>${grid('n',N_ROWS,N_COLS)}</div>
+  <div class="card"><h2>전기 · 설비 점검</h2><div class="sx"><table class="g"><tr><th>항목</th><th>결과</th><th>내용</th></tr>${E_ROWS.map((r,i)=>`<tr><td class="l">${r}</td><td class="c" data-c="e.${i}.r"></td><td><input type="text" data-k="e.${i}.t" style="text-align:left;min-width:150px;width:100%"></td></tr>`).join('')}</table></div></div>
+  <div class="card"><h2>내장 · 기타 분야 소견</h2><textarea data-k="o.int" style="min-height:110px"></textarea></div>`;
+  $('t4').innerHTML=`
+  <div class="card"><h2>보고서</h2><p class="note">두 사람이 입력한 내용을 견본 양식대로 묶습니다. 새 창이 열리면 인쇄에서 "PDF로 저장"을 고르십시오. 사진을 모두 받은 뒤에 만드는 것이 좋습니다.</p><button class="btn w" onclick="A.report()">보고서 만들기</button></div>`;
+}
+$('vJob').addEventListener('input',e=>{const el=e.target,k=el.dataset&&el.dataset.k;if(!k)return;setKV(k,el.type==='checkbox'?(el.checked?'1':''):el.value);});
+$('vJob').addEventListener('click',e=>{const td=e.target.closest('[data-c]');if(!td)return;const k=td.dataset.c;const v=CYC[(CYC.indexOf(kv(k))+1)%CYC.length];setKV(k,v);paintCell(td,v);});
+function paintCell(td,v){td.textContent=v;td.className='c'+(v==='×'?' x':v==='△'?' d':v==='○'?' o':'');}
+function applyKV(){if(!J)return;document.querySelectorAll('#vJob [data-k]').forEach(el=>{if(el===document.activeElement)return;const v=kv(el.dataset.k);if(el.type==='checkbox')el.checked=v==='1';else if(el.value!==v)el.value=v;});document.querySelectorAll('#vJob [data-c]').forEach(td=>paintCell(td,kv(td.dataset.c)));}
+function counts(){const c={};GNAMES.forEach(g=>c[g]=[0,0,0]);liveItems().forEach(i=>{const k=CLS.indexOf(i.cls);if(k>=0)c[groupOf(i.work)][k]++;});return c;}
+function renderSum(){if(!J||!$('sum'))return;const c=counts();let tot=[0,0,0];$('sum').innerHTML=`<table class="g sum"><tr><th>분야</th><th>하자</th><th>재측정</th><th>참고</th><th>합계</th></tr>${GNAMES.map(g=>{c[g].forEach((n,i)=>tot[i]+=n);return `<tr><td class="l">${g}</td><td>${c[g][0]}</td><td>${c[g][1]}</td><td>${c[g][2]}</td><td>${c[g][0]+c[g][1]+c[g][2]}</td></tr>`;}).join('')}<tr><td class="l">합계</td><td>${tot[0]}</td><td>${tot[1]}</td><td>${tot[2]}</td><td>${tot[0]+tot[1]+tot[2]}</td></tr></table>`;}
+function renderItems(){if(!J||!$('items'))return;const f=picked('fil');const all=liveItems();const l=all.filter(i=>!f||(f==='me'?i.by===cfg.name:i.cls===f));
+  $('items').innerHTML=l.length?l.map(i=>`<div class="it" onclick="A.edit('${i.id}')"><div class="no">${all.indexOf(i)+1}</div><div class="bd"><div class="hd"><span class="tag c${CLS.indexOf(i.cls)}">${esc(i.cls)}</span>${esc(i.room)} · ${esc(i.sub||i.work||'')} ${esc(i.type||'')}</div><div class="ph">${esc(i.phen||'')}</div><div class="by">${esc(i.by||'')} (${esc(i.role||'')})</div></div>${i.p1?`<img data-p="${i.p1}" alt="">`:''}</div>`).join(''):'<p class="note" style="text-align:center;margin-top:30px">항목이 없습니다. 아래 "항목 추가"를 누르십시오.</p>';
+  document.querySelectorAll('#items img[data-p]').forEach(async im=>{const p=await pGet(im.dataset.p);if(p)im.src=p.data;else im.style.opacity=.2;});}
+
+/* ── 항목 편집 ── */
+function fillSel(el,arr,v,ph){el.innerHTML=`<option value="">${ph}</option>`+arr.map(x=>`<option${x===v?' selected':''}>${esc(x)}</option>`).join('');}
+function workOrder(){const mine=cfg.role==='창호'?GROUPS['창호']:[];return mine.concat(Object.keys(WM).filter(w=>!mine.includes(w)));}
+$('eWork').addEventListener('change',()=>{fillSel($('eSub'),Object.keys(WM[$('eWork').value]||{}),'','세부 선택');fillSel($('eType'),[],'','유형 선택');});
+$('eSub').addEventListener('change',()=>{fillSel($('eType'),(WM[$('eWork').value]||{})[$('eSub').value]||[],'','유형 선택');});
+function setPbox(n,data){const b=$('eP'+n);b.style.backgroundImage=data?`url(${data})`:'';b.querySelector('span').style.display=data?'none':'';}
+A.edit=async id=>{
+  const it=id?J.items[id]:null;
+  edIt=it?JSON.parse(JSON.stringify(it)):{id:uid('i_'),c:Date.now(),by:cfg.name,role:cfg.role,cls:'하자',room:'',work:'',sub:'',type:'',phen:'',meas:'',basis:'',fix:'',ask:'',when:'',p1:'',p2:''};
+  $('edTtl').textContent=it?'항목 수정':'새 항목';$('bDel').style.display=it?'':'none';
+  $('eRoom').innerHTML=ROOMS.map(r=>`<span class="chip" data-v="${r}">${r}</span>`).join('');
+  pick('eCls',edIt.cls);pick('eRoom',edIt.room);$('eWhenBox').style.display=edIt.cls==='재측정'?'':'none';
+  fillSel($('eWork'),workOrder(),edIt.work,'공종 선택');fillSel($('eSub'),Object.keys(WM[edIt.work]||{}),edIt.sub,'세부 선택');fillSel($('eType'),(WM[edIt.work]||{})[edIt.sub]||[],edIt.type,'유형 선택');
+  ['Phen','Meas','Basis','Fix','Ask','When'].forEach(k=>$('e'+k).value=edIt[k.toLowerCase()]||'');
+  for(const n of [1,2]){const p=await pGet(edIt['p'+n]);setPbox(n,p?p.data:'');}
+  $('ed').style.display='block';$('ed').scrollTop=0;
+};
+A.closeEd=()=>{if(_rec){try{_rec.stop();}catch(e){}}$('ed').style.display='none';edIt=null;};
+A.photo=async(n,inp)=>{const f=inp.files&&inp.files[0];inp.value='';if(!f||!edIt)return;try{const data=await resize(f,1280);const id=uid('p_');await pPut({id:id,job:cur,data:data,up:0});edIt['p'+n]=id;setPbox(n,data);}catch(e){toast('사진을 읽지 못했습니다');}};
+function readEd(){edIt.cls=picked('eCls')||'하자';edIt.room=picked('eRoom');edIt.work=$('eWork').value;edIt.sub=$('eSub').value;edIt.type=$('eType').value;['Phen','Meas','Basis','Fix','Ask','When'].forEach(k=>edIt[k.toLowerCase()]=$('e'+k).value.trim());}
+A.saveEd=()=>{readEd();if(!edIt.room){toast('위치를 골라 주십시오');return;}if(!edIt.phen&&!edIt.p1){toast('현상을 적거나 사진을 넣어 주십시오');return;}edIt.t=Date.now();edIt.eb=cfg.name;J.items[edIt.id]=edIt;J.dirtyI[edIt.id]=1;saveJob();A.closeEd();renderItems();renderSum();kick();toast('저장했습니다');};
+A.delEd=()=>{if(!edIt||!confirm('이 항목을 삭제할까요?'))return;const it=J.items[edIt.id];if(it){it.del=1;it.t=Date.now();J.dirtyI[it.id]=1;saveJob();}A.closeEd();renderItems();renderSum();kick();};
+A.ai=async()=>{
+  if(!cfg.gas){toast('AI 초안은 서버에 연결해야 쓸 수 있습니다');return;}
+  readEd();if(!edIt.phen&&!edIt.p1){toast('현상을 적거나 사진을 먼저 넣어 주십시오');return;}
+  const b=$('bAI');b.disabled=true;b.textContent='AI 초안 작성 중…';
+  try{
+    const images=[];for(const n of [1,2]){const p=await pGet(edIt['p'+n]);if(p)images.push({mimeType:'image/jpeg',data:p.data.split(',')[1]});}
+    const prompt=`당신은 신축 아파트 사전점검 보고서를 돕는 보조자입니다. 점검자는 창호 전문가와 건설사 CS 경력자이며, 아래 점검자 입력이 사실의 기준입니다. 사진은 보조 자료입니다.
+[점검자 입력] 위치:${edIt.room||'미지정'} / 공종:${edIt.work||'미지정'} / 세부:${edIt.sub||'미지정'} / 유형:${edIt.type||'미지정'} / 구분:${edIt.cls}
+현상: "${edIt.phen||'(입력 없음 — 사진으로 판단)'}"
+측정값: "${edIt.meas||'측정 없음'}"
+[공종 목록] ${Object.keys(WM).join(', ')}
+[규칙]
+- 문장은 "~합니다" 존댓말로 짧게 씁니다.
+- 측정값·수치·허용오차를 지어내지 않습니다. 점검자가 적은 측정값만 인용합니다.
+- 판정 근거는 국토교통부 「공동주택 하자의 조사, 보수비용 산정 및 하자판정기준」의 해당 공종 기준 또는 KS 표준 이름을 일반 표기로 적습니다. 조 번호·항 번호는 적지 않습니다.
+- 확실하지 않으면 "현장 확인 필요"라고 적습니다. 과장하거나 시공사를 비난하지 않습니다.
+- phen 은 점검자가 현상을 적었으면 그 뜻을 바꾸지 말고 문장만 다듬습니다.
+[JSON 출력] {"work":"공종","sub":"세부","type":"유형","phen":"현상 1~2문장","basis":"판정 근거 1~2문장","fix":"시공사가 보통 처리하는 보수 방법 1~2문장","ask":"보수 요청 때 확인할 점 1~2문장"}`;
+    const r=await api({a:'ai',prompt:prompt,images:images});
+    if(r.error)throw new Error(r.error==='no_api_key'?'서버에 AI 키가 없습니다':(r.message||r.error));
+    let d={};try{d=JSON.parse(String(r.text).replace(/```json|```/g,'').trim());if(Array.isArray(d))d=d[0]||{};}catch(e){const m=String(r.text).match(/\{[\s\S]*\}/);d=m?JSON.parse(m[0]):{};}
+    if(!$('ePhen').value.trim()&&d.phen)$('ePhen').value=d.phen;
+    if(d.basis)$('eBasis').value=d.basis;if(d.fix)$('eFix').value=d.fix;if(d.ask)$('eAsk').value=d.ask;
+    if(!$('eWork').value&&WM[d.work]){fillSel($('eWork'),workOrder(),d.work,'공종 선택');fillSel($('eSub'),Object.keys(WM[d.work]),WM[d.work][d.sub]?d.sub:'','세부 선택');fillSel($('eType'),(WM[d.work][d.sub]||[]),d.type,'유형 선택');}
+    toast('AI 초안입니다. 읽어 보고 고쳐 주십시오',3500);
+  }catch(e){toast('AI 초안 실패: '+(e.message||e),3500);}
+  b.disabled=false;b.textContent='AI 초안 작성 (판정 근거 · 처리 방법)';
+};
+
+/* ── 말로 입력 · 위치와 공종 자동 찾기 (이전 사전점검 앱에서 가져옴) ── */
+const _SYN = {
+  sub: {
+    'PL창호':['창호','창문','창','피엘창호','플창호'],
+    '강마루':['마루','바닥마루','우드마루'],
+    '도배':['벽지'],
+    '현관문':['현관','현관도어'],
+    '수전류':['수전','수도꼭지'],
+    '시스템에어컨':['에어컨'],
+    '목문짝':['목문','문짝','방문'],
+    '붙박이장':['옷장','장롱'],
+    '세대등기구':['등기구','조명','전등']
+  },
+  type: {
+    '파손':['깨짐','깨진','부서짐','부러짐','깨져','손상'],
+    '흠집/찍힘':['흠집','찍힘','긁힘','스크래치'],
+    '균열':['금','크랙','갈라짐','갈라져'],
+    '수직수평불량':['삐뚤','기울어','수평불량','수직불량'],
+    '개폐불량':['안열림','안열려','잘안열','안닫힘','안닫혀','닫히지','열리지'],
+    '고정불량':['흔들림','흔들려','덜렁','움직여','움직임'],
+    '작동불량':['작동안함','안돌아','고장','먹통'],
+    '누수':['물샘','물새','물이샘'],
+    '오염':['곰팡이','얼룩'],
+    '들뜸':['들떠','떠있'],
+    '틈새':['틈','벌어짐','벌어져']
+  }
+};
+function _normKW(s){ return (s||'').replace(/[\s\/\-_]/g,'').toLowerCase(); }
+function _hasKW(t, original, synonyms){
+  const variants = [original].concat(synonyms||[]);
+  for(const v of variants){
+    const k = _normKW(v);
+    if(k && t.includes(k)) return true;
+  }
+  return false;
+}
+function _matchWM(text){
+  const t = _normKW(text);
+  if(!t) return {work:'',sub:'',type:''};
+  let best = {work:'', sub:'', type:'', score:0};
+  for(const work of Object.keys(WM)){
+    const wShort = work.replace(/공사$/,'');
+    const wHit = _hasKW(t, work, []) || _hasKW(t, wShort, []);
+    for(const sub of Object.keys(WM[work])){
+      const sSyn = _SYN.sub[sub] || [];
+      const sHit = _hasKW(t, sub, sSyn);
+      const anchorHit = sHit || wHit; /* type 점수는 sub/work 매칭 시에만 부여 */
+      let anyTypeHitInAnchor = false;
+      for(const type of WM[work][sub]){
+        const tySyn = _SYN.type[type] || [];
+        const tHit = _hasKW(t, type, tySyn);
+        if(tHit && anchorHit) anyTypeHitInAnchor = true;
+        const typeScore = (tHit && anchorHit) ? 5 : 0;
+        const score = typeScore + (sHit?3:0) + (wHit?1:0);
+        if(score > best.score){
+          best = {work, sub, type: (tHit && anchorHit) ? type : '', score};
+        }
+      }
+      if(!anyTypeHitInAnchor && anchorHit){
+        const score = (sHit?3:0) + (wHit?1:0);
+        if(score > best.score){
+          best = {work, sub: sHit?sub:'', type:'', score};
+        }
+      }
+    }
+  }
+  if(best.score <= 0) return {work:'',sub:'',type:''};
+  return {work:best.work, sub:best.sub, type:best.type};
+}
+const ROOM_KW=[['안방욕실','부부 욕실'],['부부욕실','부부 욕실'],['거실욕실','공용 욕실'],['공용욕실','공용 욕실'],['실외기실','실외기실'],['다용도실','다용도실'],['드레스룸','드레스룸'],['팬트리','팬트리'],['발코니','발코니'],['베란다','발코니'],['침실1','침실1(안방)'],['안방','침실1(안방)'],['침실2','침실2'],['침실3','침실3'],['거실','거실'],['주방','주방'],['부엌','주방'],['현관','현관']];
+function autoFill(text){
+  const t=_normKW(text);if(!t)return;const got=[];
+  if(!picked('eRoom')){const r=ROOM_KW.find(x=>t.includes(x[0]));if(r){pick('eRoom',r[1]);got.push(r[1]);}}
+  if(!$('eWork').value){const m=_matchWM(text);if(m.work){fillSel($('eWork'),workOrder(),m.work,'공종 선택');fillSel($('eSub'),Object.keys(WM[m.work]),m.sub,'세부 선택');fillSel($('eType'),(WM[m.work][m.sub]||[]),m.type,'유형 선택');got.push([m.work,m.sub,m.type].filter(Boolean).join(' > '));}}
+  if(got.length)toast('자동으로 찾았습니다: '+got.join(' / '));
+}
+let _fillT;$('ePhen').addEventListener('input',()=>{clearTimeout(_fillT);_fillT=setTimeout(()=>autoFill($('ePhen').value),900);});
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let _rec=null;
+if(!SR)$('bMic').style.display='none';
+function micOff(){$('bMic').classList.remove('on');$('bMic').textContent='🎤 말로 입력';_rec=null;}
+A.mic=()=>{
+  if(_rec){try{_rec.stop();}catch(e){}return;}
+  try{
+    const r=new SR();r.lang='ko-KR';r.interimResults=false;r.continuous=false;r.maxAlternatives=1;
+    r.onresult=e=>{const tx=Array.from(e.results).map(x=>x[0].transcript).join(' ').trim();if(!tx)return;const el=$('ePhen');el.value=(el.value?el.value.trim()+' ':'')+tx;autoFill(el.value);};
+    r.onerror=e=>{toast(e.error==='not-allowed'?'마이크 사용을 허용해 주십시오':e.error==='no-speech'?'말소리를 듣지 못했습니다':'음성 입력 오류: '+e.error);};
+    r.onend=micOff;
+    _rec=r;$('bMic').classList.add('on');$('bMic').textContent='■ 듣는 중 (누르면 멈춤)';r.start();
+  }catch(e){micOff();toast('이 브라우저에서는 음성 입력을 쓸 수 없습니다');}
+};
+
+/* ── 보고서 ── */
+A.report=async()=>{
+  const w=window.open('','_blank');if(!w){toast('팝업이 막혀 있습니다. 허용해 주십시오');return;}
+  w.document.write('<p style="font-family:sans-serif;padding:20px">보고서를 만드는 중입니다…</p>');
+  const all=liveItems(),ph={};
+  for(const i of all)for(const pid of [i.p1,i.p2])if(pid){const p=await pGet(pid);if(p)ph[pid]=p.data;}
+  const v=k=>esc(kv(k)),no=v('m.no'),base=new URL('.',location.href).href,c=counts();let tot=[0,0,0];
+  const tbl=(pre,rows,cols)=>`<table><tr><th style="width:17%">위치</th>${cols.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map((r,i)=>`<tr class="h2"><td class="l">${r}</td>${cols.map((x,j)=>`<td class="c">${v(pre+'.'+i+'.'+j)}</td>`).join('')}</tr>`).join('')}</table>`;
+  const box=t=>`<div class="box txt">${esc(t).replace(/\n/g,'<br>')}</div>`;
+  const rec=(i,n)=>`<div class="rec"><table><tr><td class="l" style="width:11%">번호</td><td style="width:10%" class="c">${n}</td><td class="l" style="width:11%">위치</td><td style="width:22%">${esc(i.room)}</td><td class="l" style="width:11%">분야</td><td>${esc([i.work,i.sub,i.type].filter(Boolean).join(' · '))}</td></tr><tr><td class="l">구분</td><td colspan="5">${CLS.map(x=>(x===i.cls?'■ ':'□ ')+(x==='재측정'?'입주 후 재측정 대상':x==='참고'?'참고 사항':x)).join('　　')}</td></tr></table><div class="photos">${[i.p1,i.p2].map((p,k)=>`<div class="ph">${ph[p]?`<img src="${ph[p]}">`:`<span>사진 ${k+1} 없음</span>`}</div>`).join('')}</div><table><tr><td class="l" style="width:22%">현상</td><td class="pre">${esc(i.phen)}</td></tr><tr><td class="l">측정값</td><td>${esc(i.meas)||'측정 없음'}</td></tr><tr><td class="l">판정 근거</td><td class="pre">${esc(i.basis)}</td></tr><tr><td class="l">시공사의 통상 처리 방법</td><td class="pre">${esc(i.fix)}</td></tr><tr><td class="l">보수 요청 때 확인할 점</td><td class="pre">${esc(i.ask)}</td></tr><tr><td class="l">작성</td><td>${esc(i.by)} (${esc(i.role)})</td></tr></table></div>`;
+  const css=`@page{size:A4;margin:14mm 14mm 13mm}*{box-sizing:border-box}body{font-family:'Malgun Gothic',sans-serif;font-size:9.8pt;line-height:1.55;color:#1a1a1a;margin:0}.page{break-after:page}.page:last-child{break-after:auto}h1{font-size:15pt;margin:0 0 8px;padding-bottom:6px;border-bottom:2.5px solid #1B6B3A;display:flex;justify-content:space-between;align-items:flex-end}h1 small{font-size:8.5pt;font-weight:normal;color:#64748B}h2{font-size:11.5pt;color:#1B6B3A;margin:14px 0 5px}p{margin:4px 0}.note{font-size:8.8pt;color:#475569}table{border-collapse:collapse;width:100%;margin:4px 0 8px}th,td{border:1px solid #94A3B8;padding:4px 6px;vertical-align:middle}th{background:#E7F1EA;font-weight:600;text-align:center;font-size:9.2pt}td.l{background:#F4F7F5;font-weight:600;width:19%;font-size:9.2pt}tr.h td{height:24px}tr.h2 td{height:28px}.c{text-align:center}.pre{white-space:pre-wrap}.box{border:1px solid #94A3B8}.txt{min-height:30mm;padding:6px 8px;white-space:normal}.cover{height:262mm;display:flex;flex-direction:column}.cover .top{display:flex;align-items:center;gap:12px}.cover .top img{height:54px}.brand{font-size:13pt;font-weight:700;color:#1B6B3A}.title{margin-top:46mm;text-align:center}.t1{font-size:30pt;font-weight:800;letter-spacing:2px}.t2{font-size:12.5pt;color:#1B6B3A;margin-top:8px;font-weight:600}.bar{height:5px;background:#1B6B3A;width:60mm;margin:14px auto 0}.info{margin-top:30mm}.info td{height:34px;font-size:10.5pt}.info td.l{width:24%;font-size:10.5pt}.foot{margin-top:auto;text-align:center;font-size:9.5pt;color:#475569;border-top:1px solid #CBD5E1;padding-top:8px}.rec{border:1.5px solid #1B6B3A;margin-bottom:9px;break-inside:avoid}.rec table{margin:0}.photos{display:flex}.ph{flex:1;height:62mm;border-right:1px solid #94A3B8;display:flex;align-items:center;justify-content:center;color:#94A3B8;font-size:8.8pt;overflow:hidden}.ph:last-child{border-right:none}.ph img{max-width:100%;max-height:100%;object-fit:contain}.sign td{height:40px}.pb{position:fixed;right:14px;top:14px;padding:12px 18px;font-size:15px;background:#1B6B3A;color:#fff;border:0;border-radius:8px}@media print{.pb{display:none}}`;
+  const eq=EQUIP.filter((q,i)=>kv('q.'+i)==='1').concat(kv('q.etc')?[kv('q.etc')]:[]);
+  const re=all.filter(i=>i.cls==='재측정');
+  const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><base href="${base}"><title>${esc(jobTitle())} 사전점검 보고서</title><style>${css}</style></head><body>
+<button class="pb" onclick="window.print()">인쇄 · PDF로 저장</button>
+<div class="page cover"><div class="top"><img src="logo.jpg" onerror="this.style.display='none'" alt=""><div class="brand">청개구리샤시</div></div>
+<div class="title"><div class="t1">입주자 사전점검 보고서</div><div class="bar"></div><div class="t2">창호 전문가와 건설 현장 전문가의 2인 1조 정밀 점검</div></div>
+<div class="info"><table><tr><td class="l">단지 이름</td><td>${v('m.apt')}</td></tr><tr><td class="l">동 · 호수 · 타입</td><td>${v('m.unit')} ${v('m.type')}</td></tr><tr><td class="l">의뢰인</td><td>${v('m.client')}</td></tr><tr><td class="l">점검 일시</td><td>${v('m.date')} ${v('m.time')}</td></tr><tr><td class="l">점검자 (창호)</td><td>${v('m.insW')}</td></tr><tr><td class="l">점검자 (내장 · 기타)</td><td>${v('m.insN')}</td></tr><tr><td class="l">보고서 번호</td><td>${no}</td></tr></table></div>
+<div class="foot">청개구리샤시 · ☎ 010-2322-0949 · frogsash.co.kr</div></div>
+
+<div class="page"><h1>1. 점검 개요 <small>보고서 번호 ${no}</small></h1>
+<h2>가. 세대 정보</h2><table><tr class="h"><td class="l">단지 · 동 · 호수</td><td>${v('m.apt')} ${v('m.unit')}</td><td class="l">전용면적 · 타입</td><td>${v('m.type')}</td></tr><tr class="h"><td class="l">층 · 세대 위치</td><td>${v('m.floor')}</td><td class="l">향</td><td>${v('m.dir')}</td></tr><tr class="h"><td class="l">시공사</td><td>${v('m.builder')}</td><td class="l">입주 예정일</td><td>${v('m.movein')}</td></tr></table>
+<h2>나. 점검 조건</h2><table><tr class="h"><td class="l">날씨</td><td>${v('m.weather')}</td><td class="l">외기 온도 · 습도</td><td>${v('m.out')}</td></tr><tr class="h"><td class="l">실내 온도 · 습도</td><td>${v('m.in')}</td><td class="l">난방 가동</td><td>${v('m.heat')}</td></tr><tr class="h"><td class="l">전기 · 수도</td><td>${v('m.util')}</td><td class="l">마감 공사 상태</td><td>${v('m.fin')}</td></tr></table>
+<p class="note">측정 조건은 측정한 값만 적었습니다.</p>
+<h2>다. 사용 장비</h2><div class="box" style="padding:6px 8px">${esc(eq.join(' · '))||'&nbsp;'}</div>
+<h2>라. 점검 결과 요약</h2><table><tr><th style="width:28%">분야</th><th>하자</th><th>입주 후 재측정 대상</th><th>참고 사항</th><th>합계</th></tr>${GNAMES.map(g=>{c[g].forEach((n,i)=>tot[i]+=n);return `<tr class="h"><td class="l">${g}</td><td class="c">${c[g][0]}</td><td class="c">${c[g][1]}</td><td class="c">${c[g][2]}</td><td class="c">${c[g][0]+c[g][1]+c[g][2]}</td></tr>`;}).join('')}<tr class="h"><td class="l">합계</td><td class="c">${tot[0]}</td><td class="c">${tot[1]}</td><td class="c">${tot[2]}</td><td class="c">${tot[0]+tot[1]+tot[2]}</td></tr></table>
+<table><tr><th style="width:20%">구분</th><th>뜻</th></tr><tr><td class="c">하자</td><td>「공동주택 하자판정기준」 또는 KS 표준에 비추어 보수를 요청할 근거가 있는 항목입니다.</td></tr><tr><td class="c">입주 후 재측정 대상</td><td>입주 전 조건에서는 판정하기 어려워, 난방을 하는 계절에 다시 측정해야 하는 항목입니다.</td></tr><tr><td class="c">참고 사항</td><td>하자는 아니지만 사용할 때 알아 두시면 좋은 내용입니다.</td></tr></table>
+<h2>마. 종합 소견</h2>${box(kv('o.all'))}</div>
+
+<div class="page"><h1>2. 점검 항목 총괄표 <small>보고서 번호 ${no}</small></h1><p class="note">번호는 뒤쪽 항목별 기록지의 번호와 같습니다.</p>
+<table><tr><th style="width:7%">번호</th><th style="width:15%">위치</th><th style="width:17%">분야</th><th>내용</th><th style="width:11%">구분</th><th style="width:11%">보수 확인</th></tr>${all.map((i,n)=>`<tr class="h2"><td class="c">${n+1}</td><td>${esc(i.room)}</td><td>${esc(i.sub||i.work)}</td><td>${esc((i.type?i.type+' — ':'')+(i.phen||'').split('\n')[0])}</td><td class="c">${esc(i.cls)}</td><td></td></tr>`).join('')||'<tr class="h2"><td colspan="6" class="c">기록한 항목이 없습니다.</td></tr>'}</table>
+<p class="note">"보수 확인" 칸은 시공사 보수 뒤 재점검할 때 적습니다.</p></div>
+
+<div class="page"><h1>3. 창호 분야 점검표 <small>담당: ${v('m.insW')||'청개구리샤시'}</small></h1><p class="note">표기: ○ 양호 / × 하자 / △ 입주 후 재측정 대상 / － 해당 없음</p>
+<h2>가. 창별 상태 점검</h2>${tbl('w',W_ROWS,W_COLS)}<h2>나. 측정 기록</h2>${tbl('wm',WM_ROWS,WM_COLS)}
+<p class="note">표면 온도는 실내외 온도 차가 충분할 때만 판정에 씁니다. 조건이 맞지 않으면 값을 적지 않고 "입주 후 재측정 대상"으로 표시합니다.</p>
+<h2>다. 창호 분야 소견</h2>${box(kv('o.win'))}</div>
+
+<div class="page"><h1>4. 내장 · 기타 분야 점검표 <small>담당: ${v('m.insN')||'건설 현장 전문가'}</small></h1><p class="note">표기: ○ 양호 / × 하자 / △ 입주 후 재측정 대상 / － 해당 없음</p>
+<h2>가. 실별 마감 점검</h2>${tbl('n',N_ROWS,N_COLS)}
+<h2>나. 전기 · 설비 점검</h2><table><tr><th style="width:24%">항목</th><th style="width:12%">결과</th><th>내용</th></tr>${E_ROWS.map((r,i)=>`<tr class="h"><td class="l">${r}</td><td class="c">${v('e.'+i+'.r')}</td><td>${v('e.'+i+'.t')}</td></tr>`).join('')}</table>
+<h2>다. 내장 · 기타 분야 소견</h2>${box(kv('o.int'))}</div>
+
+${all.length?`<div class="page"><h1>5. 항목별 기록지 <small>보고서 번호 ${no}</small></h1>${all.map((i,n)=>rec(i,n+1)).join('')}</div>`:''}
+
+<div class="page"><h1>6. 입주 후 재측정과 안내 <small>보고서 번호 ${no}</small></h1>
+<h2>가. 입주 후 재측정 대상 항목</h2><p class="note">입주 전에는 난방을 하지 않고 실내외 온도 차가 작아, 결로 · 단열 · 외풍은 확정하기 어렵습니다. 아래 항목은 난방을 하는 계절에 다시 측정합니다.</p>
+<table><tr><th style="width:7%">번호</th><th style="width:17%">위치</th><th>재측정할 내용</th><th style="width:20%">권장 시기</th><th style="width:16%">재측정 결과</th></tr>${re.map(i=>`<tr class="h2"><td class="c">${all.indexOf(i)+1}</td><td>${esc(i.room)}</td><td>${esc(i.phen)}</td><td>${esc(i.when)}</td><td></td></tr>`).join('')||'<tr class="h2"><td colspan="5" class="c">해당 항목이 없습니다.</td></tr>'}</table>
+<h2>나. 다음 점검 일정</h2><table><tr><th style="width:26%">단계</th><th style="width:26%">시기</th><th>내용</th><th style="width:18%">예정일</th></tr>${SCHED.map((s,i)=>`<tr class="h"><td class="l">${s[0]}</td><td>${s[1]}</td><td>${s[2]}</td><td>${v('s.'+i)}</td></tr>`).join('')}</table>
+<h2>다. 보고서를 읽으실 때 알아 두실 점</h2><table><tr><td>1. 이 보고서는 점검 당일의 상태를 눈으로 보고 장비로 측정한 결과입니다. 마감재를 뜯지 않는 범위에서 점검했습니다.<br>2. 측정하지 않은 값은 적지 않았습니다. 추정으로 계산한 수치는 넣지 않습니다.<br>3. 하자 여부의 최종 판단과 보수 방법은 시공사와 협의해 정해지며, 다툼이 있으면 하자심사 · 분쟁조정 절차에서 정해집니다.<br>4. 점검한 뒤에 생긴 손상과, 가려져 있어 볼 수 없었던 부분은 이 보고서에 담기지 않았습니다.<br>5. 사진과 세대 정보는 의뢰인의 동의 없이 외부에 공개하지 않습니다.</td></tr></table>
+<h2>라. 확인</h2><table class="sign"><tr><th style="width:25%">구분</th><th>이름</th><th style="width:25%">서명</th><th style="width:22%">날짜</th></tr><tr><td class="l">점검자 (창호)</td><td>${v('m.insW')}</td><td></td><td></td></tr><tr><td class="l">점검자 (내장 · 기타)</td><td>${v('m.insN')}</td><td></td><td></td></tr><tr><td class="l">의뢰인</td><td>${v('m.client')}</td><td></td><td></td></tr></table>
+<p class="note" style="text-align:center;margin-top:10px">청개구리샤시 · ☎ 010-2322-0949 · frogsash.co.kr</p></div>
+</body></html>`;
+  w.document.open();w.document.write(html);w.document.close();
+};
+
+/* ── 새 버전 자동 반영 ── */
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState!=='visible'||!/^https?:/.test(location.protocol))return;if($('ed').style.display==='block')return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=t.match(/APP_VERSION='([^']+)'/);if(m&&m[1]!==APP_VERSION){saveJob();location.reload();}}catch(e){}});
+
+/* ── 시작 ── */
+if(!cfg.name||!cfg.role)A.setup();else A.list();
+</script>
+</body>
+</html>
