@@ -180,7 +180,7 @@ table.g input{border:0;padding:6px 2px;text-align:center;font-size:14px;min-widt
 <div id="toast"></div>
 
 <script>
-const APP_VERSION='v1.2.0';
+const APP_VERSION='v1.2.1';
 const DEFAULT_GAS='https://script.google.com/macros/s/AKfycbyIo86UrFvE5W82FdSiZTjwB6N1QOEIjm4DTzhU-lgmd-OiSeYE1ACPRATVd_dOBPBl/exec';
 const WM={"도배공사":{"도배":["들뜸","마감불량","흠집/찍힘","면불량","오염","이음불량","흠집","미시공","파손","이색/변색"]},"타일공사":{"타일":["줄눈불량","틈새","구배불량","단차","들뜸","미시공","파손","마감불량","오염","흠집/찍힘"],"폴리싱타일":["파손","들뜸","줄눈불량","단차","틈새","오염","마감불량"],"아트월타일":["틈새","파손","마감불량","단차","흠집/찍힘","미시공","들뜸"],"타일코킹":["코킹불량","미시공","틈새","흠집/찍힘","마감불량"],"마블씰":["들뜸","틈새","단차","미시공","흠집/찍힘"]},"PL창호공사":{"PL창호":["고정불량","미시공","수직수평불량","흠집/찍힘","개폐불량","파손","틈새"],"분합창":["미시공","흠집/찍힘","고정불량","수직수평불량","개폐불량","파손"],"터닝도어":["미시공","개폐불량","흠집/찍힘","고정불량","틈새","파손"],"대피창":["개폐불량","고정불량","코킹불량","미시공"],"PL방충망":["개폐불량","미시공","수직수평불량","파손"]},"주방가구공사":{"주방상/하부장":["수직수평불량","미시공","개폐불량","흠집/찍힘","마감불량","고정불량","틈새"],"아일랜드장":["수직수평불량","개폐불량","미시공","흠집/찍힘","마감불량","틈새"],"냉장고장":["흠집/찍힘","수직수평불량","틈새","미시공","마감불량"],"고급장식장":["개폐불량","고정불량","수직수평불량","틈새","미시공"],"씽크볼":["미시공","마감불량","틈새","고정불량"]},"일반가구공사":{"신발장":["흠집/찍힘","미시공","틈새","수직수평불량","마감불량","개폐불량"],"붙박이장":["흠집/찍힘","미시공","수직수평불량","개폐불량","틈새","마감불량"],"화장대":["미시공","흠집/찍힘","마감불량","틈새","개폐불량","수직수평불량"],"현관팬트리도어/틀":["흠집/찍힘","수직수평불량","틈새","미시공","마감불량"],"복도팬트리도어/틀":["흠집/찍힘","틈새","수직수평불량","마감불량","미시공"],"아트월판넬":["틈새","마감불량","미시공","흠집/찍힘","파손"],"드레스룸도어/틀":["흠집/찍힘","틈새","마감불량","미시공","수직수평불량"]},"마루공사":{"강마루":["들뜸","틈새","오염","단차","파손","마감불량","미시공"],"마루코킹":["코킹불량","미시공","들뜸","틈새","오염"],"걸레받이":["틈새","파손","마감불량","미시공","들뜸","단차"]},"목창호공사":{"목문틀":["흠집/찍힘","틈새","미시공","수직수평불량","고정불량","마감불량"],"목문짝":["개폐불량","흠집/찍힘","고정불량","수직수평불량","틈새","마감불량"],"공틀":["틈새","수직수평불량","오염","미시공"]},"도장공사":{"도장":["마감불량","면불량","도장불량","균열","오염","미시공","들뜸"],"현관문틀도장":["도장불량","마감불량","오염","면불량","균열"],"외벽도장":["면불량","마감불량","균열","도장불량","오염"]},"준공청소공사":{"준공청소":["오염"]},"코킹공사":{"코킹":["코킹불량","미시공","틈새","오염","마감불량"]},"중문공사":{"슬라이딩도어/틀":["개폐불량","고정불량","마감불량","미시공","틈새","흠집/찍힘"],"스윙도어/틀":["마감불량","고정불량","개폐불량","미시공","흠집/찍힘","틈새"]},"기계설비공사":{"위생도기류":["고정불량","마감불량","작동불량","미시공","누수"],"수전류":["고정불량","미시공","작동불량","마감불량","누수"],"설비":["마감불량","미시공","악취","작동불량","누수"],"욕실액세서리":["고정불량","미시공","마감불량","수직수평불량"],"배수드레인":["마감불량","미시공","고정불량","작동불량","배수불량"]},"전기공사":{"콘센트":["작동불량","고정불량","수직수평불량","미시공","들뜸"],"스위치":["작동불량","수직수평불량","고정불량","미시공"],"네트워크스위치":["작동불량","수직수평불량","고정불량"]},"내장목공사":{"석고보드":["고정불량","마감불량","들뜸","단차","틈새"],"천정몰딩":["틈새","흠집/찍힘","마감불량","고정불량","오염"]},"방화문공사":{"현관문":["미시공","개폐불량","흠집/찍힘","고정불량","틈새"],"대피공간방화문":["미시공","개폐불량","고정불량","흠집/찍힘","틈새"],"실외기실문짝/틀":["개폐불량","고정불량","미시공","틈새"]},"시스템가구공사":{"시스템가구":["고정불량","미시공","수직수평불량","틈새","마감불량"],"월판넬":["틈새","미시공","수직수평불량","단차"]},"주방상판공사":{"주방상판/코킹":["미시공","코킹불량","틈새","흠집/찍힘","파손"],"엔지니어드상판":["미시공","틈새","마감불량","코킹불량","파손"]},"조명공사":{"세대등기구":["수직수평불량","작동불량","고정불량","미시공","점등불량"]},"내부석공사":{"석재걸레받이":["틈새","미시공","마감불량","코킹불량","파손"],"디딤판":["틈새","미시공","단차","마감불량","파손"]},"욕실장공사":{"욕실장/코킹":["미시공","개폐불량","수직수평불량","고정불량","코킹불량"]},"유리공사":{"유리":["흠집","파손","미시공","오염","코킹불량"],"유리코킹":["코킹불량","미시공"]},"에어컨공사":{"실외기":["마감불량","미시공","작동불량","고정불량"],"시스템에어컨":["작동불량","고정불량","마감불량","누수"]},"루버창호공사":{"루버창/방충망":["미시공","고정불량","개폐불량","흠집/찍힘"]},"직영공사":{"직영":["마감불량","들뜸","미시공","누수","고정불량","틈새"]}};
 const ROOMS=['현관','거실','주방','침실1(안방)','침실2','침실3','드레스룸','공용 욕실','부부 욕실','발코니','다용도실','실외기실','팬트리','기타'];
@@ -256,6 +256,7 @@ async function sync(){
     let got=0;
     for(const it of Object.values(job.items)){if(it.del)continue;for(const pid of [it.p1,it.p2]){if(!pid||got>=3)continue;if(await pGet(pid))continue;const r=await api({a:'photoGet',id:pid});if(r.ok){await pPut({id:pid,job:id,data:'data:image/jpeg;base64,'+r.data,up:1});got++;changed=true;}}}
     if(pend.length===3||got>=3)again=true;
+    if(cur===id&&job.kv['m.deleted']&&job.kv['m.deleted'].v==='1'){jobs[id].title=DEL;LS.set('it_jobs',jobs);syncing=false;toast('상대가 이 현장을 삭제했습니다',3500);A.back();return;}
     if(cur===id){if(changed){const t=jobTitle();if(jobs[id]&&jobs[id].title!==t){jobs[id].title=t;LS.set('it_jobs',jobs);$('hTitle').textContent=t;}applyKV();renderItems();renderSum();}setSync();}
   }catch(e){lastErr=String(e.message||e);if(cur===id)setSync('err');}
   syncing=false;
@@ -280,13 +281,25 @@ A.saveSetup=async()=>{
 };
 A.back=()=>{if(cur){saveJob();cur=null;J=null;}A.list();};
 A.list=async()=>{show('vList');setSync();renderJobs();if(cfg.gas&&navigator.onLine){try{const r=await api({a:'jobs'});if(r.ok){r.jobs.forEach(j=>{if(!jobs[j.id])jobs[j.id]={id:j.id,title:j.title,t:j.t};else if(j.t>jobs[j.id].t){jobs[j.id].title=j.title;jobs[j.id].t=j.t;}});LS.set('it_jobs',jobs);renderJobs();}}catch(e){}}};
+A.delJob=async id=>{
+  const j=jobs[id];if(!j)return;
+  if(!confirm('"'+(j.title||'새 현장')+'" 현장을 삭제할까요?'+String.fromCharCode(10)+'두 사람 모두의 목록에서 사라집니다.'))return;
+  if(cfg.gas){
+    if(!navigator.onLine){toast('인터넷에 연결된 뒤 다시 삭제해 주십시오');return;}
+    try{const r=await api({a:'sync',job:{id:id,title:DEL},since:0,items:[],kv:[{k:'m.deleted',v:'1',t:Date.now(),by:cfg.name}]});if(r.error)throw new Error(r.message||r.error);}
+    catch(e){toast('삭제하지 못했습니다: '+(e.message||e),3500);return;}
+  }
+  j.title=DEL;j.t=Date.now();LS.set('it_jobs',jobs);try{localStorage.removeItem('it_job_'+id);}catch(e){}
+  renderJobs();toast('현장을 삭제했습니다');
+};
 A.newJob=()=>{const id=uid('j_');jobs[id]={id:id,title:'새 현장',t:Date.now()};LS.set('it_jobs',jobs);A.open(id);const d=new Date();setKV('m.date',d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));applyKV();};
 A.open=id=>{loadJob(id);show('vJob');$('more').style.display='none';$('hTitle').textContent=jobTitle();buildMore();formLoad(blank(''),true);applyKV();renderItems();renderSum();setSync();sync();window.scrollTo(0,0);};
 A.more=n=>{$('more').style.display='block';A.tab(n);renderSum();};
 A.closeMore=()=>{$('more').style.display='none';};
 A.tab=n=>{document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',+b.dataset.t===n));[0,2,3].forEach(i=>$('t'+i).style.display=i===n?'':'none');$('more').scrollTop=0;};
 $('tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)A.tab(+b.dataset.t);});
-function renderJobs(){const l=Object.values(jobs).sort((a,b)=>b.t-a.t);$('jobList').innerHTML=l.length?l.map(j=>`<div class="it" onclick="A.open('${j.id}')"><div class="bd"><div class="hd">${esc(j.title||'새 현장')}</div><div class="by">${new Date(j.t).toLocaleString('ko-KR')}</div></div><div style="align-self:center;color:var(--m)">▶</div></div>`).join(''):'<p class="note" style="text-align:center;margin-top:30px">현장이 없습니다. "새 현장"을 눌러 시작하십시오.</p>';}
+const DEL='__삭제됨__';
+function renderJobs(){const l=Object.values(jobs).filter(j=>j.title!==DEL).sort((a,b)=>b.t-a.t);$('jobList').innerHTML=l.length?l.map(j=>`<div class="it" onclick="A.open('${j.id}')"><div class="bd"><div class="hd">${esc(j.title||'새 현장')}</div><div class="by">${new Date(j.t).toLocaleString('ko-KR')}</div></div><button class="btn r s" style="align-self:center" onclick="event.stopPropagation();A.delJob('${j.id}')">삭제</button></div>`).join(''):'<p class="note" style="text-align:center;margin-top:30px">현장이 없습니다. "새 현장"을 눌러 시작하십시오.</p>';}
 function pick(id,v){document.querySelectorAll('#'+id+' .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===v));}
 function picked(id){const c=document.querySelector('#'+id+' .chip.on');return c?c.dataset.v:'';}
 ['cRole','eCls','eRoom','fil'].forEach(id=>$(id).addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;pick(id,c.dataset.v);if(id==='eCls')clsChanged();if(id==='eRoom')setRoom(c.dataset.v);if(id==='fil')renderItems();}));
