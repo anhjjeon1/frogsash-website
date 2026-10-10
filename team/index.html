@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v3.2.1';
+const APP_VER = 'v3.3.0';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3790,6 +3790,11 @@ A.ask=key=>A.cbAsk(key);
 #tRv{font-size:.8rem;line-height:1.6;color:#1F2937}
 #tRv .rv{border:1px solid #E8ECF1;border-radius:8px;padding:8px 10px;margin-top:6px}
 #tRv .rv b{color:#1D4ED8}
+/* 분석 대기 표시 · 한꺼번에 분석 단추 · 사진만 저장 스위치 */
+.twait{font-size:.66rem;font-weight:700;color:#B54708;background:#FEF0C7;border-radius:20px;padding:3px 9px}
+#tBatch{width:calc(100% - 16px);margin:0 8px 6px;border:0;border-radius:12px;padding:10px;font-size:.82rem;font-weight:700;font-family:inherit;color:#B54708;background:#FEF0C7;cursor:pointer}
+#tQuick{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;color:#475467;cursor:pointer}
+#tQuick input{width:16px;height:16px;accent-color:#0E9F6E}
 #teamFoot{text-align:center;font-size:.68rem;color:#6B7B8F;font-weight:700;margin:10px 0 4px}
 </style>
 <div class="mo" id="teamMo"><div class="mo-b"><div id="teamMoBody"></div><button class="mo-cls" onclick="T.closeMo()">닫기</button></div></div>
@@ -3828,7 +3833,41 @@ async function idbPut(o){try{const d=await idb();await new Promise((r,j)=>{const
 async function idbDel(id){try{const d=await idb();d.transaction('lists','readwrite').objectStore('lists').delete(id);}catch(e){}}
 
 function persist(){if(!T.cur)return;idbPut({id:T.cur,list:list.slice()});L.set('team_meta_'+T.cur,T.meta);}
-function counts(){$('lCnt').textContent=list.length;$('sgTx').textContent='저장 총 하자 : '+list.length+' 건';}
+/* 분석 대기 = 사진은 있는데 AI 분석 내용(판정근거)이 아직 없는 항목 */
+function needAI(it){return !!(it.cImg&&it.cImg!==PH)&&String(it.detail||'').indexOf('■ 판정근거')<0;}
+function counts(){$('lCnt').textContent=list.length;$('sgTx').textContent='저장 총 하자 : '+list.length+' 건';
+  const b=$('tBatch');if(b&&!T.batching){const n=list.filter(needAI).length;b.style.display=n?'block':'none';b.textContent='🤖 분석 대기 '+n+'건 한꺼번에 분석';}}
+const _ri=renderItem;
+renderItem=function(it){_ri(it);if(needAI(it)){const t=document.querySelector('#i-'+it.id+' .dc-tag');if(t)t.insertAdjacentHTML('beforeend','<span class="twait">분석 대기</span>');}};
+/* 분석 대기 항목을 저장된 사진으로 한꺼번에 분석한다 (연결이 될 때) */
+T.batch=async()=>{
+  if(T.batching)return;const q=list.filter(needAI);if(!q.length)return;
+  if(!T.cfg.pin){toast('팀 설정에서 팀 비밀번호를 넣어야 분석할 수 있습니다',true,3500);return;}
+  if(!navigator.onLine){toast('인터넷에 연결된 뒤 눌러 주십시오',true,3000);return;}
+  T.batching=true;const b=$('tBatch'),NL=String.fromCharCode(10),BN=String.fromCharCode(92)+'n';let ok=0,fail=0,why='';
+  const workList=Object.keys(WM).map(w=>w+'('+Object.keys(WM[w]).join(',')+')').join('; ');
+  for(let i=0;i<q.length;i++){const it=q[i];b.textContent='분석 중… '+(i+1)+' / '+q.length;
+    try{
+      const hm=/■ 하자현상:[ ]*([^(]*)/.exec(String(it.detail||''));const hint=hm&&hm[1].trim()&&hm[1].indexOf('미입력')<0?hm[1].trim():'';
+      const images=[it.wImg,it.cImg].filter((x,j,a)=>x&&x!==PH&&a.indexOf(x)===j).map(x=>({mimeType:'image/jpeg',data:x.split(',')[1]}));
+      const prompt='당신은 아파트 사전점검 전문 하자진단 AI입니다. '+(hint?'점검자 입력이 사실의 기준이며 사진은 보조 자료입니다.':'사진1(멀리서)로 공종을 파악하고 사진2(가까이)로 하자를 분석하십시오. 사진이 한 장이면 그 사진으로 판단합니다.')+NL+
+        (hint?'[점검자 입력] "'+hint+'"'+NL:'')+'[위치] '+(it.room||'미지정')+NL+'[공종분류] '+workList+NL+
+        '[하자유형] 들뜸,마감불량,흠집/찍힘,면불량,오염,미시공,파손,틈새,코킹불량,수직수평불량,개폐불량,고정불량,작동불량,줄눈불량,단차,구배불량,이색/변색,누수,균열,도장불량,이음불량,배수불량,점등불량,악취'+NL+
+        '[판정기준]'+NL+'- 국토부 「공동주택 하자의 조사, 보수비용 산정 및 하자판정기준」 적용'+NL+'- 조 번호·항 번호는 적지 않습니다. 공종명과 하자 판정기준 같은 일반 표기를 씁니다.'+NL+'- 측정하지 않은 수치·허용오차를 지어내지 않습니다.'+NL+'- 심각도: 경미(미관), 보통(기능 저하), 중대(안전·구조·누수)'+NL+
+        '[JSON 출력] {"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"■ 하자현상: ...'+BN+'■ 판정근거: ...'+BN+'■ 심각도: ...'+BN+'■ 시정방법: ...'+BN+'■ 비고: ..."}';
+      const r=await api({a:'ai',prompt:prompt,images:images});
+      if(r.error)throw new Error(r.error==='no_api_key'?'서버에 AI 키가 없습니다':(r.message||r.error));
+      let d={};const tx=String(r.text||'').replace(/```json|```/g,'').trim();
+      try{d=JSON.parse(tx);if(Array.isArray(d))d=d[0]||{};}catch(e){const m=/{[^]*}/.exec(tx);d=m?JSON.parse(m[0]):{};}
+      if(!d.detail||String(d.detail).indexOf('■ 판정근거')<0)throw new Error('분석 내용이 비어 있습니다');
+      it.work=d.work||it.work||'';it.sub=d.sub||it.sub||'';it.type=d.type||it.type||'';
+      it.detail=String(d.detail).split(BN).join(NL)+NL+NL+'🤖 AI 분석 완료 (참고용)';
+      const k=String(it.id);T.meta.known[k]=Date.now();T.meta.dirty[k]=1;ok++;persist();
+    }catch(e){fail++;why=String(e.message||e);if(why.indexOf('한도')>=0||why.indexOf('키')>=0||why.indexOf('비밀번호')>=0)break;}
+  }
+  T.batching=false;rerender();persist();kick();
+  toast(fail?('분석 '+ok+'건 완료, '+fail+'건 실패: '+why):('분석 '+ok+'건을 마쳤습니다'),!!fail,4500);
+};
 /* AI 분석 내용 첫 줄의 "[공종] … [세부] … [유형] …"이 AI의 최종 분류다. 이것을 항목의 공종·세부·유형으로 삼고,
    내용에서는 그 줄을 지워 공종 줄이 한 번만(정확한 쪽만) 보이게 한다. 바뀌면 true */
 function normItem(it){
@@ -3873,7 +3912,9 @@ async function sync(){
     di.forEach(k=>delete m.dirty[k]);dt.forEach(k=>delete m.tomb[k]);if(m.addrT===sentAddrT)m.addrDirty=false;
     (res.items||[]).forEach(r=>{const k=String(r.id);
       if(r.del){if(m.known[k]){const i=list.findIndex(x=>String(x.id)===k);if(i>=0)list.splice(i,1);delete m.known[k];delete m.dirty[k];changed=true;}return;}
-      if(m.known[k]||m.tomb[k])return;
+      if(m.tomb[k])return;
+      /* 이미 있는 항목인데 상대가 내용을 고친 경우(나중 분석 등): 글만 바꾼다 */
+      if(m.known[k]){if((r.t||0)>m.known[k]&&!m.dirty[k]){const it=list.find(x=>String(x.id)===k);if(it){it.room=r.room||it.room;it.work=r.work||'';it.sub=r.sub||'';it.type=r.type||'';it.detail=r.detail||'';m.known[k]=r.t;changed=true;}}return;}
       const nid=Number(r.id);if(!nid)return;
       list.push({id:nid,room:r.room||'위치미지정',work:r.work||'',sub:r.sub||'',type:r.type||'',detail:r.detail||r.phen||'',mode:'pro',by:r.by||'',role:r.role||'',wImg:null,cImg:PH,_w:r.hasW?1:0,_c:r.hasC?1:0});
       m.known[k]=r.t||Date.now();changed=true;});
@@ -3983,8 +4024,22 @@ const ROOM_KW=[['안방욕실','욕실2'],['부부욕실','욕실2'],['거실욕
 let _autoRoom='',_lastTxt='',_stable=0,_autoSig='';
 function findRoom(text){const t=String(text||'').replace(/[\s.,!?]/g,'');const r=ROOM_KW.find(x=>t.indexOf(x[0])>=0);return r?r[1]:'';}
 function setCell(id,v){const c=$(id);if(!c)return;c.querySelector('b').textContent=v||c.dataset.l;c.classList.toggle('on',!!v);}
+/* 화면이 다시 불러와져 사진 미리보기만 돌아온 경우에도 AI 분석이 되도록, 미리보기에서 사진 파일을 되살린다 */
+function d2f(d,name){try{const a=d.split(','),b=atob(a[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new File([u],name,{type:'image/jpeg',lastModified:Date.now()});}catch(e){return null;}}
+function shown(el){return el&&el.style.display!=='none'&&String(el.src).indexOf('data:image')===0;}
+function restoreFiles(){const c=$('pvC'),w=$('pvW');
+  if(!cF&&shown(c))cF=d2f(c.src,'restored_c.jpg');
+  if(!wF&&shown(w))wF=d2f(w.src,'restored_w.jpg');}
+/* "사진만 저장"을 켜 두면: 가까이 찍기를 찍는 순간 사진만 리스트에 저장하고 다음 촬영으로 넘어간다 (분석은 나중에 한꺼번에) */
+function quickSave(){const ck=$('tQuickCk');if(!ck||!ck.checked||_aiBusy||!T.cur)return;
+  const c=$('pvC'),w=$('pvW');if(!cF||!shown(c))return;
+  if($('fUser').value.trim()||$('fDetail').value.trim())return;
+  const it={id:Date.now()*100+Math.floor(Math.random()*100),room:$('fRoom').value||'위치미지정',work:'',sub:'',type:'',detail:'📷 사진만 저장했습니다. 분석 대기 중입니다.',mode:'pro',by:T.cfg.name,role:T.cfg.role,wImg:shown(w)?w.src:null,cImg:c.src};
+  list.push(it);renderItem(it);saveList();reset();
+  toast('📷 사진 저장 ('+list.length+'건) — 다음 사진을 찍으세요',false,2200);}
 function paint3(){
   const u=$('fUser');if(!u||!$('t3row'))return;
+  restoreFiles();quickSave();
   const txt=u.value.trim();
   if(txt!==_lastTxt){_lastTxt=txt;_stable=0;}else if(_stable<6)_stable++;
   /* 입력이 0.8초쯤 멈추면 위치를 찾는다. 직접 고른 위치는 건드리지 않는다 */
@@ -3993,7 +4048,7 @@ function paint3(){
   if(!$('fRoom').value)_autoRoom='';
   /* 하자내용 입력이 2초쯤 멈추고 가까이 찍은 사진이 있으면 AI 분석을 자동으로 시작한다 (같은 내용으로는 한 번만) */
   if(!txt)_autoSig='';
-  if(_stable>=5&&txt&&cF&&!_aiBusy){const b=$('btnRunAI'),sig=txt+'|'+(cF.name||'')+(cF.size||'')+(cF.lastModified||'');
+  if(_stable>=5&&txt&&cF&&!_aiBusy&&$('fDetail').value.indexOf('■')<0){const b=$('btnRunAI'),sig=txt+'|'+(cF.name||'')+(cF.size||'')+(cF.lastModified||'');
     if(sig!==_autoSig&&b&&!b.disabled){_autoSig=sig;b.classList.remove('attn');A.startAI();}}
   setCell('tcRoom',$('fRoom').value);
   setCell('tcWork',$('fSub').value||$('fWork').value);
@@ -4044,6 +4099,13 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{
   /* 동의 체크박스는 화면에서 빼고 항상 동의한 상태로 둔다 (점검팀 내부용) */
   const ag=$('fAgree');
   if(ag){const keep=()=>{if(!ag.checked){ag.checked=true;try{A.togSave();}catch(e){}}};try{localStorage.setItem('frog_agreed','true');}catch(e){}keep();setInterval(keep,1000);}
+  /* 분석 대기 단추(리스트 제목 아래)와 "사진만 저장" 스위치(사진 촬영 제목 오른쪽) */
+  const lh=document.querySelector('.lh');
+  if(lh)lh.insertAdjacentHTML('afterend','<button id="tBatch" onclick="T.batch()" style="display:none"></button>');
+  const pt=[...document.querySelectorAll('.sec-t')].find(e=>e.textContent.indexOf('사진 촬영')>=0);
+  if(pt){pt.insertAdjacentHTML('beforeend','<label id="tQuick"><input type="checkbox" id="tQuickCk"> 사진만 저장</label>');
+    const ck=$('tQuickCk');ck.checked=!!L.get('team_quick',false);
+    ck.onchange=()=>{L.set('team_quick',ck.checked);toast(ck.checked?'📷 사진만 저장 켬 — 가까이 찍기를 찍으면 바로 저장됩니다':'사진만 저장 끔',false,3000);};}
   const ai=$('btnRunAI'),nx=$('btnNext');
   if(ai&&nx){const row=ai.closest('.il'),box=nx.parentElement;row.id='tAiRow';box.id='tNextBox';row.appendChild(box);}
   if(ag){const lb=ag.closest('label'),rw=lb&&lb.parentElement;if(rw)rw.style.display='none';}
