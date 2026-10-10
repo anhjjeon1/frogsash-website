@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v3.1.0';
+const APP_VER = 'v3.1.1';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -4097,7 +4097,7 @@ body,button,input,textarea,select{font-family:'Pretendard','Noto Sans KR',-apple
 
 /* 사진 칸 */
 .pg{gap:8px!important}
-.pc{aspect-ratio:auto!important;height:84px!important;flex-direction:row!important;border-radius:14px!important;background:#F9FAFB!important;border:1.5px dashed #D0D5DD!important;gap:8px!important}
+.pc{aspect-ratio:1/1!important;height:auto!important;flex-direction:column!important;border-radius:14px!important;background:#F9FAFB!important;border:1.5px dashed #D0D5DD!important;gap:8px!important}
 .pc .ic{font-size:1rem!important;opacity:1!important;color:#067647!important;background:var(--pg);width:34px;height:34px;border-radius:50%;display:flex!important;align-items:center;justify-content:center}
 .pc .lb{font-size:.78rem!important;font-weight:600!important;color:#475467!important}
 .pc .pp{border-radius:16px!important}
@@ -4161,6 +4161,10 @@ label[for=fAgree]{font-size:.72rem!important;font-weight:500!important;color:#66
 .ig{margin-bottom:0!important}
 .pc .lb{margin:0!important}
 .pc{gap:8px!important}
+/* 주소 입력: 제목 오른쪽에 입력 칸을 한 줄로 */
+#addrSec{display:flex!important;align-items:center;gap:8px}
+#addrSec .sec-t{margin-bottom:0!important;flex-shrink:0;white-space:nowrap}
+#addrInputMode,#addrCompactMode{flex:1;min-width:0}
 /* 알림 · 창 */
 .toast{background:#101828!important;box-shadow:0 8px 24px rgba(16,24,40,.25)!important;border-radius:14px!important;font-weight:600!important;font-size:.8rem!important;bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
 .toast.warn{background:#B42318!important}
