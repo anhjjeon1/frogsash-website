@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v2.3.0';
+const APP_VER = 'v2.3.1';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3780,6 +3780,8 @@ A.ask=key=>A.cbAsk(key);
 /* AI분석 단추를 다음입력 단추와 같은 높이·글자 크기로 */
 #btnRunAI{padding:4px 10px!important;font-size:.6rem!important;font-weight:700!important;line-height:normal!important;min-height:0!important;height:auto!important;border-radius:20px!important}
 #btnRunAI i{font-size:.6rem!important}
+/* 다음입력 단추는 AI분석(초록)과 구분되게 주황색 */
+#btnNext{background:#EA580C!important;color:#fff!important}
 /* 아래 단추 3개 한 줄: AI재검토 · 내파일저장 · 전체저장 */
 #tBtnRow{display:flex!important;gap:6px!important}
 #tBtnRow button{flex:1 1 0!important;min-width:0;width:auto!important;padding:10px 4px!important;font-size:.72rem!important;font-weight:800;border:none;border-radius:var(--r);color:#fff;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
