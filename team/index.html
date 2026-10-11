@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v3.6.0';
+const APP_VER = 'v3.7.0';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -4086,7 +4086,7 @@ T.cellSel=()=>{try{A.toggleSelects();}catch(e){}};
 T.reAI=()=>{if($('fDetail').value.trim()&&(wF||cF))A.reanalyze();else A.startAI();};
 
 /* ── 내파일저장: 보고서를 파일(.html)로 내려받아 폰의 내 파일(다운로드)에 둔다 ── */
-T.saveFile=()=>{
+T.saveFileOld=()=>{
   if(!list.length){alert('저장할 내용이 없습니다.');return;}
   let html='';const ow=window.open,os=stat,ot=toast;
   const fake={document:{write(h){html+=h;},close(){},title:'',querySelectorAll(){return [];}},focus(){},print(){}};
@@ -4098,6 +4098,32 @@ T.saveFile=()=>{
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},3000);
   toast('📁 내 파일(다운로드)에 저장했습니다<br>'+name,false,4000);
+};
+/* 내파일저장: 드라이브 보고서와 같은 양식의 PDF를 서버에서 받아 폰의 내 파일(다운로드)에 둔다.
+   연결이 없거나 서버가 옛 판이면 예전 방식(간단한 파일)으로 저장한다 */
+T.saveFile=async()=>{
+  if(!list.length){alert('저장할 내용이 없습니다.');return;}
+  if(!T.cfg.pin||!navigator.onLine||T.noRet){T.saveFileOld();return;}
+  if(T.filing)return;T.filing=true;const id=T.cur,b=$('tFile'),lbl=b?b.innerHTML:'';
+  if(b)b.innerHTML='만드는 중…';
+  toast('보고서를 만들고 있습니다. 잠시 기다려 주십시오',false,4000);
+  try{
+    for(let i=0;i<60&&T.cur===id&&(T.busy||pending());i++){if(!T.busy)sync();await new Promise(r=>setTimeout(r,1500));}
+    const tt=T.jobs[id]?T.jobs[id].title:'';
+    const r=await api({a:'reportPut',job:id,title:(tt&&tt!==DEL&&tt!=='새 현장'&&tt!=='현장명')?tt:'',ret:1,nosave:1});
+    if(r.ok&&r.data){
+      const bin=atob(r.data),u=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)u[k]=bin.charCodeAt(k);
+      const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([u],{type:'application/pdf'}));a.download=r.name;document.body.appendChild(a);a.click();
+      setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);
+      toast('📁 내 파일(다운로드)에 보고서를 저장했습니다<br>'+r.name,false,5000);
+    }else{
+      if(r.error==='bad_action'||(r.ok&&!r.data))T.noRet=true;
+      if(b)b.innerHTML=lbl;T.filing=false;
+      if(T.noRet)T.saveFileOld();else toast('보고서를 만들지 못했습니다: '+(r.message||r.error),true,4500);
+      return;
+    }
+  }catch(e){toast('보고서를 만들지 못했습니다: '+(e.message||e),true,4500);}
+  if(b)b.innerHTML=lbl;T.filing=false;
 };
 /* ── 전체저장을 누르면, 서버가 두 사람의 항목과 사진으로 PDF를 만들어 드라이브의 현장 폴더에도 넣는다 ── */
 T._pdf=A.pdf;
