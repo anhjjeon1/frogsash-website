@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v3.4.1';
+const APP_VER = 'v3.4.2';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3782,7 +3782,7 @@ A.ask=key=>A.cbAsk(key);
 #btnRunAI i{font-size:.6rem!important}
 /* 다음입력 단추는 AI분석(초록)과 구분되게 주황색 */
 #btnNext{background:#EA580C!important;color:#fff!important}
-/* 아래 단추 3개 한 줄: AI재검토 · 내파일저장 · 전체저장 */
+/* 아래 단추 3개 한 줄: AI전체검증 · 내파일저장 · 전체저장 */
 #tBtnRow{display:flex!important;gap:6px!important}
 #tBtnRow button{flex:1 1 0!important;min-width:0;width:auto!important;padding:10px 4px!important;font-size:.72rem!important;font-weight:800;border:none;border-radius:var(--r);color:#fff;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
 #tReview{background:linear-gradient(135deg,#1D4ED8,#3B82F6)}
@@ -4096,12 +4096,12 @@ T.saveFile=()=>{
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},3000);
   toast('📁 내 파일(다운로드)에 저장했습니다<br>'+name,false,4000);
 };
-/* ── AI재검토: 점검 리스트 전체를 AI가 다시 읽고 고칠 점을 알려 준다 (내용은 바꾸지 않음) ── */
+/* ── AI전체검증: 점검 리스트 전체를 AI가 다시 읽고 고칠 점을 알려 준다 (내용은 바꾸지 않음) ── */
 T.review=async()=>{
   if(!list.length){alert('검토할 내용이 없습니다.');return;}
   $('teamMo').classList.add('show');
-  $('teamMoBody').innerHTML='<div class="mo-h" style="color:#1D4ED8">🤖 AI 재검토</div><div id="tRv">점검 리스트 '+list.length+'건을 검토하고 있습니다…</div>';
-  if(!T.cfg.pin){$('tRv').textContent='팀 설정에서 팀 비밀번호를 넣어야 AI 재검토를 쓸 수 있습니다.';return;}
+  $('teamMoBody').innerHTML='<div class="mo-h" style="color:#1D4ED8">🤖 AI 전체검증</div><div id="tRv">점검 리스트 '+list.length+'건을 검토하고 있습니다…</div>';
+  if(!T.cfg.pin){$('tRv').textContent='팀 설정에서 팀 비밀번호를 넣어야 AI 전체검증를 쓸 수 있습니다.';return;}
   const NL=String.fromCharCode(10);
   const rows=list.map((it,i)=>(i+1)+'. ['+(it.room||'')+'] '+[it.work,it.sub,it.type].filter(Boolean).join('/')+' — '+String(it.detail||'').replace(/\s+/g,' ').slice(0,220)).join(NL).slice(0,14000);
   const prompt='당신은 신축 아파트 사전점검 보고서를 검수하는 사람입니다. 아래 점검 리스트를 다시 읽고 고칠 점을 찾으십시오.'+NL+'[찾을 것] 공종·유형 분류가 틀린 항목, 같은 하자가 중복된 항목, 위치가 빠진 항목, 표현이 모호하거나 과장된 항목, 판정 근거가 약한 항목.'+NL+'[규칙] 존댓말로 짧게 씁니다. 수치·허용오차·조 번호를 지어내지 않습니다. 문제가 없으면 issues 를 빈 배열로 둡니다. issues 는 최대 10개.'+NL+'[JSON 출력] {"summary":"전체 총평 2~3문장","issues":[{"no":항목번호,"comment":"고칠 점 한 문장"}]}'+NL+'[점검 리스트]'+NL+''+rows;
@@ -4112,7 +4112,7 @@ T.review=async()=>{
     let d={};try{d=JSON.parse(String(r.text).replace(/```json|```/g,'').trim());}catch(e){const m=String(r.text).match(/\{[\s\S]*\}/);d=m?JSON.parse(m[0]):{summary:String(r.text)};}
     const is=Array.isArray(d.issues)?d.issues:[];
     $('tRv').innerHTML='<div>'+esc2(d.summary||'')+'</div>'+(is.length?is.map(x=>{const it=list[(Number(x.no)||0)-1];return '<div class="rv"><b>'+esc2(x.no)+'번'+(it?' · '+esc2(it.room)+' '+esc2(it.type||it.sub||''):'')+'</b><br>'+esc2(x.comment)+'</div>';}).join(''):'<div class="rv">고칠 점을 찾지 못했습니다.</div>')+'<div style="font-size:.68rem;color:#6B7B8F;margin-top:8px">AI 의견은 참고용입니다. 리스트 내용은 바뀌지 않았습니다.</div>';
-  }catch(e){if($('tRv'))$('tRv').textContent='AI 재검토를 하지 못했습니다: '+(e.message||e);}
+  }catch(e){if($('tRv'))$('tRv').textContent='AI 전체검증를 하지 못했습니다: '+(e.message||e);}
 };
 
 /* ── 시작 ── */
@@ -4121,7 +4121,7 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{
   const g=$('t3grid');
   if(g){g.insertAdjacentHTML('beforeend','<div id="t3row"><div class="tc" id="tcRoom" data-l="위치" onclick="A.toggleRoom()"><b>위치</b></div><div class="tc" id="tcWork" data-l="공종" onclick="T.cellSel()"><b>공종</b></div><div class="tc" id="tcType" data-l="하자내용" onclick="T.cellSel()"><b>하자내용</b></div></div>');setInterval(paint3,400);}
   const ba=document.querySelector('.ba'),pdf=ba&&ba.querySelector('.ab.pdf');
-  if(pdf){ba.id='tBtnRow';pdf.insertAdjacentHTML('beforebegin','<button id="tReview" onclick="T.review()"><i class="fa-solid fa-robot"></i> AI재검토</button><button id="tFile" onclick="T.saveFile()"><i class="fa-solid fa-folder-open"></i> 내파일저장</button>');pdf.innerHTML='<i class="fa-solid fa-file-arrow-down"></i> 전체저장';}
+  if(pdf){ba.id='tBtnRow';pdf.insertAdjacentHTML('beforebegin','<button id="tReview" onclick="T.review()"><i class="fa-solid fa-robot"></i> AI전체검증</button><button id="tFile" onclick="T.saveFile()"><i class="fa-solid fa-folder-open"></i> 내파일저장</button>');pdf.innerHTML='<i class="fa-solid fa-file-arrow-down"></i> 전체저장';}
   /* 동의 체크박스는 화면에서 빼고 항상 동의한 상태로 둔다 (점검팀 내부용) */
   const ag=$('fAgree');
   if(ag){const keep=()=>{if(!ag.checked){ag.checked=true;try{A.togSave();}catch(e){}}};try{localStorage.setItem('frog_agreed','true');}catch(e){}keep();setInterval(keep,1000);}
