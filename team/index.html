@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v3.4.2';
+const APP_VER = 'v3.4.3';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3650,9 +3650,9 @@ A.pdf=()=>{
     const hasW=it.wImg&&it.wImg.startsWith('data:'),hasC=it.cImg&&it.cImg.startsWith('data:');
     let imgHtml='';
     if(hasW||hasC){
-      imgHtml='<div style="display:flex;gap:80px;padding:6px 16px;background:#F1F4F8;justify-content:center">';
-      if(hasW)imgHtml+=`<img src="${it.wImg}" style="height:200px;aspect-ratio:4/3;object-fit:cover;background:#fff;border-radius:5px">`;
-      if(hasC)imgHtml+=`<img src="${it.cImg}" style="height:200px;aspect-ratio:4/3;object-fit:cover;background:#fff;border-radius:5px">`;
+      imgHtml='<div style="display:flex;gap:16px;padding:6px 16px;background:#F1F4F8;justify-content:center">';
+      if(hasW)imgHtml+=`<img src="${it.wImg}" style="width:min(200px,calc(50% - 8px));height:auto;aspect-ratio:1/1;object-fit:cover;flex:0 0 auto;background:#fff;border-radius:5px">`;
+      if(hasC)imgHtml+=`<img src="${it.cImg}" style="width:min(200px,calc(50% - 8px));height:auto;aspect-ratio:1/1;object-fit:cover;flex:0 0 auto;background:#fff;border-radius:5px">`;
       imgHtml+='</div>';
     }
     items+=`<div class="pdf-item" style="border:1px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:6px;break-inside:avoid;page-break-inside:avoid">
@@ -4255,7 +4255,7 @@ label[for=fAgree]{font-size:.72rem!important;font-weight:500!important;color:#66
 .bi.ed{background:#F2F4F7!important;color:#475467!important}
 .bi.dl{background:#FEF3F2!important;color:#D92D20!important}
 .dc-ph{background:#fff!important;padding:0 10px!important;gap:6px!important}
-.dc-ph img{border-radius:14px!important}
+.dc-ph img{border-radius:14px!important;aspect-ratio:1/1!important}
 .dc-bd{padding:7px 10px 10px!important}
 .dc-wk{font-size:.74rem!important;font-weight:600!important;color:#067647!important;margin-bottom:6px!important}
 .dc-dt{font-size:.86rem!important;color:var(--ts)!important;line-height:1.65!important}
