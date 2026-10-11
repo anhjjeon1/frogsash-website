@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v3.4.3';
+const APP_VER = 'v3.5.0';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -4088,13 +4088,30 @@ T.saveFile=()=>{
   let html='';const ow=window.open,os=stat,ot=toast;
   const fake={document:{write(h){html+=h;},close(){},title:'',querySelectorAll(){return [];}},focus(){},print(){}};
   window.open=()=>fake;stat=function(){};toast=function(){};
-  try{A.pdf();}catch(e){}
+  try{(T._pdf||A.pdf)();}catch(e){}
   window.open=ow;stat=os;toast=ot;
   if(!html){toast('파일을 만들지 못했습니다',true);return;}
   const name=(fake.document.title||'사전점검')+'.html';
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},3000);
   toast('📁 내 파일(다운로드)에 저장했습니다<br>'+name,false,4000);
+};
+/* ── 전체저장을 누르면, 서버가 두 사람의 항목과 사진으로 PDF를 만들어 드라이브의 현장 폴더에도 넣는다 ── */
+T._pdf=A.pdf;
+A.pdf=function(){T._pdf.apply(this,arguments);T.saveReport();};
+T.saveReport=async()=>{
+  if(T.reporting||!list.length||!T.cfg.pin||!navigator.onLine||T.noRep)return;
+  T.reporting=true;const id=T.cur;
+  try{
+    /* 아직 못 보낸 항목·사진이 있으면 먼저 보낸다 (최대 90초) */
+    for(let i=0;i<60&&T.cur===id&&(T.busy||pending());i++){if(!T.busy)sync();await new Promise(r=>setTimeout(r,1500));}
+    const tt=T.jobs[id]?T.jobs[id].title:'';
+    const r=await api({a:'reportPut',job:id,title:(tt&&tt!==DEL&&tt!=='새 현장'&&tt!=='현장명')?tt:''});
+    if(r.ok)toast('☁️ 드라이브에도 PDF를 저장했습니다<br>'+r.name,false,5000);
+    else if(r.error==='bad_action')T.noRep=true;
+    else toast('드라이브 PDF 저장 실패: '+(r.message||r.error),true,4500);
+  }catch(e){}
+  T.reporting=false;
 };
 /* ── AI전체검증: 점검 리스트 전체를 AI가 다시 읽고 고칠 점을 알려 준다 (내용은 바꾸지 않음) ── */
 T.review=async()=>{
