@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v3.3.0';
+const APP_VER = 'v3.4.0';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3790,11 +3790,10 @@ A.ask=key=>A.cbAsk(key);
 #tRv{font-size:.8rem;line-height:1.6;color:#1F2937}
 #tRv .rv{border:1px solid #E8ECF1;border-radius:8px;padding:8px 10px;margin-top:6px}
 #tRv .rv b{color:#1D4ED8}
-/* 분석 대기 표시 · 한꺼번에 분석 단추 · 사진만 저장 스위치 */
+/* 분석 대기 표시 · 한꺼번에 분석 단추 */
 .twait{font-size:.66rem;font-weight:700;color:#B54708;background:#FEF0C7;border-radius:20px;padding:3px 9px}
 #tBatch{width:calc(100% - 16px);margin:0 8px 6px;border:0;border-radius:12px;padding:10px;font-size:.82rem;font-weight:700;font-family:inherit;color:#B54708;background:#FEF0C7;cursor:pointer}
-#tQuick{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;color:#475467;cursor:pointer}
-#tQuick input{width:16px;height:16px;accent-color:#0E9F6E}
+#teamMo .tpho{border:0;background:#EEF4FF;color:#3538CD;border-radius:10px;padding:7px 10px;font-size:.72rem;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap}
 #teamFoot{text-align:center;font-size:.68rem;color:#6B7B8F;font-weight:700;margin:10px 0 4px}
 </style>
 <div class="mo" id="teamMo"><div class="mo-b"><div id="teamMoBody"></div><button class="mo-cls" onclick="T.closeMo()">닫기</button></div></div>
@@ -3827,7 +3826,7 @@ const freshMeta=()=>({rev:0,known:{},dirty:{},tomb:{},pup:{},addr:'',addrT:0,add
 
 /* 사진이 든 리스트는 용량이 커서 IndexedDB에 둔다 */
 let _db;
-function idb(){return _db||(_db=new Promise((res,rej)=>{const r=indexedDB.open('team_db',1);r.onupgradeneeded=()=>r.result.createObjectStore('lists',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}));}
+function idb(){return _db||(_db=new Promise((res,rej)=>{const r=indexedDB.open('team_db',2);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('lists'))d.createObjectStore('lists',{keyPath:'id'});if(!d.objectStoreNames.contains('orig'))d.createObjectStore('orig',{keyPath:'id'});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}));}
 async function idbGet(id){try{const d=await idb();return await new Promise(r=>{const q=d.transaction('lists').objectStore('lists').get(id);q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null);});}catch(e){return null;}}
 async function idbPut(o){try{const d=await idb();await new Promise((r,j)=>{const tx=d.transaction('lists','readwrite');tx.objectStore('lists').put(o);tx.oncomplete=()=>r();tx.onerror=()=>j(tx.error);});}catch(e){toast('⚠️ 기기 저장에 실패했습니다',true,4000);}}
 async function idbDel(id){try{const d=await idb();d.transaction('lists','readwrite').objectStore('lists').delete(id);}catch(e){}}
@@ -3838,7 +3837,22 @@ function needAI(it){return !!(it.cImg&&it.cImg!==PH)&&String(it.detail||'').inde
 function counts(){$('lCnt').textContent=list.length;$('sgTx').textContent='저장 총 하자 : '+list.length+' 건';
   const b=$('tBatch');if(b&&!T.batching){const n=list.filter(needAI).length;b.style.display=n?'block':'none';b.textContent='🤖 분석 대기 '+n+'건 한꺼번에 분석';}}
 const _ri=renderItem;
-renderItem=function(it){_ri(it);if(needAI(it)){const t=document.querySelector('#i-'+it.id+' .dc-tag');if(t)t.insertAdjacentHTML('beforeend','<span class="twait">분석 대기</span>');}};
+/* ── 원본 사진 자동 보관: 항목이 리스트에 들어가는 순간, 찍은 원본을 구글 드라이브의 현장 폴더로 보낼 대기함에 넣는다 ── */
+async function oPut(o){try{const d=await idb();await new Promise((r,j)=>{const tx=d.transaction('orig','readwrite');tx.objectStore('orig').put(o);tx.oncomplete=()=>r();tx.onerror=()=>j(tx.error);});}catch(e){}}
+async function oAll(){try{const d=await idb();return await new Promise(r=>{const q=d.transaction('orig').objectStore('orig').getAll();q.onsuccess=()=>r(q.result||[]);q.onerror=()=>r([]);});}catch(e){return [];}}
+async function oDel(id){try{const d=await idb();d.transaction('orig','readwrite').objectStore('orig').delete(id);}catch(e){}}
+function shrink(file,max,q){return new Promise(res=>{const img=new Image();img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);res(c.toDataURL('image/jpeg',q));};img.onerror=()=>res('');img.src=URL.createObjectURL(file);});}
+const p2=n=>String(n).padStart(2,'0');
+function keepOrig(it){
+  if(!T.cur||!T.meta||T.meta.known[String(it.id)]||it._w||it._c)return;      /* 새로 만든 항목만 */
+  /* 복원된 미리보기(restored_)는 원본이 아니므로 보내지 않는다 */
+  const files=[[wF,'멀리'],[cF,'가까이']].filter(x=>x[0]&&String(x[0].name||'').indexOf('restored_')!==0);if(!files.length)return;
+  const d=new Date(),stamp=''+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'_'+p2(d.getHours())+p2(d.getMinutes())+p2(d.getSeconds());
+  const job=T.cur,room=it.room||'위치미지정',by=T.cfg.name||'';
+  files.forEach(async x=>{const data=await shrink(x[0],2560,0.88);if(!data)return;
+    await oPut({id:'o'+it.id+(x[1]==='멀리'?'w':'c'),job:job,name:stamp+'_'+room+'_'+x[1]+(by?'_'+by:'')+'.jpg',data:data});kick();});
+}
+renderItem=function(it){try{keepOrig(it);}catch(e){}_ri(it);if(needAI(it)){const t=document.querySelector('#i-'+it.id+' .dc-tag');if(t)t.insertAdjacentHTML('beforeend','<span class="twait">분석 대기</span>');}};
 /* 분석 대기 항목을 저장된 사진으로 한꺼번에 분석한다 (연결이 될 때) */
 T.batch=async()=>{
   if(T.batching)return;const q=list.filter(needAI);if(!q.length)return;
@@ -3931,6 +3945,12 @@ async function sync(){
       const k=pid.slice(1,-1),w=pid.slice(-1)==='w',it=list.find(x=>String(x.id)===k),data=it&&(w?it.wImg:it.cImg);
       if(!data||data===PH){delete m.pup[pid];continue;}
       const r=await api({a:'photoPut',job:id,id:pid,data:data.split(',')[1]});if(r.ok){delete m.pup[pid];n++;}else{again=true;break;}}
+    /* 원본 사진을 드라이브의 현장 폴더로 보내기 (한 번에 1장, 서버가 옛 판이면 이번에는 건너뜀) */
+    if(!T.noOrig){const os=await oAll();
+      if(os.length){const o=os[0],tt=T.jobs[o.job]?T.jobs[o.job].title:'';
+        const r=await api({a:'origPut',job:o.job,title:(tt&&tt!==DEL&&tt!=='새 현장'&&tt!=='현장명')?tt:'',name:o.name,data:o.data.split(',')[1]});
+        if(r.ok)await oDel(o.id);else if(r.error==='bad_action')T.noOrig=true;
+        if(os.length>1&&!T.noOrig)again=true;}}
     /* 상대 사진 받기 (한 번에 3장씩) */
     let g=0,tries=0;
     for(const it of list){
@@ -3979,7 +3999,18 @@ async function pullJobs(){if(!T.cfg.pin||!navigator.onLine)return;try{const r=aw
 const esc2=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 function drawJobs(){const l=Object.values(T.jobs).filter(j=>j.title!==DEL).sort((a,b)=>b.t-a.t);
   $('teamMoBody').innerHTML='<div class="mo-h" style="color:#1B6B28">📍 현장 선택</div><button class="tbtn" style="margin-top:0" onclick="T.newJob()">＋ 새 현장</button>'+
-    l.map(j=>'<div class="tjob'+(j.id===T.cur?' cur':'')+'" onclick="T.pickJob(\''+j.id+'\')"><b>'+esc2(disp(j.title))+'<small>'+new Date(j.t).toLocaleString('ko-KR')+(j.id===T.cur?' · 지금 열린 현장':'')+'</small></b><button class="tdel" onclick="event.stopPropagation();T.delJob(\''+j.id+'\')">삭제</button></div>').join('');}
+    l.map(j=>'<div class="tjob'+(j.id===T.cur?' cur':'')+'" onclick="T.pickJob(\''+j.id+'\')"><b>'+esc2(disp(j.title))+'<small>'+new Date(j.t).toLocaleString('ko-KR')+(j.id===T.cur?' · 지금 열린 현장':'')+'</small></b><button class="tpho" onclick="event.stopPropagation();T.photos(\''+j.id+'\')">📷 사진</button><button class="tdel" onclick="event.stopPropagation();T.delJob(\''+j.id+'\')">삭제</button></div>').join('')+
+    '<div style="font-size:.7rem;color:#667085;margin-top:10px;line-height:1.5">📷 사진: 두 사람이 찍은 원본 사진이 현장별로 구글 드라이브에 자동으로 모입니다. 누르면 그 폴더가 열립니다.</div>';}
+/* 현장의 원본 사진 폴더(구글 드라이브)를 연다 */
+T.photos=async id=>{
+  if(!T.cfg.pin){toast('팀 설정에서 팀 비밀번호를 먼저 넣어 주십시오',true,3000);return;}
+  const w=window.open('','_blank');
+  try{const j=T.jobs[id]||{},r=await api({a:'jobFolder',job:id,title:''});
+    if(r.ok&&r.url){if(w)w.location.href=r.url;else location.href=r.url;return;}
+    if(w)w.close();
+    toast(r.error==='bad_action'?'서버를 새 판으로 다시 배포해야 사진 폴더를 쓸 수 있습니다':r.error==='no_folder'?'이 현장에는 아직 올라온 원본 사진이 없습니다':('사진 폴더를 열지 못했습니다: '+(r.message||r.error)),true,4000);
+  }catch(e){if(w)w.close();toast('사진 폴더를 열지 못했습니다: '+(e.message||e),true,4000);}
+};
 function drawCfg(){$('teamMoBody').innerHTML='<div class="mo-h" style="color:#1B6B28">⚙ 팀 설정</div>'+
   '<label>이름</label><input id="tName" value="'+esc2(T.cfg.name)+'" placeholder="리스트에 작성자로 표시됩니다">'+
   '<label>담당 분야</label><div class="tchips" id="tRole"><span class="tchip'+(T.cfg.role==='창호'?' on':'')+'" data-v="창호">창호</span><span class="tchip'+(T.cfg.role==='내장·기타'?' on':'')+'" data-v="내장·기타">내장 · 기타</span></div>'+
@@ -4030,16 +4061,9 @@ function shown(el){return el&&el.style.display!=='none'&&String(el.src).indexOf(
 function restoreFiles(){const c=$('pvC'),w=$('pvW');
   if(!cF&&shown(c))cF=d2f(c.src,'restored_c.jpg');
   if(!wF&&shown(w))wF=d2f(w.src,'restored_w.jpg');}
-/* "사진만 저장"을 켜 두면: 가까이 찍기를 찍는 순간 사진만 리스트에 저장하고 다음 촬영으로 넘어간다 (분석은 나중에 한꺼번에) */
-function quickSave(){const ck=$('tQuickCk');if(!ck||!ck.checked||_aiBusy||!T.cur)return;
-  const c=$('pvC'),w=$('pvW');if(!cF||!shown(c))return;
-  if($('fUser').value.trim()||$('fDetail').value.trim())return;
-  const it={id:Date.now()*100+Math.floor(Math.random()*100),room:$('fRoom').value||'위치미지정',work:'',sub:'',type:'',detail:'📷 사진만 저장했습니다. 분석 대기 중입니다.',mode:'pro',by:T.cfg.name,role:T.cfg.role,wImg:shown(w)?w.src:null,cImg:c.src};
-  list.push(it);renderItem(it);saveList();reset();
-  toast('📷 사진 저장 ('+list.length+'건) — 다음 사진을 찍으세요',false,2200);}
 function paint3(){
   const u=$('fUser');if(!u||!$('t3row'))return;
-  restoreFiles();quickSave();
+  restoreFiles();
   const txt=u.value.trim();
   if(txt!==_lastTxt){_lastTxt=txt;_stable=0;}else if(_stable<6)_stable++;
   /* 입력이 0.8초쯤 멈추면 위치를 찾는다. 직접 고른 위치는 건드리지 않는다 */
@@ -4099,13 +4123,9 @@ window.addEventListener('DOMContentLoaded',()=>{setTimeout(async()=>{
   /* 동의 체크박스는 화면에서 빼고 항상 동의한 상태로 둔다 (점검팀 내부용) */
   const ag=$('fAgree');
   if(ag){const keep=()=>{if(!ag.checked){ag.checked=true;try{A.togSave();}catch(e){}}};try{localStorage.setItem('frog_agreed','true');}catch(e){}keep();setInterval(keep,1000);}
-  /* 분석 대기 단추(리스트 제목 아래)와 "사진만 저장" 스위치(사진 촬영 제목 오른쪽) */
+  /* 분석 대기 단추(리스트 제목 아래) */
   const lh=document.querySelector('.lh');
   if(lh)lh.insertAdjacentHTML('afterend','<button id="tBatch" onclick="T.batch()" style="display:none"></button>');
-  const pt=[...document.querySelectorAll('.sec-t')].find(e=>e.textContent.indexOf('사진 촬영')>=0);
-  if(pt){pt.insertAdjacentHTML('beforeend','<label id="tQuick"><input type="checkbox" id="tQuickCk"> 사진만 저장</label>');
-    const ck=$('tQuickCk');ck.checked=!!L.get('team_quick',false);
-    ck.onchange=()=>{L.set('team_quick',ck.checked);toast(ck.checked?'📷 사진만 저장 켬 — 가까이 찍기를 찍으면 바로 저장됩니다':'사진만 저장 끔',false,3000);};}
   const ai=$('btnRunAI'),nx=$('btnNext');
   if(ai&&nx){const row=ai.closest('.il'),box=nx.parentElement;row.id='tAiRow';box.id='tNextBox';row.appendChild(box);}
   if(ag){const lb=ag.closest('label'),rw=lb&&lb.parentElement;if(rw)rw.style.display='none';}
