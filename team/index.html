@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v3.5.0';
+const APP_VER = 'v3.6.0';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -3286,6 +3286,8 @@ async function runAI(){
 - 허용범위: 수직수평 3mm이내, 틈새 2mm이내, 단차 1.5mm이내 → type:"허용범위"
 - 심각도: 경미(미관/사용무관), 보통(기능저하/시정권고), 중대(안전/구조/누수→즉시시정)
 [출력규칙]
+- 모든 문장은 '~합니다' 존댓말로 끝냅니다. '~함', '~임', '~됨' 같은 말투는 쓰지 않습니다.
+- 측정하지 않은 수치·허용오차는 지어내지 않습니다.
 - detail 항목은 반드시 아래 5줄 형식으로 상세 작성:
   ■ 하자현상: 구체적 현상 서술 (위치, 범위, 크기 포함)
   ■ 판정근거: 국토부 「공동주택 하자판정기준」의 해당 공종 하자기준 또는 KS표준(번호+명칭)과 허용수치 명시. **조 번호·항 번호 절대 금지**
@@ -3338,6 +3340,7 @@ ${d1.detail||''}
 - 1차 결과가 정확하면 그대로 유지, 오류가 있으면 수정
 - 반드시 동일한 JSON 형식으로 최종 결과 출력
 - detail의 5줄 형식(■ 하자현상/판정근거/심각도/시정방법/비고) 유지
+- 모든 문장은 '~합니다' 존댓말로 끝냅니다. '~함', '~임', '~됨' 말투가 있으면 존댓말로 고칩니다.
 - 판정근거에 법령 조 번호(제○조)가 있으면 반드시 제거 — 잘못된 인용 위험
 [JSON]
 {"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"■ 하자현상: ...\\n■ 판정근거: ...\\n■ 심각도: ...\\n■ 시정방법: ...\\n■ 비고: ..."}`;
@@ -3867,7 +3870,7 @@ T.batch=async()=>{
       const prompt='당신은 아파트 사전점검 전문 하자진단 AI입니다. '+(hint?'점검자 입력이 사실의 기준이며 사진은 보조 자료입니다.':'사진1(멀리서)로 공종을 파악하고 사진2(가까이)로 하자를 분석하십시오. 사진이 한 장이면 그 사진으로 판단합니다.')+NL+
         (hint?'[점검자 입력] "'+hint+'"'+NL:'')+'[위치] '+(it.room||'미지정')+NL+'[공종분류] '+workList+NL+
         '[하자유형] 들뜸,마감불량,흠집/찍힘,면불량,오염,미시공,파손,틈새,코킹불량,수직수평불량,개폐불량,고정불량,작동불량,줄눈불량,단차,구배불량,이색/변색,누수,균열,도장불량,이음불량,배수불량,점등불량,악취'+NL+
-        '[판정기준]'+NL+'- 국토부 「공동주택 하자의 조사, 보수비용 산정 및 하자판정기준」 적용'+NL+'- 조 번호·항 번호는 적지 않습니다. 공종명과 하자 판정기준 같은 일반 표기를 씁니다.'+NL+'- 측정하지 않은 수치·허용오차를 지어내지 않습니다.'+NL+'- 심각도: 경미(미관), 보통(기능 저하), 중대(안전·구조·누수)'+NL+
+        '[판정기준]'+NL+'- 국토부 「공동주택 하자의 조사, 보수비용 산정 및 하자판정기준」 적용'+NL+'- 조 번호·항 번호는 적지 않습니다. 공종명과 하자 판정기준 같은 일반 표기를 씁니다.'+NL+'- 측정하지 않은 수치·허용오차를 지어내지 않습니다.'+NL+'- 모든 문장은 ~합니다 존댓말로 끝냅니다. ~함, ~임 같은 말투는 쓰지 않습니다.'+NL+'- 심각도: 경미(미관), 보통(기능 저하), 중대(안전·구조·누수)'+NL+
         '[JSON 출력] {"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"■ 하자현상: ...'+BN+'■ 판정근거: ...'+BN+'■ 심각도: ...'+BN+'■ 시정방법: ...'+BN+'■ 비고: ..."}';
       const r=await api({a:'ai',prompt:prompt,images:images});
       if(r.error)throw new Error(r.error==='no_api_key'?'서버에 AI 키가 없습니다':(r.message||r.error));
@@ -4107,7 +4110,7 @@ T.saveReport=async()=>{
     for(let i=0;i<60&&T.cur===id&&(T.busy||pending());i++){if(!T.busy)sync();await new Promise(r=>setTimeout(r,1500));}
     const tt=T.jobs[id]?T.jobs[id].title:'';
     const r=await api({a:'reportPut',job:id,title:(tt&&tt!==DEL&&tt!=='새 현장'&&tt!=='현장명')?tt:''});
-    if(r.ok)toast('☁️ 드라이브에도 PDF를 저장했습니다<br>'+r.name,false,5000);
+    if(r.ok){T.jobs[id].report=r.url;L.set('team_jobs',T.jobs);$('teamMo').classList.add('show');$('teamMoBody').innerHTML='<div class="mo-h" style="color:#1B6B28">📄 보고서가 완성됐습니다</div><div style="font-size:.8rem;line-height:1.6;color:#344054">두 사람이 넣은 '+r.count+'건으로 고객 제출용 보고서(PDF)를 만들어 구글 드라이브의 현장 폴더에 넣었습니다.<br><span style="color:#667085;font-size:.72rem">'+esc2(r.name)+'</span></div><a class="tbtn" style="display:block;text-align:center;text-decoration:none" target="_blank" rel="noopener" href="'+esc2(r.url)+'">보고서 열기</a>';}
     else if(r.error==='bad_action')T.noRep=true;
     else toast('드라이브 PDF 저장 실패: '+(r.message||r.error),true,4500);
   }catch(e){}
