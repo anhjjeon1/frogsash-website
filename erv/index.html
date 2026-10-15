@@ -93,6 +93,11 @@ td.n{text-align:right;white-space:nowrap;font-weight:700}
 tr.pick td{background:rgba(57,192,122,.12);font-weight:800}
 .res .note{margin:3px 0 0}
 ul.notes{margin:6px 0 0;padding-left:16px;font-size:12px;line-height:1.5}
+.sg{margin-top:10px;border:1px solid var(--line);border-radius:12px;padding:8px}
+.sg-t{font-weight:800;font-size:14px;margin-bottom:2px}
+.sg table td{vertical-align:top}
+.sg tr.sg-n td{border-top:none;color:var(--dim);font-size:11.5px;padding-top:0}
+.pdfdoc .sg{border-color:#ccc}.pdfdoc .sg-t{font-size:24px}.pdfdoc .sg tr.sg-n td{font-size:18px;color:#444}
 .src{font-size:10.5px;color:var(--dim);line-height:1.45;margin-top:8px}
 .ai-out{margin-top:10px;border:1.5px solid #34507f;background:#141d2e;border-radius:12px;padding:8px 10px;font-size:13px;line-height:1.6}
 .ai-out h2,.ai-out h3{font-size:14px;margin:10px 0 4px}
@@ -205,11 +210,11 @@ footer a{color:var(--dim)}
   청개구리샤시 · 창호 외풍·결로 진단 · <a href="tel:010-2322-0949">☎ 010-2322-0949</a> · <a href="https://frogsash.co.kr/">frogsash.co.kr</a>
 </footer>
 
-<script src="erv-engine.js?v=1.2"></script>
+<script src="erv-engine.js?v=1.3"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
-var APP_VERSION='erv v1.5';
+var APP_VERSION='erv v1.6';
 document.getElementById('ver').textContent=APP_VERSION;
 (function(){
   var $=function(id){return document.getElementById(id);};
@@ -271,6 +276,7 @@ document.getElementById('ver').textContent=APP_VERSION;
       h+='<div class="note">실내 '+r.Ti+'℃, 습도 상한 '+r.targetRH+'%('+r.rhBasis+')'+(r.xOut!=null?', 겨울 바깥 공기 '+r.xOut.toFixed(1)+'g/kg':'')+' 기준입니다.</div>';}
     if(r.notes.length)h+='<ul class="notes">'+r.notes.map(function(n){return '<li>'+n+'</li>';}).join('')+'</ul>';
     if(r.missing.length)h+='<div class="note">빠진 입력: '+r.missing.join(', ')+'</div>';
+    if(ERV.seasonGuide){h+='<div class="sg"><div class="sg-t">📅 계절별 설정 방법</div><table><tr><th>계절</th><th>운전</th><th>풍량</th></tr>'+ERV.seasonGuide(r).map(function(g){return '<tr><td><b>'+g.season+'</b></td><td>'+g.mode+'</td><td>'+g.fan+'</td></tr><tr class="sg-n"><td colspan="3">'+g.note+'</td></tr>';}).join('')+'</table><div class="note">'+ERV.BYPASS_RULE+'</div></div>';}
     h+='<div class="src">근거: 건축물의 설비기준 등에 관한 규칙 제11조(신축 공동주택 시간당 0.5회 이상), 같은 규칙 별표 1의5(열회수형 환기장치 유효환기량 표시용량의 90% 이상), 1인당 25㎥/h는 같은 규칙의 다중이용시설 값(비교용), 수분 발생량 BS 5250:2011 Table D.6, 바깥 공기 Open-Meteo 과거 기상'+(CLIMATE?' ('+CLIMATE.period+')':'')+'.</div>';
     if(AI_HTML)h+='<div class="ai-out"><b>AI 검증 소견</b>'+AI_HTML+'</div>';
     h+='</div>';

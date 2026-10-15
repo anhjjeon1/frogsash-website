@@ -9,7 +9,7 @@
  */
 (function (root) {
   'use strict';
-  var ENGINE_VERSION = 'erv-engine 1.2';
+  var ENGINE_VERSION = 'erv-engine 1.3';
 
   // ── 습공기 (Magnus 식, 결로진단앱과 동일)
   function es(T) { return 0.6108 * Math.exp(17.27 * T / (T + 237.3)); }          // 포화수증기압 kPa
@@ -201,6 +201,24 @@
     return null;
   }
 
+  // ── 계절별 설정 방법 (질문 29 정리 내용 기준. 겨울 단계만 이 집 계산값으로 정함)
+  function seasonGuide(r) {
+    var w;
+    if (r.verdict === 'hold') w = '에러·필터부터 정상화한 뒤 다시 판정';
+    else if (r.recommendStage) w = r.recommendStage + ' 단계로 계속(계산값)';
+    else if (r.verdict === 'short') w = '강 단계로 계속 + 실내 건조·가습 줄이기';
+    else if (r.recommendRated) w = '설치 시 중 단계 ' + r.recommendRated + 'CMH 이상 제품을 약·중으로 계속';
+    else w = '약풍으로 계속';
+    return [
+      { season: '겨울', mode: '환기(열교환)', fan: w, note: '바이패스 금지. 춥다고 끄면 습기가 쌓입니다. ' + ((r.recommendStage === '강' || r.verdict === 'short') ? '이미 가장 센 단계라, 결로가 보이면 실내 건조·가습을 줄이거나 제습기를 함께 씁니다.' : '결로가 보이는 날·취사·샤워·빨래 건조 때는 한 단계 올립니다.') },
+      { season: '봄·가을', mode: '환기 / 바깥이 쾌적한 날 바이패스', fan: '약풍', note: '황사·미세먼지·꽃가루가 많은 날은 창을 닫고 환기(열교환) 운전으로 둡니다.' },
+      { season: '여름(냉방 중)', mode: '환기(열교환)', fan: '약풍으로 계속', note: '창을 닫고 냉방하는 동안 환기를 맡깁니다.' },
+      { season: '여름밤(바깥이 서늘할 때)', mode: '바이패스', fan: '중풍~강풍', note: '바깥이 실내보다 서늘하고 습하지 않을 때만. 아침에 환기 운전으로 되돌립니다.' },
+      { season: '장마철', mode: '환기(열교환)', fan: '약풍', note: '바이패스 금지(습한 바깥 공기가 그대로 들어옴). 제습기나 에어컨 제습을 함께 씁니다.' }
+    ];
+  }
+  var BYPASS_RULE = '바이패스는 ① 바깥이 실내보다 서늘하거나 비슷하고 ② 바깥 공기가 습하지 않고 ③ 냉난방을 하지 않을 때, 세 가지가 모두 맞을 때만 씁니다.';
+
   // 결과 → 사람이 읽는 요약(소견서·AI 프롬프트용)
   function summaryText(r) {
     var f0 = function (x) { return (x == null || !isFinite(x)) ? '-' : Math.round(x); };
@@ -214,5 +232,5 @@
     return L.join('\n');
   }
 
-  root.ERV = { MODELS: MODELS, lookupModel: lookupModel, normModel: normModel, compute: compute, fetchWinterClimate: fetchWinterClimate, geocode: geocode, summaryText: summaryText, mixRatio: mixRatio, allowRH: allowRH, BS: BS, VERSION: ENGINE_VERSION };
+  root.ERV = { seasonGuide: seasonGuide, BYPASS_RULE: BYPASS_RULE, MODELS: MODELS, lookupModel: lookupModel, normModel: normModel, compute: compute, fetchWinterClimate: fetchWinterClimate, geocode: geocode, summaryText: summaryText, mixRatio: mixRatio, allowRH: allowRH, BS: BS, VERSION: ENGINE_VERSION };
 })(typeof window !== 'undefined' ? window : globalThis);
