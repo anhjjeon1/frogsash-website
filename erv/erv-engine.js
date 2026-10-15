@@ -9,7 +9,7 @@
  */
 (function (root) {
   'use strict';
-  var ENGINE_VERSION = 'erv-engine 1.0';
+  var ENGINE_VERSION = 'erv-engine 1.1';
 
   // ── 습공기 (Magnus 식, 결로진단앱과 동일)
   function es(T) { return 0.6108 * Math.exp(17.27 * T / (T + 237.3)); }          // 포화수증기압 kPa
@@ -32,6 +32,22 @@
   };
 
   function num(v) { var n = parseFloat(v); return isNaN(n) ? null : n; }
+
+  // ── 사양을 확인한 모델 목록 (출처가 있는 값만. 단계를 모르면 정격값을 high에 둠)
+  //    새 모델은 명판 사진·제조사 공식 자료로 확인한 뒤에만 추가한다.
+  var MODELS = [
+    { model: 'AP-B0150PM', maker: '에어패스', low: null, mid: null, high: 150, watt: 73, type: '', src: '의왕 풍경채 본체 명판(2026-10 현장 사진): 정격 풍량 150㎥/h, 73W' },
+    { model: 'TAC551-30S0', maker: '경동나비엔', low: 200, mid: 300, high: 320, watt: 99, type: '', src: '경동나비엔 공식 판매몰 상품 표기 200/300/320CMH, 99W(2026-10 열람)' },
+    { model: 'TCA360-0100', maker: '경동나비엔', low: null, mid: null, high: 100, watt: null, type: '', src: '경동나비엔 공식 판매몰 상품 표기 100CMH(2026-10 열람)' },
+    { model: 'THE650-0150', maker: '경동나비엔', low: null, mid: null, high: 150, watt: null, type: '', src: '경동나비엔 공식 판매몰 상품 표기 환기 150CMH(2026-10 열람)' }
+  ];
+  function normModel(s) { return String(s || '').toUpperCase().replace(/[\s\-_.()]/g, ''); }
+  function lookupModel(name) {
+    var k = normModel(name); if (k.length < 4) return null;
+    for (var i = 0; i < MODELS.length; i++) { if (normModel(MODELS[i].model) === k) return MODELS[i]; }
+    for (var j = 0; j < MODELS.length; j++) { var m = normModel(MODELS[j].model); if (k.indexOf(m) >= 0 || m.indexOf(k) >= 0 && k.length >= 6) return MODELS[j]; }
+    return null;
+  }
 
   /* 입력(in)
    *  area ㎡, height m, people 명, homeHours(평일 집에 있는 시간, 수면 포함) h, sleepHours h
@@ -198,5 +214,5 @@
     return L.join('\n');
   }
 
-  root.ERV = { compute: compute, fetchWinterClimate: fetchWinterClimate, geocode: geocode, summaryText: summaryText, mixRatio: mixRatio, allowRH: allowRH, BS: BS, VERSION: ENGINE_VERSION };
+  root.ERV = { MODELS: MODELS, lookupModel: lookupModel, normModel: normModel, compute: compute, fetchWinterClimate: fetchWinterClimate, geocode: geocode, summaryText: summaryText, mixRatio: mixRatio, allowRH: allowRH, BS: BS, VERSION: ENGINE_VERSION };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -118,7 +118,8 @@ footer a{color:var(--dim)}
   <div class="chips" data-name="has" data-mode="single"><span class="chip" data-v="yes">있음</span><span class="chip" data-v="no">없음</span></div>
   <div id="prod" class="hide">
     <div class="row"><div class="lbl">모델명 <small>본체 명판·설명서</small></div>
-      <div class="inl"><input type="text" id="model" placeholder="예: AP-B0150PM" style="flex:1 1 180px;width:auto"></div></div>
+      <div class="inl"><input type="text" id="model" placeholder="예: AP-B0150PM" style="flex:1 1 180px;width:auto"></div>
+      <div class="note" id="model-st">사양을 확인한 모델이면 풍량을 자동으로 채웁니다. 목록에 없으면 명판의 숫자를 직접 넣어 주십시오.</div></div>
     <div class="row"><div class="lbl">단계별 풍량 (CMH = ㎥/h)</div>
       <div class="inl">약 <input type="number" id="low" placeholder="CMH" inputmode="numeric"> 중 <input type="number" id="mid" placeholder="CMH" inputmode="numeric"> 강 <input type="number" id="high" placeholder="CMH" inputmode="numeric"></div>
       <div class="note">명판에 "160/200/230" 같이 세 숫자가 있으면 약·중·강입니다. 하나만 있으면 강(최대)에 넣으십시오.</div></div>
@@ -141,7 +142,7 @@ footer a{color:var(--dim)}
 
 <script src="erv-engine.js"></script>
 <script>
-var APP_VERSION='erv v1.0';
+var APP_VERSION='erv v1.1';
 document.getElementById('ver').textContent=APP_VERSION;
 (function(){
   var $=function(id){return document.getElementById(id);};
@@ -197,6 +198,17 @@ document.getElementById('ver').textContent=APP_VERSION;
     h+='<a class="cta no-print" href="tel:010-2322-0949">결로·외풍이 계속되면 현장 측정 상담 <b>☎ 010-2322-0949</b></a></div>';
     box.innerHTML=h;
   }
+  function onModel(){
+    var st=$('model-st'), v=$('model').value.trim(); if(!v){st.textContent='사양을 확인한 모델이면 풍량을 자동으로 채웁니다. 목록에 없으면 명판의 숫자를 직접 넣어 주십시오.';return;}
+    var m=ERV.lookupModel(v);
+    if(!m){st.textContent='목록에 없는 모델입니다. 명판이나 설명서의 풍량(CMH)을 직접 넣어 주십시오.';return;}
+    var key=ERV.normModel(m.model), fresh=onModel._last!==key; onModel._last=key;
+    [['low','low'],['mid','mid'],['high','high']].forEach(function(p){if(fresh)$(p[0]).value=(m[p[1]]!=null?m[p[1]]:'');else if(m[p[1]]!=null&&!$(p[0]).value)$(p[0]).value=m[p[1]];});
+    st.innerHTML='✔ '+m.maker+' '+m.model+': '+[m.low,m.mid,m.high].filter(function(x){return x!=null;}).join('/')+'CMH'+(m.watt?', '+m.watt+'W':'')+'<br>출처: '+m.src;
+    if($('result').innerHTML)run();
+  }
+  $('model').addEventListener('change',onModel);
+  $('model').addEventListener('input',function(){clearTimeout(onModel._t);onModel._t=setTimeout(onModel,400);});
   $('btn-calc').addEventListener('click',function(){run();$('result').scrollIntoView({behavior:'smooth',block:'start'});});
   $('btn-climate').addEventListener('click',async function(){
     var s=$('climate-st'), a=$('addr').value.trim(); if(!a){s.textContent='지역을 먼저 넣어 주십시오.';return;}
