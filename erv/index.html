@@ -130,7 +130,7 @@ footer a{color:var(--dim)}
 #pdf-host{position:fixed;left:-10000px;top:0;width:740px}
 @media print{
   body.printing>*:not(#pdf-host){display:none!important}
-  body.printing #pdf-host{position:static;left:0}
+  body.printing #pdf-host{position:static;left:0;width:auto}
   body.printing .pdfdoc{width:auto}
   body{background:#fff;color:#111;max-width:none;padding:0}
   .card,.act{background:#fff;border-color:#ccc;color:#111}
@@ -214,7 +214,7 @@ footer a{color:var(--dim)}
 <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
-var APP_VERSION='erv v1.6';
+var APP_VERSION='erv v1.7';
 document.getElementById('ver').textContent=APP_VERSION;
 (function(){
   var $=function(id){return document.getElementById(id);};
@@ -401,10 +401,9 @@ document.getElementById('ver').textContent=APP_VERSION;
   }
   $('btn-all').addEventListener('click',function(){
     var el=buildDoc();if(!el)return;
-    var t0=document.title;document.title=fname('');document.body.classList.add('printing');
-    var done=function(){document.body.classList.remove('printing');document.title=t0;window.removeEventListener('afterprint',done);};
-    window.addEventListener('afterprint',done);
-    setTimeout(function(){window.print();setTimeout(done,2000);},300);
+    // 폰(안드로이드)은 print()가 바로 끝나고 미리보기를 나중에 그리므로, 인쇄 모드를 되돌리지 않고 유지합니다(화면에는 영향 없음).
+    document.title=fname('');document.body.classList.add('printing');
+    setTimeout(function(){window.print();},300);
   });
   // 내파일저장: PDF 파일을 바로 내려받기(폰 '내 파일 > 다운로드'에 저장)
   $('btn-file').addEventListener('click',async function(){
