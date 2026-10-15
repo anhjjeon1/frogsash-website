@@ -9,7 +9,7 @@
  */
 (function (root) {
   'use strict';
-  var ENGINE_VERSION = 'erv-engine 1.3';
+  var ENGINE_VERSION = 'erv-engine 1.4';
 
   // ── 습공기 (Magnus 식, 결로진단앱과 동일)
   function es(T) { return 0.6108 * Math.exp(17.27 * T / (T + 237.3)); }          // 포화수증기압 kPa
@@ -157,11 +157,41 @@
         else if (first.name === '중') { r.verdict = 'ok'; r.verdictText = '적정'; r.verdictWhy = '중 단계로 계속 돌리면 필요 풍량을 채웁니다.'; }
         else { r.verdict = 'tight'; r.verdictText = '빠듯함'; r.verdictWhy = '강 단계로 계속 돌려야 필요 풍량을 채웁니다. 소음 때문에 끄기 쉬워 실제로는 모자랄 수 있습니다.'; }
       }
+      // 정격 풍량 하나만 있을 때(명판 정격 = 최대)
+      if (!st.low && !st.mid && st.high) r.notes.push('명판의 정격 풍량은 최대(강) 값입니다. 약·중 풍량을 모르면 "강 단계로 계속"으로만 판정합니다. 약·중 풍량은 설명서나 조작기 화면에서 확인해 넣으십시오.');
+      // 습도교환효율 경계값: 효율을 모를 때, 권장(또는 가장 센) 단계에서 습기 배출이 모자라기 시작하는 효율
+      if (P.type === 'erv' && latent == null && r.qMoist != null && isFinite(r.qMoist) && r.stages.length) {
+        var bs = null; r.stages.forEach(function (s) { if (s.name === r.recommendStage) bs = s; });
+        if (!bs) bs = r.stages[r.stages.length - 1];
+        var pct = Math.floor((1 - r.qMoist / bs.eff) * 100);
+        r.latentBreak = { stage: bs.name, pct: pct };
+        if (pct <= 0) r.notes.unshift('습기 배출: ' + bs.name + ' 단계 실제 풍량(' + Math.round(bs.eff) + 'CMH)이 습기 배출에 필요한 풍량(' + Math.round(r.qMoist) + 'CMH)보다 작아, 습도교환효율과 관계없이 모자랍니다.');
+        else r.notes.unshift('습도교환효율 경계값: 이 제품의 난방 습도(잠열) 교환효율이 ' + pct + '%를 넘으면 ' + bs.name + ' 단계로도 습기 배출이 모자랍니다(습기 배출 필요 ' + Math.round(r.qMoist) + 'CMH ÷ ' + bs.name + ' 단계 실제 ' + Math.round(bs.eff) + 'CMH로 계산).');
+      }
+      // 현장 측정 풍량(송풍구 합계)
+      var M = num(P.measured);
+      if (M) {
+        var mMoist = (latent != null) ? M * (1 - latent / 100) : M;
+        var needMain = Math.max(r.qLaw || 0, r.qPerson || 0);
+        r.measured = { value: M, stage: P.measuredStage || '', ratio: r.qReq ? M / r.qReq : null,
+          ok: M >= needMain && (r.qMoist == null || !isFinite(r.qMoist) || mMoist >= r.qMoist),
+          ach: r.volume ? M / r.volume : null };
+        var sv = null; r.stages.forEach(function (s) { if (s.name === P.measuredStage) sv = s; });
+        if (sv) r.measured.vsRated = M / sv.rated;
+      }
     } else if (r.qReq != null) {
       // 없는 집: 적정(중) 단계 표시 풍량 권장치 — 유효 90%를 감안해 50CMH 단위로 올림
       r.recommendRated = Math.ceil((r.qReq / 0.9) / 50) * 50;
       r.verdict = 'none'; r.verdictText = '권장 제품 급';
       r.verdictWhy = '중(적정) 단계 풍량이 ' + r.recommendRated + 'CMH 이상인 제품이 맞습니다(표시 풍량의 90%를 실제 풍량으로 보고 계산).';
+    }
+    // 현재 실내 습도(측정) vs 유리 결로 한계
+    var RHn = num(inp.rhNow);
+    if (RHn != null) {
+      var lim = (r.allowRH != null) ? r.allowRH : null;
+      r.dewCheck = { rhNow: RHn, limit: lim != null ? Math.floor(lim) : null,
+        margin: lim != null ? Math.floor(lim) - RHn : null,
+        basis: lim != null ? '유리 표면온도 ' + Ts + '℃·실내 ' + Ti + '℃' : '' };
     }
     r.missingAll = r.missing.length > 0;
     return r;
@@ -228,6 +258,8 @@
     L.push('- 실내 ' + r.Ti + '℃·습도 상한 ' + r.targetRH + '%(' + r.rhBasis + ')' + (r.xOut != null ? ', 겨울 바깥 절대습도 ' + r.xOut.toFixed(1) + 'g/kg' : ''));
     if (r.hasProduct) L.push('- 설치 제품: ' + r.stages.map(function (s) { return s.name + ' ' + s.rated + 'CMH(유효 ' + f0(s.eff) + ')'; }).join(' / ') + ' → 판정: ' + (r.verdictText || '-') + (r.recommendStage ? ' (권장 운전 ' + r.recommendStage + ' 단계)' : ''));
     else if (r.recommendRated) L.push('- 환기장치 없음 → 권장: 중 단계 ' + r.recommendRated + 'CMH 이상 제품');
+    if (r.dewCheck) L.push('- 현재 실내 습도(측정) ' + r.dewCheck.rhNow + '%' + (r.dewCheck.limit != null ? ' / 유리 결로 한계 ' + r.dewCheck.limit + '% → ' + (r.dewCheck.margin < 0 ? '한계보다 ' + (-r.dewCheck.margin) + '%p 높음(지금 결로 조건)' : '여유 ' + r.dewCheck.margin + '%p') : ' (유리 표면온도가 없어 결로 한계 비교 안 함)'));
+    if (r.measured) L.push('- 현장 측정 풍량(송풍구 합계) ' + r.measured.value + 'CMH' + (r.measured.stage ? '(' + r.measured.stage + ' 단계)' : '') + ' → 필요 ' + f0(r.qReq) + 'CMH 대비 ' + (r.measured.ok ? '충족' : '부족') + (r.measured.vsRated ? ', 표시 풍량의 ' + Math.round(r.measured.vsRated * 100) + '%' : ''));
     r.notes.forEach(function (n) { L.push('- 참고: ' + n); });
     return L.join('\n');
   }
