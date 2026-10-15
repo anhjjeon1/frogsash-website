@@ -9,7 +9,7 @@
  */
 (function (root) {
   'use strict';
-  var ENGINE_VERSION = 'erv-engine 1.1';
+  var ENGINE_VERSION = 'erv-engine 1.2';
 
   // ── 습공기 (Magnus 식, 결로진단앱과 동일)
   function es(T) { return 0.6108 * Math.exp(17.27 * T / (T + 237.3)); }          // 포화수증기압 kPa
@@ -36,7 +36,7 @@
   // ── 사양을 확인한 모델 목록 (출처가 있는 값만. 단계를 모르면 정격값을 high에 둠)
   //    새 모델은 명판 사진·제조사 공식 자료로 확인한 뒤에만 추가한다.
   var MODELS = [
-    { model: 'AP-B0150PM', maker: '에어패스', low: null, mid: null, high: 150, watt: 73, type: '', src: '의왕 풍경채 본체 명판(2026-10 현장 사진): 정격 풍량 150㎥/h, 73W' },
+    { model: 'AP-B0150PM', maker: '에어패스', low: null, mid: null, high: 150, watt: 73, type: 'erv', src: '본체 명판(2026-10 현장 사진): 정격 풍량 150㎥/h, 순급기풍량 정격의 90% 이상, 73W, 전열교환효율 냉방 45%·난방 70% 이상, 소음 40dB 이하, 덕트형·천장 매립·바이패스형(KS B 6879)' },
     { model: 'TAC551-30S0', maker: '경동나비엔', low: 200, mid: 300, high: 320, watt: 99, type: '', src: '경동나비엔 공식 판매몰 상품 표기 200/300/320CMH, 99W(2026-10 열람)' },
     { model: 'TCA360-0100', maker: '경동나비엔', low: null, mid: null, high: 100, watt: null, type: '', src: '경동나비엔 공식 판매몰 상품 표기 100CMH(2026-10 열람)' },
     { model: 'THE650-0150', maker: '경동나비엔', low: null, mid: null, high: 150, watt: null, type: '', src: '경동나비엔 공식 판매몰 상품 표기 환기 150CMH(2026-10 열람)' }
