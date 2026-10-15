@@ -101,7 +101,32 @@ ul.notes{margin:6px 0 0;padding-left:16px;font-size:12px;line-height:1.5}
 .cta b{color:var(--accent)}
 footer{text-align:center;font-size:11px;color:var(--dim);margin-top:14px;line-height:1.6}
 footer a{color:var(--dim)}
+/* PDF(전체저장·내파일저장) 공통: 폰에서도 읽히게 큰 글씨, 사진은 자르지 않음 */
+.pdfdoc{background:#fff;color:#111;font-size:21px;line-height:1.6;padding:6px 4px;width:100%;box-sizing:border-box;overflow-wrap:anywhere}
+.pdfdoc h1{font-size:28px;margin:0 0 4px}
+.pdfdoc .sub{font-size:15px;color:#555;margin-bottom:12px}
+.pdfdoc .vb{font-size:24px;padding:6px 16px}
+.pdfdoc .big{font-size:40px}.pdfdoc .big small{font-size:20px;color:#555}
+.pdfdoc .why{font-size:22px}
+.pdfdoc .bar{grid-template-columns:150px 1fr 110px;font-size:18px;margin:8px 0}
+.pdfdoc .bar .t{height:14px;background:#e8ecef}
+.pdfdoc table{font-size:20px}.pdfdoc th,.pdfdoc td{border-top:1px solid #ccc;padding:8px 5px;color:#111}.pdfdoc th{color:#444}
+.pdfdoc .note,.pdfdoc .src{font-size:17px;color:#444}
+.pdfdoc ul.notes{font-size:19px}
+.pdfdoc .res-ph{grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.pdfdoc .res-ph img{height:auto;max-height:none;object-fit:contain;border:1px solid #ddd}
+.pdfdoc .res-ph figcaption{font-size:16px;color:#444}
+.pdfdoc .ai-out{background:#fff;border:2px solid #8aa0c8;font-size:21px;line-height:1.7;color:#111;padding:12px 14px}
+.pdfdoc .ai-out h2,.pdfdoc .ai-out h3{font-size:24px;margin:16px 0 6px}
+.pdfdoc .ai-out li{margin:4px 0}
+.pdfdoc tr.pick td{background:#e6f6ec}
+.pdfdoc .inputs td,.pdfdoc .inputs th{font-size:19px}
+.pdfdoc figure,.pdfdoc tr,.pdfdoc li{page-break-inside:avoid;break-inside:avoid}
+#pdf-host{position:fixed;left:-10000px;top:0;width:740px}
 @media print{
+  body.printing>*:not(#pdf-host){display:none!important}
+  body.printing #pdf-host{position:static;left:0}
+  body.printing .pdfdoc{width:auto}
   body{background:#fff;color:#111;max-width:none;padding:0}
   .card,.act{background:#fff;border-color:#ccc;color:#111}
   .act .box{background:#fff;border:none}
@@ -172,7 +197,7 @@ footer a{color:var(--dim)}
   <div class="row1 no-print"><button class="pill p-ai" type="button" id="btn-calc">🤖 AI 분석</button><button class="pill p-reset" type="button" id="btn-reset">↻ 초기화</button></div>
   <div class="box"><div class="empty no-print" id="empty">입력을 마치고 <b>AI 분석</b>을 누르면 결과가 여기에 표시됩니다.</div><div id="result"></div></div>
   <div class="tools no-print"><button class="t-ai" type="button" id="btn-aiv">🤖 AI 검증</button><button class="t-file" type="button" id="btn-file">📁 내파일저장</button><button class="t-all" type="button" id="btn-all">⬇ 전체저장</button></div>
-  <div class="sub no-print"><span>전체저장 = PDF, 내파일저장 = 입력값 파일.</span><label>⤒ 불러오기<input type="file" id="file-in" accept=".json,application/json" style="display:none"></label></div>
+  <div class="sub no-print"><span>내파일저장 = PDF 파일을 폰에 바로 저장 · 전체저장 = 인쇄 화면에서 PDF 저장</span><span style="white-space:nowrap"><a href="#" id="json-save" style="color:#9fd9b8;font-weight:700">입력값 저장</a> · <label>⤒ 불러오기<input type="file" id="file-in" accept=".json,application/json" style="display:none"></label></span></div>
 </div>
 
 <footer>
@@ -182,8 +207,9 @@ footer a{color:var(--dim)}
 
 <script src="erv-engine.js?v=1.2"></script>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
-var APP_VERSION='erv v1.4';
+var APP_VERSION='erv v1.5';
 document.getElementById('ver').textContent=APP_VERSION;
 (function(){
   var $=function(id){return document.getElementById(id);};
@@ -247,7 +273,7 @@ document.getElementById('ver').textContent=APP_VERSION;
     if(r.missing.length)h+='<div class="note">빠진 입력: '+r.missing.join(', ')+'</div>';
     h+='<div class="src">근거: 건축물의 설비기준 등에 관한 규칙 제11조(신축 공동주택 시간당 0.5회 이상), 같은 규칙 별표 1의5(열회수형 환기장치 유효환기량 표시용량의 90% 이상), 1인당 25㎥/h는 같은 규칙의 다중이용시설 값(비교용), 수분 발생량 BS 5250:2011 Table D.6, 바깥 공기 Open-Meteo 과거 기상'+(CLIMATE?' ('+CLIMATE.period+')':'')+'.</div>';
     if(AI_HTML)h+='<div class="ai-out"><b>AI 검증 소견</b>'+AI_HTML+'</div>';
-    h+='<a class="cta no-print" href="tel:010-2322-0949">결로·외풍이 계속되면 현장 측정 상담 <b>☎ 010-2322-0949</b></a></div>';
+    h+='</div>';
     box.innerHTML=h;
   }
   function onModel(){
@@ -354,12 +380,38 @@ document.getElementById('ver').textContent=APP_VERSION;
   });
   // ── 전체저장(PDF) / 내파일저장·불러오기(JSON)
   function fname(ext){var d=new Date();return '환기량계산_'+($('addr').value.trim().replace(/\s+/g,'')||'우리집')+'_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+ext;}
-  $('btn-all').addEventListener('click',function(){
+  // PDF용 문서 조립 (결과 + 입력 요약, 흰 바탕 큰 글씨)
+  function buildDoc(){
     if(!$('result').innerHTML)run();
-    if(!LAST||LAST.qReq==null){alert('먼저 입력을 마치고 AI 분석을 눌러 주십시오.');return;}
-    var t0=document.title;document.title=fname('');setTimeout(function(){window.print();setTimeout(function(){document.title=t0;},1500);},200);
+    if(!LAST||LAST.qReq==null){alert('먼저 입력을 마치고 AI 분석을 눌러 주십시오.');return null;}
+    var row=function(k,v){return v?'<tr><th style="width:30%">'+k+'</th><td>'+esc(v)+'</td></tr>':'';};
+    var chipTxt=function(n){return Array.prototype.map.call(document.querySelectorAll('.chips[data-name="'+n+'"] .chip.on'),function(c){return c.textContent;}).join(', ');};
+    var d=new Date();
+    var h='<div class="pdfdoc"><h1>환기량 적정성 검토</h1><div class="sub">청개구리샤시 · 작성일 '+d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate()+' · '+APP_VERSION+'</div>';
+    h+='<table class="inputs">'+row('지역',$('addr').value.trim())+row('겨울 바깥',($('outT').value?$('outT').value+'℃':'')+($('outRH').value?' / '+$('outRH').value+'%':''))+row('집 크기',($('area').value?'전용 '+$('area').value+'㎡':'')+' · 천장 '+($('height').value||'2.3')+'m')+row('창호',chipTxt('window'))+row('거주 인원',$('people').value?$('people').value+'명':'')+row('재실 시간',chipTxt('home'))+row('조리',[chipTxt('cook'),chipTxt('cookdays')].filter(Boolean).join(' · '))+row('빨래 건조',chipTxt('dry'))+row('겨울 실내',($('Ti').value?'온도 '+$('Ti').value+'℃ ':'')+($('target').value?'습도 상한 '+$('target').value+'% ':'')+($('Ts').value?'유리 '+$('Ts').value+'℃':''))+row('환기장치',[$('model').value.trim(),[$('low').value,$('mid').value,$('high').value].filter(Boolean).join('/')+( [$('low').value,$('mid').value,$('high').value].some(Boolean)?'CMH':''),chipTxt('type')].filter(Boolean).join(' · '))+'</table>';
+    h+=$('result').innerHTML.replace(/<a class="cta[\s\S]*?<\/a>/g,'')+'</div>';
+    var host=$('pdf-host');if(!host){host=document.createElement('div');host.id='pdf-host';document.body.appendChild(host);}
+    host.innerHTML=h;return host.firstChild;
+  }
+  $('btn-all').addEventListener('click',function(){
+    var el=buildDoc();if(!el)return;
+    var t0=document.title;document.title=fname('');document.body.classList.add('printing');
+    var done=function(){document.body.classList.remove('printing');document.title=t0;window.removeEventListener('afterprint',done);};
+    window.addEventListener('afterprint',done);
+    setTimeout(function(){window.print();setTimeout(done,2000);},300);
   });
-  $('btn-file').addEventListener('click',function(){
+  // 내파일저장: PDF 파일을 바로 내려받기(폰 '내 파일 > 다운로드'에 저장)
+  $('btn-file').addEventListener('click',async function(){
+    var el=buildDoc();if(!el)return;
+    if(typeof window.html2pdf!=='function'){alert('PDF 만들기 도구를 불러오지 못했습니다. 전체저장을 이용해 주십시오.');return;}
+    var btn=this,old=btn.innerHTML;btn.disabled=true;btn.innerHTML='⏳ PDF 만드는 중…';
+    var sy=window.scrollY;window.scrollTo(0,0); // html2canvas는 스크롤 위치만큼 위쪽이 비는 문제가 있어 맨 위에서 만듦
+    try{
+      await window.html2pdf().set({margin:[8,6,8,6],filename:fname('.pdf'),image:{type:'jpeg',quality:0.92},html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['avoid-all','css']}}).from(el).save();
+    }catch(e){alert('PDF를 만들지 못했습니다: '+(e&&e.message||e));}
+    finally{window.scrollTo(0,sy);btn.disabled=false;btn.innerHTML=old;}
+  });
+  $('json-save').addEventListener('click',function(e){e.preventDefault();
     var data={app:'erv-calc',v:1,inputs:{},chips:{},ai:AI_HTML};
     IDS.forEach(function(id){data.inputs[id]=$(id).value;});CH.forEach(function(n){data.chips[n]=ons(n);});
     var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));a.download=fname('.json');document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1000);
