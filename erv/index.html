@@ -214,7 +214,7 @@ footer a{color:var(--dim)}
 <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
-var APP_VERSION='erv v1.7';
+var APP_VERSION='erv v1.8';
 document.getElementById('ver').textContent=APP_VERSION;
 (function(){
   var $=function(id){return document.getElementById(id);};
@@ -281,6 +281,8 @@ document.getElementById('ver').textContent=APP_VERSION;
     if(AI_HTML)h+='<div class="ai-out"><b>AI 검증 소견</b>'+AI_HTML+'</div>';
     h+='</div>';
     box.innerHTML=h;
+    // 결과가 있으면 인쇄용 문서를 늘 준비 — 전체저장 버튼이든 브라우저 메뉴 인쇄든 같은 PDF 모양으로 나옴
+    try{if(buildDoc(true))document.body.classList.add('printing');}catch(e){}
   }
   function onModel(){
     var st=$('model-st'), v=$('model').value.trim(); if(!v){st.textContent='확인된 모델이면 풍량을 자동으로 채웁니다.';return;}
@@ -387,9 +389,9 @@ document.getElementById('ver').textContent=APP_VERSION;
   // ── 전체저장(PDF) / 내파일저장·불러오기(JSON)
   function fname(ext){var d=new Date();return '환기량계산_'+($('addr').value.trim().replace(/\s+/g,'')||'우리집')+'_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+ext;}
   // PDF용 문서 조립 (결과 + 입력 요약, 흰 바탕 큰 글씨)
-  function buildDoc(){
-    if(!$('result').innerHTML)run();
-    if(!LAST||LAST.qReq==null){alert('먼저 입력을 마치고 AI 분석을 눌러 주십시오.');return null;}
+  function buildDoc(quiet){
+    if(!quiet&&!$('result').innerHTML)run();
+    if(!LAST||LAST.qReq==null){if(!quiet)alert('먼저 입력을 마치고 AI 분석을 눌러 주십시오.');return null;}
     var row=function(k,v){return v?'<tr><th style="width:30%">'+k+'</th><td>'+esc(v)+'</td></tr>':'';};
     var chipTxt=function(n){return Array.prototype.map.call(document.querySelectorAll('.chips[data-name="'+n+'"] .chip.on'),function(c){return c.textContent;}).join(', ');};
     var d=new Date();
@@ -430,6 +432,25 @@ document.getElementById('ver').textContent=APP_VERSION;
     }catch(e){alert('불러오지 못했습니다: '+e.message);}finally{inp.value='';}};
     rd.readAsText(f);
   });
+})();
+</script>
+<script>
+/* 새 버전 알림: 화면으로 돌아올 때마다 서버의 버전을 확인해, 다르면 새로 고침 안내 (폰 캐시에 옛 화면이 남는 문제 방지) */
+(function(){
+  var CUR=APP_VERSION, RE=/APP_VERSION='([^']+)'/;
+  function bar(nv){
+    if(document.getElementById('vc-bar'))return;
+    var b=document.createElement('div');b.id='vc-bar';
+    b.style.cssText='position:fixed;left:8px;right:8px;bottom:10px;z-index:99999;background:#e8701a;color:#fff;border-radius:14px;padding:12px 14px;font:700 14px/1.4 sans-serif;display:flex;align-items:center;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.35)';
+    b.innerHTML='<span style="flex:1">새 버전('+nv+')이 있습니다. 새로 고침해 주십시오.</span><button type="button" style="background:#fff;color:#e8701a;border:none;border-radius:10px;padding:8px 12px;font-weight:800">새로 고침</button>';
+    b.querySelector('button').onclick=function(){var u=location.pathname+'?v='+encodeURIComponent(nv)+'&t='+Date.now();location.replace(u);};
+    document.body.appendChild(b);
+  }
+  async function check(){
+    try{var r=await fetch(location.pathname+'?vc='+Date.now(),{cache:'no-store'});if(!r.ok)return;var t=await r.text();var m=t.match(RE);if(m&&m[1]&&m[1]!==CUR)bar(m[1]);}catch(e){}
+  }
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')check();});
+  setTimeout(check,4000);
 })();
 </script>
 </body>
