@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111">
+<meta name="robots" content="noindex,nofollow">
+<title>청개구리 실시간 점검</title>
+<!--
+  청개구리 실시간 사전점검 (시제품)
+  - 화면 안에 카메라를 띄우고, 폰을 하자 쪽에 잠깐 멈추면 자동으로 찍는다.
+  - 찍은 사진 1장을 AI가 보고 하자가 있으면 위치 상자를 돌려준다 → 전체=멀리서, 확대=가까이 로 자동 저장.
+  - 하자로 판정된 것만 정밀 분석(공종·유형·심각도·5줄 소견)까지 이어서 하고, /team/ 앱과 같은 팀 서버로 보낸다.
+  - 팀 설정(이름·분야·팀 비밀번호)과 현장 목록은 /team/ 앱과 같은 기기 저장값을 그대로 쓴다.
+-->
+<style>
+:root{--g:#1B6B28;--g2:#2E9E41;--r:#E5484D;--y:#F5A524;--bg:#0E0F10;--card:#fff;--tx:#1D2939;--mu:#667085;--ln:#E4E7EC}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:#F2F4F7;color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:15px}
+button{font:inherit;border:0;cursor:pointer}
+.top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--ln);padding:8px 12px calc(8px) 12px;display:flex;align-items:center;gap:8px}
+.top h1{font-size:1rem;color:var(--g);white-space:nowrap}
+.top .ver{font-size:.65rem;color:var(--mu);background:#F2F4F7;border-radius:6px;padding:2px 6px}
+.top .sp{flex:1}
+.top .cfg{background:#F2F4F7;border-radius:8px;padding:6px 10px;font-size:.8rem;color:#344054}
+.top .cfg[data-s="ok"]{color:var(--g)}.top .cfg[data-s="err"]{color:var(--r)}
+.bar{background:#fff;padding:8px 12px;display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--ln);scrollbar-width:none}
+.bar::-webkit-scrollbar{display:none}
+.bar select{font:inherit;font-size:.85rem;border:1px solid var(--ln);border-radius:8px;padding:6px 8px;background:#fff;max-width:46vw}
+.chip{flex:none;border:1px solid var(--ln);background:#fff;border-radius:999px;padding:6px 11px;font-size:.82rem;color:#344054}
+.chip.on{background:var(--g);border-color:var(--g);color:#fff;font-weight:600}
+/* 카메라 */
+.cam{position:relative;background:var(--bg);width:100%;aspect-ratio:3/4;max-height:68vh;overflow:hidden}
+.cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cam canvas.ov{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cam .msg{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:rgba(0,0,0,.62);color:#fff;border-radius:999px;padding:7px 14px;font-size:.85rem;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
+.cam .msg.warn{background:rgba(229,72,77,.85)}.cam .msg.ok{background:rgba(27,107,40,.9)}
+.cam .hold{position:absolute;left:0;bottom:0;height:5px;width:0;background:var(--y);transition:width .12s linear}
+.cam .flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .25s}
+.cam .flash.on{opacity:.75;transition:none}
+.cam .start{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;text-align:center;padding:24px}
+.cam .start button{background:var(--g2);color:#fff;border-radius:14px;padding:14px 26px;font-size:1.05rem;font-weight:700}
+.cam .start p{font-size:.85rem;line-height:1.6;color:#D0D5DD}
+.cam .side{position:absolute;right:10px;top:56px;display:flex;flex-direction:column;gap:8px}
+.cam .side button{width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;font-size:1.1rem}
+.cam .side button.on{background:var(--y);color:#111}
+.cam .zoom{position:absolute;left:12px;right:70px;bottom:16px;display:none}
+.cam .zoom input{width:100%}
+.ctl{background:#111;display:flex;align-items:center;justify-content:space-around;padding:12px 10px}
+.ctl .auto{color:#fff;background:#333;border-radius:12px;padding:10px 12px;font-size:.85rem;min-width:96px}
+.ctl .auto.on{background:var(--g2);font-weight:700}
+.ctl .shot{width:68px;height:68px;border-radius:50%;background:#fff;border:5px solid #888}
+.ctl .shot:active{transform:scale(.94)}
+.ctl .q{color:#D0D5DD;font-size:.75rem;text-align:center;min-width:96px;line-height:1.5}
+.hint{background:#fff;padding:8px 12px;border-bottom:1px solid var(--ln);display:flex;gap:6px;align-items:center}
+.hint input{flex:1;font:inherit;font-size:.88rem;border:1px solid var(--ln);border-radius:8px;padding:8px 10px}
+.hint small{color:var(--mu);font-size:.7rem;white-space:nowrap}
+/* 결과 목록 */
+.lh{display:flex;align-items:center;justify-content:space-between;padding:14px 12px 6px}
+.lh b{font-size:.95rem}.lh a{font-size:.8rem;color:var(--g);text-decoration:none;font-weight:600}
+.list{padding:0 10px 90px;display:flex;flex-direction:column;gap:10px}
+.it{background:var(--card);border:1px solid var(--ln);border-radius:12px;overflow:hidden}
+.it .ph{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:#000}
+.it .ph figure{position:relative}
+.it .ph img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.it .ph figcaption{position:absolute;left:6px;top:6px;background:rgba(0,0,0,.6);color:#fff;font-size:.68rem;border-radius:6px;padding:2px 6px}
+.it .bd{padding:10px 12px}
+.it .tg{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;align-items:center}
+.it .tg span{font-size:.72rem;border-radius:6px;padding:2px 7px;background:#F2F4F7;color:#344054}
+.it .tg .sv-중대{background:#FEE4E2;color:#B42318;font-weight:700}
+.it .tg .sv-보통{background:#FEF0C7;color:#B54708;font-weight:700}
+.it .tg .sv-경미{background:#DCFAE6;color:#067647;font-weight:700}
+.it .st{font-size:.75rem;color:var(--mu);margin-left:auto}
+.it .st.err{color:var(--r)}.it .st.ok{color:var(--g)}
+.it textarea{width:100%;font:inherit;font-size:.82rem;line-height:1.55;border:1px solid var(--ln);border-radius:8px;padding:8px;min-height:120px;resize:vertical;color:var(--tx)}
+.it .ac{display:flex;gap:6px;margin-top:8px}
+.it .ac button{flex:1;background:#F2F4F7;border-radius:8px;padding:8px;font-size:.8rem;color:#344054}
+.it .ac .del{flex:none;color:var(--r)}
+.empty{color:var(--mu);font-size:.85rem;text-align:center;padding:24px 10px;line-height:1.7}
+/* 설정 창 */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.mo.show{display:flex}
+.mo .box{background:#fff;width:100%;max-width:520px;border-radius:16px 16px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+.mo h3{color:var(--g);font-size:1rem;margin-bottom:10px}
+.mo label{display:block;font-size:.78rem;color:#344054;margin:10px 0 4px;font-weight:600}
+.mo input,.mo select{width:100%;font:inherit;border:1px solid var(--ln);border-radius:8px;padding:9px 10px}
+.mo .row{display:flex;gap:6px}
+.mo .btn{width:100%;background:var(--g);color:#fff;border-radius:10px;padding:12px;font-weight:700;margin-top:14px}
+.mo .btn.gray{background:#F2F4F7;color:#344054}
+.mo .note{font-size:.74rem;color:var(--mu);line-height:1.6;margin-top:10px}
+.mo .err{color:var(--r);font-size:.8rem;min-height:1em;margin-top:8px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(16,24,40,.92);color:#fff;border-radius:10px;padding:10px 16px;font-size:.85rem;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none;max-width:92vw;text-align:center}
+.toast.show{opacity:1}.toast.err{background:rgba(180,35,24,.95)}
+@media print{
+  .top,.bar,.cam,.ctl,.hint,.lh a,.it .ac,.mo,.toast{display:none!important}
+  body{background:#fff}.list{padding:0}.it{break-inside:avoid;margin-bottom:8px}
+  .it textarea{border:0;min-height:0;height:auto}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>🐸 실시간 점검</h1><span class="ver" id="ver"></span><span class="sp"></span>
+  <button class="cfg" id="cfgBtn" onclick="openCfg()">팀 설정</button>
+</div>
+<div class="bar">
+  <select id="job" onchange="pickJob(this.value)"></select>
+  <div id="rooms" style="display:flex;gap:6px"></div>
+</div>
+<div class="hint">
+  <input id="note" placeholder="하자 내용 (선택) 예: 걸레받이 찍힘 — 비워 두면 AI가 사진만 보고 판단합니다">
+</div>
+<div class="cam" id="cam">
+  <video id="vid" playsinline muted autoplay></video>
+  <canvas class="ov" id="ov"></canvas>
+  <div class="flash" id="flash"></div>
+  <div class="hold" id="hold"></div>
+  <div class="msg" id="msg" style="display:none"></div>
+  <div class="side" id="side" style="display:none">
+    <button id="torchBtn" onclick="toggleTorch()" title="손전등" style="display:none">🔦</button>
+    <button onclick="stopCam()" title="카메라 끄기">✕</button>
+  </div>
+  <div class="zoom" id="zoomBox"><input type="range" id="zoom" min="1" max="1" step="0.1" value="1" oninput="setZoom(this.value)"></div>
+  <div class="start" id="start">
+    <button onclick="startCam()">📷 카메라 켜기</button>
+    <p>폰을 하자 쪽으로 향하고 1~2초 멈추면 자동으로 찍습니다.<br>AI가 하자로 판단한 사진만 멀리서·가까이 두 장으로 저장하고<br>분석까지 이어서 진행합니다.</p>
+  </div>
+</div>
+<div class="ctl">
+  <button class="auto on" id="autoBtn" onclick="toggleAuto()">자동 촬영<br>켜짐</button>
+  <button class="shot" id="shotBtn" onclick="manualShot()" aria-label="직접 찍기"></button>
+  <div class="q" id="q">오늘 AI 0회</div>
+</div>
+<div class="lh"><b id="lhT">저장된 하자 0건</b><a href="../team/">팀 앱 열기 →</a></div>
+<div class="list" id="list"></div>
+
+<div class="mo" id="mo"><div class="box" id="moBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ============================================================ 설정 */
+const APP_VER='live-v0.1';
+const BUILD='20261016a';
+const TEAM_GAS='https://script.google.com/macros/s/AKfycbyIo86UrFvE5W82FdSiZTjwB6N1QOEIjm4DTzhU-lgmd-OiSeYE1ACPRATVd_dOBPBl/exec';
+const ROOMS=['거실','주방','침실1','침실2','침실3','안방','욕실1','욕실2','현관','발코니1','발코니2','대피공간','팬트리','드레스룸','다용도실','실외기실','기타'];
+const WM={
+  "도배공사":{"도배":["들뜸","마감불량","흠집/찍힘","면불량","오염","이음불량","흠집","미시공","파손","이색/변색"]},
+  "타일공사":{"타일":["줄눈불량","틈새","구배불량","단차","들뜸","미시공","파손","마감불량","오염","흠집/찍힘"],"폴리싱타일":["파손","들뜸","줄눈불량","단차","틈새","오염","마감불량"],"아트월타일":["틈새","파손","마감불량","단차","흠집/찍힘","미시공","들뜸"],"타일코킹":["코킹불량","미시공","틈새","흠집/찍힘","마감불량"],"마블씰":["들뜸","틈새","단차","미시공","흠집/찍힘"]},
+  "PL창호공사":{"PL창호":["고정불량","미시공","수직수평불량","흠집/찍힘","개폐불량","파손","틈새","기밀불량","결로","누수","코킹불량","잠금불량","소음","오염"],"분합창":["미시공","흠집/찍힘","고정불량","수직수평불량","개폐불량","파손","기밀불량","결로","잠금불량"],"터닝도어":["미시공","개폐불량","흠집/찍힘","고정불량","틈새","파손","기밀불량","결로","잠금불량","소음"],"창호손잡이/잠금장치":["작동불량","잠금불량","고정불량","미시공","파손","흠집/찍힘"],"물구멍/풍지판":["미시공","파손","고정불량","오염","기밀불량"],"모헤어/가스켓":["미시공","틈새","파손","기밀불량","마감불량"],"대피창":["개폐불량","고정불량","코킹불량","미시공"],"PL방충망":["개폐불량","미시공","수직수평불량","파손"]},
+  "주방가구공사":{"주방상/하부장":["수직수평불량","미시공","개폐불량","흠집/찍힘","마감불량","고정불량","틈새"],"아일랜드장":["수직수평불량","개폐불량","미시공","흠집/찍힘","마감불량","틈새"],"냉장고장":["흠집/찍힘","수직수평불량","틈새","미시공","마감불량"],"고급장식장":["개폐불량","고정불량","수직수평불량","틈새","미시공"],"씽크볼":["미시공","마감불량","틈새","고정불량"]},
+  "일반가구공사":{"신발장":["흠집/찍힘","미시공","틈새","수직수평불량","마감불량","개폐불량"],"붙박이장":["흠집/찍힘","미시공","수직수평불량","개폐불량","틈새","마감불량"],"화장대":["미시공","흠집/찍힘","마감불량","틈새","개폐불량","수직수평불량"],"현관팬트리도어/틀":["흠집/찍힘","수직수평불량","틈새","미시공","마감불량"],"복도팬트리도어/틀":["흠집/찍힘","틈새","수직수평불량","마감불량","미시공"],"아트월판넬":["틈새","마감불량","미시공","흠집/찍힘","파손"],"드레스룸도어/틀":["흠집/찍힘","틈새","마감불량","미시공","수직수평불량"]},
+  "마루공사":{"강마루":["들뜸","틈새","오염","단차","파손","마감불량","미시공"],"마루코킹":["코킹불량","미시공","들뜸","틈새","오염"],"걸레받이":["틈새","파손","마감불량","미시공","들뜸","단차"]},
+  "목창호공사":{"목문틀":["흠집/찍힘","틈새","미시공","수직수평불량","고정불량","마감불량"],"목문짝":["개폐불량","흠집/찍힘","고정불량","수직수평불량","틈새","마감불량"],"공틀":["틈새","수직수평불량","오염","미시공"]},
+  "도장공사":{"도장":["마감불량","면불량","도장불량","균열","오염","미시공","들뜸"],"현관문틀도장":["도장불량","마감불량","오염","면불량","균열"],"외벽도장":["면불량","마감불량","균열","도장불량","오염"]},
+  "준공청소공사":{"준공청소":["오염"]},
+  "코킹공사":{"코킹":["코킹불량","미시공","틈새","오염","마감불량"]},
+  "중문공사":{"슬라이딩도어/틀":["개폐불량","고정불량","마감불량","미시공","틈새","흠집/찍힘"],"스윙도어/틀":["마감불량","고정불량","개폐불량","미시공","흠집/찍힘","틈새"]},
+  "기계설비공사":{"위생도기류":["고정불량","마감불량","작동불량","미시공","누수"],"수전류":["고정불량","미시공","작동불량","마감불량","누수"],"설비":["마감불량","미시공","악취","작동불량","누수"],"욕실액세서리":["고정불량","미시공","마감불량","수직수평불량"],"배수드레인":["마감불량","미시공","고정불량","작동불량","배수불량"],"욕조":["흠집/찍힘","코킹불량","고정불량","파손","배수불량","미시공"]},
+  "전기공사":{"콘센트":["작동불량","고정불량","수직수평불량","미시공","들뜸"],"스위치":["작동불량","수직수평불량","고정불량","미시공"],"네트워크스위치":["작동불량","수직수평불량","고정불량"]},
+  "내장목공사":{"석고보드":["고정불량","마감불량","들뜸","단차","틈새"],"천정몰딩":["틈새","흠집/찍힘","마감불량","고정불량","오염"],"욕실천장재/점검구":["고정불량","틈새","마감불량","오염","미시공"]},
+  "방화문공사":{"현관문":["미시공","개폐불량","흠집/찍힘","고정불량","틈새"],"대피공간방화문":["미시공","개폐불량","고정불량","흠집/찍힘","틈새"],"실외기실문짝/틀":["개폐불량","고정불량","미시공","틈새"]},
+  "시스템가구공사":{"시스템가구":["고정불량","미시공","수직수평불량","틈새","마감불량"],"월판넬":["틈새","미시공","수직수평불량","단차"]},
+  "주방상판공사":{"주방상판/코킹":["미시공","코킹불량","틈새","흠집/찍힘","파손"],"엔지니어드상판":["미시공","틈새","마감불량","코킹불량","파손"]},
+  "조명공사":{"세대등기구":["수직수평불량","작동불량","고정불량","미시공","점등불량"]},
+  "내부석공사":{"석재걸레받이":["틈새","미시공","마감불량","코킹불량","파손"],"디딤판":["틈새","미시공","단차","마감불량","파손"]},
+  "욕실장공사":{"욕실장/코킹":["미시공","개폐불량","수직수평불량","고정불량","코킹불량"]},
+  "유리공사":{"유리":["흠집","파손","미시공","오염","코킹불량"],"유리코킹":["코킹불량","미시공"],"샤워부스":["개폐불량","고정불량","코킹불량","누수","파손","흠집/찍힘"]},
+  "에어컨공사":{"실외기":["마감불량","미시공","작동불량","고정불량"],"시스템에어컨":["작동불량","고정불량","마감불량","누수"]},
+  "루버창호공사":{"루버창/방충망":["미시공","고정불량","개폐불량","흠집/찍힘"]},
+  "환기설비공사":{"전열교환기":["작동불량","풍량부족","소음","필터불량","미시공","누수","오염"],"송풍구(급기)/흡입구(배기)":["작동불량","풍량부족","미시공","고정불량","오염","마감불량"],"욕실환풍기":["작동불량","소음","미시공","고정불량"],"레인지후드":["작동불량","소음","고정불량","미시공","흠집/찍힘"]},
+  "난방설비공사":{"보일러":["작동불량","누수","소음","고정불량","미시공"],"난방분배기":["누수","작동불량","마감불량","미시공"],"온도조절기":["작동불량","고정불량","수직수평불량","미시공"]},
+  "주방기기공사":{"쿡탑":["작동불량","고정불량","흠집/찍힘","파손","미시공"],"빌트인오븐":["작동불량","고정불량","흠집/찍힘","미시공"],"식기세척기":["작동불량","누수","고정불량","미시공"],"가스차단기":["작동불량","고정불량","미시공"]},
+  "홈네트워크공사":{"월패드":["작동불량","고정불량","수직수평불량","흠집/찍힘","미시공"],"도어락":["작동불량","고정불량","흠집/찍힘","미시공"],"인터폰":["작동불량","고정불량","미시공"],"세대분전반":["작동불량","마감불량","고정불량","미시공"],"통신단자함":["마감불량","고정불량","미시공"],"일괄소등스위치":["작동불량","고정불량","수직수평불량","미시공"]},
+  "소방설비공사":{"스프링클러헤드":["미시공","마감불량","오염","파손","누수"],"감지기":["미시공","고정불량","작동불량","오염"],"완강기":["미시공","고정불량"],"자동소화장치":["미시공","작동불량","고정불량"]},
+  "단열공사":{"결로/곰팡이":["결로","곰팡이","오염"],"단열":["단열불량","미시공","틈새"]},
+  "방수공사":{"욕실방수":["누수","구배불량","마감불량","미시공"],"발코니방수":["누수","구배불량","균열","미시공"]},
+  "금속공사":{"발코니난간":["고정불량","도장불량","흠집/찍힘","수직수평불량","미시공"],"빨래건조대":["작동불량","고정불량","파손","미시공"]},
+  "미장공사":{"벽체":["균열","면불량","마감불량"],"바닥":["균열","단차","수직수평불량","마감불량"]},
+  "직영공사":{"직영":["마감불량","들뜸","미시공","누수","고정불량","틈새"]}
+};
+/* 멈춤 판정값 (작은 회색 화면 80×60 기준, 픽셀 평균 차이 0~255) */
+const STILL_DIFF=4.5;     /* 이보다 작으면 멈춘 것 */
+const MOVE_DIFF=11;       /* 이보다 크면 움직인 것 */
+const HOLD_MS=1300;       /* 이만큼 멈추면 찍는다 */
+const REARM_MS=350;       /* 찍은 뒤에는 이만큼 움직여야 다음 촬영 준비 */
+const SAME_DIFF=9;        /* 이미 본 장면과 이보다 가까우면 AI에 다시 묻지 않는다 */
+const MIN_CONF=0.55;      /* AI 확신도가 이보다 낮으면 하자로 저장하지 않는다 */
+
+const $=id=>document.getElementById(id);
+const L={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const NL='\n';
+$('ver').textContent=APP_VER;
+
+let toastT;
+function toast(t,err,ms){const e=$('toast');e.textContent=t;e.className='toast show'+(err?' err':'');clearTimeout(toastT);toastT=setTimeout(()=>e.className='toast',ms||2500);}
+let msgT;
+function msg(t,kind,ms){const e=$('msg');e.textContent=t;e.className='msg'+(kind?' '+kind:'');e.style.display='block';clearTimeout(msgT);if(ms)msgT=setTimeout(()=>{if(cam.on)msg(cam.auto?'하자 쪽을 비추고 잠깐 멈춰 주세요':'아래 흰 단추로 찍어 주세요');},ms);}
+
+/* ============================================================ 팀 설정 · 현장 (/team/ 앱과 같은 기기 저장값) */
+const cfg=()=>L.get('team_cfg',{name:'',role:'',pin:''});
+let jobs=L.get('team_jobs',{}),curJob=L.get('team_cur',null),room=L.get('live_room','');
+const DEL='__삭제됨__';
+const jobTitle=id=>{const j=jobs[id];const t=j&&j.title;return (!t||t==='새 현장'||t==='현장명')?'':t;};
+
+async function api(body,signal){
+  const r=await fetch(TEAM_GAS,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(Object.assign({pin:cfg().pin},body)),signal});
+  if(!r.ok)throw new Error('서버 응답 '+r.status);
+  const d=await r.json();
+  if(d.error==='bad_pin')throw new Error('팀 비밀번호가 다릅니다');
+  if(d.error==='locked')throw new Error(d.message||'잠김');
+  return d;
+}
+function drawJobs(){
+  const l=Object.values(jobs).filter(j=>j.title!==DEL).sort((a,b)=>b.t-a.t);
+  if(curJob&&!jobs[curJob])curJob=null;
+  if(!curJob&&l.length)curJob=l[0].id;
+  $('job').innerHTML=l.length?l.map(j=>'<option value="'+esc(j.id)+'"'+(j.id===curJob?' selected':'')+'>📍 '+esc(jobTitle(j.id)||'현장명 없음')+'</option>').join(''):'<option value="">현장 없음 (팀 앱에서 만드세요)</option>';
+}
+function pickJob(id){curJob=id||null;L.set('team_cur',curJob);toast('현장: '+(jobTitle(id)||'현장명 없음'));}
+async function pullJobs(){
+  if(!cfg().pin||!navigator.onLine)return;
+  try{const r=await api({a:'jobs'});if(r.ok){r.jobs.forEach(j=>{const l=jobs[j.id];if(!l)jobs[j.id]={id:j.id,title:j.title,t:j.t};else if(j.title===DEL||j.t>l.t){l.title=j.title;l.t=j.t;}});L.set('team_jobs',jobs);drawJobs();}setCfgBadge('ok');}
+  catch(e){setCfgBadge('err',e.message);}
+}
+function drawRooms(){$('rooms').innerHTML=ROOMS.map(r=>'<button class="chip'+(r===room?' on':'')+'" onclick="pickRoom(\''+r+'\')">'+r+'</button>').join('');}
+function pickRoom(r){room=room===r?'':r;L.set('live_room',room);drawRooms();}
+let cfgErr='';
+function setCfgBadge(s,e){const b=$('cfgBtn'),c=cfg();cfgErr=e||'';b.dataset.s=s||'';b.textContent=c.pin?((c.name||'팀')+(s==='err'?' · 연결 오류':' · 연결')):'팀 설정 필요';}
+function openCfg(){
+  const c=cfg();
+  $('moBox').innerHTML='<h3>⚙ 팀 설정</h3>'+
+    '<label>이름</label><input id="cName" value="'+esc(c.name)+'" placeholder="목록에 작성자로 표시됩니다">'+
+    '<label>담당 분야</label><select id="cRole"><option'+(c.role==='창호'?' selected':'')+'>창호</option><option'+(c.role==='내장·기타'?' selected':'')+'>내장·기타</option></select>'+
+    '<label>팀 비밀번호</label><input id="cPin" type="password" autocomplete="off" value="'+esc(c.pin)+'">'+
+    '<div class="err" id="cErr">'+esc(cfgErr)+'</div>'+
+    '<button class="btn" onclick="saveCfg()">저장</button><button class="btn gray" onclick="closeMo()">닫기</button>'+
+    '<div class="note">팀 앱(/team/)과 같은 설정을 함께 씁니다. 여기서 저장한 하자는 같은 현장으로 팀 서버에 올라가고, 팀 앱 목록에도 들어옵니다.<br>AI 분석은 팀 서버 한도(하루 전체 300회)를 함께 씁니다. 하자가 아닌 장면도 1회씩 셉니다.</div>';
+  $('mo').classList.add('show');
+}
+function closeMo(){$('mo').classList.remove('show');}
+async function saveCfg(){
+  const n=$('cName').value.trim(),r=$('cRole').value,p=$('cPin').value.trim();
+  if(!n){$('cErr').textContent='이름을 넣어 주십시오.';return;}
+  if(p&&p.length<4){$('cErr').textContent='팀 비밀번호는 4자 이상입니다.';return;}
+  L.set('team_cfg',Object.assign(cfg(),{name:n,role:r,pin:p}));
+  $('cErr').textContent='서버 확인 중…';
+  try{const d=await api({a:'ping'});if(d.error==='no_pin'){$('cErr').textContent='팀 앱에서 먼저 팀 비밀번호를 정해 주십시오.';return;}setCfgBadge('ok');closeMo();toast('팀 서버에 연결했습니다');pullJobs();}
+  catch(e){$('cErr').textContent=e.message;setCfgBadge('err',e.message);}
+}
+
+/* ============================================================ 기기 저장 (사진이 들어 있어 IndexedDB) */
+let _db;
+function idb(){return _db||(_db=new Promise((res,rej)=>{const r=indexedDB.open('live_db',1);r.onupgradeneeded=()=>r.result.createObjectStore('items',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}));}
+async function dbPut(o){try{const d=await idb();await new Promise((r,j)=>{const tx=d.transaction('items','readwrite');tx.objectStore('items').put(o);tx.oncomplete=r;tx.onerror=()=>j(tx.error);});}catch(e){console.warn('dbPut',e);}}
+async function dbDel(id){try{const d=await idb();d.transaction('items','readwrite').objectStore('items').delete(id);}catch(e){}}
+async function dbAll(){try{const d=await idb();return await new Promise(r=>{const q=d.transaction('items').objectStore('items').getAll();q.onsuccess=()=>r(q.result||[]);q.onerror=()=>r([]);});}catch(e){return [];}}
+let items=[];
+
+/* ============================================================ 카메라 */
+const cam={on:false,stream:null,track:null,auto:L.get('live_auto',true),torch:false,busy:false,armed:true,still:0,moved:0,prev:null,seen:[],timer:0,last:0};
+const small=document.createElement('canvas');small.width=80;small.height=60;
+const sctx=small.getContext('2d',{willReadFrequently:true});
+$('autoBtn').className='auto'+(cam.auto?' on':'');$('autoBtn').innerHTML='자동 촬영<br>'+(cam.auto?'켜짐':'꺼짐');
+
+async function startCam(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('이 브라우저는 화면 안 카메라를 지원하지 않습니다',true,4000);return;}
+  try{
+    cam.stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1440}}});
+  }catch(e){toast(e.name==='NotAllowedError'?'카메라 권한을 허용해 주십시오 (주소창 왼쪽 자물쇠 → 카메라)':'카메라를 켜지 못했습니다: '+e.message,true,5000);return;}
+  const v=$('vid');v.srcObject=cam.stream;try{await v.play();}catch(e){}
+  cam.track=cam.stream.getVideoTracks()[0];cam.on=true;cam.prev=null;cam.still=0;cam.armed=true;
+  $('start').style.display='none';$('side').style.display='flex';
+  /* 손전등 · 확대 (안드로이드 크롬에서 주로 지원) */
+  let caps={};try{caps=cam.track.getCapabilities?cam.track.getCapabilities():{};}catch(e){}
+  $('torchBtn').style.display=caps.torch?'block':'none';
+  if(caps.zoom&&caps.zoom.max>caps.zoom.min){const z=$('zoom');z.min=caps.zoom.min;z.max=Math.min(caps.zoom.max,8);z.step=caps.zoom.step||0.1;z.value=(cam.track.getSettings().zoom||caps.zoom.min);$('zoomBox').style.display='block';}
+  wake();
+  msg(cam.auto?'하자 쪽을 비추고 잠깐 멈춰 주세요':'아래 흰 단추로 찍어 주세요');
+  clearInterval(cam.timer);cam.timer=setInterval(tick,120);
+}
+function stopCam(){
+  clearInterval(cam.timer);cam.on=false;
+  if(cam.stream)cam.stream.getTracks().forEach(t=>t.stop());cam.stream=null;cam.track=null;
+  $('vid').srcObject=null;$('start').style.display='flex';$('side').style.display='none';$('zoomBox').style.display='none';$('msg').style.display='none';$('hold').style.width='0';clearOv();
+  if(cam.wl){try{cam.wl.release();}catch(e){}cam.wl=null;}
+}
+async function wake(){try{if('wakeLock' in navigator)cam.wl=await navigator.wakeLock.request('screen');}catch(e){}}
+async function toggleTorch(){if(!cam.track)return;cam.torch=!cam.torch;try{await cam.track.applyConstraints({advanced:[{torch:cam.torch}]});$('torchBtn').classList.toggle('on',cam.torch);}catch(e){cam.torch=false;toast('손전등을 켤 수 없습니다',true);}}
+function setZoom(v){if(cam.track)cam.track.applyConstraints({advanced:[{zoom:Number(v)}]}).catch(()=>{});}
+function toggleAuto(){cam.auto=!cam.auto;L.set('live_auto',cam.auto);const b=$('autoBtn');b.className='auto'+(cam.auto?' on':'');b.innerHTML='자동 촬영<br>'+(cam.auto?'켜짐':'꺼짐');$('hold').style.width='0';cam.still=0;if(cam.on)msg(cam.auto?'하자 쪽을 비추고 잠깐 멈춰 주세요':'아래 흰 단추로 찍어 주세요');}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&cam.on){stopCam();cam.resume=true;}else if(!document.hidden&&cam.resume){cam.resume=false;startCam();}});
+
+/* 작은 회색 화면 */
+function grab(){const v=$('vid');if(!v.videoWidth)return null;sctx.drawImage(v,0,0,80,60);const d=sctx.getImageData(0,0,80,60).data,g=new Uint8Array(4800);let s=0;for(let i=0,j=0;i<d.length;i+=4,j++){g[j]=(d[i]*3+d[i+1]*6+d[i+2])/10;s+=g[j];}return {g,mean:s/4800};}
+function gdiff(a,b){let s=0;for(let i=0;i<a.length;i++)s+=Math.abs(a[i]-b[i]);return s/a.length;}
+/* 선명도: 이웃 픽셀 차이의 평균 (흔들린 사진은 작다) */
+function sharp(g){let s=0,n=0;for(let y=1;y<59;y++)for(let x=1;x<79;x++){const i=y*80+x;s+=Math.abs(4*g[i]-g[i-1]-g[i+1]-g[i-80]-g[i+80]);n++;}return s/n;}
+
+function tick(){
+  if(!cam.on)return;
+  const f=grab();if(!f)return;
+  const d=cam.prev?gdiff(f.g,cam.prev):99;cam.prev=f.g;
+  if(!cam.armed){
+    if(d>MOVE_DIFF){cam.moved+=120;if(cam.moved>=REARM_MS){cam.armed=true;cam.moved=0;clearOv();}}
+    $('hold').style.width='0';return;
+  }
+  if(!cam.auto||cam.busy){$('hold').style.width='0';return;}
+  if(d<STILL_DIFF){cam.still+=120;}else{cam.still=0;}
+  $('hold').style.width=Math.min(100,cam.still/HOLD_MS*100)+'%';
+  if(cam.still<HOLD_MS)return;
+  cam.still=0;$('hold').style.width='0';
+  if(f.mean<22){msg('너무 어둡습니다 — 손전등을 켜 주세요','warn',2200);cam.armed=false;return;}
+  if(f.mean>240){msg('빛이 너무 강합니다 — 각도를 바꿔 주세요','warn',2200);cam.armed=false;return;}
+  if(sharp(f.g)<2.2){msg('초점이 흐립니다 — 조금 떨어져 주세요','warn',2000);cam.armed=false;return;}
+  /* 방금 본 장면이면 AI에 다시 묻지 않는다 */
+  const s=cam.seen.find(x=>gdiff(x.g,f.g)<SAME_DIFF);
+  if(s){msg(s.defect?'이미 저장한 하자입니다':'방금 확인한 곳 — 하자 없음','',1600);cam.armed=false;return;}
+  capture(f,true);
+}
+function manualShot(){if(!cam.on){startCam();return;}if(cam.busy){toast('앞 사진을 확인하는 중입니다');return;}const f=grab();if(f)capture(f,false);}
+
+/* 화면 위 상자 그리기 (영상은 object-fit:cover 라 잘린 만큼 맞춘다) */
+function clearOv(){const c=$('ov');c.getContext('2d').clearRect(0,0,c.width,c.height);}
+function drawOv(box,label){
+  const c=$('ov'),v=$('vid'),W=c.clientWidth,H=c.clientHeight;c.width=W*devicePixelRatio;c.height=H*devicePixelRatio;
+  const x=c.getContext('2d');x.scale(devicePixelRatio,devicePixelRatio);
+  const vw=v.videoWidth,vh=v.videoHeight,k=Math.max(W/vw,H/vh),ox=(W-vw*k)/2,oy=(H-vh*k)/2;
+  const bx=ox+box[1]/1000*vw*k,by=oy+box[0]/1000*vh*k,bw=(box[3]-box[1])/1000*vw*k,bh=(box[2]-box[0])/1000*vh*k;
+  x.strokeStyle='#E5484D';x.lineWidth=3;x.strokeRect(bx,by,bw,bh);
+  if(label){x.font='bold 14px sans-serif';const tw=x.measureText(label).width;x.fillStyle='#E5484D';x.fillRect(bx,Math.max(0,by-22),tw+10,22);x.fillStyle='#fff';x.fillText(label,bx+5,Math.max(15,by-6));}
+}
+
+/* ============================================================ 촬영 → AI 1차 확인(하자 여부 + 위치 상자) */
+let aiCount=0;{const q=L.get('live_q',{});if(q.d===new Date().toDateString())aiCount=q.n||0;}
+function countAI(){aiCount++;L.set('live_q',{d:new Date().toDateString(),n:aiCount});$('q').innerHTML='오늘 AI '+aiCount+'회<br><span style="font-size:.65rem">(이 기기)</span>';}
+$('q').innerHTML='오늘 AI '+aiCount+'회<br><span style="font-size:.65rem">(이 기기)</span>';
+
+function beep(){try{const a=beep.a||(beep.a=new (window.AudioContext||window.webkitAudioContext)()),o=a.createOscillator(),g=a.createGain();o.frequency.value=1250;g.gain.value=.12;o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+.08);}catch(e){}try{navigator.vibrate&&navigator.vibrate(50);}catch(e){}}
+function flash(){const e=$('flash');e.classList.add('on');setTimeout(()=>e.classList.remove('on'),60);}
+function toCanvas(src,sx,sy,sw,sh,max){const k=Math.min(1,max/Math.max(sw,sh)),c=document.createElement('canvas');c.width=Math.round(sw*k);c.height=Math.round(sh*k);c.getContext('2d').drawImage(src,sx,sy,sw,sh,0,0,c.width,c.height);return c;}
+const b64=c=>c.split(',')[1];
+
+async function capture(f,auto){
+  if(!cfg().pin){toast('먼저 팀 설정에서 팀 비밀번호를 넣어 주십시오',true,3500);openCfg();return;}
+  if(!navigator.onLine){toast('인터넷이 연결되어야 AI가 확인할 수 있습니다',true,3000);return;}
+  const v=$('vid'),W=v.videoWidth,H=v.videoHeight;
+  /* 원본 한 장 (영상 해상도 그대로) */
+  const full=document.createElement('canvas');full.width=W;full.height=H;full.getContext('2d').drawImage(v,0,0,W,H);
+  beep();flash();cam.busy=true;cam.armed=false;
+  msg('🔍 AI가 하자인지 확인 중…');
+  const note=$('note').value.trim();
+  const img=toCanvas(full,0,0,W,H,1024).toDataURL('image/jpeg',0.8);
+  const prompt='당신은 아파트 입주 전 사전점검 하자 판정 AI입니다. 점검자가 폰 카메라를 멈춘 장면입니다.'+NL+
+    (note?'[점검자 입력] "'+note+'" — 이 하자를 사진에서 찾아 위치를 표시합니다.'+NL:'')+
+    (room?'[위치] '+room+NL:'')+
+    '[판정] 사진에 실제 시공 하자가 눈에 보이면 defect=true 입니다. 흠집/찍힘, 오염, 들뜸, 틈새, 코킹불량, 파손, 균열, 줄눈불량, 단차, 미시공, 도장불량, 마감불량, 이음불량, 곰팡이, 누수 흔적 등이 해당합니다.'+NL+
+    '- 정상 마감, 자재 무늬, 그림자, 빛 반사, 보호필름, 떨어진 먼지 한 톨은 하자가 아닙니다.'+NL+
+    '- 확실하지 않으면 defect=false 로 하고 confidence를 낮게 줍니다.'+NL+
+    '- box_2d 는 하자 부위를 감싸는 상자이며 [ymin, xmin, ymax, xmax] 를 0~1000 으로 정규화한 값입니다. 하자가 여러 곳이면 가장 뚜렷한 한 곳만 표시합니다.'+NL+
+    '- label 은 6자 안팎의 짧은 하자명, reason 은 ~합니다 로 끝나는 한 문장입니다.'+NL+
+    '[JSON 출력] {"defect":true,"confidence":0.0,"label":"","box_2d":[0,0,0,0],"reason":""}';
+  let r;
+  try{
+    const d=await api({a:'ai',prompt,images:[{mimeType:'image/jpeg',data:b64(img)}]});countAI();
+    if(d.error)throw new Error(d.error==='ai_daily_limit'?'오늘 팀 AI 한도를 넘었습니다':d.error==='no_api_key'?'서버에 AI 키가 없습니다':(d.message||d.error));
+    r=parseJSON(d.text);
+  }catch(e){cam.busy=false;msg('⚠️ '+e.message,'warn',3500);return;}
+  cam.busy=false;
+  const box=Array.isArray(r.box_2d)&&r.box_2d.length===4?r.box_2d.map(Number):null;
+  const ok=r.defect===true&&(Number(r.confidence)||0)>=MIN_CONF&&box&&box[2]>box[0]&&box[3]>box[1];
+  remember(f.g,ok);
+  if(!ok){
+    msg('✅ 하자 없음'+(r.reason?' — '+r.reason:''),'ok',2200);
+    if(!auto&&note)toast('AI가 사진에서 하자를 찾지 못했습니다. 더 가까이 찍어 보십시오',true,3500);
+    return;
+  }
+  drawOv(box,r.label||'하자');
+  msg('🔴 '+(r.label||'하자')+' 발견 — 저장하고 분석합니다','warn',2600);
+  makeItem(full,box,r,note);
+}
+function remember(g,defect){cam.seen.unshift({g,defect});if(cam.seen.length>12)cam.seen.pop();}
+function parseJSON(t){t=String(t||'').replace(/```json|```/g,'').trim();try{let d=JSON.parse(t);return Array.isArray(d)?(d[0]||{}):d;}catch(e){const m=/{[^]*}/.exec(t);try{return m?JSON.parse(m[0]):{};}catch(x){return {};}}}
+
+/* ============================================================ 멀리서 · 가까이 두 장 만들기 */
+function makeItem(full,box,r,note){
+  const W=full.width,H=full.height;
+  const bx=box[1]/1000*W,by=box[0]/1000*H,bw=(box[3]-box[1])/1000*W,bh=(box[2]-box[0])/1000*H;
+  /* 가까이: 하자 상자를 2.4배로 넓히고(최소 화면의 30%), 화면 비율에 맞춰 자른다 */
+  let cw=Math.max(bw*2.4,W*0.3),ch=Math.max(bh*2.4,H*0.3);
+  if(cw/ch<W/H)cw=ch*W/H;else ch=cw*H/W;
+  cw=Math.min(cw,W);ch=Math.min(ch,H);
+  const cx=Math.min(Math.max(bx+bw/2-cw/2,0),W-cw),cy=Math.min(Math.max(by+bh/2-ch/2,0),H-ch);
+  const close=toCanvas(full,cx,cy,cw,ch,800);
+  /* 멀리서: 전체 화면 + 하자 자리에 빨간 상자 */
+  const wide=toCanvas(full,0,0,W,H,800),wx=wide.getContext('2d'),k=wide.width/W;
+  wx.strokeStyle='#E5484D';wx.lineWidth=Math.max(3,Math.round(wide.width/200));wx.strokeRect(bx*k,by*k,bw*k,bh*k);
+  const it={id:Date.now()*100+Math.floor(Math.random()*100),job:curJob||'',room:room||'위치미지정',note,label:r.label||'',
+    wImg:wide.toDataURL('image/jpeg',0.75),cImg:close.toDataURL('image/jpeg',0.75),
+    work:'',sub:'',type:'',severity:'',detail:'🔍 정밀 분석 대기 중…'+NL+'1차 확인: '+(r.reason||''),
+    state:'ai',by:cfg().name||'',role:cfg().role||'',t:Date.now()};
+  /* 원본(드라이브 보관용): 전체 원본 + 가까이 원본 크기 */
+  it._ow=toCanvas(full,0,0,W,H,2560).toDataURL('image/jpeg',0.88);
+  it._oc=toCanvas(full,cx,cy,cw,ch,2560).toDataURL('image/jpeg',0.88);
+  items.unshift(it);dbPut(it);render();
+  queue.push(it);runQueue();
+}
+
+/* ============================================================ 정밀 분석 → 팀 서버로 보내기 (한 건씩 차례로) */
+const queue=[];let qBusy=false;
+async function runQueue(){
+  if(qBusy)return;qBusy=true;
+  while(queue.length){const it=queue.shift();if(!items.includes(it))continue;
+    if(it.state==='ai')await analyze(it);
+    if(it.state==='send')await send(it);
+  }
+  qBusy=false;
+}
+async function analyze(it){
+  setState(it,'ai','정밀 분석 중…');
+  const workList=Object.keys(WM).map(w=>w+'('+Object.keys(WM[w]).join(',')+')').join('; ');
+  const hint=it.note;
+  const prompt='당신은 아파트 사전점검 전문 하자진단 AI입니다. '+(hint?'점검자 입력이 사실의 기준이며 사진은 보조 자료입니다.':'사진1(멀리서, 빨간 상자가 하자 자리)로 공종을 파악하고 사진2(가까이)로 하자를 분석하십시오.')+NL+
+    (hint?'[점검자 입력] "'+hint+'"'+NL:'')+'[1차 확인] '+it.label+NL+'[위치] '+it.room+NL+'[공종분류] '+workList+NL+
+    '[하자유형] 들뜸,마감불량,흠집/찍힘,면불량,오염,미시공,파손,틈새,코킹불량,수직수평불량,개폐불량,고정불량,작동불량,줄눈불량,단차,구배불량,이색/변색,누수,균열,도장불량,이음불량,배수불량,점등불량,악취,기밀불량,결로,곰팡이,잠금불량,소음,풍량부족,필터불량,단열불량'+NL+
+    '[판정기준]'+NL+'- 국토부 「공동주택 하자의 조사, 보수비용 산정 및 하자판정기준」 적용'+NL+'- 조 번호·항 번호는 적지 않습니다. 공종명과 하자 판정기준 같은 일반 표기를 씁니다.'+NL+
+    '- 측정하지 않은 수치·허용오차를 지어내지 않습니다.'+NL+'- 모든 문장은 ~합니다 존댓말로 끝냅니다. ~함, ~임 같은 말투는 쓰지 않습니다.'+NL+'- 심각도: 경미(미관), 보통(기능 저하), 중대(안전·구조·누수)'+NL+
+    '[JSON 출력] {"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"■ 하자현상: ...\\n■ 판정근거: ...\\n■ 심각도: ...\\n■ 시정방법: ...\\n■ 비고: ..."}';
+  try{
+    const d=await api({a:'ai',prompt,images:[{mimeType:'image/jpeg',data:b64(it.wImg)},{mimeType:'image/jpeg',data:b64(it.cImg)}]});countAI();
+    if(d.error)throw new Error(d.error==='ai_daily_limit'?'오늘 팀 AI 한도를 넘었습니다':(d.message||d.error));
+    const r=parseJSON(d.text);
+    if(!r.detail||String(r.detail).indexOf('■')<0)throw new Error('분석 내용이 비어 있습니다');
+    it.work=r.work||'';it.sub=r.sub||'';it.type=r.type||'';it.severity=r.severity||'';
+    it.detail=String(r.detail).split('\\n').join(NL)+NL+NL+'🤖 AI 분석 완료 (참고용) · 실시간 촬영';
+    it.state='send';await dbPut(it);render();
+  }catch(e){setState(it,'aiErr','분석 실패: '+e.message);}
+}
+async function send(it){
+  if(!it.job){setState(it,'noJob','현장이 없어 이 기기에만 저장했습니다');return;}
+  setState(it,'send','팀 서버로 보내는 중…');
+  const id=String(it.id),title=jobTitle(it.job);
+  try{
+    for(const [w,data] of [['w',it.wImg],['c',it.cImg]]){const r=await api({a:'photoPut',job:it.job,id:'p'+id+w,data:b64(data)});if(!r.ok)throw new Error(r.message||r.error||'사진 저장 실패');}
+    const r=await api({a:'sync',job:{id:it.job,title:title},since:9e15,items:[{id,t:Date.now(),c:it.id,by:it.by,role:it.role,room:it.room,work:it.work,sub:it.sub,type:it.type,detail:it.detail,hasW:1,hasC:1}],kv:[]});
+    if(!r.ok)throw new Error(r.message||r.error||'목록 저장 실패');
+    /* 원본은 드라이브의 현장 폴더로 (실패해도 항목은 이미 저장됨) */
+    const d=new Date(it.t),p2=n=>String(n).padStart(2,'0'),stamp=''+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'_'+p2(d.getHours())+p2(d.getMinutes())+p2(d.getSeconds());
+    for(const [nm,data] of [['멀리',it._ow],['가까이',it._oc]]){if(!data)continue;try{await api({a:'origPut',job:it.job,title,name:stamp+'_'+it.room+'_'+nm+(it.by?'_'+it.by:'')+'.jpg',data:b64(data)});}catch(e){}}
+    delete it._ow;delete it._oc;
+    it.state='done';await dbPut(it);render();
+  }catch(e){setState(it,'sendErr','보내기 실패: '+e.message);}
+}
+function setState(it,s,t){it.state=s;it.stTxt=t;dbPut(it);render();}
+function retry(id){const it=items.find(x=>x.id===id);if(!it)return;if(it.state==='aiErr')it.state='ai';else if(it.state==='sendErr'||it.state==='noJob'){it.state='send';if(!it.job)it.job=curJob||'';}queue.push(it);runQueue();}
+function editDetail(id,v){const it=items.find(x=>x.id===id);if(!it)return;it.detail=v;dbPut(it);if(it.state==='done'){it.state='send';it.stTxt='고친 내용 다시 보내기 대기';render();}}
+function resend(id){const it=items.find(x=>x.id===id);if(it&&it.state==='send'){queue.push(it);runQueue();}}
+async function delItem(id){
+  const it=items.find(x=>x.id===id);if(!it)return;
+  if(!confirm('이 하자를 목록에서 지울까요?'+(it.state==='done'?NL+'팀 서버(팀 앱 목록)에서도 지웁니다.':'')))return;
+  if(it.state==='done'&&it.job){try{await api({a:'sync',job:{id:it.job,title:jobTitle(it.job)},since:9e15,items:[{id:String(it.id),del:1,t:Date.now()}],kv:[]});}catch(e){toast('팀 서버에서 지우지 못했습니다: '+e.message,true,3500);return;}}
+  items=items.filter(x=>x.id!==id);dbDel(id);render();
+}
+
+/* ============================================================ 목록 그리기 */
+const ST={ai:'정밀 분석 중…',send:'보내기 대기',done:'✓ 팀 앱에 저장됨'};
+function render(){
+  $('lhT').textContent='저장된 하자 '+items.length+'건';
+  if(!items.length){$('list').innerHTML='<div class="empty">아직 저장된 하자가 없습니다.<br>카메라를 켜고 하자 쪽에 잠깐 멈춰 보십시오.</div>';return;}
+  $('list').innerHTML=items.map(it=>{
+    const bad=/Err|noJob/.test(it.state),st=it.stTxt&&it.state!=='done'?it.stTxt:(ST[it.state]||'');
+    const jt=jobTitle(it.job);
+    return '<div class="it"><div class="ph"><figure><img src="'+it.wImg+'"><figcaption>멀리서</figcaption></figure><figure><img src="'+it.cImg+'"><figcaption>가까이</figcaption></figure></div>'+
+      '<div class="bd"><div class="tg"><span>'+esc(it.room)+'</span>'+(it.work?'<span>'+esc(it.sub||it.work)+'</span>':'')+(it.type?'<span>'+esc(it.type)+'</span>':'<span>'+esc(it.label)+'</span>')+
+      (it.severity?'<span class="sv-'+esc(it.severity)+'">'+esc(it.severity)+'</span>':'')+'<span class="st'+(bad?' err':it.state==='done'?' ok':'')+'">'+esc(st)+'</span></div>'+
+      '<textarea onchange="editDetail('+it.id+',this.value)">'+esc(it.detail)+'</textarea>'+
+      '<div class="ac">'+(bad?'<button onclick="retry('+it.id+')">↻ 다시 시도</button>':'')+(it.state==='send'&&!qBusy?'<button onclick="resend('+it.id+')">⇪ 팀 서버로 보내기</button>':'')+
+      '<button class="del" onclick="delItem('+it.id+')">삭제</button></div>'+
+      '<div style="font-size:.68rem;color:var(--mu);margin-top:6px">'+new Date(it.t).toLocaleString('ko-KR')+(jt?' · '+esc(jt):'')+(it.by?' · '+esc(it.by):'')+'</div></div></div>';
+  }).join('');
+}
+
+/* ============================================================ 새 판 자동 반영 (화면으로 돌아올 때, 진행 중인 일이 없으면) */
+document.addEventListener('visibilitychange',async()=>{
+  if(document.hidden||qBusy||cam.busy)return;
+  try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();const m=/const BUILD='([^']+)'/.exec(t);if(m&&m[1]!==BUILD)location.reload();}catch(e){}
+});
+
+/* ============================================================ 시작 */
+(async()=>{
+  drawJobs();drawRooms();setCfgBadge(cfg().pin?'':'');
+  items=(await dbAll()).sort((a,b)=>b.id-a.id);
+  /* 끝나지 않은 일은 다시 줄 세운다 */
+  items.forEach(it=>{if(it.state==='ai'||it.state==='send')queue.push(it);});
+  render();runQueue();
+  if(cfg().pin)pullJobs();else setTimeout(openCfg,400);
+})();
+</script>
+</body>
+</html>
