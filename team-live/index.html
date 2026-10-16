@@ -244,8 +244,8 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
 <script>
 'use strict';
 /* ============================================================ 설정 */
-const APP_VER='live-v0.6';
-const BUILD='20261016i';
+const APP_VER='live-v0.7';
+const BUILD='20261016j';
 const TEAM_GAS='https://script.google.com/macros/s/AKfycbyIo86UrFvE5W82FdSiZTjwB6N1QOEIjm4DTzhU-lgmd-OiSeYE1ACPRATVd_dOBPBl/exec';
 /* 위치 두 줄 (폰 한 화면에 다 보이도록). 긴 이름은 단추에만 줄여 쓰고, 저장은 팀 앱과 같은 이름으로 한다 */
 const ROOM_ROWS=[['거실','주방','안방','침실1','침실2','침실3','욕실1','욕실2','현관'],['발코니1','발코니2','대피공간','팬트리','드레스룸','다용도실','실외기실','기타']];
@@ -521,18 +521,24 @@ async function capture(f,auto){
   /* 원본 한 장 (영상 해상도 그대로) */
   const full=document.createElement('canvas');full.width=W;full.height=H;full.getContext('2d').drawImage(v,0,0,W,H);
   beep();flash();cam.busy=true;cam.armed=false;$('shotBtn').classList.add('busy');
-  msg('🔍 AI가 하자인지 보는 중…','busy');
+  msg('🔍 AI가 하자를 보고 분석하는 중…','busy');
   const nt=$('note').value.trim();
-  const img=toCanvas(full,0,0,W,H,1024).toDataURL('image/jpeg',0.8);
-  const prompt='당신은 아파트 입주 전 사전점검 하자 판정 AI입니다. 점검자가 폰 카메라를 멈춘 장면입니다.'+NL+
-    (nt?'[점검자 입력] "'+nt+'" — 이 하자를 사진에서 찾아 위치를 표시합니다.'+NL:'')+
+  /* 한 번의 AI 호출로 하자 여부 + 위치 상자 + 정밀 분석(공종·유형·심각도·5줄 소견)까지 받는다 (하자 1건 = AI 1회) */
+  const img=toCanvas(full,0,0,W,H,1536).toDataURL('image/jpeg',0.82);
+  const workList=Object.keys(WM).map(w=>w+'('+Object.keys(WM[w]).join(',')+')').join('; ');
+  const prompt='당신은 아파트 입주 전 사전점검 전문 하자진단 AI입니다. 점검자가 폰 카메라를 멈춘 장면입니다.'+NL+
+    (nt?'[점검자 입력 — 사실의 기준] "'+nt+'" — 이 하자를 사진에서 찾아 위치를 표시하고 분석합니다.'+NL:'')+
     (room?'[위치] '+room+NL:'')+
-    '[판정] 사진에 실제 시공 하자가 눈에 보이면 defect=true 입니다. 흠집/찍힘, 오염, 들뜸, 틈새, 코킹불량, 파손, 균열, 줄눈불량, 단차, 미시공, 도장불량, 마감불량, 이음불량, 곰팡이, 누수 흔적 등이 해당합니다.'+NL+
+    '[1단계 판정] 사진에 실제 시공 하자가 눈에 보이면 defect=true 입니다. 흠집/찍힘, 오염, 들뜸, 틈새, 코킹불량, 파손, 균열, 줄눈불량, 단차, 미시공, 도장불량, 마감불량, 이음불량, 곰팡이, 누수 흔적 등이 해당합니다.'+NL+
     '- 정상 마감, 자재 무늬, 그림자, 빛 반사, 보호필름, 떨어진 먼지 한 톨은 하자가 아닙니다.'+NL+
     '- 확실하지 않으면 defect=false 로 하고 confidence를 낮게 줍니다.'+NL+
     '- box_2d 는 하자 부위를 감싸는 상자이며 [ymin, xmin, ymax, xmax] 를 0~1000 으로 정규화한 값입니다. 하자가 여러 곳이면 가장 뚜렷한 한 곳만 표시합니다.'+NL+
     '- label 은 6자 안팎의 짧은 하자명, reason 은 ~합니다 로 끝나는 한 문장입니다.'+NL+
-    '[JSON 출력] {"defect":true,"confidence":0.0,"label":"","box_2d":[0,0,0,0],"reason":""}';
+    '[2단계 분석] defect=true 일 때만 work·sub·type·severity·detail 을 채웁니다. defect=false 이면 이 다섯 칸은 빈 문자열로 둡니다.'+NL+
+    '[공종분류] '+workList+NL+
+    '[하자유형] 들뜸,마감불량,흠집/찍힘,면불량,오염,미시공,파손,틈새,코킹불량,수직수평불량,개폐불량,고정불량,작동불량,줄눈불량,단차,구배불량,이색/변색,누수,균열,도장불량,이음불량,배수불량,점등불량,악취,기밀불량,결로,곰팡이,잠금불량,소음,풍량부족,필터불량,단열불량'+NL+
+    '[판정기준] 국토부 「공동주택 하자의 조사, 보수비용 산정 및 하자판정기준」을 적용합니다. 조 번호·항 번호는 적지 않고 공종명과 하자 판정기준 같은 일반 표기를 씁니다. 측정하지 않은 수치·허용오차를 지어내지 않습니다. 모든 문장은 ~합니다 존댓말로 끝냅니다. 심각도: 경미(미관), 보통(기능 저하), 중대(안전·구조·누수).'+NL+
+    '[JSON 출력] {"defect":true,"confidence":0.0,"label":"","box_2d":[0,0,0,0],"reason":"","work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"■ 하자현상: ...\\n■ 판정근거: ...\\n■ 심각도: ...\\n■ 시정방법: ...\\n■ 비고: ..."}';
   let r;
   try{
     const d=await api({a:'ai',prompt,images:[{mimeType:'image/jpeg',data:b64(img)}]});countAI();
@@ -573,6 +579,11 @@ function makeItem(full,box,r,nt){
     wImg:wide.toDataURL('image/jpeg',0.75),cImg:close.toDataURL('image/jpeg',0.75),
     work:'',sub:'',type:'',severity:'',detail:'🔍 정밀 분석 대기 중…'+NL+'1차 확인: '+(r.reason||''),
     state:'ai',by:cfg().name||'',role:cfg().role||'',t:Date.now()};
+  /* 같은 호출에서 받은 분석이 제대로 왔으면 그대로 쓰고 바로 보내기로 넘어간다. 빠졌으면 예전처럼 따로 분석한다 */
+  if(r.detail&&String(r.detail).indexOf('■')>=0){
+    it.work=r.work||'';it.sub=r.sub||'';it.type=r.type||'';it.severity=r.severity||'';
+    it.detail=String(r.detail).split('\\n').join(NL)+NL+NL+'🤖 AI 분석 완료 (참고용) · 실시간 촬영';it.state='send';
+  }
   /* 원본(드라이브 보관용): 전체 원본 + 가까이 원본 크기 */
   it._ow=toCanvas(full,0,0,W,H,2560).toDataURL('image/jpeg',0.88);
   it._oc=toCanvas(full,cx,cy,cw,ch,2560).toDataURL('image/jpeg',0.88);
