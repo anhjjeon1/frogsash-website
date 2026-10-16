@@ -2,148 +2,231 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="robots" content="noindex,nofollow">
 <title>청개구리 실시간 점검</title>
 <!--
   청개구리 실시간 사전점검 (시제품)
-  - 화면 안에 카메라를 띄우고, 폰을 하자 쪽에 잠깐 멈추면 자동으로 찍는다.
+  - 화면 전체를 카메라로 쓰고, 폰을 하자 쪽에 잠깐 멈추면 자동으로 찍는다.
   - 찍은 사진 1장을 AI가 보고 하자가 있으면 위치 상자를 돌려준다 → 전체=멀리서, 확대=가까이 로 자동 저장.
   - 하자로 판정된 것만 정밀 분석(공종·유형·심각도·5줄 소견)까지 이어서 하고, /team/ 앱과 같은 팀 서버로 보낸다.
   - 팀 설정(이름·분야·팀 비밀번호)과 현장 목록은 /team/ 앱과 같은 기기 저장값을 그대로 쓴다.
+  - v0.2: 폰 화면용 배치 — 카메라 전체 화면, 글씨·단추 크게, 목록·위치·현장은 아래에서 올라오는 창으로.
 -->
 <style>
-:root{--g:#1B6B28;--g2:#2E9E41;--r:#E5484D;--y:#F5A524;--bg:#0E0F10;--card:#fff;--tx:#1D2939;--mu:#667085;--ln:#E4E7EC}
+:root{--g:#1B6B28;--g2:#22A447;--r:#F04438;--y:#FDB022;--tx:#101828;--mu:#475467;--ln:#D0D5DD;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{background:#F2F4F7;color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:15px}
-button{font:inherit;border:0;cursor:pointer}
-.top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--ln);padding:8px 12px calc(8px) 12px;display:flex;align-items:center;gap:8px}
-.top h1{font-size:1rem;color:var(--g);white-space:nowrap}
-.top .ver{font-size:.65rem;color:var(--mu);background:#F2F4F7;border-radius:6px;padding:2px 6px}
-.top .sp{flex:1}
-.top .cfg{background:#F2F4F7;border-radius:8px;padding:6px 10px;font-size:.8rem;color:#344054}
-.top .cfg[data-s="ok"]{color:var(--g)}.top .cfg[data-s="err"]{color:var(--r)}
-.bar{background:#fff;padding:8px 12px;display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--ln);scrollbar-width:none}
-.bar::-webkit-scrollbar{display:none}
-.bar select{font:inherit;font-size:.85rem;border:1px solid var(--ln);border-radius:8px;padding:6px 8px;background:#fff;max-width:46vw}
-.chip{flex:none;border:1px solid var(--ln);background:#fff;border-radius:999px;padding:6px 11px;font-size:.82rem;color:#344054}
-.chip.on{background:var(--g);border-color:var(--g);color:#fff;font-weight:600}
-/* 카메라 */
-.cam{position:relative;background:var(--bg);width:100%;aspect-ratio:3/4;max-height:68vh;overflow:hidden}
-.cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.cam canvas.ov{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.cam .msg{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:rgba(0,0,0,.62);color:#fff;border-radius:999px;padding:7px 14px;font-size:.85rem;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
-.cam .msg.warn{background:rgba(229,72,77,.85)}.cam .msg.ok{background:rgba(27,107,40,.9)}
-.cam .hold{position:absolute;left:0;bottom:0;height:5px;width:0;background:var(--y);transition:width .12s linear}
-.cam .flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .25s}
-.cam .flash.on{opacity:.75;transition:none}
-.cam .start{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;text-align:center;padding:24px}
-.cam .start button{background:var(--g2);color:#fff;border-radius:14px;padding:14px 26px;font-size:1.05rem;font-weight:700}
-.cam .start p{font-size:.85rem;line-height:1.6;color:#D0D5DD}
-.cam .side{position:absolute;right:10px;top:56px;display:flex;flex-direction:column;gap:8px}
-.cam .side button{width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;font-size:1.1rem}
-.cam .side button.on{background:var(--y);color:#111}
-.cam .zoom{position:absolute;left:12px;right:70px;bottom:16px;display:none}
-.cam .zoom input{width:100%}
-.ctl{background:#111;display:flex;align-items:center;justify-content:space-around;padding:12px 10px}
-.ctl .auto{color:#fff;background:#333;border-radius:12px;padding:10px 12px;font-size:.85rem;min-width:96px}
-.ctl .auto.on{background:var(--g2);font-weight:700}
-.ctl .shot{width:68px;height:68px;border-radius:50%;background:#fff;border:5px solid #888}
-.ctl .shot:active{transform:scale(.94)}
-.ctl .q{color:#D0D5DD;font-size:.75rem;text-align:center;min-width:96px;line-height:1.5}
-.hint{background:#fff;padding:8px 12px;border-bottom:1px solid var(--ln);display:flex;gap:6px;align-items:center}
-.hint input{flex:1;font:inherit;font-size:.88rem;border:1px solid var(--ln);border-radius:8px;padding:8px 10px}
-.hint small{color:var(--mu);font-size:.7rem;white-space:nowrap}
-/* 결과 목록 */
-.lh{display:flex;align-items:center;justify-content:space-between;padding:14px 12px 6px}
-.lh b{font-size:.95rem}.lh a{font-size:.8rem;color:var(--g);text-decoration:none;font-weight:600}
-.list{padding:0 10px 90px;display:flex;flex-direction:column;gap:10px}
-.it{background:var(--card);border:1px solid var(--ln);border-radius:12px;overflow:hidden}
+html,body{height:100%;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:16px;overscroll-behavior:none}
+body{overflow:hidden;-webkit-text-size-adjust:100%}
+button{font:inherit;border:0;cursor:pointer;color:inherit;background:none}
+#app{position:relative;height:100vh;height:100dvh;max-width:560px;margin:0 auto;overflow:hidden;background:#000}
+
+/* ── 카메라 (전체 화면) ── */
+#vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#ov{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .3s}
+#flash.on{opacity:.8;transition:none}
+
+/* 위 띠: 현장 · 위치 · 설정 */
+.tbar{position:absolute;left:0;right:0;top:0;padding:calc(var(--st) + 10px) 10px 26px;display:flex;gap:8px;align-items:center;
+  background:linear-gradient(rgba(0,0,0,.72),rgba(0,0,0,.45) 70%,transparent);z-index:5}
+.pill{display:flex;align-items:center;gap:6px;min-height:46px;padding:0 14px;border-radius:23px;background:rgba(0,0,0,.55);border:1.5px solid rgba(255,255,255,.35);
+  font-size:1rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill.job{flex:1;min-width:0;justify-content:flex-start}
+.pill.job span{overflow:hidden;text-overflow:ellipsis}
+.pill.room{background:var(--y);color:#111;border-color:var(--y)}
+.pill.room.none{background:rgba(0,0,0,.55);color:#fff;border-color:rgba(255,255,255,.35)}
+.pill.ic{width:46px;padding:0;justify-content:center;font-size:1.2rem;flex:none}
+.pill.ic[data-s="err"]{border-color:var(--r);background:rgba(240,68,56,.8)}
+.pill.ic[data-s="need"]{border-color:var(--y);animation:blink 1.2s infinite}
+@keyframes blink{50%{background:rgba(253,176,34,.7)}}
+
+/* 하자 내용 칸 (선택) */
+.notep{position:absolute;left:10px;right:10px;top:calc(var(--st) + 66px);z-index:5;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;
+  border-radius:12px;background:rgba(0,0,0,.62);border:1.5px dashed rgba(255,255,255,.55);font-size:1rem;color:#F2F4F7;text-align:left}
+.notep.has{border-style:solid;border-color:var(--y);color:#fff;font-weight:700;background:rgba(0,0,0,.7)}
+.notep b{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:inherit}
+
+/* 상태 안내 (가운데 위쪽, 크게) */
+#msg{position:absolute;left:12px;right:12px;top:calc(var(--st) + 124px);z-index:6;text-align:center;pointer-events:none}
+#msg span{display:inline-block;max-width:100%;padding:12px 18px;border-radius:14px;background:rgba(0,0,0,.72);font-size:1.12rem;font-weight:700;line-height:1.4;
+  text-shadow:0 1px 2px rgba(0,0,0,.5);white-space:pre-line}
+#msg.warn span{background:rgba(217,45,32,.92)}#msg.ok span{background:rgba(8,93,58,.92)}#msg.busy span{background:rgba(16,24,40,.9);border:2px solid var(--y)}
+
+/* 멈춤 진행 (조준 테두리) */
+#aim{position:absolute;left:50%;top:50%;width:min(62%,46vh);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:22px;border:3px solid rgba(255,255,255,.55);pointer-events:none;z-index:4;
+  transition:border-color .15s}
+#aim.go{border-color:var(--y)}
+#hold{position:absolute;left:0;right:0;bottom:-18px;height:8px;border-radius:4px;background:rgba(255,255,255,.25);overflow:hidden}
+#hold i{display:block;height:100%;width:0;background:var(--y);transition:width .12s linear}
+
+/* 오른쪽 단추 */
+.side{position:absolute;right:10px;bottom:calc(var(--sb) + 250px);display:flex;flex-direction:column;gap:10px;z-index:5}
+.side button{width:52px;height:52px;border-radius:50%;background:rgba(0,0,0,.6);border:1.5px solid rgba(255,255,255,.35);font-size:1.3rem}
+.side button.on{background:var(--y);color:#111;border-color:var(--y)}
+.zoom{position:absolute;left:16px;right:78px;bottom:calc(var(--sb) + 150px);z-index:5;display:none;align-items:center;gap:10px;font-size:.9rem;font-weight:700}
+.zoom input{flex:1;height:32px;accent-color:var(--y)}
+
+/* 새로 저장된 하자 알림 카드 */
+#pop{position:absolute;left:10px;right:10px;bottom:calc(var(--sb) + 140px);z-index:7;display:none;gap:12px;align-items:center;padding:10px;border-radius:16px;
+  background:rgba(255,255,255,.97);color:var(--tx);box-shadow:0 8px 30px rgba(0,0,0,.45);text-align:left}
+#pop.show{display:flex;animation:up .25s ease-out}
+@keyframes up{from{transform:translateY(20px);opacity:0}}
+#pop img{width:64px;height:64px;border-radius:10px;object-fit:cover;flex:none;background:#eee}
+#pop b{display:block;font-size:1.08rem;margin-bottom:3px}
+#pop small{display:block;font-size:.9rem;color:var(--mu)}
+
+/* 아래 조작 띠 */
+.ctl{position:absolute;left:0;right:0;bottom:0;z-index:6;padding:28px 18px calc(var(--sb) + 28px);display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(transparent,rgba(0,0,0,.6) 30%,rgba(0,0,0,.85))}
+.ctl .lst{position:relative;width:64px;height:64px;border-radius:14px;border:2.5px solid #fff;background:#222 center/cover;font-size:1.5rem;display:flex;align-items:center;justify-content:center}
+.ctl .lst em{position:absolute;top:-9px;right:-9px;min-width:28px;height:28px;padding:0 7px;border-radius:14px;background:var(--r);color:#fff;font-style:normal;font-size:.95rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;border:2px solid #000}
+.ctl .shot{width:84px;height:84px;border-radius:50%;background:#fff;box-shadow:0 0 0 5px rgba(255,255,255,.35)}
+.ctl .shot:active{transform:scale(.93)}
+.ctl .shot.busy{background:var(--y);animation:pulse 1s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 12px rgba(253,176,34,.25)}}
+.ctl .auto{width:64px;height:64px;border-radius:14px;background:#344054;font-size:.85rem;font-weight:800;line-height:1.25;border:2.5px solid transparent}
+.ctl .auto.on{background:var(--g2);border-color:#fff}
+.qline{position:absolute;left:0;right:0;bottom:calc(var(--sb) + 6px);text-align:center;font-size:.75rem;color:#D0D5DD;z-index:6;pointer-events:none}
+
+/* 시작 화면 */
+#start{position:absolute;inset:0;z-index:8;background:#0B0F0C;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:30px 24px calc(var(--sb) + 30px);text-align:center}
+#start h2{font-size:1.5rem;color:#fff}
+#start h2 small{display:block;font-size:.85rem;color:#98A2B3;font-weight:500;margin-top:6px}
+#start ol{list-style:none;text-align:left;display:flex;flex-direction:column;gap:12px;font-size:1.05rem;line-height:1.45;color:#E4E7EC;max-width:360px}
+#start ol li{display:flex;gap:10px}
+#start ol b{flex:none;width:28px;height:28px;border-radius:50%;background:var(--g2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.95rem}
+#start .go{width:100%;max-width:360px;min-height:62px;border-radius:16px;background:var(--g2);font-size:1.25rem;font-weight:800}
+#start .sub{display:flex;gap:10px;width:100%;max-width:360px}
+#start .sub button{flex:1;min-height:50px;border-radius:12px;background:#1D2939;font-size:1rem;font-weight:700}
+
+/* ── 아래에서 올라오는 창 (목록 · 위치 · 현장 · 설정 · 하자 내용) ── */
+.sheet{position:absolute;inset:0;z-index:20;display:none;flex-direction:column;justify-content:flex-end;background:rgba(0,0,0,.55)}
+.sheet.show{display:flex}
+.sheet .box{background:#fff;color:var(--tx);border-radius:20px 20px 0 0;max-height:92%;display:flex;flex-direction:column;animation:up .22s ease-out}
+.sheet .box.full{height:100%;max-height:100%;border-radius:0}
+.sheet .hd{display:flex;align-items:center;gap:10px;padding:calc(14px) 16px 12px;border-bottom:1px solid #EAECF0}
+.sheet .box.full .hd{padding-top:calc(var(--st) + 14px)}
+.sheet .hd h3{flex:1;font-size:1.2rem}
+.sheet .hd .x{width:46px;height:46px;border-radius:50%;background:#F2F4F7;font-size:1.3rem;color:var(--tx)}
+.sheet .bd{overflow:auto;padding:14px 14px calc(var(--sb) + 18px);-webkit-overflow-scrolling:touch}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grid button{min-height:58px;border-radius:12px;background:#F2F4F7;font-size:1.05rem;font-weight:700;color:var(--tx);border:2px solid transparent}
+.grid button.on{background:var(--g);color:#fff}
+.rows{display:flex;flex-direction:column;gap:8px}
+.rows button{min-height:60px;border-radius:12px;background:#F2F4F7;text-align:left;padding:10px 14px;font-size:1.05rem;font-weight:700;color:var(--tx);border:2px solid transparent}
+.rows button.on{border-color:var(--g);background:#ECFDF3}
+.rows button small{display:block;font-size:.82rem;color:var(--mu);font-weight:500;margin-top:2px}
+.f label{display:block;font-size:.95rem;font-weight:700;margin:14px 0 6px;color:#344054}
+.f input,.f select,.f textarea{width:100%;font:inherit;font-size:1.05rem;border:1.5px solid var(--ln);border-radius:12px;padding:13px 14px;color:var(--tx);background:#fff}
+.f textarea{min-height:110px;resize:none;line-height:1.5}
+.btn{display:block;width:100%;min-height:56px;border-radius:14px;background:var(--g);color:#fff;font-size:1.1rem;font-weight:800;margin-top:14px}
+.btn.gray{background:#F2F4F7;color:#344054}
+.note{font-size:.88rem;color:var(--mu);line-height:1.6;margin-top:12px}
+.err{color:#D92D20;font-size:.95rem;font-weight:700;min-height:1.2em;margin-top:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chips button{min-height:42px;padding:0 14px;border-radius:21px;background:#F2F4F7;font-size:.95rem;color:#344054;font-weight:600}
+
+/* 목록 카드 */
+.it{border:1px solid #EAECF0;border-radius:16px;overflow:hidden;margin-bottom:14px;background:#fff}
 .it .ph{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:#000}
 .it .ph figure{position:relative}
 .it .ph img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
-.it .ph figcaption{position:absolute;left:6px;top:6px;background:rgba(0,0,0,.6);color:#fff;font-size:.68rem;border-radius:6px;padding:2px 6px}
-.it .bd{padding:10px 12px}
-.it .tg{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;align-items:center}
-.it .tg span{font-size:.72rem;border-radius:6px;padding:2px 7px;background:#F2F4F7;color:#344054}
-.it .tg .sv-중대{background:#FEE4E2;color:#B42318;font-weight:700}
-.it .tg .sv-보통{background:#FEF0C7;color:#B54708;font-weight:700}
-.it .tg .sv-경미{background:#DCFAE6;color:#067647;font-weight:700}
-.it .st{font-size:.75rem;color:var(--mu);margin-left:auto}
-.it .st.err{color:var(--r)}.it .st.ok{color:var(--g)}
-.it textarea{width:100%;font:inherit;font-size:.82rem;line-height:1.55;border:1px solid var(--ln);border-radius:8px;padding:8px;min-height:120px;resize:vertical;color:var(--tx)}
-.it .ac{display:flex;gap:6px;margin-top:8px}
-.it .ac button{flex:1;background:#F2F4F7;border-radius:8px;padding:8px;font-size:.8rem;color:#344054}
-.it .ac .del{flex:none;color:var(--r)}
-.empty{color:var(--mu);font-size:.85rem;text-align:center;padding:24px 10px;line-height:1.7}
-/* 설정 창 */
-.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;display:none;align-items:flex-end;justify-content:center}
-.mo.show{display:flex}
-.mo .box{background:#fff;width:100%;max-width:520px;border-radius:16px 16px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
-.mo h3{color:var(--g);font-size:1rem;margin-bottom:10px}
-.mo label{display:block;font-size:.78rem;color:#344054;margin:10px 0 4px;font-weight:600}
-.mo input,.mo select{width:100%;font:inherit;border:1px solid var(--ln);border-radius:8px;padding:9px 10px}
-.mo .row{display:flex;gap:6px}
-.mo .btn{width:100%;background:var(--g);color:#fff;border-radius:10px;padding:12px;font-weight:700;margin-top:14px}
-.mo .btn.gray{background:#F2F4F7;color:#344054}
-.mo .note{font-size:.74rem;color:var(--mu);line-height:1.6;margin-top:10px}
-.mo .err{color:var(--r);font-size:.8rem;min-height:1em;margin-top:8px}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(16,24,40,.92);color:#fff;border-radius:10px;padding:10px 16px;font-size:.85rem;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none;max-width:92vw;text-align:center}
-.toast.show{opacity:1}.toast.err{background:rgba(180,35,24,.95)}
-@media print{
-  .top,.bar,.cam,.ctl,.hint,.lh a,.it .ac,.mo,.toast{display:none!important}
-  body{background:#fff}.list{padding:0}.it{break-inside:avoid;margin-bottom:8px}
-  .it textarea{border:0;min-height:0;height:auto}
+.it .ph figcaption{position:absolute;left:8px;top:8px;background:rgba(0,0,0,.65);color:#fff;font-size:.85rem;font-weight:700;border-radius:8px;padding:3px 9px}
+.it .b{padding:12px 14px 14px}
+.it .tt{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.it .tt b{font-size:1.15rem;flex:1;min-width:0}
+.sv{flex:none;font-size:.9rem;font-weight:800;border-radius:8px;padding:4px 10px}
+.sv-중대{background:#FEE4E2;color:#B42318}.sv-보통{background:#FEF0C7;color:#B54708}.sv-경미{background:#DCFAE6;color:#067647}
+.it .tg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.it .tg span{font-size:.88rem;border-radius:8px;padding:3px 9px;background:#F2F4F7;color:#344054;font-weight:600}
+.it .st{font-size:.95rem;font-weight:700;margin-bottom:8px;color:var(--mu)}
+.it .st.err{color:#D92D20}.it .st.ok{color:#067647}
+.it textarea{width:100%;font:inherit;font-size:1rem;line-height:1.6;border:1.5px solid var(--ln);border-radius:12px;padding:10px 12px;min-height:170px;resize:vertical;color:var(--tx)}
+.it .ac{display:flex;gap:8px;margin-top:10px}
+.it .ac button{flex:1;min-height:50px;background:#F2F4F7;border-radius:12px;font-size:1rem;font-weight:700;color:#344054}
+.it .ac .del{flex:none;padding:0 18px;color:#D92D20}
+.it .ac .pri{background:var(--g);color:#fff}
+.it .meta{font-size:.82rem;color:var(--mu);margin-top:10px}
+.empty{color:var(--mu);font-size:1.05rem;text-align:center;padding:40px 10px;line-height:1.8}
+.lnk{display:block;text-align:center;min-height:52px;line-height:52px;border-radius:12px;background:#ECFDF3;color:var(--g);font-weight:800;text-decoration:none;margin-bottom:14px;font-size:1.02rem}
+
+#toast{position:absolute;left:50%;top:calc(var(--st) + 70px);transform:translateX(-50%);background:rgba(16,24,40,.95);color:#fff;border-radius:12px;padding:12px 18px;font-size:1rem;font-weight:600;
+  z-index:40;opacity:0;transition:opacity .2s;pointer-events:none;width:max-content;max-width:92%;text-align:center;line-height:1.45}
+#toast.show{opacity:1}#toast.err{background:rgba(180,35,24,.96)}
+
+/* 가로로 눕혔을 때: 조작 띠를 오른쪽으로 */
+@media (orientation:landscape) and (max-height:520px){
+  #app{max-width:none}
+  .qline{left:auto;right:0;width:110px;bottom:4px}
+  .ctl{left:auto;top:0;width:110px;flex-direction:column;justify-content:center;gap:22px;padding:10px calc(env(safe-area-inset-right,0px) + 12px) 10px 12px;background:linear-gradient(90deg,transparent,rgba(0,0,0,.8) 35%)}
+  .side{right:124px;bottom:16px;flex-direction:row}
+  #pop{right:124px;bottom:12px}
+  .notep{top:calc(var(--st) + 62px);right:124px}
+  .tbar{right:110px}
+  #msg{right:124px;top:118px}
+  .zoom{right:240px;bottom:24px}
 }
 </style>
 </head>
 <body>
-<div class="top">
-  <h1>🐸 실시간 점검</h1><span class="ver" id="ver"></span><span class="sp"></span>
-  <button class="cfg" id="cfgBtn" onclick="openCfg()">팀 설정</button>
-</div>
-<div class="bar">
-  <select id="job" onchange="pickJob(this.value)"></select>
-  <div id="rooms" style="display:flex;gap:6px"></div>
-</div>
-<div class="hint">
-  <input id="note" placeholder="하자 내용 (선택) 예: 걸레받이 찍힘 — 비워 두면 AI가 사진만 보고 판단합니다">
-</div>
-<div class="cam" id="cam">
+<div id="app">
   <video id="vid" playsinline muted autoplay></video>
-  <canvas class="ov" id="ov"></canvas>
-  <div class="flash" id="flash"></div>
-  <div class="hold" id="hold"></div>
-  <div class="msg" id="msg" style="display:none"></div>
-  <div class="side" id="side" style="display:none">
-    <button id="torchBtn" onclick="toggleTorch()" title="손전등" style="display:none">🔦</button>
-    <button onclick="stopCam()" title="카메라 끄기">✕</button>
-  </div>
-  <div class="zoom" id="zoomBox"><input type="range" id="zoom" min="1" max="1" step="0.1" value="1" oninput="setZoom(this.value)"></div>
-  <div class="start" id="start">
-    <button onclick="startCam()">📷 카메라 켜기</button>
-    <p>폰을 하자 쪽으로 향하고 1~2초 멈추면 자동으로 찍습니다.<br>AI가 하자로 판단한 사진만 멀리서·가까이 두 장으로 저장하고<br>분석까지 이어서 진행합니다.</p>
-  </div>
-</div>
-<div class="ctl">
-  <button class="auto on" id="autoBtn" onclick="toggleAuto()">자동 촬영<br>켜짐</button>
-  <button class="shot" id="shotBtn" onclick="manualShot()" aria-label="직접 찍기"></button>
-  <div class="q" id="q">오늘 AI 0회</div>
-</div>
-<div class="lh"><b id="lhT">저장된 하자 0건</b><a href="../team/">팀 앱 열기 →</a></div>
-<div class="list" id="list"></div>
+  <canvas id="ov"></canvas>
+  <div id="flash"></div>
+  <div id="aim"><div id="hold"><i></i></div></div>
 
-<div class="mo" id="mo"><div class="box" id="moBox"></div></div>
-<div class="toast" id="toast"></div>
+  <div class="tbar">
+    <button class="pill job" onclick="openJobs()">📍 <span id="jobT">현장</span></button>
+    <button class="pill room" id="roomB" onclick="openRooms()">위치</button>
+    <button class="pill ic" id="cfgBtn" onclick="openCfg()" aria-label="팀 설정">⚙</button>
+  </div>
+  <button class="notep" id="noteB" onclick="openNote()">✎ <b id="noteT">하자 내용 적기 (선택)</b></button>
+  <div id="msg" style="display:none"><span></span></div>
+
+  <div class="side" id="side" style="display:none">
+    <button id="torchBtn" onclick="toggleTorch()" aria-label="손전등" style="display:none">🔦</button>
+    <button onclick="stopCam()" aria-label="카메라 끄기">⏻</button>
+  </div>
+  <div class="zoom" id="zoomBox">🔍<input type="range" id="zoom" min="1" max="1" step="0.1" value="1" oninput="setZoom(this.value)"></div>
+
+  <button id="pop" onclick="openList()"><img id="popI" alt=""><span><b id="popT"></b><small id="popS"></small></span></button>
+
+  <div class="ctl">
+    <button class="lst" id="lstB" onclick="openList()" aria-label="저장된 하자 목록">📋<em id="lstN" style="display:none">0</em></button>
+    <button class="shot" id="shotBtn" onclick="manualShot()" aria-label="직접 찍기"></button>
+    <button class="auto on" id="autoBtn" onclick="toggleAuto()">자동<br>켜짐</button>
+  </div>
+  <div class="qline" id="q"></div>
+
+  <div id="start">
+    <h2>🐸 실시간 사전점검<small id="ver"></small></h2>
+    <ol>
+      <li><b>1</b><span>카메라를 켜고 화면 위쪽에서 <strong>현장</strong>과 <strong>위치</strong>를 고릅니다</span></li>
+      <li><b>2</b><span>폰을 하자 쪽으로 향하고 <strong>1~2초 멈춥니다</strong></span></li>
+      <li><b>3</b><span>AI가 하자로 보면 <strong>멀리서·가까이</strong> 두 장을 저장하고 분석합니다</span></li>
+    </ol>
+    <button class="go" onclick="startCam()">📷 카메라 켜기</button>
+    <div class="sub"><button onclick="openList()">📋 저장 목록 <span id="startN"></span></button><button onclick="openCfg()">⚙ 팀 설정</button></div>
+  </div>
+
+  <div class="sheet" id="sheet" onclick="if(event.target===this)closeSheet()"><div class="box" id="sbox"></div></div>
+  <div id="toast"></div>
+</div>
 
 <script>
 'use strict';
 /* ============================================================ 설정 */
-const APP_VER='live-v0.1';
-const BUILD='20261016a';
+const APP_VER='live-v0.2';
+const BUILD='20261016c';
 const TEAM_GAS='https://script.google.com/macros/s/AKfycbyIo86UrFvE5W82FdSiZTjwB6N1QOEIjm4DTzhU-lgmd-OiSeYE1ACPRATVd_dOBPBl/exec';
 const ROOMS=['거실','주방','침실1','침실2','침실3','안방','욕실1','욕실2','현관','발코니1','발코니2','대피공간','팬트리','드레스룸','다용도실','실외기실','기타'];
+const NOTE_EX=['걸레받이 찍힘','벽지 들뜸','실리콘 마감불량','타일 줄눈 불량','창틀 흠집','문짝 개폐불량'];
 const WM={
   "도배공사":{"도배":["들뜸","마감불량","흠집/찍힘","면불량","오염","이음불량","흠집","미시공","파손","이색/변색"]},
   "타일공사":{"타일":["줄눈불량","틈새","구배불량","단차","들뜸","미시공","파손","마감불량","오염","흠집/찍힘"],"폴리싱타일":["파손","들뜸","줄눈불량","단차","틈새","오염","마감불량"],"아트월타일":["틈새","파손","마감불량","단차","흠집/찍힘","미시공","들뜸"],"타일코킹":["코킹불량","미시공","틈새","흠집/찍힘","마감불량"],"마블씰":["들뜸","틈새","단차","미시공","흠집/찍힘"]},
@@ -191,16 +274,23 @@ const $=id=>document.getElementById(id);
 const L={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const NL='\n';
-$('ver').textContent=APP_VER;
+$('ver').textContent='시제품 '+APP_VER;
 
 let toastT;
-function toast(t,err,ms){const e=$('toast');e.textContent=t;e.className='toast show'+(err?' err':'');clearTimeout(toastT);toastT=setTimeout(()=>e.className='toast',ms||2500);}
+function toast(t,err,ms){const e=$('toast');e.textContent=t;e.className=(err?'err ':'')+'show';clearTimeout(toastT);toastT=setTimeout(()=>e.className='',ms||2500);}
 let msgT;
-function msg(t,kind,ms){const e=$('msg');e.textContent=t;e.className='msg'+(kind?' '+kind:'');e.style.display='block';clearTimeout(msgT);if(ms)msgT=setTimeout(()=>{if(cam.on)msg(cam.auto?'하자 쪽을 비추고 잠깐 멈춰 주세요':'아래 흰 단추로 찍어 주세요');},ms);}
+const idleMsg=()=>cam.auto?'하자 쪽을 비추고 잠깐 멈춰 주세요':'아래 흰 단추를 눌러 찍어 주세요';
+function msg(t,kind,ms){const e=$('msg');e.firstChild.textContent=t;e.className=kind||'';e.style.display='block';clearTimeout(msgT);if(ms)msgT=setTimeout(()=>{if(cam.on)msg(idleMsg());},ms);}
+
+/* ============================================================ 아래에서 올라오는 창 */
+let sheetKind='';
+function sheet(kind,title,body,full){sheetKind=kind;const b=$('sbox');b.className='box'+(full?' full':'');
+  b.innerHTML='<div class="hd"><h3>'+title+'</h3><button class="x" onclick="closeSheet()" aria-label="닫기">✕</button></div><div class="bd" id="sbd">'+body+'</div>';$('sheet').classList.add('show');}
+function closeSheet(){$('sheet').classList.remove('show');sheetKind='';if(cam.on){cam.still=0;msg(idleMsg());}}
 
 /* ============================================================ 팀 설정 · 현장 (/team/ 앱과 같은 기기 저장값) */
 const cfg=()=>L.get('team_cfg',{name:'',role:'',pin:''});
-let jobs=L.get('team_jobs',{}),curJob=L.get('team_cur',null),room=L.get('live_room','');
+let jobs=L.get('team_jobs',{}),curJob=L.get('team_cur',null),room=L.get('live_room',''),note='';
 const DEL='__삭제됨__';
 const jobTitle=id=>{const j=jobs[id];const t=j&&j.title;return (!t||t==='새 현장'||t==='현장명')?'':t;};
 
@@ -212,41 +302,57 @@ async function api(body,signal){
   if(d.error==='locked')throw new Error(d.message||'잠김');
   return d;
 }
+const jobList=()=>Object.values(jobs).filter(j=>j.title!==DEL).sort((a,b)=>b.t-a.t);
 function drawJobs(){
-  const l=Object.values(jobs).filter(j=>j.title!==DEL).sort((a,b)=>b.t-a.t);
-  if(curJob&&!jobs[curJob])curJob=null;
+  const l=jobList();
+  if(curJob&&(!jobs[curJob]||jobs[curJob].title===DEL))curJob=null;
   if(!curJob&&l.length)curJob=l[0].id;
-  $('job').innerHTML=l.length?l.map(j=>'<option value="'+esc(j.id)+'"'+(j.id===curJob?' selected':'')+'>📍 '+esc(jobTitle(j.id)||'현장명 없음')+'</option>').join(''):'<option value="">현장 없음 (팀 앱에서 만드세요)</option>';
+  $('jobT').textContent=curJob?(jobTitle(curJob)||'현장명 없음'):'현장 없음';
 }
-function pickJob(id){curJob=id||null;L.set('team_cur',curJob);toast('현장: '+(jobTitle(id)||'현장명 없음'));}
+function openJobs(){
+  const l=jobList();
+  sheet('jobs','📍 현장 고르기',l.length?'<div class="rows">'+l.map(j=>'<button class="'+(j.id===curJob?'on':'')+'" onclick="pickJob(\''+esc(j.id)+'\')">'+esc(jobTitle(j.id)||'현장명 없음')+'<small>'+new Date(j.t).toLocaleDateString('ko-KR')+(j.id===curJob?' · 지금 선택됨':'')+'</small></button>').join('')+'</div>'+
+    '<div class="note">새 현장은 팀 앱(/team/)에서 만듭니다.</div><a class="lnk" style="margin-top:12px" href="../team/">팀 앱 열기 →</a>'
+    :'<div class="empty">현장이 없습니다.<br>팀 앱에서 현장을 먼저 만들어 주십시오.</div><a class="lnk" href="../team/">팀 앱 열기 →</a>');
+  pullJobs().then(()=>{if(sheetKind==='jobs'&&jobList().length!==l.length)openJobs();});
+}
+function pickJob(id){curJob=id||null;L.set('team_cur',curJob);drawJobs();closeSheet();toast('📍 '+(jobTitle(id)||'현장명 없음'));}
 async function pullJobs(){
   if(!cfg().pin||!navigator.onLine)return;
   try{const r=await api({a:'jobs'});if(r.ok){r.jobs.forEach(j=>{const l=jobs[j.id];if(!l)jobs[j.id]={id:j.id,title:j.title,t:j.t};else if(j.title===DEL||j.t>l.t){l.title=j.title;l.t=j.t;}});L.set('team_jobs',jobs);drawJobs();}setCfgBadge('ok');}
   catch(e){setCfgBadge('err',e.message);}
 }
-function drawRooms(){$('rooms').innerHTML=ROOMS.map(r=>'<button class="chip'+(r===room?' on':'')+'" onclick="pickRoom(\''+r+'\')">'+r+'</button>').join('');}
-function pickRoom(r){room=room===r?'':r;L.set('live_room',room);drawRooms();}
+function drawRoom(){const b=$('roomB');b.textContent=room||'위치 ▾';b.classList.toggle('none',!room);}
+function openRooms(){sheet('rooms','위치 고르기','<div class="grid">'+ROOMS.map(r=>'<button class="'+(r===room?'on':'')+'" onclick="pickRoom(\''+r+'\')">'+r+'</button>').join('')+'</div>');}
+function pickRoom(r){room=r;L.set('live_room',room);drawRoom();closeSheet();}
+function drawNote(){$('noteT').textContent=note||'하자 내용 적기 (선택)';$('noteB').classList.toggle('has',!!note);}
+function openNote(){
+  sheet('note','하자 내용 (선택)','<div class="f"><textarea id="noteIn" placeholder="예: 걸레받이 찍힘&#10;비워 두면 AI가 사진만 보고 판단합니다">'+esc(note)+'</textarea></div>'+
+    '<div class="chips">'+NOTE_EX.map(x=>'<button onclick="$(\'noteIn\').value=\''+x+'\'">'+x+'</button>').join('')+'</div>'+
+    '<button class="btn" onclick="saveNote()">확인</button><button class="btn gray" onclick="$(\'noteIn\').value=\'\';saveNote()">지우기</button>'+
+    '<div class="note">적은 내용은 다음 하자 1건에만 쓰이고, 저장되면 자동으로 지워집니다. 키보드의 마이크 단추로 말해서 넣을 수도 있습니다.</div>');
+  setTimeout(()=>{const t=$('noteIn');if(t){t.focus();t.setSelectionRange(t.value.length,t.value.length);}},250);
+}
+function saveNote(){note=$('noteIn').value.trim();drawNote();closeSheet();}
 let cfgErr='';
-function setCfgBadge(s,e){const b=$('cfgBtn'),c=cfg();cfgErr=e||'';b.dataset.s=s||'';b.textContent=c.pin?((c.name||'팀')+(s==='err'?' · 연결 오류':' · 연결')):'팀 설정 필요';}
+function setCfgBadge(s,e){const b=$('cfgBtn');cfgErr=e||'';b.dataset.s=cfg().pin?(s||''):'need';}
 function openCfg(){
   const c=cfg();
-  $('moBox').innerHTML='<h3>⚙ 팀 설정</h3>'+
+  sheet('cfg','⚙ 팀 설정','<div class="f">'+
     '<label>이름</label><input id="cName" value="'+esc(c.name)+'" placeholder="목록에 작성자로 표시됩니다">'+
     '<label>담당 분야</label><select id="cRole"><option'+(c.role==='창호'?' selected':'')+'>창호</option><option'+(c.role==='내장·기타'?' selected':'')+'>내장·기타</option></select>'+
-    '<label>팀 비밀번호</label><input id="cPin" type="password" autocomplete="off" value="'+esc(c.pin)+'">'+
+    '<label>팀 비밀번호</label><input id="cPin" type="password" autocomplete="off" value="'+esc(c.pin)+'"></div>'+
     '<div class="err" id="cErr">'+esc(cfgErr)+'</div>'+
-    '<button class="btn" onclick="saveCfg()">저장</button><button class="btn gray" onclick="closeMo()">닫기</button>'+
-    '<div class="note">팀 앱(/team/)과 같은 설정을 함께 씁니다. 여기서 저장한 하자는 같은 현장으로 팀 서버에 올라가고, 팀 앱 목록에도 들어옵니다.<br>AI 분석은 팀 서버 한도(하루 전체 300회)를 함께 씁니다. 하자가 아닌 장면도 1회씩 셉니다.</div>';
-  $('mo').classList.add('show');
+    '<button class="btn" onclick="saveCfg()">저장</button>'+
+    '<div class="note">팀 앱(/team/)과 같은 설정을 함께 씁니다. 여기서 저장한 하자는 같은 현장으로 팀 서버에 올라가고, 팀 앱 목록에도 들어옵니다.<br>AI 분석은 팀 서버 한도(하루 전체 300회)를 함께 씁니다. 하자가 아닌 장면도 1회씩 셉니다.</div>');
 }
-function closeMo(){$('mo').classList.remove('show');}
 async function saveCfg(){
   const n=$('cName').value.trim(),r=$('cRole').value,p=$('cPin').value.trim();
   if(!n){$('cErr').textContent='이름을 넣어 주십시오.';return;}
   if(p&&p.length<4){$('cErr').textContent='팀 비밀번호는 4자 이상입니다.';return;}
   L.set('team_cfg',Object.assign(cfg(),{name:n,role:r,pin:p}));
   $('cErr').textContent='서버 확인 중…';
-  try{const d=await api({a:'ping'});if(d.error==='no_pin'){$('cErr').textContent='팀 앱에서 먼저 팀 비밀번호를 정해 주십시오.';return;}setCfgBadge('ok');closeMo();toast('팀 서버에 연결했습니다');pullJobs();}
+  try{const d=await api({a:'ping'});if(d.error==='no_pin'){$('cErr').textContent='팀 앱에서 먼저 팀 비밀번호를 정해 주십시오.';return;}setCfgBadge('ok');closeSheet();toast('팀 서버에 연결했습니다');pullJobs();}
   catch(e){$('cErr').textContent=e.message;setCfgBadge('err',e.message);}
 }
 
@@ -259,10 +365,11 @@ async function dbAll(){try{const d=await idb();return await new Promise(r=>{cons
 let items=[];
 
 /* ============================================================ 카메라 */
-const cam={on:false,stream:null,track:null,auto:L.get('live_auto',true),torch:false,busy:false,armed:true,still:0,moved:0,prev:null,seen:[],timer:0,last:0};
+const cam={on:false,stream:null,track:null,auto:L.get('live_auto',true),torch:false,busy:false,armed:true,still:0,moved:0,prev:null,seen:[],timer:0};
 const small=document.createElement('canvas');small.width=80;small.height=60;
 const sctx=small.getContext('2d',{willReadFrequently:true});
-$('autoBtn').className='auto'+(cam.auto?' on':'');$('autoBtn').innerHTML='자동 촬영<br>'+(cam.auto?'켜짐':'꺼짐');
+function drawAuto(){const b=$('autoBtn');b.className='auto'+(cam.auto?' on':'');b.innerHTML='자동<br>'+(cam.auto?'켜짐':'꺼짐');$('aim').style.display=cam.auto?'block':'none';}
+drawAuto();
 
 async function startCam(){
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('이 브라우저는 화면 안 카메라를 지원하지 않습니다',true,4000);return;}
@@ -275,21 +382,23 @@ async function startCam(){
   /* 손전등 · 확대 (안드로이드 크롬에서 주로 지원) */
   let caps={};try{caps=cam.track.getCapabilities?cam.track.getCapabilities():{};}catch(e){}
   $('torchBtn').style.display=caps.torch?'block':'none';
-  if(caps.zoom&&caps.zoom.max>caps.zoom.min){const z=$('zoom');z.min=caps.zoom.min;z.max=Math.min(caps.zoom.max,8);z.step=caps.zoom.step||0.1;z.value=(cam.track.getSettings().zoom||caps.zoom.min);$('zoomBox').style.display='block';}
+  if(caps.zoom&&caps.zoom.max>caps.zoom.min){const z=$('zoom');z.min=caps.zoom.min;z.max=Math.min(caps.zoom.max,8);z.step=caps.zoom.step||0.1;z.value=(cam.track.getSettings().zoom||caps.zoom.min);$('zoomBox').style.display='flex';}
   wake();
-  msg(cam.auto?'하자 쪽을 비추고 잠깐 멈춰 주세요':'아래 흰 단추로 찍어 주세요');
+  msg(idleMsg());
+  if(!room)setTimeout(()=>{if(!room&&!sheetKind)openRooms();},300);
   clearInterval(cam.timer);cam.timer=setInterval(tick,120);
 }
 function stopCam(){
   clearInterval(cam.timer);cam.on=false;
   if(cam.stream)cam.stream.getTracks().forEach(t=>t.stop());cam.stream=null;cam.track=null;
-  $('vid').srcObject=null;$('start').style.display='flex';$('side').style.display='none';$('zoomBox').style.display='none';$('msg').style.display='none';$('hold').style.width='0';clearOv();
+  $('vid').srcObject=null;$('start').style.display='flex';$('side').style.display='none';$('zoomBox').style.display='none';$('msg').style.display='none';setHold(0);clearOv();
   if(cam.wl){try{cam.wl.release();}catch(e){}cam.wl=null;}
 }
 async function wake(){try{if('wakeLock' in navigator)cam.wl=await navigator.wakeLock.request('screen');}catch(e){}}
 async function toggleTorch(){if(!cam.track)return;cam.torch=!cam.torch;try{await cam.track.applyConstraints({advanced:[{torch:cam.torch}]});$('torchBtn').classList.toggle('on',cam.torch);}catch(e){cam.torch=false;toast('손전등을 켤 수 없습니다',true);}}
 function setZoom(v){if(cam.track)cam.track.applyConstraints({advanced:[{zoom:Number(v)}]}).catch(()=>{});}
-function toggleAuto(){cam.auto=!cam.auto;L.set('live_auto',cam.auto);const b=$('autoBtn');b.className='auto'+(cam.auto?' on':'');b.innerHTML='자동 촬영<br>'+(cam.auto?'켜짐':'꺼짐');$('hold').style.width='0';cam.still=0;if(cam.on)msg(cam.auto?'하자 쪽을 비추고 잠깐 멈춰 주세요':'아래 흰 단추로 찍어 주세요');}
+function toggleAuto(){cam.auto=!cam.auto;L.set('live_auto',cam.auto);drawAuto();setHold(0);cam.still=0;if(cam.on)msg(idleMsg());}
+function setHold(p){$('hold').firstChild.style.width=p+'%';$('aim').classList.toggle('go',p>0);}
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&cam.on){stopCam();cam.resume=true;}else if(!document.hidden&&cam.resume){cam.resume=false;startCam();}});
 
 /* 작은 회색 화면 */
@@ -304,19 +413,20 @@ function tick(){
   const d=cam.prev?gdiff(f.g,cam.prev):99;cam.prev=f.g;
   if(!cam.armed){
     if(d>MOVE_DIFF){cam.moved+=120;if(cam.moved>=REARM_MS){cam.armed=true;cam.moved=0;clearOv();}}
-    $('hold').style.width='0';return;
+    setHold(0);return;
   }
-  if(!cam.auto||cam.busy){$('hold').style.width='0';return;}
+  /* 창이 열려 있거나 앞 사진을 확인하는 동안은 찍지 않는다 */
+  if(!cam.auto||cam.busy||sheetKind){setHold(0);cam.still=0;return;}
   if(d<STILL_DIFF){cam.still+=120;}else{cam.still=0;}
-  $('hold').style.width=Math.min(100,cam.still/HOLD_MS*100)+'%';
+  setHold(Math.min(100,cam.still/HOLD_MS*100));
   if(cam.still<HOLD_MS)return;
-  cam.still=0;$('hold').style.width='0';
-  if(f.mean<22){msg('너무 어둡습니다 — 손전등을 켜 주세요','warn',2200);cam.armed=false;return;}
-  if(f.mean>240){msg('빛이 너무 강합니다 — 각도를 바꿔 주세요','warn',2200);cam.armed=false;return;}
-  if(sharp(f.g)<2.2){msg('초점이 흐립니다 — 조금 떨어져 주세요','warn',2000);cam.armed=false;return;}
+  cam.still=0;setHold(0);
+  if(f.mean<22){msg('너무 어둡습니다 — 🔦 손전등을 켜 주세요','warn',2500);cam.armed=false;return;}
+  if(f.mean>240){msg('빛이 너무 강합니다 — 각도를 바꿔 주세요','warn',2500);cam.armed=false;return;}
+  if(sharp(f.g)<2.2){msg('초점이 흐립니다 — 조금 떨어져 주세요','warn',2200);cam.armed=false;return;}
   /* 방금 본 장면이면 AI에 다시 묻지 않는다 */
   const s=cam.seen.find(x=>gdiff(x.g,f.g)<SAME_DIFF);
-  if(s){msg(s.defect?'이미 저장한 하자입니다':'방금 확인한 곳 — 하자 없음','',1600);cam.armed=false;return;}
+  if(s){msg(s.defect?'이미 저장한 하자입니다':'방금 확인한 곳 — 하자 없음','',1800);cam.armed=false;return;}
   capture(f,true);
 }
 function manualShot(){if(!cam.on){startCam();return;}if(cam.busy){toast('앞 사진을 확인하는 중입니다');return;}const f=grab();if(f)capture(f,false);}
@@ -328,16 +438,17 @@ function drawOv(box,label){
   const x=c.getContext('2d');x.scale(devicePixelRatio,devicePixelRatio);
   const vw=v.videoWidth,vh=v.videoHeight,k=Math.max(W/vw,H/vh),ox=(W-vw*k)/2,oy=(H-vh*k)/2;
   const bx=ox+box[1]/1000*vw*k,by=oy+box[0]/1000*vh*k,bw=(box[3]-box[1])/1000*vw*k,bh=(box[2]-box[0])/1000*vh*k;
-  x.strokeStyle='#E5484D';x.lineWidth=3;x.strokeRect(bx,by,bw,bh);
-  if(label){x.font='bold 14px sans-serif';const tw=x.measureText(label).width;x.fillStyle='#E5484D';x.fillRect(bx,Math.max(0,by-22),tw+10,22);x.fillStyle='#fff';x.fillText(label,bx+5,Math.max(15,by-6));}
+  x.strokeStyle='#F04438';x.lineWidth=5;x.strokeRect(bx,by,bw,bh);
+  if(label){x.font='800 18px sans-serif';const tw=x.measureText(label).width;const ty=by>34?by-30:by+bh+4;x.fillStyle='#F04438';x.fillRect(bx-2.5,ty,tw+16,28);x.fillStyle='#fff';x.fillText(label,bx+6,ty+20);}
 }
 
 /* ============================================================ 촬영 → AI 1차 확인(하자 여부 + 위치 상자) */
 let aiCount=0;{const q=L.get('live_q',{});if(q.d===new Date().toDateString())aiCount=q.n||0;}
-function countAI(){aiCount++;L.set('live_q',{d:new Date().toDateString(),n:aiCount});$('q').innerHTML='오늘 AI '+aiCount+'회<br><span style="font-size:.65rem">(이 기기)</span>';}
-$('q').innerHTML='오늘 AI '+aiCount+'회<br><span style="font-size:.65rem">(이 기기)</span>';
+function drawQ(){$('q').textContent='오늘 이 폰 AI '+aiCount+'회 · '+APP_VER;}
+function countAI(){aiCount++;L.set('live_q',{d:new Date().toDateString(),n:aiCount});drawQ();}
+drawQ();
 
-function beep(){try{const a=beep.a||(beep.a=new (window.AudioContext||window.webkitAudioContext)()),o=a.createOscillator(),g=a.createGain();o.frequency.value=1250;g.gain.value=.12;o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+.08);}catch(e){}try{navigator.vibrate&&navigator.vibrate(50);}catch(e){}}
+function beep(){try{const a=beep.a||(beep.a=new (window.AudioContext||window.webkitAudioContext)()),o=a.createOscillator(),g=a.createGain();o.frequency.value=1250;g.gain.value=.15;o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+.08);}catch(e){}try{navigator.vibrate&&navigator.vibrate(50);}catch(e){}}
 function flash(){const e=$('flash');e.classList.add('on');setTimeout(()=>e.classList.remove('on'),60);}
 function toCanvas(src,sx,sy,sw,sh,max){const k=Math.min(1,max/Math.max(sw,sh)),c=document.createElement('canvas');c.width=Math.round(sw*k);c.height=Math.round(sh*k);c.getContext('2d').drawImage(src,sx,sy,sw,sh,0,0,c.width,c.height);return c;}
 const b64=c=>c.split(',')[1];
@@ -348,12 +459,12 @@ async function capture(f,auto){
   const v=$('vid'),W=v.videoWidth,H=v.videoHeight;
   /* 원본 한 장 (영상 해상도 그대로) */
   const full=document.createElement('canvas');full.width=W;full.height=H;full.getContext('2d').drawImage(v,0,0,W,H);
-  beep();flash();cam.busy=true;cam.armed=false;
-  msg('🔍 AI가 하자인지 확인 중…');
-  const note=$('note').value.trim();
+  beep();flash();cam.busy=true;cam.armed=false;$('shotBtn').classList.add('busy');
+  msg('🔍 AI가 하자인지 보는 중…','busy');
+  const nt=note;
   const img=toCanvas(full,0,0,W,H,1024).toDataURL('image/jpeg',0.8);
   const prompt='당신은 아파트 입주 전 사전점검 하자 판정 AI입니다. 점검자가 폰 카메라를 멈춘 장면입니다.'+NL+
-    (note?'[점검자 입력] "'+note+'" — 이 하자를 사진에서 찾아 위치를 표시합니다.'+NL:'')+
+    (nt?'[점검자 입력] "'+nt+'" — 이 하자를 사진에서 찾아 위치를 표시합니다.'+NL:'')+
     (room?'[위치] '+room+NL:'')+
     '[판정] 사진에 실제 시공 하자가 눈에 보이면 defect=true 입니다. 흠집/찍힘, 오염, 들뜸, 틈새, 코킹불량, 파손, 균열, 줄눈불량, 단차, 미시공, 도장불량, 마감불량, 이음불량, 곰팡이, 누수 흔적 등이 해당합니다.'+NL+
     '- 정상 마감, 자재 무늬, 그림자, 빛 반사, 보호필름, 떨어진 먼지 한 톨은 하자가 아닙니다.'+NL+
@@ -366,25 +477,26 @@ async function capture(f,auto){
     const d=await api({a:'ai',prompt,images:[{mimeType:'image/jpeg',data:b64(img)}]});countAI();
     if(d.error)throw new Error(d.error==='ai_daily_limit'?'오늘 팀 AI 한도를 넘었습니다':d.error==='no_api_key'?'서버에 AI 키가 없습니다':(d.message||d.error));
     r=parseJSON(d.text);
-  }catch(e){cam.busy=false;msg('⚠️ '+e.message,'warn',3500);return;}
-  cam.busy=false;
+  }catch(e){cam.busy=false;$('shotBtn').classList.remove('busy');msg('⚠️ '+e.message,'warn',3500);return;}
+  cam.busy=false;$('shotBtn').classList.remove('busy');
   const box=Array.isArray(r.box_2d)&&r.box_2d.length===4?r.box_2d.map(Number):null;
   const ok=r.defect===true&&(Number(r.confidence)||0)>=MIN_CONF&&box&&box[2]>box[0]&&box[3]>box[1];
   remember(f.g,ok);
   if(!ok){
-    msg('✅ 하자 없음'+(r.reason?' — '+r.reason:''),'ok',2200);
-    if(!auto&&note)toast('AI가 사진에서 하자를 찾지 못했습니다. 더 가까이 찍어 보십시오',true,3500);
+    msg('✅ 하자 없음'+(r.reason?NL+r.reason:''),'ok',2400);
+    if(!auto&&nt)toast('AI가 사진에서 하자를 찾지 못했습니다. 더 가까이 찍어 보십시오',true,3500);
     return;
   }
   drawOv(box,r.label||'하자');
-  msg('🔴 '+(r.label||'하자')+' 발견 — 저장하고 분석합니다','warn',2600);
-  makeItem(full,box,r,note);
+  msg('🔴 '+(r.label||'하자')+' 발견 — 저장합니다','warn',2600);
+  makeItem(full,box,r,nt);
+  if(nt){note='';drawNote();}
 }
 function remember(g,defect){cam.seen.unshift({g,defect});if(cam.seen.length>12)cam.seen.pop();}
 function parseJSON(t){t=String(t||'').replace(/```json|```/g,'').trim();try{let d=JSON.parse(t);return Array.isArray(d)?(d[0]||{}):d;}catch(e){const m=/{[^]*}/.exec(t);try{return m?JSON.parse(m[0]):{};}catch(x){return {};}}}
 
 /* ============================================================ 멀리서 · 가까이 두 장 만들기 */
-function makeItem(full,box,r,note){
+function makeItem(full,box,r,nt){
   const W=full.width,H=full.height;
   const bx=box[1]/1000*W,by=box[0]/1000*H,bw=(box[3]-box[1])/1000*W,bh=(box[2]-box[0])/1000*H;
   /* 가까이: 하자 상자를 2.4배로 넓히고(최소 화면의 30%), 화면 비율에 맞춰 자른다 */
@@ -395,16 +507,27 @@ function makeItem(full,box,r,note){
   const close=toCanvas(full,cx,cy,cw,ch,800);
   /* 멀리서: 전체 화면 + 하자 자리에 빨간 상자 */
   const wide=toCanvas(full,0,0,W,H,800),wx=wide.getContext('2d'),k=wide.width/W;
-  wx.strokeStyle='#E5484D';wx.lineWidth=Math.max(3,Math.round(wide.width/200));wx.strokeRect(bx*k,by*k,bw*k,bh*k);
-  const it={id:Date.now()*100+Math.floor(Math.random()*100),job:curJob||'',room:room||'위치미지정',note,label:r.label||'',
+  wx.strokeStyle='#F04438';wx.lineWidth=Math.max(3,Math.round(wide.width/200));wx.strokeRect(bx*k,by*k,bw*k,bh*k);
+  const it={id:Date.now()*100+Math.floor(Math.random()*100),job:curJob||'',room:room||'위치미지정',note:nt,label:r.label||'',
     wImg:wide.toDataURL('image/jpeg',0.75),cImg:close.toDataURL('image/jpeg',0.75),
     work:'',sub:'',type:'',severity:'',detail:'🔍 정밀 분석 대기 중…'+NL+'1차 확인: '+(r.reason||''),
     state:'ai',by:cfg().name||'',role:cfg().role||'',t:Date.now()};
   /* 원본(드라이브 보관용): 전체 원본 + 가까이 원본 크기 */
   it._ow=toCanvas(full,0,0,W,H,2560).toDataURL('image/jpeg',0.88);
   it._oc=toCanvas(full,cx,cy,cw,ch,2560).toDataURL('image/jpeg',0.88);
-  items.unshift(it);dbPut(it);render();
+  items.unshift(it);dbPut(it);render();showPop(it);
   queue.push(it);runQueue();
+}
+
+/* 새 하자 알림 카드 (분석이 끝나면 내용이 바뀐다) */
+let popId=0,popT;
+function showPop(it){popId=it.id;drawPop();clearTimeout(popT);popT=setTimeout(()=>$('pop').classList.remove('show'),9000);}
+function drawPop(){
+  const it=items.find(x=>x.id===popId),p=$('pop');if(!it){p.classList.remove('show');return;}
+  $('popI').src=it.cImg;$('popT').textContent=(it.type||it.label||'하자')+(it.severity?' · '+it.severity:'');
+  $('popS').textContent=it.room+' · '+(ST_TXT(it));
+  p.classList.add('show');
+  if(it.state==='done'){clearTimeout(popT);popT=setTimeout(()=>p.classList.remove('show'),3500);}
 }
 
 /* ============================================================ 정밀 분석 → 팀 서버로 보내기 (한 건씩 차례로) */
@@ -415,7 +538,7 @@ async function runQueue(){
     if(it.state==='ai')await analyze(it);
     if(it.state==='send')await send(it);
   }
-  qBusy=false;
+  qBusy=false;render();
 }
 async function analyze(it){
   setState(it,'ai','정밀 분석 중…');
@@ -434,11 +557,11 @@ async function analyze(it){
     if(!r.detail||String(r.detail).indexOf('■')<0)throw new Error('분석 내용이 비어 있습니다');
     it.work=r.work||'';it.sub=r.sub||'';it.type=r.type||'';it.severity=r.severity||'';
     it.detail=String(r.detail).split('\\n').join(NL)+NL+NL+'🤖 AI 분석 완료 (참고용) · 실시간 촬영';
-    it.state='send';await dbPut(it);render();
+    it.state='send';it.stTxt='';await dbPut(it);render();
   }catch(e){setState(it,'aiErr','분석 실패: '+e.message);}
 }
 async function send(it){
-  if(!it.job){setState(it,'noJob','현장이 없어 이 기기에만 저장했습니다');return;}
+  if(!it.job){setState(it,'noJob','현장이 없어 이 폰에만 저장했습니다');return;}
   setState(it,'send','팀 서버로 보내는 중…');
   const id=String(it.id),title=jobTitle(it.job);
   try{
@@ -449,12 +572,12 @@ async function send(it){
     const d=new Date(it.t),p2=n=>String(n).padStart(2,'0'),stamp=''+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'_'+p2(d.getHours())+p2(d.getMinutes())+p2(d.getSeconds());
     for(const [nm,data] of [['멀리',it._ow],['가까이',it._oc]]){if(!data)continue;try{await api({a:'origPut',job:it.job,title,name:stamp+'_'+it.room+'_'+nm+(it.by?'_'+it.by:'')+'.jpg',data:b64(data)});}catch(e){}}
     delete it._ow;delete it._oc;
-    it.state='done';await dbPut(it);render();
+    it.state='done';it.stTxt='';await dbPut(it);render();
   }catch(e){setState(it,'sendErr','보내기 실패: '+e.message);}
 }
 function setState(it,s,t){it.state=s;it.stTxt=t;dbPut(it);render();}
 function retry(id){const it=items.find(x=>x.id===id);if(!it)return;if(it.state==='aiErr')it.state='ai';else if(it.state==='sendErr'||it.state==='noJob'){it.state='send';if(!it.job)it.job=curJob||'';}queue.push(it);runQueue();}
-function editDetail(id,v){const it=items.find(x=>x.id===id);if(!it)return;it.detail=v;dbPut(it);if(it.state==='done'){it.state='send';it.stTxt='고친 내용 다시 보내기 대기';render();}}
+function editDetail(id,v){const it=items.find(x=>x.id===id);if(!it)return;it.detail=v;if(it.state==='done'){it.state='send';it.stTxt='고친 내용 — 보내기 대기';}dbPut(it);render();}
 function resend(id){const it=items.find(x=>x.id===id);if(it&&it.state==='send'){queue.push(it);runQueue();}}
 async function delItem(id){
   const it=items.find(x=>x.id===id);if(!it)return;
@@ -463,23 +586,36 @@ async function delItem(id){
   items=items.filter(x=>x.id!==id);dbDel(id);render();
 }
 
-/* ============================================================ 목록 그리기 */
-const ST={ai:'정밀 분석 중…',send:'보내기 대기',done:'✓ 팀 앱에 저장됨'};
+/* ============================================================ 목록 */
+const ST={ai:'⏳ 정밀 분석 중…',send:'⏳ 보내기 대기',done:'✓ 팀 앱에 저장됨'};
+const ST_TXT=it=>it.state==='done'?ST.done:(it.stTxt||ST[it.state]||'');
 function render(){
-  $('lhT').textContent='저장된 하자 '+items.length+'건';
-  if(!items.length){$('list').innerHTML='<div class="empty">아직 저장된 하자가 없습니다.<br>카메라를 켜고 하자 쪽에 잠깐 멈춰 보십시오.</div>';return;}
-  $('list').innerHTML=items.map(it=>{
-    const bad=/Err|noJob/.test(it.state),st=it.stTxt&&it.state!=='done'?it.stTxt:(ST[it.state]||'');
-    const jt=jobTitle(it.job);
-    return '<div class="it"><div class="ph"><figure><img src="'+it.wImg+'"><figcaption>멀리서</figcaption></figure><figure><img src="'+it.cImg+'"><figcaption>가까이</figcaption></figure></div>'+
-      '<div class="bd"><div class="tg"><span>'+esc(it.room)+'</span>'+(it.work?'<span>'+esc(it.sub||it.work)+'</span>':'')+(it.type?'<span>'+esc(it.type)+'</span>':'<span>'+esc(it.label)+'</span>')+
-      (it.severity?'<span class="sv-'+esc(it.severity)+'">'+esc(it.severity)+'</span>':'')+'<span class="st'+(bad?' err':it.state==='done'?' ok':'')+'">'+esc(st)+'</span></div>'+
-      '<textarea onchange="editDetail('+it.id+',this.value)">'+esc(it.detail)+'</textarea>'+
-      '<div class="ac">'+(bad?'<button onclick="retry('+it.id+')">↻ 다시 시도</button>':'')+(it.state==='send'&&!qBusy?'<button onclick="resend('+it.id+')">⇪ 팀 서버로 보내기</button>':'')+
-      '<button class="del" onclick="delItem('+it.id+')">삭제</button></div>'+
-      '<div style="font-size:.68rem;color:var(--mu);margin-top:6px">'+new Date(it.t).toLocaleString('ko-KR')+(jt?' · '+esc(jt):'')+(it.by?' · '+esc(it.by):'')+'</div></div></div>';
-  }).join('');
+  const n=items.length,e=$('lstN');e.textContent=n;e.style.display=n?'flex':'none';
+  $('lstB').style.backgroundImage=n?'url('+items[0].cImg+')':'';$('lstB').firstChild.textContent=n?'':'📋';
+  $('startN').textContent=n?'('+n+')':'';
+  if(popId)drawPop();
+  if(sheetKind==='list')drawList();
 }
+function openList(){$('pop').classList.remove('show');sheet('list','저장된 하자 <span id="lCnt"></span>','',true);drawList();}
+function drawList(){
+  const c=$('lCnt');if(c)c.textContent=items.length+'건';
+  const b=$('sbd');if(!b)return;
+  /* 고치는 중인 칸이 있으면 다시 그리지 않는다 (글자가 날아가지 않도록) */
+  if(b.contains(document.activeElement)&&document.activeElement.tagName==='TEXTAREA')return;
+  b.innerHTML='<a class="lnk" href="../team/">팀 앱에서 전체 목록 · 보고서 보기 →</a>'+(items.length?items.map(it=>{
+    const bad=/Err|noJob/.test(it.state),jt=jobTitle(it.job);
+    return '<div class="it"><div class="ph"><figure><img src="'+it.wImg+'" alt=""><figcaption>멀리서</figcaption></figure><figure><img src="'+it.cImg+'" alt=""><figcaption>가까이</figcaption></figure></div>'+
+      '<div class="b"><div class="tt"><b>'+esc(it.type||it.label||'하자')+'</b>'+(it.severity?'<span class="sv sv-'+esc(it.severity)+'">'+esc(it.severity)+'</span>':'')+'</div>'+
+      '<div class="tg"><span>📍 '+esc(it.room)+'</span>'+(it.work?'<span>'+esc(it.work)+'</span>':'')+(it.sub&&it.sub!==it.work?'<span>'+esc(it.sub)+'</span>':'')+'</div>'+
+      '<div class="st'+(bad?' err':it.state==='done'?' ok':'')+'">'+esc(ST_TXT(it))+'</div>'+
+      '<textarea onchange="editDetail('+it.id+',this.value)">'+esc(it.detail)+'</textarea>'+
+      '<div class="ac">'+(bad?'<button class="pri" onclick="retry('+it.id+')">↻ 다시 시도</button>':'')+(it.state==='send'&&!qBusy?'<button class="pri" onclick="resend('+it.id+')">⇪ 팀 서버로 보내기</button>':'')+
+      '<button class="del" onclick="delItem('+it.id+')">삭제</button></div>'+
+      '<div class="meta">'+new Date(it.t).toLocaleString('ko-KR')+(jt?' · '+esc(jt):'')+(it.by?' · '+esc(it.by):'')+'</div></div></div>';
+  }).join('')+'':'<div class="empty">아직 저장된 하자가 없습니다.<br>카메라를 켜고 하자 쪽에 잠깐 멈춰 보십시오.</div>');
+  b.querySelectorAll('textarea').forEach(x=>{x.style.height='auto';x.style.height=(x.scrollHeight+4)+'px';});
+}
+window.addEventListener('resize',clearOv);
 
 /* ============================================================ 새 판 자동 반영 (화면으로 돌아올 때, 진행 중인 일이 없으면) */
 document.addEventListener('visibilitychange',async()=>{
@@ -489,7 +625,7 @@ document.addEventListener('visibilitychange',async()=>{
 
 /* ============================================================ 시작 */
 (async()=>{
-  drawJobs();drawRooms();setCfgBadge(cfg().pin?'':'');
+  drawJobs();drawRoom();drawNote();setCfgBadge('');
   items=(await dbAll()).sort((a,b)=>b.id-a.id);
   /* 끝나지 않은 일은 다시 줄 세운다 */
   items.forEach(it=>{if(it.state==='ai'||it.state==='send')queue.push(it);});
