@@ -244,8 +244,8 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
 <script>
 'use strict';
 /* ============================================================ 설정 */
-const APP_VER='live-v0.5';
-const BUILD='20261016h';
+const APP_VER='live-v0.6';
+const BUILD='20261016i';
 const TEAM_GAS='https://script.google.com/macros/s/AKfycbyIo86UrFvE5W82FdSiZTjwB6N1QOEIjm4DTzhU-lgmd-OiSeYE1ACPRATVd_dOBPBl/exec';
 /* 위치 두 줄 (폰 한 화면에 다 보이도록). 긴 이름은 단추에만 줄여 쓰고, 저장은 팀 앱과 같은 이름으로 한다 */
 const ROOM_ROWS=[['거실','주방','안방','침실1','침실2','침실3','욕실1','욕실2','현관'],['발코니1','발코니2','대피공간','팬트리','드레스룸','다용도실','실외기실','기타']];
@@ -366,10 +366,10 @@ function openJobs(){
   const l=jobList();
   openMo('jobs','<h3>📍 현장 고르기</h3>'+(l.length?'<div class="rows">'+l.map(j=>'<button class="'+(j.id===curJob?'on':'')+'" onclick="pickJob(\''+esc(j.id)+'\')">'+esc(jobTitle(j.id)||'현장명 없음')+'<small>'+new Date(j.t).toLocaleDateString('ko-KR')+(j.id===curJob?' · 지금 선택됨':'')+'</small></button>').join('')+'</div>'
     :'<div class="note">현장이 없습니다. 팀 앱에서 현장을 먼저 만들어 주십시오.</div>')+
-    '<button class="btn" onclick="closeMo();newJob();drawJobs();drawRooms();voiceAddr()">＋ 새 현장 (주소 말하기)</button>');
+    '<button class="btn" onclick="closeMo();newJob();drawJobs();render();voiceAddr()">＋ 새 현장 (주소 말하기)</button>');
   pullJobs().then(()=>{if(moKind==='jobs'&&jobList().length!==l.length)openJobs();});
 }
-function pickJob(id){curJob=id||null;L.set('team_cur',curJob);drawJobs();drawRooms();closeMo();toast('📍 '+(jobTitle(id)||'현장명 없음'));}
+function pickJob(id){curJob=id||null;L.set('team_cur',curJob);drawJobs();render();closeMo();toast('📍 '+(jobTitle(id)||'현장명 없음'));}
 async function pullJobs(){
   if(!cfg().pin||!navigator.onLine)return;
   try{const r=await api({a:'jobs'});if(r.ok){r.jobs.forEach(j=>{const l=jobs[j.id];if(!l)jobs[j.id]={id:j.id,title:j.title,t:j.t};else if(j.title===DEL||j.t>l.t){l.title=j.title;l.t=j.t;}});L.set('team_jobs',jobs);drawJobs();}setCfgBadge('ok');}
@@ -637,11 +637,13 @@ async function delItem(id){
 }
 
 /* ============================================================ 화면 그리기 */
+/* 화면에는 지금 현장(세대)의 하자만 보여 준다. 현장 없이 저장된 것은 어느 현장에서나 보여서 다시 보낼 수 있게 한다 */
+const view=()=>items.filter(i=>i.job===curJob||!i.job);
 const ST={ai:'⏳ 정밀 분석 중…',send:'⏳ 보내기 대기',done:'✓ 팀 앱에 저장됨'};
 const ST_TXT=it=>it.state==='done'?ST.done:(it.stTxt||ST[it.state]||'');
 /* ②의 멀리서·가까이 칸과 ③ 하자 정보에는 가장 최근 하자를 보여 준다 */
 function drawLatest(){
-  const it=items[0];
+  const it=view()[0];
   for(const [id,src] of [['pW',it&&it.wImg],['pC',it&&it.cImg]]){const f=$(id);let im=f.querySelector('img');
     if(src){if(!im){im=document.createElement('img');im.alt='';f.prepend(im);}if(im.getAttribute('src')!==src)im.src=src;f.classList.add('has');}else{if(im)im.remove();f.classList.remove('has');}}
   const cell=(id,v,l)=>{const c=$(id);c.textContent=v||l;c.classList.toggle('on',!!v);};
@@ -651,13 +653,13 @@ function drawLatest(){
   d.className='det';d.innerHTML=(it.severity?'<span class="sv sv-'+esc(it.severity)+'">'+esc(it.severity)+'</span>':'')+'<b style="font-size:.82rem;color:var(--ts)">'+esc(ST_TXT(it))+'</b>'+NL+esc(it.detail);
 }
 function render(){
-  $('lCnt').textContent=items.length;
+  const v=view();$('lCnt').textContent=v.length;
   drawLatest();drawRooms();
   const b=$('list');
   /* 고치는 중인 칸이 있으면 다시 그리지 않는다 (글자가 날아가지 않도록) */
   if(b.contains(document.activeElement)&&document.activeElement.tagName==='TEXTAREA')return;
-  const n=items.length;
-  b.innerHTML=n?items.map((it,i)=>{
+  const n=v.length;
+  b.innerHTML=n?v.map((it,i)=>{
     const bad=/Err|noJob/.test(it.state),jt=jobTitle(it.job);
     return '<div class="it"><div class="ph"><figure><img src="'+it.wImg+'" alt=""><figcaption>멀리서</figcaption></figure><figure><img src="'+it.cImg+'" alt=""><figcaption>가까이</figcaption></figure></div>'+
       '<div class="b"><div class="h"><span class="lc">'+(n-i)+'</span><b>'+esc(it.type||it.label||'하자')+'</b>'+(it.severity?'<span class="sv sv-'+esc(it.severity)+'">'+esc(it.severity)+'</span>':'')+'</div>'+
