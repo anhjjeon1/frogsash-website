@@ -40,15 +40,27 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
 .sec-t .r{margin-left:auto;font-size:.74rem;font-weight:600;color:var(--th)}
 .sec-t a.r{color:var(--p);font-weight:700;text-decoration:none;font-size:.8rem}
 
-/* ① 현장 · 위치 */
-.jobb{width:100%;display:flex;align-items:center;gap:8px;background:var(--fl);border-radius:12px;padding:11px 12px;font-size:.95rem;font-weight:700;text-align:left}
-.jobb span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.jobb i{font-style:normal;font-size:.78rem;color:var(--p);font-weight:700}
-.rooms{display:flex;gap:6px;margin:8px -10px 0;padding:0 10px 2px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.rooms::-webkit-scrollbar{display:none}
-.rooms button{flex:none;background:var(--fl);border-radius:10px;padding:8px 11px;font-size:.86rem;font-weight:600;color:#344054}
-.rooms button.on{background:var(--p);color:#fff;font-weight:800}
-.rooms.need button{box-shadow:inset 0 0 0 1.5px #FEC84B}
+/* ① 주소 · 위치 */
+.arow{display:flex;align-items:center;gap:8px}
+.arow .sec-t{margin:0;flex:none;white-space:nowrap}
+.ain{flex:1;min-width:0;display:flex;align-items:center;gap:2px;background:var(--fl);border-radius:12px;padding:3px 3px 3px 11px}
+.ain input{flex:1;min-width:0;border:0;background:none;font-size:.92rem;font-weight:600;padding:8px 0;color:var(--tx);outline:none}
+.ain input::placeholder{font-weight:500;color:var(--th)}
+.ain button{width:38px;height:38px;border-radius:50%;flex:none;font-size:1.05rem;display:flex;align-items:center;justify-content:center}
+.ain .mic{background:var(--pg);color:var(--pd)}
+.ain .mic.on{background:#F04438;color:#fff;animation:pulse 1s infinite}
+.ain .lst{color:var(--ts);font-size:.9rem}
+.rooms{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+.rrow{display:flex;gap:4px}
+.rrow button{position:relative;flex:1 1 auto;min-width:0;height:40px;padding:0 3px;background:var(--fl);border-radius:9px;font-size:clamp(10.5px,3.2vw,13.5px);font-weight:600;color:#475467;letter-spacing:-.05em;white-space:nowrap}
+.rrow button.done{background:#DBEAFE;color:#1D4ED8;font-weight:700}
+.rrow button.on{background:var(--p);color:#fff;font-weight:800}
+.rrow button em{position:absolute;top:-6px;right:-3px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#F04438;color:#fff;font-style:normal;font-size:.66rem;font-weight:800;line-height:17px;letter-spacing:0;border:1.5px solid #fff}
+.rooms.need .rrow button:not(.done){box-shadow:inset 0 0 0 1.5px #FEC84B}
+.lgd{display:flex;gap:12px;justify-content:flex-end;margin-top:6px;font-size:.72rem;color:var(--ts)}
+.lgd span{display:flex;align-items:center;gap:4px}
+.lgd i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.lgd em{font-style:normal;min-width:15px;height:15px;border-radius:8px;background:#F04438;color:#fff;font-size:.6rem;font-weight:800;text-align:center;line-height:15px}
 
 /* ② 실시간 촬영 */
 .cam{position:relative;width:100%;aspect-ratio:3/4;max-height:64vh;transition:aspect-ratio .2s;border-radius:12px;overflow:hidden;background:#0B0F0C}
@@ -162,9 +174,12 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
   </header>
 
   <section class="sec">
-    <div class="sec-t"><span class="n">1</span> 현장 · 위치</div>
-    <button class="jobb" onclick="openJobs()">📍 <span id="jobT">현장</span><i>바꾸기 ›</i></button>
+    <div class="arow">
+      <div class="sec-t"><span class="n">1</span> 주소</div>
+      <div class="ain"><input id="addr" placeholder="🎤 눌러서 말하기 · 적기" autocomplete="off" oninput="addrInput()" onkeydown="if(event.key==='Enter')this.blur()"><button class="mic" id="micA" onclick="voiceAddr()" aria-label="주소 음성 입력">🎤</button><button class="lst" onclick="openJobs()" aria-label="현장 목록">▾</button></div>
+    </div>
     <div class="rooms" id="rooms"></div>
+    <div class="lgd"><span><i style="background:var(--p)"></i>지금 위치</span><span><i style="background:#DBEAFE;box-shadow:inset 0 0 0 1px #93C5FD"></i>점검한 곳</span><span><em>2</em>저장한 하자</span></div>
   </section>
 
   <section class="sec" id="camSec">
@@ -215,10 +230,12 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
 <script>
 'use strict';
 /* ============================================================ 설정 */
-const APP_VER='live-v0.3';
-const BUILD='20261016f';
+const APP_VER='live-v0.4';
+const BUILD='20261016g';
 const TEAM_GAS='https://script.google.com/macros/s/AKfycbyIo86UrFvE5W82FdSiZTjwB6N1QOEIjm4DTzhU-lgmd-OiSeYE1ACPRATVd_dOBPBl/exec';
-const ROOMS=['거실','주방','침실1','침실2','침실3','안방','욕실1','욕실2','현관','발코니1','발코니2','대피공간','팬트리','드레스룸','다용도실','실외기실','기타'];
+/* 위치 두 줄 (폰 한 화면에 다 보이도록). 긴 이름은 단추에만 줄여 쓰고, 저장은 팀 앱과 같은 이름으로 한다 */
+const ROOM_ROWS=[['거실','주방','안방','침실1','침실2','침실3','욕실1','욕실2','현관'],['발코니1','발코니2','대피공간','팬트리','드레스룸','다용도실','실외기실','기타']];
+const ROOM_SHORT={'대피공간':'대피','드레스룸':'드레스','다용도실':'다용도','실외기실':'실외기'};
 const NOTE_EX=['걸레받이 찍힘','벽지 들뜸','실리콘 마감불량','타일 줄눈 불량','창틀 흠집','문짝 개폐불량'];
 const WM={
   "도배공사":{"도배":["들뜸","마감불량","흠집/찍힘","면불량","오염","이음불량","흠집","미시공","파손","이색/변색"]},
@@ -299,23 +316,61 @@ function drawJobs(){
   const l=jobList();
   if(curJob&&(!jobs[curJob]||jobs[curJob].title===DEL))curJob=null;
   if(!curJob&&l.length)curJob=l[0].id;
-  $('jobT').textContent=curJob?(jobTitle(curJob)||'현장명 없음'):'현장 없음 — 눌러서 고르기';
+  const a=$('addr');if(document.activeElement!==a&&!rec)a.value=curJob?jobTitle(curJob):'';
+}
+/* 주소 = 지금 현장의 이름 (팀 앱의 주소 입력과 같다). 고치면 팀 서버의 현장 이름도 바뀐다 */
+function newJob(){const id='j_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);jobs[id]={id,title:'현장명',t:Date.now()};curJob=id;L.set('team_jobs',jobs);L.set('team_cur',curJob);return id;}
+let addrT;
+function addrInput(){
+  const v=$('addr').value.trim();
+  if(!curJob){if(!v)return;newJob();}
+  jobs[curJob].title=v||'현장명';jobs[curJob].t=Date.now();L.set('team_jobs',jobs);
+  clearTimeout(addrT);addrT=setTimeout(pushAddr,1200);
+}
+async function pushAddr(){
+  const id=curJob;if(!id||!cfg().pin||!navigator.onLine)return;
+  const v=jobTitle(id);
+  try{await api({a:'sync',job:{id,title:v||'현장명'},since:9e15,items:[],kv:[{k:'m.addr',v:v,t:Date.now(),by:cfg().name||''}]});setCfgBadge('ok');}
+  catch(e){setCfgBadge('err',e.message);}
+}
+/* 주소 음성 입력 */
+let rec=null;
+function voiceAddr(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast('이 브라우저는 음성 입력을 지원하지 않습니다. 키보드의 마이크를 써 주십시오',true,3500);$('addr').focus();return;}
+  if(rec){try{rec.stop();}catch(e){}return;}
+  const before=$('addr').value;
+  rec=new SR();rec.lang='ko-KR';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
+  rec.onresult=e=>{let s='';for(const r of e.results)s+=r[0].transcript;s=s.trim();$('addr').value=s;if(e.results[e.results.length-1].isFinal&&s)addrInput();};
+  rec.onerror=e=>{if(e.error!=='aborted')toast(e.error==='not-allowed'?'마이크 권한을 허용해 주십시오 (주소창 왼쪽 자물쇠 → 마이크)':'말씀을 알아듣지 못했습니다. 🎤를 다시 눌러 주십시오',true,3500);};
+  rec.onend=()=>{rec=null;$('micA').classList.remove('on');if(!$('addr').value.trim())$('addr').value=before;if(cam.on)msg(idleMsg());};
+  try{rec.start();}catch(e){rec=null;return;}
+  $('micA').classList.add('on');$('addr').value='';$('addr').placeholder='🎤 주소를 말씀해 주세요…';
+  setTimeout(()=>{$('addr').placeholder='🎤 눌러서 말하기 · 적기';},6000);
 }
 function openJobs(){
   const l=jobList();
   openMo('jobs','<h3>📍 현장 고르기</h3>'+(l.length?'<div class="rows">'+l.map(j=>'<button class="'+(j.id===curJob?'on':'')+'" onclick="pickJob(\''+esc(j.id)+'\')">'+esc(jobTitle(j.id)||'현장명 없음')+'<small>'+new Date(j.t).toLocaleDateString('ko-KR')+(j.id===curJob?' · 지금 선택됨':'')+'</small></button>').join('')+'</div>'
     :'<div class="note">현장이 없습니다. 팀 앱에서 현장을 먼저 만들어 주십시오.</div>')+
-    '<a class="btn gray" href="../team/">＋ 새 현장은 팀 앱에서 만들기</a>');
+    '<button class="btn" onclick="closeMo();newJob();drawJobs();drawRooms();voiceAddr()">＋ 새 현장 (주소 말하기)</button>');
   pullJobs().then(()=>{if(moKind==='jobs'&&jobList().length!==l.length)openJobs();});
 }
-function pickJob(id){curJob=id||null;L.set('team_cur',curJob);drawJobs();closeMo();toast('📍 '+(jobTitle(id)||'현장명 없음'));}
+function pickJob(id){curJob=id||null;L.set('team_cur',curJob);drawJobs();drawRooms();closeMo();toast('📍 '+(jobTitle(id)||'현장명 없음'));}
 async function pullJobs(){
   if(!cfg().pin||!navigator.onLine)return;
   try{const r=await api({a:'jobs'});if(r.ok){r.jobs.forEach(j=>{const l=jobs[j.id];if(!l)jobs[j.id]={id:j.id,title:j.title,t:j.t};else if(j.title===DEL||j.t>l.t){l.title=j.title;l.t=j.t;}});L.set('team_jobs',jobs);drawJobs();}setCfgBadge('ok');}
   catch(e){setCfgBadge('err',e.message);}
 }
-function drawRooms(){$('rooms').innerHTML=ROOMS.map(r=>'<button class="'+(r===room?'on':'')+'" onclick="pickRoom(\''+r+'\')">'+r+'</button>').join('');$('rooms').classList.toggle('need',!room);}
-function pickRoom(r){room=r;L.set('live_room',room);drawRooms();const b=$('rooms').querySelector('.on');if(b)b.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});}
+/* 점검한 곳: 이 현장에서 AI 확인을 한 번이라도 한 위치 (하자가 없었어도) + 하자를 저장한 위치 */
+let doneMap=L.get('live_done',{});
+function markDone(r){if(!curJob||!r)return;const m=doneMap[curJob]||(doneMap[curJob]={});m[r]=(m[r]||0)+1;L.set('live_done',doneMap);drawRooms();}
+function drawRooms(){
+  const dn=doneMap[curJob]||{},cnt={};
+  items.forEach(i=>{if(i.job===curJob)cnt[i.room]=(cnt[i.room]||0)+1;});
+  $('rooms').innerHTML=ROOM_ROWS.map(row=>'<div class="rrow">'+row.map(r=>'<button class="'+(r===room?'on':(dn[r]||cnt[r])?'done':'')+'" onclick="pickRoom(\''+r+'\')">'+(ROOM_SHORT[r]||r)+(cnt[r]?'<em>'+cnt[r]+'</em>':'')+'</button>').join('')+'</div>').join('');
+  $('rooms').classList.toggle('need',!room);
+}
+function pickRoom(r){room=r;L.set('live_room',room);drawRooms();}
 function drawNote(){$('inp').classList.toggle('has',!!$('note').value);}
 $('ex').innerHTML=NOTE_EX.map(x=>'<button onclick="$(\'note\').value=\''+x+'\';drawNote()">'+x+'</button>').join('');
 let cfgErr='';
@@ -408,7 +463,7 @@ function tick(){
   }
   /* 창이 열려 있거나, 글자를 입력 중이거나, 카메라가 덜 보이거나, 앞 사진을 확인 중이면 찍지 않는다 */
   const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName);
-  if(!cam.auto||cam.busy||moKind||typing||!cam.vis){setHold(0);cam.still=0;return;}
+  if(!cam.auto||cam.busy||moKind||typing||rec||!cam.vis){setHold(0);cam.still=0;return;}
   if(d<STILL_DIFF){cam.still+=120;}else{cam.still=0;}
   setHold(Math.min(100,cam.still/HOLD_MS*100));
   if(cam.still<HOLD_MS)return;
@@ -473,7 +528,7 @@ async function capture(f,auto){
   cam.busy=false;$('shotBtn').classList.remove('busy');
   const box=Array.isArray(r.box_2d)&&r.box_2d.length===4?r.box_2d.map(Number):null;
   const ok=r.defect===true&&(Number(r.confidence)||0)>=MIN_CONF&&box&&box[2]>box[0]&&box[3]>box[1];
-  remember(f.g,ok);
+  remember(f.g,ok);markDone(room);
   if(!ok){
     msg('✅ 하자 없음'+(r.reason?NL+r.reason:''),'ok',2400);
     if(!auto&&nt)toast('AI가 사진에서 하자를 찾지 못했습니다. 더 가까이 찍어 보십시오',true,3500);
@@ -583,7 +638,7 @@ function drawLatest(){
 }
 function render(){
   $('lCnt').textContent=items.length;
-  drawLatest();
+  drawLatest();drawRooms();
   const b=$('list');
   /* 고치는 중인 칸이 있으면 다시 그리지 않는다 (글자가 날아가지 않도록) */
   if(b.contains(document.activeElement)&&document.activeElement.tagName==='TEXTAREA')return;
