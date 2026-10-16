@@ -157,6 +157,7 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
 .mo .grab{width:40px;height:4px;border-radius:2px;background:#D0D5DD;margin:0 auto 14px}
 .mo h3{font-size:1.05rem;font-weight:800;margin-bottom:6px}
 .mo label{display:block;font-size:.82rem;font-weight:600;color:#344054;margin:12px 0 5px}
+.mo select{width:100%;font-size:1rem;border:1px solid var(--bd);background:#F9FAFB;border-radius:12px;padding:12px 10px;color:var(--tx)}
 .mo input{width:100%;font-size:1rem;border:1px solid var(--bd);background:#F9FAFB;border-radius:12px;padding:12px 13px;color:var(--tx)}
 .mo .chips{display:flex;gap:6px}
 .mo .chips button{background:var(--fl);border-radius:12px;padding:9px 14px;font-weight:600;color:#344054}
@@ -221,7 +222,7 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
     <div class="sec-t"><span class="n">3</span> 하자 정보</div>
     <div class="inp" id="inp"><input id="note" placeholder="하자 내용 (선택) 예: 걸레받이 찍힘" oninput="drawNote()"><button onclick="$('note').value='';drawNote()" aria-label="지우기">✕</button></div>
     <div class="ex" id="ex"></div>
-    <div class="cells"><div id="cR">위치</div><div id="cW">공종</div><div id="cT">하자내용</div></div>
+    <div class="cells" onclick="const v=view();if(v[0])openFix(v[0].id)"><div id="cR">위치</div><div id="cW">공종</div><div id="cT">하자내용</div></div>
     <div class="det empty" id="det">AI가 하자를 찾으면 여기에 분석 내용이 나옵니다.</div>
   </section>
 
@@ -244,8 +245,8 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
 <script>
 'use strict';
 /* ============================================================ 설정 */
-const APP_VER='live-v0.7';
-const BUILD='20261016k';
+const APP_VER='live-v0.8';
+const BUILD='20261016l';
 const TEAM_GAS='https://script.google.com/macros/s/AKfycbyIo86UrFvE5W82FdSiZTjwB6N1QOEIjm4DTzhU-lgmd-OiSeYE1ACPRATVd_dOBPBl/exec';
 /* 위치 두 줄 (폰 한 화면에 다 보이도록). 긴 이름은 단추에만 줄여 쓰고, 저장은 팀 앱과 같은 이름으로 한다 */
 const ROOM_ROWS=[['거실','주방','안방','침실1','침실2','침실3','욕실1','욕실2','현관'],['발코니1','발코니2','대피공간','팬트리','드레스룸','다용도실','실외기실','기타']];
@@ -536,7 +537,7 @@ async function capture(f,auto){
     '- label 은 6자 안팎의 짧은 하자명, reason 은 ~합니다 로 끝나는 한 문장입니다.'+NL+
     '[2단계 분석] defect=true 일 때만 work·sub·type·severity·detail 을 채웁니다. defect=false 이면 이 다섯 칸은 빈 문자열로 둡니다.'+NL+
     '[공종분류] '+workList+NL+
-    '[하자유형] 들뜸,마감불량,흠집/찍힘,면불량,오염,미시공,파손,틈새,코킹불량,수직수평불량,개폐불량,고정불량,작동불량,줄눈불량,단차,구배불량,이색/변색,누수,균열,도장불량,이음불량,배수불량,점등불량,악취,기밀불량,결로,곰팡이,잠금불량,소음,풍량부족,필터불량,단열불량'+NL+
+    '[하자유형] '+TYPES+NL+rules()+
     '[판정기준] 국토부 「공동주택 하자의 조사, 보수비용 산정 및 하자판정기준」을 적용합니다. 조 번호·항 번호는 적지 않고 공종명과 하자 판정기준 같은 일반 표기를 씁니다. 측정하지 않은 수치·허용오차를 지어내지 않습니다. 모든 문장은 ~합니다 존댓말로 끝냅니다. 심각도: 경미(미관), 보통(기능 저하), 중대(안전·구조·누수).'+NL+
     '[JSON 출력] {"defect":true,"confidence":0.0,"label":"","box_2d":[0,0,0,0],"reason":"","work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"■ 하자현상: ...\\n■ 판정근거: ...\\n■ 심각도: ...\\n■ 시정방법: ...\\n■ 비고: ..."}';
   let r;
@@ -562,6 +563,58 @@ async function capture(f,auto){
 function remember(g,defect){cam.seen.unshift({g,defect});if(cam.seen.length>12)cam.seen.pop();}
 function parseJSON(t){t=String(t||'').replace(/```json|```/g,'').trim();try{let d=JSON.parse(t);return Array.isArray(d)?(d[0]||{}):d;}catch(e){const m=/{[^]*}/.exec(t);try{return m?JSON.parse(m[0]):{};}catch(x){return {};}}}
 
+/* ============================================================ 분류 정확도: 창호 규칙 · 점검자 분야 · 고친 사례 학습 · 자동 보정 */
+const TYPES='들뜸,마감불량,흠집/찍힘,면불량,오염,미시공,파손,틈새,코킹불량,수직수평불량,개폐불량,고정불량,작동불량,줄눈불량,단차,구배불량,이색/변색,누수,균열,도장불량,이음불량,배수불량,점등불량,악취,기밀불량,결로,곰팡이,잠금불량,소음,풍량부족,필터불량,단열불량,랩핑 벗겨짐';
+let fixes=L.get('live_fix',[]);
+function rules(){
+  return '[창호 판단 규칙]'+NL+
+    '- 하자가 창틀·창짝·분합창·터닝도어·방충망 같은 창호(PVC 프레임)에 있으면 공종은 PL창호공사입니다. 도장공사로 분류하지 않습니다.'+NL+
+    '- PL창호 프레임의 나뭇결·색상 표면은 대부분 랩핑 필름(데코 시트)입니다. 표면이 찢기거나 떨어져 흰색·회색 바탕이 드러나면 유형은 "랩핑 벗겨짐"이며, 도장 누락·도장 벗겨짐으로 쓰지 않습니다.'+NL+
+    '- 사진만으로 랩핑인지 도장인지 확실하지 않으면 비고에 "마감 방식(랩핑/도장)은 현장 확인이 필요합니다"라고 적습니다.'+NL+
+    '- 도장공사는 벽·천장·현관문틀·철재처럼 페인트로 마감한 면에만 씁니다.'+NL+
+    (cfg().role==='창호'?'[점검자 분야] 창호 담당 점검자입니다. 창호와 그 주변(실리콘·창틀 마감) 하자일 가능성을 먼저 봅니다.'+NL:'')+
+    (fixes.length?'[이 팀이 직접 고친 분류 사례 — 비슷한 하자는 고친 분류를 따릅니다]'+NL+fixes.slice(0,12).map(f=>'- "'+f.what+'": AI '+f.from+' → 정답 '+f.to).join(NL)+NL:'');
+}
+/* AI가 창호 하자를 도장공사로 낸 경우를 잡아 PL창호로 고정한다 */
+const WIN_RE=/창호|창틀|샤시|새시|창짝|창문|분합창|방충망|터닝도어|PVC/;
+function guard(r){
+  const txt=(r.label||'')+' '+(r.reason||'')+' '+(r.detail||'');
+  if(r.work!=='도장공사'||!WIN_RE.test(txt))return null;
+  return {work:'PL창호공사',sub:'PL창호',type:/도장|벗겨|박리|누락|들뜸/.test((r.type||'')+txt)?'랩핑 벗겨짐':(r.type||'마감불량')};
+}
+/* 분류 고치기: 공종 · 세부 · 유형을 손으로 고치고, 고친 사례는 다음 AI 분석에 알려 준다 */
+function typeOpts(w,s){const l=((WM[w]||{})[s]||[]).slice();if(w==='PL창호공사'&&l.indexOf('랩핑 벗겨짐')<0)l.unshift('랩핑 벗겨짐');return l.length?l:TYPES.split(',');}
+const opt=(l,v)=>l.map(x=>'<option'+(x===v?' selected':'')+'>'+esc(x)+'</option>').join('');
+function openFix(id){
+  const it=items.find(x=>x.id===id);if(!it)return;
+  const w=WM[it.work]?it.work:Object.keys(WM)[0],s=(WM[w]||{})[it.sub]?it.sub:Object.keys(WM[w])[0];
+  const tl=typeOpts(w,s);if(it.type&&tl.indexOf(it.type)<0)tl.push(it.type);
+  openMo('fix','<h3>✎ 분류 고치기</h3><div class="note" style="margin-top:0">AI 분류: '+esc([it.work,it.sub,it.type].filter(Boolean).join(' / ')||'없음')+'</div>'+
+    '<label>공종</label><select id="fW" onchange="fixW()">'+opt(Object.keys(WM),w)+'</select>'+
+    '<label>세부</label><select id="fS" onchange="fixS()">'+opt(Object.keys(WM[w]),s)+'</select>'+
+    '<label>하자 유형</label><select id="fT">'+opt(tl,it.type)+'</select>'+
+    '<button class="btn" onclick="saveFix('+id+',true)">고치고 소견 다시 쓰기 (AI 1회)</button>'+
+    '<button class="btn gray" onclick="saveFix('+id+',false)">분류만 고치기</button>'+
+    '<div class="note">고친 분류는 이 폰에 기억했다가 다음 AI 분석에 "이 팀이 고친 사례"로 알려 줍니다. 같은 실수가 줄어듭니다.</div>');
+}
+function fixW(){const w=$('fW').value,ss=Object.keys(WM[w]);$('fS').innerHTML=opt(ss,ss[0]);fixS();}
+function fixS(){$('fT').innerHTML=opt(typeOpts($('fW').value,$('fS').value),'');}
+function saveFix(id,rewrite){
+  const it=items.find(x=>x.id===id);if(!it)return;
+  const to={work:$('fW').value,sub:$('fS').value,type:$('fT').value};
+  const from=[it.work,it.type].filter(Boolean).join('/')||'분류 없음';
+  if(from!==to.work+'/'+to.type){
+    const what=(String(it.detail).match(/하자현상:\s*([^\n]{0,40})/)||[])[1]||it.label||'하자';
+    fixes.unshift({what:what.trim(),from,to:to.work+'/'+to.sub+'/'+to.type,t:Date.now()});fixes=fixes.slice(0,15);L.set('live_fix',fixes);
+  }
+  it.work=to.work;it.sub=to.sub;it.type=to.type;
+  if(rewrite){it.forced=to;it.state='ai';it.stTxt='고친 분류로 소견 다시 쓰는 중…';}
+  else if(it.state==='done'){it.state='send';it.stTxt='고친 분류 — 팀 서버로 다시 보내는 중…';}
+  dbPut(it);closeMo();render();
+  if(it.state==='ai'||it.state==='send'){queue.push(it);runQueue();}
+  toast('분류를 고쳤습니다');
+}
+
 /* ============================================================ 멀리서 · 가까이 두 장 만들기 */
 function makeItem(full,box,r,nt){
   const W=full.width,H=full.height;
@@ -580,7 +633,9 @@ function makeItem(full,box,r,nt){
     work:'',sub:'',type:'',severity:'',detail:'🔍 정밀 분석 대기 중…'+NL+'1차 확인: '+(r.reason||''),
     state:'ai',by:cfg().name||'',role:cfg().role||'',t:Date.now()};
   /* 같은 호출에서 받은 분석이 제대로 왔으면 그대로 쓰고 바로 보내기로 넘어간다. 빠졌으면 예전처럼 따로 분석한다 */
-  if(r.detail&&String(r.detail).indexOf('■')>=0){
+  const g=guard(r);
+  if(g){it.forced=g;it.label=g.type||it.label;}   /* 창호 하자를 도장으로 본 경우: 분류를 고정하고 소견을 다시 받는다 (AI 1회 더) */
+  else if(r.detail&&String(r.detail).indexOf('■')>=0){
     it.work=r.work||'';it.sub=r.sub||'';it.type=r.type||'';it.severity=r.severity||'';
     it.detail=String(r.detail).split('\\n').join(NL)+NL+NL+'🤖 AI 분석 완료 (참고용) · 실시간 촬영';it.state='send';
   }
@@ -607,7 +662,8 @@ async function analyze(it){
   const hint=it.note;
   const prompt='당신은 아파트 사전점검 전문 하자진단 AI입니다. '+(hint?'점검자 입력이 사실의 기준이며 사진은 보조 자료입니다.':'사진1(멀리서, 빨간 상자가 하자 자리)로 공종을 파악하고 사진2(가까이)로 하자를 분석하십시오.')+NL+
     (hint?'[점검자 입력] "'+hint+'"'+NL:'')+'[1차 확인] '+it.label+NL+'[위치] '+it.room+NL+'[공종분류] '+workList+NL+
-    '[하자유형] 들뜸,마감불량,흠집/찍힘,면불량,오염,미시공,파손,틈새,코킹불량,수직수평불량,개폐불량,고정불량,작동불량,줄눈불량,단차,구배불량,이색/변색,누수,균열,도장불량,이음불량,배수불량,점등불량,악취,기밀불량,결로,곰팡이,잠금불량,소음,풍량부족,필터불량,단열불량'+NL+
+    (it.forced?'[확정 분류 — 바꾸지 않습니다] 공종:'+it.forced.work+' / 세부:'+it.forced.sub+' / 유형:'+it.forced.type+' — 이 분류에 맞게 소견을 씁니다.'+NL:'')+
+    '[하자유형] '+TYPES+NL+rules()+
     '[판정기준]'+NL+'- 국토부 「공동주택 하자의 조사, 보수비용 산정 및 하자판정기준」 적용'+NL+'- 조 번호·항 번호는 적지 않습니다. 공종명과 하자 판정기준 같은 일반 표기를 씁니다.'+NL+
     '- 측정하지 않은 수치·허용오차를 지어내지 않습니다.'+NL+'- 모든 문장은 ~합니다 존댓말로 끝냅니다. ~함, ~임 같은 말투는 쓰지 않습니다.'+NL+'- 심각도: 경미(미관), 보통(기능 저하), 중대(안전·구조·누수)'+NL+
     '[JSON 출력] {"work":"공종","sub":"세부공종","type":"하자유형","severity":"경미|보통|중대","detail":"■ 하자현상: ...\\n■ 판정근거: ...\\n■ 심각도: ...\\n■ 시정방법: ...\\n■ 비고: ..."}';
@@ -617,6 +673,7 @@ async function analyze(it){
     const r=parseJSON(d.text);
     if(!r.detail||String(r.detail).indexOf('■')<0)throw new Error('분석 내용이 비어 있습니다');
     it.work=r.work||'';it.sub=r.sub||'';it.type=r.type||'';it.severity=r.severity||'';
+    if(it.forced){it.work=it.forced.work;it.sub=it.forced.sub;it.type=it.forced.type;delete it.forced;}
     it.detail=String(r.detail).split('\\n').join(NL)+NL+NL+'🤖 AI 분석 완료 (참고용) · 실시간 촬영';
     it.state='send';it.stTxt='';await dbPut(it);render();
   }catch(e){setState(it,'aiErr','분석 실패: '+e.message);}
@@ -678,7 +735,7 @@ function render(){
       '<div class="st'+(bad?' err':it.state==='done'?' ok':'')+'">'+esc(ST_TXT(it))+'</div>'+
       '<textarea onchange="editDetail('+it.id+',this.value)">'+esc(it.detail)+'</textarea>'+
       '<div class="ac">'+(bad?'<button class="pri" onclick="retry('+it.id+')">↻ 다시 시도</button>':'')+(it.state==='send'&&!qBusy?'<button class="pri" onclick="resend('+it.id+')">⇪ 팀 서버로 보내기</button>':'')+
-      '<button class="del" onclick="delItem('+it.id+')">삭제</button></div>'+
+      '<button onclick="openFix('+it.id+')">✎ 분류 고치기</button><button class="del" onclick="delItem('+it.id+')">삭제</button></div>'+
       '<div class="meta">'+new Date(it.t).toLocaleString('ko-KR')+(jt?' · '+esc(jt):'')+(it.by?' · '+esc(it.by):'')+'</div></div></div>';
   }).join(''):'<div class="none">아직 저장된 하자가 없습니다.</div>';
   b.querySelectorAll('textarea').forEach(x=>{x.style.height='auto';x.style.height=(x.scrollHeight+4)+'px';});
