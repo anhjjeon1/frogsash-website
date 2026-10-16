@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
 <meta name="robots" content="noindex,nofollow">
-<title>청개구리 실시간 점검</title>
+<title>청개구리AUTO사전점검</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <!--
-  청개구리 실시간 사전점검 (시제품)
+  청개구리AUTO사전점검 (시제품)
   - 한 화면: ① 현장·위치 ② 실시간 촬영(화면 안 카메라) ③ 하자 정보 ④ 점검 리스트 — /team/ 앱과 같은 카드 배치·색.
   - 폰을 하자 쪽에 잠깐 멈추면 자동으로 찍고, AI가 하자 위치 상자를 돌려주면 전체=멀리서, 확대=가까이 로 저장한다.
   - 하자로 판정된 것만 정밀 분석(공종·유형·심각도·5줄 소견)까지 이어서 하고, /team/ 앱과 같은 팀 서버로 보낸다.
@@ -157,7 +157,7 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
 <div class="app">
   <header class="hd">
     <button class="hb" id="cfgBtn" onclick="openCfg()">⚙ 팀 설정</button>
-    <div class="tt"><i></i>청개구리 실시간 점검</div>
+    <div class="tt"><i></i>청개구리AUTO사전점검</div>
     <span class="ver" id="ver"></span>
   </header>
 
@@ -216,7 +216,7 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
 'use strict';
 /* ============================================================ 설정 */
 const APP_VER='live-v0.3';
-const BUILD='20261016e';
+const BUILD='20261016f';
 const TEAM_GAS='https://script.google.com/macros/s/AKfycbyIo86UrFvE5W82FdSiZTjwB6N1QOEIjm4DTzhU-lgmd-OiSeYE1ACPRATVd_dOBPBl/exec';
 const ROOMS=['거실','주방','침실1','침실2','침실3','안방','욕실1','욕실2','현관','발코니1','발코니2','대피공간','팬트리','드레스룸','다용도실','실외기실','기타'];
 const NOTE_EX=['걸레받이 찍힘','벽지 들뜸','실리콘 마감불량','타일 줄눈 불량','창틀 흠집','문짝 개폐불량'];
