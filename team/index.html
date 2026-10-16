@@ -2217,7 +2217,7 @@ input[type="file"]{
 /* ============================================================
    ★ 설정값
    ============================================================ */
-const APP_VER = 'v3.8.3';
+const APP_VER = 'v3.8.4';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxXiy2tR6pRHpnqsR1TY6a0gFQiVuZMYvtzFJGOQubJ-ENCA9u8t4tvtUEB_-NNbVDd9Q/exec';
 const SPARE_URL = 'https://anhjjeon1.github.io/inspect-spare/';
 const LIMIT_FREE = 2;
@@ -4078,7 +4078,7 @@ function drawCfg(){$('teamMoBody').innerHTML='<div class="mo-h" style="color:#1B
   '<button class="tbtn" style="background:#F2F4F7!important;color:#344054;margin-top:8px" onclick="T.openMo(\'jobs\')">＋ 현장 목록 (새 현장 · 바꾸기 · 삭제)</button>';
   $('tRole').onclick=e=>{const c=e.target.closest('.tchip');if(!c)return;$('tRole').querySelectorAll('.tchip').forEach(x=>x.classList.toggle('on',x===c));};}
 T.openMo=async w=>{$('teamMo').classList.add('show');if(w==='cfg')drawCfg();else{drawJobs();await pullJobs();if($('teamMo').classList.contains('show')&&!$('tName'))drawJobs();}};
-T.closeMo=()=>$('teamMo').classList.remove('show');
+T.closeMo=()=>{$('teamMo').classList.remove('show');if(T.dayRes){const f=T.dayRes;T.dayRes=null;f(null);}};
 T.saveCfg=async()=>{const n=$('tName').value.trim(),c=$('tRole').querySelector('.tchip.on'),pin=$('tPin').value.trim();
   if(!n||!c){$('tMsg').textContent='이름과 담당 분야를 넣어 주십시오.';return;}
   if(pin&&pin.length<4){$('tMsg').textContent='팀 비밀번호는 4자 이상입니다.';return;}
@@ -4164,8 +4164,9 @@ T.saveFile=async()=>{
   toast('보고서를 만들고 있습니다. 잠시 기다려 주십시오',false,4000);
   try{
     for(let i=0;i<60&&T.cur===id&&(T.busy||pending());i++){if(!T.busy)sync();await new Promise(r=>setTimeout(r,1500));}
+    const day=await T.chooseDay();if(day===null){if(b)b.innerHTML=lbl;T.filing=false;return;}
     const tt=T.jobs[id]?T.jobs[id].title:'';
-    const r=await api({a:'reportPut',job:id,title:(tt&&tt!==DEL&&tt!=='새 현장'&&tt!=='현장명')?tt:'',ret:1,nosave:1});
+    const r=await api({a:'reportPut',job:id,title:(tt&&tt!==DEL&&tt!=='새 현장'&&tt!=='현장명')?tt:'',ret:1,nosave:1,day:day});T.oldServer(r,day);
     if(r.ok&&r.data){
       const bin=atob(r.data),u=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)u[k]=bin.charCodeAt(k);
       const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([u],{type:'application/pdf'}));a.download=r.name;document.body.appendChild(a);a.click();
@@ -4181,17 +4182,43 @@ T.saveFile=async()=>{
   if(b)b.innerHTML=lbl;T.filing=false;
 };
 /* ── 전체저장을 누르면, 서버가 두 사람의 항목과 사진으로 PDF를 만들어 드라이브의 현장 폴더에도 넣는다 ── */
+/* 점검일 고르기: 이 현장에 여러 날 입력한 항목이 있으면 어느 날 것을 보고서로 낼지 묻는다.
+   돌려주는 값 = 'yyyy-mm-dd'(그날만) · ''(전체, 서버 보고서 안에서 날짜별로 나눔) · null(취소) */
+T.dayKey=id=>{const d=new Date(Math.floor(Number(id)/100));return isNaN(d)||d.getFullYear()<2020?'':d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+T.dayLabel=k=>{const a=k.split('-');return Number(a[1])+'월 '+Number(a[2])+'일';};
+T.chooseDay=()=>{
+  const cnt={};list.forEach(it=>{const k=T.dayKey(it.id);if(k)cnt[k]=(cnt[k]||0)+1;});
+  const ks=Object.keys(cnt).sort().reverse();
+  if(ks.length<=1)return Promise.resolve(ks[0]||'');
+  return new Promise(res=>{
+    T.dayRes=res;$('teamMo').classList.add('show');
+    $('teamMoBody').innerHTML='<div class="mo-h" style="color:#1B6B28">📅 어느 날 점검한 것을 낼까요?</div><div style="font-size:.78rem;color:#667085">이 현장에 '+ks.length+'일에 걸쳐 입력한 항목이 있습니다.</div>'+
+      ks.map(k=>'<div class="tjob" data-k="'+k+'" onclick="T.pickDay(this.dataset.k)"><b>'+T.dayLabel(k)+' 점검<small>'+cnt[k]+'건만 보고서로 냅니다</small></b></div>').join('')+
+      '<div class="tjob" data-k="" onclick="T.pickDay(this.dataset.k)"><b>전체 '+list.length+'건<small>한 보고서에 날짜별로 나눠서 냅니다</small></b></div>';
+  });
+};
+T.pickDay=k=>{const f=T.dayRes;T.dayRes=null;$('teamMo').classList.remove('show');if(f)f(k);};
+/* 서버가 옛 판이면 날짜를 무시하고 전체를 낸다 → 알려 준다 */
+T.oldServer=(r,day)=>{if(r&&r.ok&&day&&!r.day)setTimeout(()=>toast('⚠️ 서버가 옛 판이라 날짜를 나누지 못하고 전체로 냈습니다. 서버를 다시 배포해 주십시오',true,6000),5200);};
 T._pdf=A.pdf;
-A.pdf=function(){T._pdf.apply(this,arguments);T.saveReport();};
-T.saveReport=async()=>{
+/* 전체저장: 고른 날짜의 항목만으로 화면 보고서를 만들고, 같은 날짜로 드라이브 보고서도 만든다 */
+A.pdf=async function(){
+  if(!list.length){alert('저장할 내용이 없습니다.');return;}
+  const day=await T.chooseDay();if(day===null)return;
+  if(day){const all=list.slice(),keep=all.filter(it=>T.dayKey(it.id)===day);list.length=0;keep.forEach(x=>list.push(x));try{T._pdf();}finally{list.length=0;all.forEach(x=>list.push(x));}}
+  else T._pdf();
+  T.saveReport(day);
+};
+T.saveReport=async(day)=>{
+  day=day||'';
   if(T.reporting||!list.length||!T.cfg.pin||!navigator.onLine||T.noRep)return;
   T.reporting=true;const id=T.cur;
   try{
     /* 아직 못 보낸 항목·사진이 있으면 먼저 보낸다 (최대 90초) */
     for(let i=0;i<60&&T.cur===id&&(T.busy||pending());i++){if(!T.busy)sync();await new Promise(r=>setTimeout(r,1500));}
     const tt=T.jobs[id]?T.jobs[id].title:'';
-    const r=await api({a:'reportPut',job:id,title:(tt&&tt!==DEL&&tt!=='새 현장'&&tt!=='현장명')?tt:''});
-    if(r.ok){T.jobs[id].report=r.url;L.set('team_jobs',T.jobs);$('teamMo').classList.add('show');$('teamMoBody').innerHTML='<div class="mo-h" style="color:#1B6B28">📄 보고서가 완성됐습니다</div><div style="font-size:.8rem;line-height:1.6;color:#344054">두 사람이 넣은 '+r.count+'건으로 고객 제출용 보고서(PDF)를 만들어 구글 드라이브의 현장 폴더에 넣었습니다.<br><span style="color:#667085;font-size:.72rem">'+esc2(r.name)+'</span></div><a class="tbtn" style="display:block;text-align:center;text-decoration:none" target="_blank" rel="noopener" href="'+esc2(r.url)+'">보고서 열기</a>';}
+    const r=await api({a:'reportPut',job:id,title:(tt&&tt!==DEL&&tt!=='새 현장'&&tt!=='현장명')?tt:'',day:day});T.oldServer(r,day);
+    if(r.ok){T.jobs[id].report=r.url;L.set('team_jobs',T.jobs);$('teamMo').classList.add('show');$('teamMoBody').innerHTML='<div class="mo-h" style="color:#1B6B28">📄 보고서가 완성됐습니다</div><div style="font-size:.8rem;line-height:1.6;color:#344054">'+(day?T.dayLabel(day)+' 점검, ':'')+'두 사람이 넣은 '+r.count+'건으로 고객 제출용 보고서(PDF)를 만들어 구글 드라이브의 현장 폴더에 넣었습니다.<br><span style="color:#667085;font-size:.72rem">'+esc2(r.name)+'</span></div><a class="tbtn" style="display:block;text-align:center;text-decoration:none" target="_blank" rel="noopener" href="'+esc2(r.url)+'">보고서 열기</a>';}
     else if(r.error==='bad_action')T.noRep=true;
     else toast('드라이브 PDF 저장 실패: '+(r.message||r.error),true,4500);
   }catch(e){}

@@ -245,8 +245,8 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
 <script>
 'use strict';
 /* ============================================================ 설정 */
-const APP_VER='live-v0.8';
-const BUILD='20261016l';
+const APP_VER='live-v0.9';
+const BUILD='20261016m';
 const TEAM_GAS='https://script.google.com/macros/s/AKfycbyIo86UrFvE5W82FdSiZTjwB6N1QOEIjm4DTzhU-lgmd-OiSeYE1ACPRATVd_dOBPBl/exec';
 /* 위치 두 줄 (폰 한 화면에 다 보이도록). 긴 이름은 단추에만 줄여 쓰고, 저장은 팀 앱과 같은 이름으로 한다 */
 const ROOM_ROWS=[['거실','주방','안방','침실1','침실2','침실3','욕실1','욕실2','현관'],['발코니1','발코니2','대피공간','팬트리','드레스룸','다용도실','실외기실','기타']];
@@ -310,7 +310,7 @@ function msg(t,kind,ms){const e=$('msg');e.firstChild.textContent=t;e.className=
 /* ============================================================ 아래에서 올라오는 창 */
 let moKind='';
 function openMo(kind,html){moKind=kind;clearTimeout(toastT);$('toast').className='';$('moBody').innerHTML=html;$('mo').classList.add('show');}
-function closeMo(){$('mo').classList.remove('show');moKind='';if(cam.on){cam.still=0;msg(idleMsg());}}
+function closeMo(){$('mo').classList.remove('show');moKind='';if(dayRes){const f=dayRes;dayRes=null;f(null);}if(cam.on){cam.still=0;msg(idleMsg());}}
 
 /* ============================================================ 팀 설정 · 현장 (/team/ 앱과 같은 기기 저장값) */
 const cfg=()=>L.get('team_cfg',{name:'',role:'',pin:''});
@@ -783,11 +783,33 @@ function review(){if(!canServer())return;busyBtn('bRv','검토 중…',async(b,l
   }catch(e){const box=$('rvBody');if(box)box.textContent='AI 전체검증을 하지 못했습니다: '+e.message;}
 });}
 
+/* 점검일 고르기: 이 현장에 여러 날 입력한 항목이 있으면 어느 날 것을 보고서로 낼지 묻는다.
+   돌려주는 값 = 'yyyy-mm-dd'(그날만) · ''(전체, 보고서 안에서 날짜별로 나눔) · null(취소) */
+let dayRes=null;
+const dayKey=id=>{const d=new Date(Math.floor(Number(id)/100));return isNaN(d)||d.getFullYear()<2020?'':d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const dayLabel=k=>{const a=k.split('-');return Number(a[1])+'월 '+Number(a[2])+'일';};
+async function chooseDay(){
+  const list=await teamList(),cnt={};
+  list.forEach(it=>{const k=dayKey(it.id||it.c);if(k)cnt[k]=(cnt[k]||0)+1;});
+  const ks=Object.keys(cnt).sort().reverse();
+  if(ks.length<=1)return ks[0]||'';
+  return new Promise(res=>{
+    openMo('day','<h3>📅 어느 날 점검한 것을 낼까요?</h3><div class="note" style="margin-top:0">이 현장에 '+ks.length+'일에 걸쳐 입력한 항목이 있습니다.</div><div class="rows">'+
+      ks.map(k=>'<button data-k="'+k+'" onclick="pickDay(this.dataset.k)">'+dayLabel(k)+' 점검<small>'+cnt[k]+'건만 보고서로 냅니다</small></button>').join('')+
+      '<button data-k="" onclick="pickDay(this.dataset.k)">전체 '+list.length+'건<small>한 보고서에 날짜별로 나눠서 냅니다</small></button></div>'+
+      '<button class="btn gray" onclick="closeMo()">취소</button>');
+    dayRes=res;
+  });
+}
+function pickDay(k){const f=dayRes;dayRes=null;closeMo();if(f)f(k);}
+/* 서버가 옛 판이면 날짜를 무시하고 전체를 낸다 → 알려 준다 */
+function oldServer(r,day){if(r&&r.ok&&day&&!r.day)setTimeout(()=>toast('⚠️ 서버가 옛 판이라 날짜를 나누지 못하고 전체로 냈습니다. 서버를 다시 배포해 주십시오',true,6000),5200);}
 function saveFile(){if(!canServer())return;busyBtn('bFile','만드는 중…',async(b,lbl)=>{
   await flush(b,lbl);b.textContent='만드는 중…';
+  const day=await chooseDay();if(day===null)return;
   toast('보고서를 만들고 있습니다. 잠시 기다려 주십시오',false,4000);
   try{
-    const r=await api({a:'reportPut',job:curJob,title:jobTitle(curJob),ret:1,nosave:1});
+    const r=await api({a:'reportPut',job:curJob,title:jobTitle(curJob),ret:1,nosave:1,day});oldServer(r,day);
     if(!r.ok||!r.data)throw new Error(r.error==='bad_action'?'서버가 옛 판입니다 (팀 앱 서버 재배포 필요)':(r.message||r.error||'내용이 없습니다'));
     const bin=atob(r.data),u=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)u[k]=bin.charCodeAt(k);
     const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([u],{type:'application/pdf'}));a.download=r.name||'사전점검.pdf';document.body.appendChild(a);a.click();
@@ -798,12 +820,13 @@ function saveFile(){if(!canServer())return;busyBtn('bFile','만드는 중…',as
 
 function saveAll(){if(!canServer())return;busyBtn('bAll','만드는 중…',async(b,lbl)=>{
   await flush(b,lbl);b.textContent='만드는 중…';
+  const day=await chooseDay();if(day===null)return;
   toast('보고서를 만들어 드라이브에 넣고 있습니다',false,4000);
   try{
-    const r=await api({a:'reportPut',job:curJob,title:jobTitle(curJob)});
+    const r=await api({a:'reportPut',job:curJob,title:jobTitle(curJob),day});oldServer(r,day);
     if(!r.ok)throw new Error(r.error==='bad_action'?'서버가 옛 판입니다 (팀 앱 서버 재배포 필요)':(r.message||r.error));
     if(jobs[curJob]){jobs[curJob].report=r.url;L.set('team_jobs',jobs);}
-    openMo('rep','<h3>📄 보고서가 완성됐습니다</h3><div class="note" style="font-size:.9rem;color:#344054">팀 리스트 '+esc(r.count)+'건으로 고객 제출용 보고서(PDF)를 만들어 구글 드라이브의 현장 폴더에 넣었습니다.<br><span style="color:var(--th);font-size:.78rem">'+esc(r.name||'')+'</span></div>'+
+    openMo('rep','<h3>📄 보고서가 완성됐습니다</h3><div class="note" style="font-size:.9rem;color:#344054">'+(day?esc(dayLabel(day))+' 점검 ':'')+'팀 리스트 '+esc(r.count)+'건으로 고객 제출용 보고서(PDF)를 만들어 구글 드라이브의 현장 폴더에 넣었습니다.<br><span style="color:var(--th);font-size:.78rem">'+esc(r.name||'')+'</span></div>'+
       '<a class="btn" target="_blank" rel="noopener" href="'+esc(r.url)+'">보고서 열기</a><button class="btn gray" onclick="closeMo()">닫기</button>');
   }catch(e){toast('전체저장을 하지 못했습니다: '+e.message,true,4500);}
 });}
