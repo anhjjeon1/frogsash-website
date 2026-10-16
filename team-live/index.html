@@ -137,6 +137,15 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
 .it .ac .del{flex:none;padding:0 16px;color:#D92D20;background:#FEF3F2}
 .it .meta{font-size:.74rem;color:var(--th);margin-top:8px}
 .none{color:var(--th);font-size:.9rem;text-align:center;padding:18px 6px}
+/* 맨 아래 단추 (팀 앱과 같은 세 단추) */
+.ba{display:flex;gap:6px;margin:10px 8px 0}
+.ba button{flex:1;min-height:50px;border-radius:14px;font-size:.92rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;box-shadow:var(--sh)}
+.ba .rv{background:#EEF4FF;color:#3538CD}
+.ba .fl{background:#fff;color:#344054}
+.ba .sv2{background:var(--p);color:#fff;box-shadow:0 4px 14px rgba(14,159,110,.3)}
+.ba button:disabled{opacity:.6}
+.rvb{border:1px solid var(--bd);border-radius:12px;padding:10px 12px;margin-top:8px;font-size:.88rem;line-height:1.6}
+.rvb b{color:#3538CD}
 .foot{text-align:center;font-size:.8rem;color:var(--th);padding:14px 0 4px}
 .foot a{color:var(--ts);text-decoration:none}
 
@@ -161,7 +170,7 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
 .mo .rows button.on{border-color:var(--p);background:var(--pg)}
 .mo .rows small{display:block;font-size:.76rem;color:var(--ts);font-weight:500}
 #toast{position:fixed;left:50%;bottom:calc(24px + var(--sb));transform:translateX(-50%);background:rgba(16,24,40,.94);color:#fff;border-radius:12px;padding:11px 16px;font-size:.92rem;font-weight:600;
-  z-index:60;opacity:0;transition:opacity .2s;pointer-events:none;width:max-content;max-width:92vw;text-align:center;line-height:1.45}
+  z-index:60;opacity:0;transition:opacity .2s;pointer-events:none;width:max-content;max-width:92vw;text-align:center;line-height:1.45;white-space:pre-line}
 #toast.show{opacity:1}#toast.err{background:rgba(180,35,24,.96)}
 </style>
 </head>
@@ -221,6 +230,11 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
     <div id="list"></div>
   </section>
 
+  <div class="ba">
+    <button class="rv" id="bRv" onclick="review()">🤖 AI전체검증</button>
+    <button class="fl" id="bFile" onclick="saveFile()">📂 내파일저장</button>
+    <button class="sv2" id="bAll" onclick="saveAll()">📄 전체저장</button>
+  </div>
   <div class="foot">청개구리샤시 · <a href="tel:01023220949">📞 010-2322-0949</a></div>
 </div>
 
@@ -230,8 +244,8 @@ button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
 <script>
 'use strict';
 /* ============================================================ 설정 */
-const APP_VER='live-v0.4';
-const BUILD='20261016g';
+const APP_VER='live-v0.5';
+const BUILD='20261016h';
 const TEAM_GAS='https://script.google.com/macros/s/AKfycbyIo86UrFvE5W82FdSiZTjwB6N1QOEIjm4DTzhU-lgmd-OiSeYE1ACPRATVd_dOBPBl/exec';
 /* 위치 두 줄 (폰 한 화면에 다 보이도록). 긴 이름은 단추에만 줄여 쓰고, 저장은 팀 앱과 같은 이름으로 한다 */
 const ROOM_ROWS=[['거실','주방','안방','침실1','침실2','침실3','욕실1','욕실2','현관'],['발코니1','발코니2','대피공간','팬트리','드레스룸','다용도실','실외기실','기타']];
@@ -294,7 +308,7 @@ function msg(t,kind,ms){const e=$('msg');e.firstChild.textContent=t;e.className=
 
 /* ============================================================ 아래에서 올라오는 창 */
 let moKind='';
-function openMo(kind,html){moKind=kind;$('moBody').innerHTML=html;$('mo').classList.add('show');}
+function openMo(kind,html){moKind=kind;clearTimeout(toastT);$('toast').className='';$('moBody').innerHTML=html;$('mo').classList.add('show');}
 function closeMo(){$('mo').classList.remove('show');moKind='';if(cam.on){cam.still=0;msg(idleMsg());}}
 
 /* ============================================================ 팀 설정 · 현장 (/team/ 앱과 같은 기기 저장값) */
@@ -656,6 +670,73 @@ function render(){
   }).join(''):'<div class="none">아직 저장된 하자가 없습니다.</div>';
   b.querySelectorAll('textarea').forEach(x=>{x.style.height='auto';x.style.height=(x.scrollHeight+4)+'px';});
 }
+
+/* ============================================================ 맨 아래 세 단추 (팀 앱과 같은 일을 팀 서버에서 한다)
+   - AI전체검증: 이 현장의 팀 리스트 전체(두 사람 몫)를 AI가 다시 읽고 고칠 점을 알려 준다 (내용은 바꾸지 않음)
+   - 내파일저장: 서버가 만든 보고서 PDF를 폰의 내 파일(다운로드)에 받는다
+   - 전체저장: 서버가 보고서 PDF를 만들어 구글 드라이브의 현장 폴더에 넣는다 */
+const jobName=id=>jobTitle(id)||'현장명';
+function canServer(){
+  if(!cfg().pin){toast('팀 설정에서 팀 비밀번호를 먼저 넣어 주십시오',true,3000);openCfg();return false;}
+  if(!navigator.onLine){toast('인터넷에 연결된 뒤 눌러 주십시오',true,3000);return false;}
+  if(!curJob){toast('① 주소를 먼저 넣어 주십시오',true,3000);return false;}
+  return true;
+}
+/* 아직 분석·보내기 중인 이 현장 항목이 있으면 끝날 때까지 기다린다 (최대 90초) */
+async function flush(btn,lbl){
+  const pend=()=>items.some(i=>i.job===curJob&&(i.state==='ai'||i.state==='send'));
+  for(let i=0;i<60&&(qBusy||pend());i++){if(btn)btn.textContent='보내는 중…';if(!qBusy)runQueue();await new Promise(r=>setTimeout(r,1500));}
+  if(btn)btn.innerHTML=lbl;
+}
+async function teamList(){
+  try{const r=await api({a:'sync',job:{id:curJob,title:jobName(curJob)},since:0,items:[],kv:[]});
+    const l=r.ok?(r.items||[]).filter(x=>x&&!x.del).sort((a,b)=>(Number(a.c)||0)-(Number(b.c)||0)):[];if(l.length)return l;}catch(e){}
+  return items.filter(i=>i.job===curJob).slice().reverse();
+}
+async function busyBtn(id,txt,fn){const b=$(id);if(b.disabled)return;const lbl=b.innerHTML;b.disabled=true;b.textContent=txt;try{await fn(b,lbl);}finally{b.disabled=false;b.innerHTML=lbl;}}
+
+function review(){if(!canServer())return;busyBtn('bRv','검토 중…',async(b,lbl)=>{
+  await flush(b,lbl);b.textContent='검토 중…';
+  const list=await teamList();
+  if(!list.length){alert('검토할 내용이 없습니다.');return;}
+  openMo('rv','<h3>🤖 AI 전체검증</h3><div id="rvBody" class="note" style="font-size:.9rem">점검 리스트 '+list.length+'건을 검토하고 있습니다…</div>');
+  const rows=list.map((it,i)=>(i+1)+'. ['+(it.room||'')+'] '+[it.work,it.sub,it.type].filter(Boolean).join('/')+' — '+String(it.detail||'').replace(/\s+/g,' ').slice(0,220)).join(NL).slice(0,14000);
+  const prompt='당신은 신축 아파트 사전점검 보고서를 검수하는 사람입니다. 아래 점검 리스트를 다시 읽고 고칠 점을 찾으십시오.'+NL+'[찾을 것] 공종·유형 분류가 틀린 항목, 같은 하자가 중복된 항목, 위치가 빠진 항목, 표현이 모호하거나 과장된 항목, 판정 근거가 약한 항목.'+NL+'[규칙] 존댓말로 짧게 씁니다. 수치·허용오차·조 번호를 지어내지 않습니다. 문제가 없으면 issues 를 빈 배열로 둡니다. issues 는 최대 10개.'+NL+'[JSON 출력] {"summary":"전체 총평 2~3문장","issues":[{"no":항목번호,"comment":"고칠 점 한 문장"}]}'+NL+'[점검 리스트]'+NL+rows;
+  try{
+    const r=await api({a:'ai',prompt,images:[]});countAI();
+    if(r.error)throw new Error(r.error==='ai_daily_limit'?'오늘 팀 AI 한도를 넘었습니다':(r.message||r.error));
+    const d=parseJSON(r.text),is=Array.isArray(d.issues)?d.issues:[];
+    const box=$('rvBody');if(!box)return;
+    box.className='';
+    box.innerHTML='<div class="rvb">'+esc(d.summary||'총평을 받지 못했습니다.')+'</div>'+(is.length?is.map(x=>{const it=list[(Number(x.no)||0)-1];return '<div class="rvb"><b>'+esc(x.no)+'번'+(it?' · '+esc(it.room)+' '+esc(it.type||it.sub||''):'')+'</b><br>'+esc(x.comment)+'</div>';}).join(''):'<div class="rvb">고칠 점을 찾지 못했습니다.</div>')+
+      '<div class="note">팀 리스트 '+list.length+'건 기준입니다. AI 의견은 참고용이며 리스트 내용은 바뀌지 않았습니다.</div><button class="btn gray" onclick="closeMo()">닫기</button>';
+  }catch(e){const box=$('rvBody');if(box)box.textContent='AI 전체검증을 하지 못했습니다: '+e.message;}
+});}
+
+function saveFile(){if(!canServer())return;busyBtn('bFile','만드는 중…',async(b,lbl)=>{
+  await flush(b,lbl);b.textContent='만드는 중…';
+  toast('보고서를 만들고 있습니다. 잠시 기다려 주십시오',false,4000);
+  try{
+    const r=await api({a:'reportPut',job:curJob,title:jobTitle(curJob),ret:1,nosave:1});
+    if(!r.ok||!r.data)throw new Error(r.error==='bad_action'?'서버가 옛 판입니다 (팀 앱 서버 재배포 필요)':(r.message||r.error||'내용이 없습니다'));
+    const bin=atob(r.data),u=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)u[k]=bin.charCodeAt(k);
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([u],{type:'application/pdf'}));a.download=r.name||'사전점검.pdf';document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);
+    toast('📁 내 파일(다운로드)에 보고서를 저장했습니다'+NL+(r.name||''),false,5000);
+  }catch(e){toast('보고서를 만들지 못했습니다: '+e.message,true,4500);}
+});}
+
+function saveAll(){if(!canServer())return;busyBtn('bAll','만드는 중…',async(b,lbl)=>{
+  await flush(b,lbl);b.textContent='만드는 중…';
+  toast('보고서를 만들어 드라이브에 넣고 있습니다',false,4000);
+  try{
+    const r=await api({a:'reportPut',job:curJob,title:jobTitle(curJob)});
+    if(!r.ok)throw new Error(r.error==='bad_action'?'서버가 옛 판입니다 (팀 앱 서버 재배포 필요)':(r.message||r.error));
+    if(jobs[curJob]){jobs[curJob].report=r.url;L.set('team_jobs',jobs);}
+    openMo('rep','<h3>📄 보고서가 완성됐습니다</h3><div class="note" style="font-size:.9rem;color:#344054">팀 리스트 '+esc(r.count)+'건으로 고객 제출용 보고서(PDF)를 만들어 구글 드라이브의 현장 폴더에 넣었습니다.<br><span style="color:var(--th);font-size:.78rem">'+esc(r.name||'')+'</span></div>'+
+      '<a class="btn" target="_blank" rel="noopener" href="'+esc(r.url)+'">보고서 열기</a><button class="btn gray" onclick="closeMo()">닫기</button>');
+  }catch(e){toast('전체저장을 하지 못했습니다: '+e.message,true,4500);}
+});}
 
 /* ============================================================ 새 판 자동 반영 (화면으로 돌아올 때, 진행 중인 일이 없으면) */
 document.addEventListener('visibilitychange',async()=>{
