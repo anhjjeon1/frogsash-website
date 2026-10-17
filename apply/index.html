@@ -14,6 +14,7 @@
   :root { --primary:#1B6B28; --primary-light:#43A047; --primary-dark:#0A4A14; --accent:#FF6B35; --dark:#111827; --gray:#6B7280; --line:#E5E7EB; --bg:#F4F7F5; }
   * { box-sizing:border-box; }
   html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  body { word-break:keep-all; overflow-wrap:break-word; }
   body { margin:0; font-family:'Noto Sans KR', -apple-system, sans-serif; background:var(--bg); color:var(--dark); line-height:1.6; }
   a { color:inherit; }
   header { background:#fff; border-bottom:1px solid var(--line); }
@@ -33,9 +34,9 @@
   .sample::after { content:'견본'; position:absolute; top:22px; right:-38px; transform:rotate(35deg); background:#D92D20; color:#fff; font-weight:900; font-size:14px; padding:4px 50px; }
   .sample h2 { font-size:19px; margin:0 0 4px; }
   .sample .sub { font-size:13px; color:var(--gray); margin:0 0 16px; }
-  .srow { display:grid; grid-template-columns:118px 1fr; border-top:1px solid var(--line); font-size:14px; }
+  .srow { display:grid; grid-template-columns:9.2em 1fr; border-top:1px solid var(--line); font-size:14px; }
   .srow:last-of-type { border-bottom:1px solid var(--line); }
-  .srow b { background:#F3F6F4; padding:9px 12px; font-weight:700; color:#374151; }
+  .srow b { background:#F3F6F4; padding:9px 12px; white-space:nowrap; font-weight:700; color:#374151; }
   .srow span { padding:9px 12px; color:#1F2937; }
   .srow span.hand { color:#1D4ED8; font-weight:500; }
   .schk { margin-top:14px; font-size:13px; color:#374151; }
@@ -97,7 +98,7 @@
     form { order:1; }
     .hero h1 { font-size:26px; }
   }
-  @media (max-width: 480px) { .term .head { gap:8px; padding:11px 10px; font-size:13.5px; } .term .head label { letter-spacing:-0.5px; } .term .head .tg { font-size:12px; padding:0 2px; } .term .body { padding-left:36px; } .agree-all { font-size:15px; } .two { grid-template-columns:1fr; } form, .sample { padding:22px 16px; } .srow { grid-template-columns:96px 1fr; } }
+  @media (max-width: 480px) { .term .head { gap:8px; padding:11px 10px; font-size:13.5px; } .term .head label { letter-spacing:-0.5px; } .term .head .tg { font-size:12px; padding:0 2px; } .term .body { padding-left:36px; } .agree-all { font-size:15px; } .two { grid-template-columns:1fr; } form, .sample { padding:22px 16px; } .srow { grid-template-columns:8.6em 1fr; } .srow b { padding:9px 10px; } }
 </style>
 </head>
 <body>
@@ -125,7 +126,7 @@
       <p class="sub">청개구리샤시 · 작성 예시입니다</p>
       <div class="srow"><b>신청인</b><span class="hand">홍길동</span></div>
       <div class="srow"><b>연락처</b><span class="hand">010-0000-0000</span></div>
-      <div class="srow"><b>단지명</b><span class="hand">○○아파트 (경기도 ○○시)</span></div>
+      <div class="srow"><b>단지명</b><span class="hand">○○아파트 (○○시)</span></div>
       <div class="srow"><b>동·호수</b><span class="hand">101동 1001호</span></div>
       <div class="srow"><b>평형</b><span class="hand">84㎡ (32평형)</span></div>
       <div class="srow"><b>사전방문 기간</b><span class="hand">11월 21일 ~ 11월 23일</span></div>
