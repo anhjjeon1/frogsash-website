@@ -71,6 +71,9 @@
   .badge-req { color:#D92D20; font-weight:700; } .badge-opt { color:var(--gray); font-weight:700; }
   .submit { width:100%; margin-top:16px; padding:16px; border:0; border-radius:12px; background:linear-gradient(135deg, var(--accent), #F25C1F); color:#fff; font:inherit; font-size:18px; font-weight:900; cursor:pointer; box-shadow:0 8px 20px rgba(255,107,53,.3); }
   .submit:disabled { background:#D1D5DB; box-shadow:none; cursor:not-allowed; }
+  .after-note { margin:12px 0 0; font-size:13.5px; color:#4B5563; line-height:1.7; text-align:center; }
+  .after-note a { color:var(--primary); font-weight:700; }
+  .after-note i { color:var(--primary); margin-right:4px; }
   .err { color:#D92D20; font-size:13.5px; margin-top:8px; min-height:1em; }
   /* 결과 */
   .pay { margin-top:18px; background:#fff; border-radius:16px; border:1px solid var(--line); box-shadow:0 8px 30px rgba(0,0,0,.06); padding:22px 24px; }
@@ -221,6 +224,7 @@
 
     <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" aria-hidden="true">
     <button type="submit" class="submit" id="go"><i class="fas fa-paper-plane"></i> 신청서 작성</button>
+    <p class="after-note"><i class="fas fa-phone-alt"></i> 신청서를 보내 주시면 예약 진행 여부를 확인해 연락드립니다.<br>일정이 확정되면 예약금 10만원을 <a href="#pay">결제 계좌(KB국민은행 090537-04-003309)</a>로 송금해 주세요.</p>
     <div class="err" id="err"></div>
 
     <div class="done ok" id="ok">
