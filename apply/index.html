@@ -31,7 +31,7 @@
   .panel-title { font-size:15px; font-weight:700; color:var(--gray); margin:0 0 10px; display:flex; align-items:center; gap:8px; }
   /* 견본 */
   .sample { position:relative; background:#fff; border-radius:16px; border:1px solid var(--line); box-shadow:0 8px 30px rgba(0,0,0,.06); padding:26px 24px; overflow:hidden; }
-  .sample::after { content:'견본'; position:absolute; top:22px; right:-38px; transform:rotate(35deg); background:#D92D20; color:#fff; font-weight:900; font-size:14px; padding:4px 50px; }
+  .sample::after { content:'견본'; position:absolute; top:16px; right:16px; background:#D92D20; color:#fff; font-weight:900; font-size:13px; padding:3px 12px; border-radius:999px; letter-spacing:1px; }
   .sample h2 { font-size:19px; margin:0 0 4px; }
   .sample .sub { font-size:13px; color:var(--gray); margin:0 0 16px; }
   .srow { display:grid; grid-template-columns:9.2em 1fr; border-top:1px solid var(--line); font-size:14px; }
@@ -97,7 +97,7 @@
   footer { text-align:center; font-size:13px; color:var(--gray); padding:24px 16px 40px; }
   @media (max-width: 900px) {
     .grid { grid-template-columns:1fr; }
-    .sample { position:static; order:2; }
+    .sample { position:relative; order:2; }
     form { order:1; }
     .hero h1 { font-size:26px; }
   }
@@ -169,8 +169,8 @@
       <table>
         <tr><th>예약금</th><td>10만원 · 전화로 일정을 확정한 뒤 입금해 주시면 예약이 확정됩니다.</td></tr>
         <tr><th>잔금</th><td>84㎡(32평형): <b>55만원</b> / 84㎡ 미만: <b>50만원</b><br>점검이 끝난 뒤, <b>점검 보고서를 보내 드리기 전</b>에 입금해 주세요.</td></tr>
-        <tr><th>손님 사정으로 취소</th><td>점검일 <b>7일 전까지</b> 취소: 예약금 전액 환불<br>점검일 <b>7일 이내</b> 취소: 예약금 환불 없음</td></tr>
-        <tr><th>건설사 출입 불가로<br>점검을 못 할 때</th><td>손님께서 고르실 수 있습니다.<br>① 다른 날로 다시 점검 ② 입주 후 점검으로 전환 ③ 예약금 전액 환불</td></tr>
+        <tr><th>고객 사정으로 취소</th><td>점검일 <b>7일 전까지</b> 취소: 예약금 전액 환불<br>점검일 <b>7일 이내</b> 취소: 예약금 환불 없음</td></tr>
+        <tr><th>건설사 출입 불가로<br>점검을 못 할 때</th><td>고객께서 고르실 수 있습니다.<br>① 다른 날로 다시 점검 ② 입주 후 점검으로 전환 ③ 예약금 전액 환불</td></tr>
       </table>
       <p class="small">· 입금하실 때 입금자명을 신청인 이름과 같게 해 주세요.</p>
     </div>
@@ -220,7 +220,7 @@
           <li>점검 비용(부가세 포함): 84㎡(32평형 기준) 65만원 / 84㎡ 미만 60만원 / 84㎡ 초과는 전화로 안내합니다.</li>
           <li>예약은 신청서 확인 후 전화로 일정을 맞추고, 예약금 10만원을 입금하시면 확정됩니다.</li>
           <li>잔금(84㎡ 55만원 / 84㎡ 미만 50만원)은 점검이 끝난 뒤 점검 보고서를 보내 드리기 전에 입금합니다. (KB국민은행 090537-04-003309, 예금주 전영웅(청개구리샤시))</li>
-          <li>손님 사정으로 취소하실 때: 점검일 7일 전까지는 예약금 전액 환불, 7일 이내에는 예약금을 돌려드리지 않습니다.</li>
+          <li>고객 사정으로 취소하실 때: 점검일 7일 전까지는 예약금 전액 환불, 7일 이내에는 예약금을 돌려드리지 않습니다.</li>
           <li>건설사 출입 불가로 점검을 하지 못하면 ① 다른 날 다시 점검 ② 입주 후 점검으로 전환 ③ 예약금 전액 환불 중에서 고르실 수 있습니다.</li>
           <li>점검 보고서는 하자 접수에 활용하실 수 있는 참고 자료이며, 공인 감정서가 아니므로 법적 효력은 없습니다.</li>
           <li>점검에서 찾은 하자의 수리는 협의 후 진행하며, 수리 비용은 하자 내용을 확인한 뒤 따로 안내합니다.</li>
