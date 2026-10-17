@@ -1572,6 +1572,12 @@
         .pi-price .pi-won { font-size:38px; font-weight:800; color:var(--primary); line-height:1.1; }
         .pi-price .pi-won small { font-size:17px; font-weight:700; margin-left:2px; }
         .pi-note { text-align:center; font-size:13px; color:var(--gray); line-height:1.7; margin:0 auto 40px; max-width:760px; }
+        .pi-repair { max-width:900px; margin:0 auto 44px; background:linear-gradient(135deg, var(--primary-dark), var(--primary)); color:#fff; border-radius:var(--radius-md); padding:28px 30px; display:flex; gap:22px; align-items:center; box-shadow:var(--shadow-lg); }
+        .pi-repair .pi-rico { flex:0 0 64px; height:64px; border-radius:50%; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-size:28px; }
+        .pi-repair h3 { font-size:21px; margin:0 0 8px; color:#fff; }
+        .pi-repair p { margin:0; font-size:15px; line-height:1.75; opacity:0.92; }
+        .pi-repair small { display:block; margin-top:8px; font-size:13px; opacity:0.75; }
+        @media (max-width: 768px) { .pi-repair { flex-direction:column; text-align:center; padding:24px 20px; } }
         .pi-badge { display:inline-block; background:var(--accent); color:#fff; font-size:12px; font-weight:700; padding:3px 10px; border-radius:20px; margin-bottom:10px; }
         @media (max-width: 768px) {
             .pi-team { grid-template-columns:1fr; gap:10px; }
@@ -1682,7 +1688,7 @@
             <div class="section-header fade-in">
                 <div class="section-tag">PRE-MOVE-IN INSPECTION</div>
                 <h2>입주자 사전점검</h2>
-                <p>창호 전문가와 건설사 CS소장, 두 사람이 현장에서 직접 점검하고, AI 분석으로 하자마다 판정 근거와 보수 방법을 정리해 드립니다</p>
+                <p>창호 전문가와 건설사 CS소장, 두 사람이 현장에서 직접 점검하고, AI 분석으로 하자마다 판정 근거와 보수 방법을 정리해 드립니다. 찾은 하자는 모든 공정의 수리까지 함께 진행합니다</p>
             </div>
 
             <div class="pi-team fade-in">
@@ -1698,6 +1704,15 @@
                     <div class="pi-role">내장 · 마감 · 설비</div>
                     <h3>건설사 CS소장</h3>
                     <p>입주 세대의 하자 접수와 보수를 직접 처리해 온 건설사 CS소장이 내장 마감, 설비, 누수 흔적을 건설사가 접수·보수하는 기준에 맞춰 짚어 드립니다.</p>
+                </div>
+            </div>
+
+            <div class="pi-repair fade-in">
+                <div class="pi-rico"><i class="fas fa-tools"></i></div>
+                <div>
+                    <h3>점검에서 끝나지 않습니다 — 점검과 수리를 함께 진행합니다</h3>
+                    <p>청개구리샤시는 사전점검과 함께 <strong>창호를 비롯한 모든 공정의 하자 수리</strong>를 동시에 진행합니다. 점검에서 찾은 하자를 다른 업체를 따로 찾을 필요 없이, 같은 팀이 원인을 알고 바로 고쳐 드립니다.</p>
+                    <small>※ 수리 비용은 하자 내용을 확인한 뒤 따로 안내해 드립니다.</small>
                 </div>
             </div>
 
