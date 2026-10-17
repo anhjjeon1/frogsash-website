@@ -187,11 +187,17 @@
       </div>
     </div>
 
+    <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" aria-hidden="true">
     <button type="submit" class="submit" id="go"><i class="fas fa-paper-plane"></i> 신청서 작성</button>
     <div class="err" id="err"></div>
 
+    <div class="done ok" id="ok">
+      <h3><i class="fas fa-check-circle"></i> 예약신청이 접수되었습니다</h3>
+      <p style="margin:0; font-size:15px;">접수번호 <b id="okno"></b> · 확인 후 <b>입력하신 연락처로 전화</b>드려 일정을 확정해 드립니다.<br>급하신 경우 <a href="tel:010-2322-0949" style="color:var(--primary); font-weight:700;">010-2322-0949</a>로 전화 주세요.</p>
+    </div>
+
     <div class="done" id="done">
-      <h3><i class="fas fa-check-circle"></i> 신청서가 만들어졌습니다</h3>
+      <h3><i class="fas fa-exclamation-circle"></i> 자동 접수가 되지 않아 문자로 보내 주세요</h3>
       <div id="howto" style="font-size:14px;"></div>
       <pre id="msg"></pre>
       <div class="btns">
@@ -216,6 +222,7 @@
   });
   function radio(n) { var r = document.querySelector('input[name="' + n + '"]:checked'); return r ? r.value : ''; }
   var mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var API = 'https://script.google.com/macros/s/AKfycbymojGdWydp546w8Fk9Mq4dD1jVDfpWKnN8HBMHy5xbHTUstWiTGW3puDNq0htn4cGjsg/exec';
 
   $('apply').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -240,16 +247,38 @@
       '요청 사항: ' + ($('memo').value.trim() || '없음') + '\n' +
       '약관: 개인정보 수집·이용 동의, 서비스 안내 확인' + ($('t3').checked ? ', 사진 홍보 활용 동의' : '');
     $('msg').textContent = msg;
+    var go = $('go'); go.disabled = true; go.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 접수하는 중…';
+    var data = { name: $('name').value.trim(), tel: $('tel').value.trim(), apt: $('apt').value.trim(), unit: $('unit').value.trim(),
+      size: $('size').value, period: $('period').value.trim(), date: date, time: radio('time'), 'with': radio('with'),
+      memo: $('memo').value.trim(), t1: $('t1').checked, t2: $('t2').checked, t3: $('t3').checked, website: $('website').value };
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 15000);
+    fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data), signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        clearTimeout(timer);
+        if (j && j.ok) {
+          $('okno').textContent = '#' + j.no; $('ok').classList.add('show'); $('done').classList.remove('show');
+          go.innerHTML = '<i class="fas fa-check"></i> 접수 완료';
+          $('ok').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else { fallback(j && j.error); }
+      })
+      .catch(function () { clearTimeout(timer); fallback(); });
+  });
+
+  function fallback(code) {
+    var go = $('go'); go.disabled = false; go.innerHTML = '<i class="fas fa-paper-plane"></i> 신청서 작성';
+    if (code === 'busy') { $('err').textContent = '잠시 후 다시 시도해 주세요. 급하시면 010-2322-0949로 전화 주세요.'; }
+    var msg = $('msg').textContent;
     var body = encodeURIComponent(msg);
     var sep = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?';
     $('sms').href = 'sms:01023220949' + sep + 'body=' + body;
     $('howto').innerHTML = mobile
-      ? '<b>문자 앱이 열리면 [보내기]를 눌러 주세요.</b> 문자를 보내셔야 신청이 접수됩니다. 문자 앱이 열리지 않으면 아래 [문자로 보내기]를 눌러 주세요.'
+      ? '아래 <b>[문자로 보내기]</b>를 누르고 문자 앱에서 <b>[보내기]</b>를 눌러 주세요. 문자를 보내셔야 신청이 접수됩니다.'
       : 'PC에서는 문자를 바로 보낼 수 없습니다. <b>[내용 복사]</b>를 눌러 010-2322-0949로 문자를 보내 주시거나, 전화로 신청해 주세요.';
     $('done').classList.add('show');
     $('done').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    if (mobile) { setTimeout(function () { location.href = $('sms').href; }, 400); }
-  });
+  }
 
   $('copy').addEventListener('click', function () {
     var t = $('msg').textContent;
