@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사전점검 예약신청서 | 청개구리샤시</title>
+<meta name="description" content="청개구리샤시 입주자 사전점검 예약신청서. 창호 전문가와 건설사 CS소장의 2인 1조 점검. 84㎡ 65만원 / 84㎡ 미만 60만원.">
+<link rel="canonical" href="https://frogsash.co.kr/apply/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root { --primary:#1B6B28; --primary-light:#43A047; --primary-dark:#0A4A14; --accent:#FF6B35; --dark:#111827; --gray:#6B7280; --line:#E5E7EB; --bg:#F4F7F5; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:'Noto Sans KR', -apple-system, sans-serif; background:var(--bg); color:var(--dark); line-height:1.6; }
+  a { color:inherit; }
+  header { background:#fff; border-bottom:1px solid var(--line); }
+  .wrap { max-width:1160px; margin:0 auto; padding:0 16px; }
+  header .wrap { display:flex; align-items:center; justify-content:space-between; height:68px; }
+  .logo { display:flex; align-items:center; gap:10px; text-decoration:none; font-weight:900; font-size:20px; color:var(--primary-dark); }
+  .logo img { width:40px; height:40px; border-radius:8px; object-fit:contain; }
+  .back { text-decoration:none; font-size:14px; color:var(--gray); }
+  .hero { background:linear-gradient(135deg, var(--primary-dark), var(--primary)); color:#fff; padding:40px 0 34px; text-align:center; }
+  .hero .tag { display:inline-block; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); padding:4px 14px; border-radius:20px; font-size:13px; letter-spacing:1px; }
+  .hero h1 { font-size:32px; font-weight:900; margin:12px 0 8px; }
+  .hero p { margin:0; opacity:.9; font-size:15px; }
+  .grid { display:grid; grid-template-columns:1fr 1.15fr; gap:28px; align-items:start; margin:34px auto 60px; }
+  .panel-title { font-size:15px; font-weight:700; color:var(--gray); margin:0 0 10px; display:flex; align-items:center; gap:8px; }
+  /* 견본 */
+  .sample { position:sticky; top:20px; background:#fff; border-radius:16px; border:1px solid var(--line); box-shadow:0 8px 30px rgba(0,0,0,.06); padding:26px 24px; overflow:hidden; }
+  .sample::after { content:'견본'; position:absolute; top:22px; right:-38px; transform:rotate(35deg); background:#D92D20; color:#fff; font-weight:900; font-size:14px; padding:4px 50px; }
+  .sample h2 { font-size:19px; margin:0 0 4px; }
+  .sample .sub { font-size:13px; color:var(--gray); margin:0 0 16px; }
+  .srow { display:grid; grid-template-columns:118px 1fr; border-top:1px solid var(--line); font-size:14px; }
+  .srow:last-of-type { border-bottom:1px solid var(--line); }
+  .srow b { background:#F3F6F4; padding:9px 12px; font-weight:700; color:#374151; }
+  .srow span { padding:9px 12px; color:#1F2937; }
+  .srow span.hand { color:#1D4ED8; font-weight:500; }
+  .schk { margin-top:14px; font-size:13px; color:#374151; }
+  .schk div { display:flex; gap:8px; align-items:center; margin:4px 0; }
+  .schk i { color:var(--primary); }
+  .sample .note { margin-top:14px; font-size:12.5px; color:var(--gray); background:#F9FAFB; border-radius:8px; padding:10px 12px; }
+  /* 신청서 */
+  form { background:#fff; border-radius:16px; border:2px solid var(--primary-light); box-shadow:0 12px 36px rgba(27,107,40,.10); padding:28px 26px; }
+  form h2 { font-size:21px; margin:0 0 4px; }
+  form .sub { font-size:13.5px; color:var(--gray); margin:0 0 20px; }
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-weight:700; font-size:14.5px; margin-bottom:6px; }
+  .field label .req { color:#D92D20; margin-left:3px; }
+  .field input, .field select, .field textarea { width:100%; padding:12px 14px; border:1.5px solid #D1D5DB; border-radius:10px; font:inherit; font-size:15px; background:#fff; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline:none; border-color:var(--primary-light); box-shadow:0 0 0 3px rgba(67,160,71,.15); }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .chips { display:flex; gap:8px; flex-wrap:wrap; }
+  .chips label { font-weight:500; display:flex; align-items:center; gap:6px; border:1.5px solid #D1D5DB; border-radius:999px; padding:8px 14px; cursor:pointer; font-size:14px; margin:0; }
+  .chips input { width:auto; margin:0; accent-color:var(--primary); }
+  .hint { font-size:12.5px; color:var(--gray); margin-top:5px; }
+  .terms { margin:22px 0 6px; border-top:1px dashed var(--line); padding-top:18px; }
+  .terms h3 { font-size:16px; margin:0 0 10px; }
+  .agree-all { display:flex; gap:10px; align-items:center; font-weight:900; background:#F0F7F1; border-radius:10px; padding:12px 14px; cursor:pointer; margin-bottom:10px; }
+  .term { border:1px solid var(--line); border-radius:10px; margin-bottom:8px; }
+  .term .head { display:flex; gap:10px; align-items:center; padding:11px 14px; font-size:14.5px; }
+  .term .head label { flex:1; cursor:pointer; }
+  .term .head .tg { font-size:13px; color:var(--gray); background:none; border:0; cursor:pointer; text-decoration:underline; }
+  .term .body { display:none; padding:0 14px 12px 40px; font-size:13px; color:#4B5563; }
+  .term.open .body { display:block; }
+  .term .body ul { margin:0; padding-left:18px; }
+  input[type=checkbox] { width:18px; height:18px; accent-color:var(--primary); flex:none; }
+  .badge-req { color:#D92D20; font-weight:700; } .badge-opt { color:var(--gray); font-weight:700; }
+  .submit { width:100%; margin-top:16px; padding:16px; border:0; border-radius:12px; background:linear-gradient(135deg, var(--accent), #F25C1F); color:#fff; font:inherit; font-size:18px; font-weight:900; cursor:pointer; box-shadow:0 8px 20px rgba(255,107,53,.3); }
+  .submit:disabled { background:#D1D5DB; box-shadow:none; cursor:not-allowed; }
+  .err { color:#D92D20; font-size:13.5px; margin-top:8px; min-height:1em; }
+  /* 결과 */
+  .done { display:none; margin-top:18px; background:#F0F7F1; border:1px solid #BFE3C4; border-radius:12px; padding:16px; }
+  .done.show { display:block; }
+  .done h3 { margin:0 0 8px; font-size:16px; color:var(--primary-dark); }
+  .done pre { white-space:pre-wrap; background:#fff; border-radius:8px; padding:12px; font:inherit; font-size:13.5px; margin:10px 0; border:1px solid var(--line); }
+  .done .btns { display:flex; gap:8px; flex-wrap:wrap; }
+  .done .btns a, .done .btns button { flex:1; min-width:140px; text-align:center; text-decoration:none; padding:11px; border-radius:10px; font:inherit; font-weight:700; font-size:14.5px; border:0; cursor:pointer; }
+  .b-sms { background:var(--primary); color:#fff; } .b-copy { background:#fff; color:var(--primary-dark); border:1.5px solid var(--primary-light) !important; } .b-tel { background:var(--dark); color:#fff; }
+  footer { text-align:center; font-size:13px; color:var(--gray); padding:24px 16px 40px; }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns:1fr; }
+    .sample { position:static; order:2; }
+    form { order:1; }
+    .hero h1 { font-size:26px; }
+  }
+  @media (max-width: 480px) { .two { grid-template-columns:1fr; } form, .sample { padding:22px 16px; } .srow { grid-template-columns:96px 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="logo" href="/"><img src="/images/logo.jpg" alt="청개구리샤시 로고">청개구리샤시</a>
+    <a class="back" href="/#preinspect"><i class="fas fa-arrow-left"></i> 사전점검 안내로</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="tag">PRE-MOVE-IN INSPECTION</span>
+    <h1>입주자 사전점검 예약신청서</h1>
+    <p>창호 전문가 + 건설사 CS소장 2인 1조 · 84㎡ 65만원 / 84㎡ 미만 60만원</p>
+  </div>
+</section>
+
+<main class="wrap grid">
+  <!-- 왼쪽: 견본 -->
+  <div>
+    <p class="panel-title"><i class="fas fa-file-alt"></i> 이렇게 적어 주세요 (견본)</p>
+    <div class="sample" aria-label="예약신청서 작성 견본">
+      <h2>입주자 사전점검 예약신청서</h2>
+      <p class="sub">청개구리샤시 · 작성 예시입니다</p>
+      <div class="srow"><b>신청인</b><span class="hand">홍길동</span></div>
+      <div class="srow"><b>연락처</b><span class="hand">010-0000-0000</span></div>
+      <div class="srow"><b>단지명</b><span class="hand">○○아파트 (경기도 ○○시)</span></div>
+      <div class="srow"><b>동·호수</b><span class="hand">101동 1001호</span></div>
+      <div class="srow"><b>평형</b><span class="hand">84㎡ (32평형)</span></div>
+      <div class="srow"><b>사전방문 기간</b><span class="hand">11월 21일 ~ 11월 23일</span></div>
+      <div class="srow"><b>희망 날짜</b><span class="hand">11월 22일 · 오전</span></div>
+      <div class="srow"><b>점검 때 동행</b><span class="hand">본인 동행</span></div>
+      <div class="srow"><b>요청 사항</b><span class="hand">거실 창문이 잘 안 닫혀요. 창호와 욕실 누수 흔적을 꼼꼼히 봐 주세요.</span></div>
+      <div class="schk">
+        <div><i class="fas fa-check-square"></i> [필수] 개인정보 수집·이용 동의</div>
+        <div><i class="fas fa-check-square"></i> [필수] 서비스 안내 확인</div>
+        <div><i class="fas fa-check-square"></i> [선택] 점검 사진 홍보 활용 동의</div>
+      </div>
+      <div class="note"><i class="fas fa-info-circle"></i> 사전방문 기간은 건설사에서 받은 안내문(문자)에 적혀 있습니다. 날짜가 아직 정해지지 않았다면 '미정'으로 적어 주세요.</div>
+    </div>
+  </div>
+
+  <!-- 오른쪽: 신청서 -->
+  <form id="apply" novalidate>
+    <h2>예약신청서 작성</h2>
+    <p class="sub"><span class="badge-req">*</span> 표시는 꼭 적어 주세요. 신청서를 보내 주시면 확인 후 전화로 일정을 확정해 드립니다.</p>
+
+    <div class="two">
+      <div class="field"><label for="name">신청인 이름<span class="req">*</span></label><input id="name" autocomplete="name" placeholder="예) 홍길동"></div>
+      <div class="field"><label for="tel">연락처<span class="req">*</span></label><input id="tel" type="tel" autocomplete="tel" inputmode="tel" placeholder="010-0000-0000"></div>
+    </div>
+    <div class="field"><label for="apt">단지명<span class="req">*</span></label><input id="apt" placeholder="예) ○○아파트 (경기도 ○○시)"></div>
+    <div class="two">
+      <div class="field"><label for="unit">동·호수<span class="req">*</span></label><input id="unit" placeholder="예) 101동 1001호"></div>
+      <div class="field"><label for="size">평형<span class="req">*</span></label>
+        <select id="size"><option value="">선택해 주세요</option><option>84㎡ 미만 (60만원)</option><option>84㎡ · 32평형 (65만원)</option><option>84㎡ 초과 (전화 상담)</option></select></div>
+    </div>
+    <div class="field"><label for="period">사전방문 기간</label><input id="period" placeholder="예) 11월 21일 ~ 11월 23일 / 미정"><div class="hint">건설사 안내문에 적힌 사전방문(사전점검) 기간입니다.</div></div>
+    <div class="two">
+      <div class="field"><label for="date">희망 날짜<span class="req">*</span></label><input id="date" type="date"></div>
+      <div class="field"><label>희망 시간</label>
+        <div class="chips"><label><input type="radio" name="time" value="오전" checked>오전</label><label><input type="radio" name="time" value="오후">오후</label><label><input type="radio" name="time" value="상관없음">상관없음</label></div></div>
+    </div>
+    <div class="field"><label>점검 때 동행</label>
+      <div class="chips"><label><input type="radio" name="with" value="본인 동행" checked>본인 동행</label><label><input type="radio" name="with" value="가족 동행">가족 동행</label><label><input type="radio" name="with" value="미정">미정</label></div></div>
+    <div class="field"><label for="memo">요청 사항</label><textarea id="memo" rows="3" placeholder="중점적으로 봐 주셨으면 하는 곳이 있으면 적어 주세요."></textarea></div>
+
+    <div class="terms">
+      <h3>약관 동의</h3>
+      <label class="agree-all"><input type="checkbox" id="all"> 아래 내용에 모두 동의합니다</label>
+
+      <div class="term">
+        <div class="head"><input type="checkbox" class="ag" id="t1" data-req="1"><label for="t1"><span class="badge-req">[필수]</span> 개인정보 수집·이용 동의</label><button type="button" class="tg">보기</button></div>
+        <div class="body"><ul>
+          <li>수집 항목: 이름, 연락처, 단지명, 동·호수, 평형, 사전방문 기간·희망 일정, 요청 사항</li>
+          <li>이용 목적: 사전점검 예약 확인과 일정 안내, 점검 보고서 작성</li>
+          <li>보유 기간: 점검 완료 후 1년간 보관한 뒤 파기합니다. 예약이 이루어지지 않으면 확인 후 바로 파기합니다.</li>
+          <li>동의를 거부하실 수 있으며, 이 경우 예약 신청이 어렵습니다.</li>
+        </ul></div>
+      </div>
+      <div class="term">
+        <div class="head"><input type="checkbox" class="ag" id="t2" data-req="1"><label for="t2"><span class="badge-req">[필수]</span> 서비스 안내 확인</label><button type="button" class="tg">보기</button></div>
+        <div class="body"><ul>
+          <li>점검 비용: 84㎡(32평형 기준) 65만원 / 84㎡ 미만 60만원 / 84㎡ 초과는 전화로 안내합니다.</li>
+          <li>예약은 신청서 확인 후 전화로 일정을 맞춘 뒤 확정됩니다.</li>
+          <li>단지의 사전방문 규정에 따라 출입이 제한될 수 있으며, 이 경우 일정을 다시 협의합니다.</li>
+          <li>점검 보고서는 하자 접수에 활용하실 수 있는 참고 자료이며, 공인 감정서가 아니므로 법적 효력은 없습니다.</li>
+          <li>점검에서 찾은 하자의 수리는 협의 후 진행하며, 수리 비용은 하자 내용을 확인한 뒤 따로 안내합니다.</li>
+        </ul></div>
+      </div>
+      <div class="term">
+        <div class="head"><input type="checkbox" class="ag" id="t3"><label for="t3"><span class="badge-opt">[선택]</span> 점검 사진 홍보 활용 동의</label><button type="button" class="tg">보기</button></div>
+        <div class="body"><ul>
+          <li>점검 사진을 홈페이지·유튜브 등 홍보에 쓸 수 있습니다.</li>
+          <li>단지명·동·호수와 사람 얼굴은 가리고 사용합니다.</li>
+          <li>동의하지 않으셔도 예약과 점검에는 아무 영향이 없습니다.</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <button type="submit" class="submit" id="go"><i class="fas fa-paper-plane"></i> 신청서 작성</button>
+    <div class="err" id="err"></div>
+
+    <div class="done" id="done">
+      <h3><i class="fas fa-check-circle"></i> 신청서가 만들어졌습니다</h3>
+      <div id="howto" style="font-size:14px;"></div>
+      <pre id="msg"></pre>
+      <div class="btns">
+        <a class="b-sms" id="sms" href="#"><i class="fas fa-comment-sms"></i> 문자로 보내기</a>
+        <button type="button" class="b-copy" id="copy"><i class="fas fa-copy"></i> 내용 복사</button>
+        <a class="b-tel" href="tel:010-2322-0949"><i class="fas fa-phone"></i> 전화하기</a>
+      </div>
+    </div>
+  </form>
+</main>
+
+<footer>청개구리샤시 · 대표번호 010-2322-0949 · frogsash.co.kr</footer>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var ags = Array.prototype.slice.call(document.querySelectorAll('.ag'));
+  $('all').addEventListener('change', function () { ags.forEach(function (c) { c.checked = $('all').checked; }); });
+  ags.forEach(function (c) { c.addEventListener('change', function () { $('all').checked = ags.every(function (x) { return x.checked; }); }); });
+  Array.prototype.forEach.call(document.querySelectorAll('.term .tg'), function (b) {
+    b.addEventListener('click', function () { var t = b.closest('.term'); t.classList.toggle('open'); b.textContent = t.classList.contains('open') ? '닫기' : '보기'; });
+  });
+  function radio(n) { var r = document.querySelector('input[name="' + n + '"]:checked'); return r ? r.value : ''; }
+  var mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  $('apply').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var need = [['name', '신청인 이름을'], ['tel', '연락처를'], ['apt', '단지명을'], ['unit', '동·호수를'], ['size', '평형을'], ['date', '희망 날짜를']];
+    for (var i = 0; i < need.length; i++) {
+      if (!$(need[i][0]).value.trim()) { $('err').textContent = need[i][1] + (need[i][0] === 'size' || need[i][0] === 'date' ? ' 골라 주세요.' : ' 적어 주세요.'); $(need[i][0]).focus(); return; }
+    }
+    if (!/^[0-9\-\s]{9,14}$/.test($('tel').value.trim())) { $('err').textContent = '연락처를 숫자로 적어 주세요. (예: 010-0000-0000)'; $('tel').focus(); return; }
+    if (!$('t1').checked || !$('t2').checked) { $('err').textContent = '[필수] 약관에 동의해 주세요.'; return; }
+    $('err').textContent = '';
+    var d = $('date').value.split('-');
+    var date = d.length === 3 ? (+d[1]) + '월 ' + (+d[2]) + '일' : $('date').value;
+    var msg = '[청개구리샤시 사전점검 예약신청]\n' +
+      '신청인: ' + $('name').value.trim() + '\n' +
+      '연락처: ' + $('tel').value.trim() + '\n' +
+      '단지명: ' + $('apt').value.trim() + '\n' +
+      '동·호수: ' + $('unit').value.trim() + '\n' +
+      '평형: ' + $('size').value + '\n' +
+      '사전방문 기간: ' + ($('period').value.trim() || '미기재') + '\n' +
+      '희망 일정: ' + date + ' ' + radio('time') + '\n' +
+      '동행: ' + radio('with') + '\n' +
+      '요청 사항: ' + ($('memo').value.trim() || '없음') + '\n' +
+      '약관: 개인정보 수집·이용 동의, 서비스 안내 확인' + ($('t3').checked ? ', 사진 홍보 활용 동의' : '');
+    $('msg').textContent = msg;
+    var body = encodeURIComponent(msg);
+    var sep = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?';
+    $('sms').href = 'sms:01023220949' + sep + 'body=' + body;
+    $('howto').innerHTML = mobile
+      ? '<b>문자 앱이 열리면 [보내기]를 눌러 주세요.</b> 문자를 보내셔야 신청이 접수됩니다. 문자 앱이 열리지 않으면 아래 [문자로 보내기]를 눌러 주세요.'
+      : 'PC에서는 문자를 바로 보낼 수 없습니다. <b>[내용 복사]</b>를 눌러 010-2322-0949로 문자를 보내 주시거나, 전화로 신청해 주세요.';
+    $('done').classList.add('show');
+    $('done').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (mobile) { setTimeout(function () { location.href = $('sms').href; }, 400); }
+  });
+
+  $('copy').addEventListener('click', function () {
+    var t = $('msg').textContent;
+    function ok() { $('copy').innerHTML = '<i class="fas fa-check"></i> 복사했습니다'; }
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(ok, function () { fallback(); });
+    else fallback();
+    function fallback() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); ok(); } catch (x) {} a.remove(); }
+  });
+})();
+</script>
+</body>
+</html>
