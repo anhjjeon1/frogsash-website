@@ -103,17 +103,19 @@
   }
   @media (max-width: 480px) {
     .two { gap:0; }
-    .field { margin-bottom:10px; }
-    .field label { margin-bottom:4px; font-size:14px; }
+    .field { margin-bottom:8px; display:grid; grid-template-columns:5.9em 1fr; column-gap:6px; align-items:center; }
+    .field label { margin:0; font-size:13.5px; white-space:nowrap; letter-spacing:-0.5px; }
+    .field .hint, .field .chips { grid-column:2; }
+    .field:has(textarea) label { align-self:start; padding-top:9px; }
     .field input, .field select, .field textarea { padding:9px 12px; font-size:15px; border-radius:9px; }
-    .chips { gap:6px; } .chips label { padding:6px 12px; font-size:13.5px; }
+    .chips { gap:5px; flex-wrap:nowrap; } .chips label { padding:6px 9px; font-size:13px; gap:4px; }
     .hint { margin-top:3px; font-size:12px; }
     form h2 { font-size:19px; } form .sub { margin-bottom:12px; font-size:13px; }
     .terms { margin-top:14px; padding-top:12px; } .terms h3 { margin-bottom:8px; }
     .agree-all { padding:10px 12px; margin-bottom:8px; } .term { margin-bottom:6px; }
     .submit { margin-top:12px; padding:14px; font-size:17px; }
   }
-  @media (max-width: 480px) { .term .head { gap:8px; padding:11px 10px; font-size:13.5px; } .term .head label { letter-spacing:-0.5px; } .term .head .tg { font-size:12px; padding:0 2px; } .term .body { padding-left:36px; } .agree-all { font-size:15px; } .two { grid-template-columns:1fr; } form, .sample { padding:22px 16px; } .srow { grid-template-columns:8.6em 1fr; } .srow b { padding:9px 10px; } }
+  @media (max-width: 480px) { .term .head { gap:8px; padding:11px 10px; font-size:13.5px; } .term .head label { letter-spacing:-0.5px; } .term .head .tg { font-size:12px; padding:0 2px; } .term .body { padding-left:36px; } .agree-all { font-size:15px; } .two { grid-template-columns:1fr; } form, .sample { padding:20px 12px; } .srow { grid-template-columns:8.6em 1fr; } .srow b { padding:9px 10px; } }
 </style>
 </head>
 <body>
@@ -180,23 +182,23 @@
     <p class="sub"><span class="badge-req">*</span> 표시는 꼭 적어 주세요. 신청서를 보내 주시면 확인 후 전화로 일정을 확정해 드립니다.</p>
 
     <div class="two">
-      <div class="field"><label for="name">신청인 이름<span class="req">*</span></label><input id="name" autocomplete="name" placeholder="예) 홍길동"></div>
+      <div class="field"><label for="name">신청인<span class="req">*</span></label><input id="name" autocomplete="name" placeholder="예) 홍길동"></div>
       <div class="field"><label for="tel">연락처<span class="req">*</span></label><input id="tel" type="tel" autocomplete="tel" inputmode="tel" placeholder="010-0000-0000"></div>
     </div>
-    <div class="field"><label for="apt">단지명<span class="req">*</span></label><input id="apt" placeholder="예) ○○아파트 (경기도 ○○시)"></div>
+    <div class="field"><label for="apt">단지명<span class="req">*</span></label><input id="apt" placeholder="예) ○○아파트 (○○시)"></div>
     <div class="two">
       <div class="field"><label for="unit">동·호수<span class="req">*</span></label><input id="unit" placeholder="예) 101동 1001호"></div>
       <div class="field"><label for="size">평형<span class="req">*</span></label>
         <select id="size"><option value="">선택해 주세요</option><option>84㎡ 미만 (60만원)</option><option>84㎡ · 32평형 (65만원)</option><option>84㎡ 초과 (전화 상담)</option></select></div>
     </div>
-    <div class="field"><label for="period">사전방문 기간</label><input id="period" placeholder="예) 11월 21일 ~ 11월 23일 / 미정"><div class="hint">건설사 안내문에 적힌 사전방문(사전점검) 기간입니다.</div></div>
+    <div class="field"><label for="period">사전방문 기간</label><input id="period" placeholder="예) 11/21~11/23 · 미정"><div class="hint">건설사 안내문에 적힌 사전방문 기간입니다.</div></div>
     <div class="two">
       <div class="field"><label for="date">희망 날짜<span class="req">*</span></label><input id="date" type="date"></div>
       <div class="field"><label>희망 시간</label>
         <div class="chips"><label><input type="radio" name="time" value="오전" checked>오전</label><label><input type="radio" name="time" value="오후">오후</label><label><input type="radio" name="time" value="상관없음">상관없음</label></div></div>
     </div>
     <div class="field"><label>점검 때 동행</label>
-      <div class="chips"><label><input type="radio" name="with" value="본인 동행" checked>본인 동행</label><label><input type="radio" name="with" value="가족 동행">가족 동행</label><label><input type="radio" name="with" value="미정">미정</label></div></div>
+      <div class="chips"><label><input type="radio" name="with" value="본인 동행" checked>본인</label><label><input type="radio" name="with" value="가족 동행">가족</label><label><input type="radio" name="with" value="미정">미정</label></div></div>
     <div class="field"><label for="memo">요청 사항</label><textarea id="memo" rows="3" placeholder="중점적으로 봐 주셨으면 하는 곳이 있으면 적어 주세요."></textarea></div>
 
     <div class="terms">
