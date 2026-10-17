@@ -13,6 +13,7 @@
 <style>
   :root { --primary:#1B6B28; --primary-light:#43A047; --primary-dark:#0A4A14; --accent:#FF6B35; --dark:#111827; --gray:#6B7280; --line:#E5E7EB; --bg:#F4F7F5; }
   * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   body { margin:0; font-family:'Noto Sans KR', -apple-system, sans-serif; background:var(--bg); color:var(--dark); line-height:1.6; }
   a { color:inherit; }
   header { background:#fff; border-bottom:1px solid var(--line); }
@@ -60,8 +61,8 @@
   .agree-all { display:flex; gap:10px; align-items:center; font-weight:900; background:#F0F7F1; border-radius:10px; padding:12px 14px; cursor:pointer; margin-bottom:10px; }
   .term { border:1px solid var(--line); border-radius:10px; margin-bottom:8px; }
   .term .head { display:flex; gap:10px; align-items:center; padding:11px 14px; font-size:14.5px; }
-  .term .head label { flex:1; cursor:pointer; }
-  .term .head .tg { font-size:13px; color:var(--gray); background:none; border:0; cursor:pointer; text-decoration:underline; }
+  .term .head label { flex:1; min-width:0; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:-0.2px; }
+  .term .head .tg { flex:none; white-space:nowrap; font-size:13px; color:var(--gray); background:none; border:0; cursor:pointer; text-decoration:underline; }
   .term .body { display:none; padding:0 14px 12px 40px; font-size:13px; color:#4B5563; }
   .term.open .body { display:block; }
   .term .body ul { margin:0; padding-left:18px; }
@@ -96,7 +97,7 @@
     form { order:1; }
     .hero h1 { font-size:26px; }
   }
-  @media (max-width: 480px) { .two { grid-template-columns:1fr; } form, .sample { padding:22px 16px; } .srow { grid-template-columns:96px 1fr; } }
+  @media (max-width: 480px) { .term .head { gap:8px; padding:11px 10px; font-size:13.5px; } .term .head label { letter-spacing:-0.5px; } .term .head .tg { font-size:12px; padding:0 2px; } .term .body { padding-left:36px; } .agree-all { font-size:15px; } .two { grid-template-columns:1fr; } form, .sample { padding:22px 16px; } .srow { grid-template-columns:96px 1fr; } }
 </style>
 </head>
 <body>
