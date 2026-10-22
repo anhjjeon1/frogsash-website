@@ -55,24 +55,28 @@
   .qmsg.ok { color:var(--primary-dark); } .qmsg.bad { color:#B45309; }
   .or { text-align:center; font-size:12.5px; color:var(--gray); margin:12px 0 10px; }
   /* 창호 카드 */
-  .wins { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .win { border:1px solid var(--line); border-radius:14px; padding:8px; background:#FCFDFC; display:flex; flex-direction:column; gap:6px; min-width:0; }
-  .win .hd { display:flex; align-items:center; gap:4px; }
-  .win .n { font-weight:900; color:var(--primary); font-size:14px; width:18px; text-align:center; flex:none; }
-  .win .hd select { padding:7px 22px 7px 8px; font-size:14px; font-weight:700; background-position:right 6px center; }
-  .win .del { flex:none; border:0; background:none; color:#D92D20; cursor:pointer; font-size:14px; padding:6px 4px; }
-  .ph { position:relative; aspect-ratio:4/3; border-radius:10px; background:linear-gradient(135deg,#EEF2EF,#E2E8E3); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#6B7F70; font-size:12.5px; cursor:pointer; overflow:hidden; }
-  .ph i { font-size:22px; margin-bottom:2px; }
+  /* 창호 1곳 = 한 줄: 왼쪽 사진, 오른쪽 위치·종류 / 가로·세로 */
+  .wins { display:flex; flex-direction:column; gap:8px; }
+  .win { border:1px solid var(--line); border-radius:14px; padding:8px; background:#FCFDFC; display:grid; grid-template-columns:76px 1fr; gap:6px 8px; align-items:center; min-width:0; }
+  .win .ph { grid-row:1 / span 3; }
+  .win .hd { display:flex; align-items:center; gap:4px; min-width:0; }
+  .win .n { font-weight:900; color:var(--primary); font-size:14px; width:16px; text-align:center; flex:none; }
+  .win .hd select { flex:1; min-width:0; padding:7px 20px 7px 7px; font-size:14px; background-position:right 5px center; }
+  .win .hd .loc { font-weight:700; flex:1; }
+  .win .hd .ty { flex:1.35; padding-right:16px; font-size:13.5px; background-position:right 4px center; }
+  .win .del { flex:none; border:0; background:none; color:#D92D20; cursor:pointer; font-size:14px; padding:6px 2px; }
+  .ph { position:relative; width:76px; height:76px; border-radius:10px; background:linear-gradient(135deg,#EEF2EF,#E2E8E3); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#6B7F70; font-size:11px; cursor:pointer; overflow:hidden; }
+  .ph i { font-size:20px; margin-bottom:2px; }
   .ph input { position:absolute; inset:0; opacity:0; cursor:pointer; z-index:2; }
   .ph img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-  .ph .rm { position:absolute; top:5px; right:5px; z-index:3; width:24px; height:24px; border-radius:50%; border:0; background:rgba(0,0,0,.55); color:#fff; font-size:12px; cursor:pointer; }
-  .win .ty { padding:7px 22px 7px 8px; font-size:13.5px; background-position:right 6px center; }
+  .ph .rm { position:absolute; top:3px; right:3px; z-index:3; width:22px; height:22px; border-radius:50%; border:0; background:rgba(0,0,0,.55); color:#fff; font-size:11px; cursor:pointer; }
   .sz { display:flex; gap:4px; align-items:center; }
   .sz label { flex:1; min-width:0; position:relative; }
   .sz label span { position:absolute; left:7px; top:50%; transform:translateY(-50%); font-size:11px; color:var(--gray); pointer-events:none; }
   .sz input { padding:8px 4px 8px 28px; font-size:15px; text-align:center; }
   .sz .x { color:var(--gray); font-size:12px; flex:none; }
-  .win .area { font-size:11.5px; color:var(--gray); text-align:center; }
+  .win .area { font-size:11.5px; color:var(--gray); }
+  .incl { margin-top:10px; border-radius:10px; background:#FFF7ED; border:1px solid #FED7AA; padding:9px 12px; font-size:13.5px; color:#9A3412; font-weight:700; line-height:1.6; }
   .win .area b { color:var(--primary-dark); }
   .win.fromq { border-color:#93C5FD; background:#F5F9FF; }
   .addwin { width:100%; margin-top:10px; padding:11px; border:1.5px dashed #9CC9A2; border-radius:12px; background:none; color:var(--primary-dark); font:inherit; font-weight:700; cursor:pointer; }
@@ -136,8 +140,6 @@
   footer { text-align:center; font-size:12.5px; color:var(--gray); padding:16px 16px 36px; }
   .spin { display:inline-block; width:14px; height:14px; border:2px solid rgba(0,0,0,.15); border-top-color:var(--primary); border-radius:50%; animation:sp .8s linear infinite; vertical-align:-2px; margin-right:4px; }
   @keyframes sp { to { transform:rotate(360deg); } }
-  @media (min-width: 640px) { .wins { grid-template-columns:repeat(3, 1fr); } }
-  @media (max-width: 360px) { .wins { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -169,7 +171,7 @@
     <label class="quote" id="quoteBox">
       <input type="file" accept="image/*" id="quoteIn">
       <span class="ic" id="quoteIc"><i class="fas fa-file-invoice"></i></span>
-      <span><b>받으신 견적서 사진 올리기</b><span>다른 업체 견적서를 찍어 올리면 창호 치수가 자동으로 들어갑니다.</span></span>
+      <span><b>이전에 받은 타사 견적서 사진 올리기</b><span>아래에 자동으로 치수와 견적을 보여 드립니다.</span></span>
     </label>
     <div class="qmsg" id="qmsg"></div>
     <div class="or">또는 창호마다 사진을 찍고 치수(cm)를 직접 넣어 주세요</div>
@@ -190,12 +192,13 @@
       <div class="after" id="rAfter"></div>
       <span class="off" id="rOff"></span>
     </div>
+    <div class="incl"><i class="fas fa-info-circle"></i> 위 견적은 시공비+자재비 포함 단가이며, 사다리차 사용료·철거비·추가 시공비는 포함되지 않습니다.</div>
     <div class="cmp" id="cmp" style="display:none"></div>
     <div class="warn" id="rWarn"></div>
     <details><summary>창호별 금액 보기</summary><table id="rTable"></table></details>
     <button type="button" class="go" id="toConsult" style="background:var(--primary);box-shadow:none"><i class="fas fa-ticket"></i> 이 견적으로 상담 신청 · 쿠폰 받기</button>
     <div class="notice">
-      · 입력하신 크기로 계산한 참고 금액입니다. 실측 후 창호 상태·층수·철거 조건에 따라 달라질 수 있습니다.<br>
+      · 입력하신 크기로 계산한 참고 금액입니다. 실측 후 창호 상태·층수에 따라 달라질 수 있습니다.<br>
       · 할인 쿠폰은 상담 신청 후 발급되며, 계약할 때 쿠폰번호를 알려 주시면 계약 금액에서 할인됩니다.
     </div>
   </section>
@@ -279,13 +282,13 @@
   </section>
 </main>
 
-<footer>청개구리샤시 · 010-2322-0949 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.0</span></footer>
+<footer>청개구리샤시 · 010-2322-0949 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.1</span></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.0';
+  var VER = 'od-2.1';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
@@ -348,9 +351,8 @@
       var lo = LOCS.concat(LOCS.indexOf(e.loc) < 0 ? [e.loc] : []).map(function (l) { return '<option' + (l === e.loc ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join('');
       var to = Object.keys(TYPES).map(function (k) { return '<option value="' + k + '"' + (k === e.type ? ' selected' : '') + '>' + TYPES[k] + '</option>'; }).join('');
       var d = document.createElement('div'); d.className = 'win' + (e.q ? ' fromq' : '');
-      d.innerHTML = '<div class="hd"><span class="n">' + (i + 1) + '</span><select class="loc" aria-label="위치">' + lo + '</select><button type="button" class="del" aria-label="삭제"><i class="fas fa-times"></i></button></div>' +
-        '<label class="ph">' + (e.photo ? '<img src="' + e.photo + '" alt=""><button type="button" class="rm" aria-label="사진 지우기"><i class="fas fa-times"></i></button>' : '<i class="fas fa-camera"></i>창호 사진') + '<input type="file" accept="image/*"></label>' +
-        '<select class="ty" aria-label="창호 종류">' + to + '</select>' +
+      d.innerHTML = '<label class="ph">' + (e.photo ? '<img src="' + e.photo + '" alt=""><button type="button" class="rm" aria-label="사진 지우기"><i class="fas fa-times"></i></button>' : '<i class="fas fa-camera"></i>사진') + '<input type="file" accept="image/*"></label>' +
+        '<div class="hd"><span class="n">' + (i + 1) + '</span><select class="loc" aria-label="위치">' + lo + '</select><select class="ty" aria-label="창호 종류">' + to + '</select><button type="button" class="del" aria-label="삭제"><i class="fas fa-times"></i></button></div>' +
         '<div class="sz"><label><span>가로</span><input class="w" type="number" inputmode="decimal" step="0.1" value="' + esc(e.w) + '" aria-label="가로 cm"></label>' +
         '<label><span>세로</span><input class="h" type="number" inputmode="decimal" step="0.1" value="' + esc(e.h) + '" aria-label="세로 cm"></label></div>' +
         '<div class="area">' + areaText(e) + '</div>';
@@ -406,6 +408,7 @@
       renderWins();
       qmsg('<i class="fas fa-check-circle"></i> ' + (quote.company ? esc(quote.company) + ' ' : '') + '견적서에서 창호 <b>' + j.items.length + '곳</b>을 읽었습니다' +
         (quote.total ? ' (합계 ' + nf(quote.total) + '원' + (quote.vat ? ', 부가세 ' + esc(quote.vat) : '') + ')' : '') + '. 파란 칸의 위치·종류·치수가 맞는지 확인해 주세요.', 'ok');
+      $('calc').click();   // 읽은 치수로 견적까지 바로 보여 줌
     }).catch(function () { qmsg('<i class="fas fa-info-circle"></i> 견적서를 읽지 못했습니다. 아래에 치수를 직접 넣어 주세요.', 'bad'); });
   };
 
