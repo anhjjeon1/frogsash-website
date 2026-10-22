@@ -179,7 +179,7 @@
   .spin { display:inline-block; width:14px; height:14px; border:2px solid rgba(0,0,0,.15); border-top-color:var(--primary); border-radius:50%; animation:sp .8s linear infinite; vertical-align:-2px; margin-right:4px; }
   @keyframes sp { to { transform:rotate(360deg); } }
 
-  /* ═══ 디자인 다듬기 (od-2.28): 폰 시인성 우선 ═══ */
+  /* ═══ 디자인 다듬기 (od-2.29): 폰 시인성 우선 ═══ */
   :root { --text:#111827; --text2:#374151; --text3:#5B6472; --ph:#8B95A1; --line:#E3E8EC; --bg:#F1F4F2; --field:#FAFBFC; --ring:rgba(27,107,40,.16); }
   body { font-family:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background:var(--bg); color:var(--text); -webkit-tap-highlight-color:transparent; -webkit-font-smoothing:antialiased; letter-spacing:-.2px; }
   input, select, textarea, button { font-family:inherit; }
@@ -285,6 +285,12 @@
 
   /* 스크롤로 이동할 때 머리띠에 가리지 않게 */
   section, .win, #tel, #send { scroll-margin-top:12px; }
+  /* od-2.29: 돋보기 버튼 축소·좌우 여백 축소 */
+  .wrap { padding:0 3px; }
+  .card { padding:10px 6px; }
+  .win { padding:4px; }
+  .addr button { width:32px; height:32px; align-self:center; border-radius:8px; font-size:13px; }
+  .row.sub { padding-left:26px; padding-right:40px; }   /* 주소 칸 양 끝(번호 18+8, 검색 32+8)에 맞춤 */
   @media (max-width: 380px) { #addr::placeholder { font-size:12.5px; letter-spacing:-.6px; } }
   @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
 </style>
@@ -454,13 +460,13 @@
   </section>
 </main>
 
-<footer id="foot"><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 대표번호 010-2322-0949</div><div>통신판매업신고 제2026-경기의왕-0180호 · 주소 경기도 의왕시 시청로 42, 108동 1702호</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.28</span></div></footer>
+<footer id="foot"><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 대표번호 010-2322-0949</div><div>통신판매업신고 제2026-경기의왕-0180호 · 주소 경기도 의왕시 시청로 42, 108동 1702호</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.29</span></div></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.28';
+  var VER = 'od-2.29';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
