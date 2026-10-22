@@ -1,5 +1,5 @@
 // 원데이 견적 앱: 늘 최신 화면을 먼저 받고, 인터넷이 끊기면 저장해 둔 화면을 보여 줌
-var CACHE = 'oneday-v6';
+var CACHE = 'oneday-v7';
 self.addEventListener('install', function (e) { self.skipWaiting(); });
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (ks) {
