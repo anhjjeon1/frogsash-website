@@ -29,7 +29,15 @@
   header img { width:36px; height:36px; border-radius:8px; background:#fff; object-fit:contain; }
   header h1 { font-size:19px; font-weight:900; margin:0; line-height:1.2; }
   header h1 small { display:block; font-size:12px; font-weight:500; opacity:.85; }
-  .coupon-badge { margin-left:auto; flex:none; background:#fff; color:var(--accent); font-weight:900; border-radius:999px; padding:5px 12px; font-size:13px; }
+  .coupon-badge { margin-left:auto; flex:none; background:#fff; color:var(--accent); font-weight:900; border-radius:999px; padding:5px 12px; font-size:13px; border:0; font-family:inherit; cursor:pointer; }
+  .cpdlg { display:none; position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.45); align-items:flex-start; justify-content:center; padding:64px 10px 10px; }
+  .cpdlg.show { display:flex; }
+  .cpdlg .box { background:#fff; border-radius:14px; width:100%; max-width:420px; padding:14px 14px 12px; box-shadow:0 12px 40px rgba(0,0,0,.25); }
+  .cpdlg h3 { margin:0 0 8px; font-size:16px; color:var(--accent); display:flex; align-items:center; gap:6px; }
+  .cpdlg ol { margin:0; padding-left:20px; font-size:13.5px; line-height:1.6; color:#374151; }
+  .cpdlg ol li { margin-bottom:3px; }
+  .cpdlg .sm { font-size:12px; color:var(--gray); margin:8px 0 0; line-height:1.55; }
+  .cpdlg .x { width:100%; margin-top:10px; height:38px; border:0; border-radius:9px; background:var(--primary); color:#fff; font:inherit; font-weight:700; cursor:pointer; }
   main { padding:8px 0 36px; }
   .card { background:#fff; border-radius:14px; border:1px solid var(--line); box-shadow:0 4px 16px rgba(0,0,0,.05); padding:10px 8px; margin-bottom:8px; }
   .card h2 { font-size:16.5px; margin:0 0 8px; display:flex; align-items:center; gap:8px; }
@@ -169,9 +177,23 @@
   <div class="wrap top">
     <img src="/images/logo.jpg" alt="">
     <h1>원데이 창호견적<small>청개구리샤시 · 무료 자동견적</small></h1>
-    <span class="coupon-badge"><i class="fas fa-ticket"></i> <span class="pctv">5</span>% 쿠폰</span>
+    <button type="button" class="coupon-badge" id="cpBtn" aria-haspopup="dialog"><i class="fas fa-ticket"></i> <span class="pctv">5</span>% 쿠폰 <i class="fas fa-circle-question" style="font-size:11px;opacity:.7"></i></button>
   </div>
 </header>
+
+<div class="cpdlg" id="cpDlg" role="dialog" aria-modal="true" aria-labelledby="cpT">
+  <div class="box">
+    <h3 id="cpT"><i class="fas fa-ticket"></i><span><span class="pctv">5</span>% 시공 할인 쿠폰 안내</span></h3>
+    <ol>
+      <li>창호 크기를 넣고 <b>무료 견적</b>을 확인합니다.</li>
+      <li>견적 아래 <b>[상담 신청 · 쿠폰 받기]</b>로 이름·연락처를 보내면 <b>쿠폰번호가 바로 발급</b>됩니다.</li>
+      <li>쿠폰은 이미지로 저장하거나 번호를 복사해 두세요.</li>
+      <li>청개구리샤시 제휴 업체와 <b>계약할 때 쿠폰번호를 알려 주시면</b> 계약 금액에서 <b><span class="pctv">5</span>% 할인</b>됩니다.</li>
+    </ol>
+    <p class="sm">· 쿠폰은 한 번만 쓸 수 있고, 현금으로 바꾸거나 다른 사람에게 넘길 수 없습니다.<br>· 계약할 때 번호를 알리지 않으면 할인이 적용되지 않을 수 있습니다.<br>· 문의: 010-2322-0949</p>
+    <button type="button" class="x" id="cpClose">확인</button>
+  </div>
+</div>
 
 <main class="wrap">
   <!-- ① 집 정보 -->
@@ -317,13 +339,13 @@
   </section>
 </main>
 
-<footer id="foot"><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 대표번호 010-2322-0949</div><div>통신판매업신고 제2026-경기의왕-0180호 · 주소 경기도 의왕시 시청로 42, 108동 1702호</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.22</span></div></footer>
+<footer id="foot"><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 대표번호 010-2322-0949</div><div>통신판매업신고 제2026-경기의왕-0180호 · 주소 경기도 의왕시 시청로 42, 108동 1702호</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.23</span></div></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.22';
+  var VER = 'od-2.23';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
@@ -590,6 +612,11 @@
   }
   $('addr').onclick = function () { if (this.hasAttribute('readonly')) openAddr(); };
   $('addrBtn').onclick = openAddr;
+
+  /* ── 상단 쿠폰 배지: 누르면 쿠폰 안내 ── */
+  $('cpBtn').onclick = function () { $('cpDlg').classList.add('show'); };
+  $('cpClose').onclick = function () { $('cpDlg').classList.remove('show'); };
+  $('cpDlg').onclick = function (e) { if (e.target === this) this.classList.remove('show'); };
 
   /* ── 맨 아래 사업자 정보: 3줄 안에 들어가게 글자 크기 맞춤 ── */
   function fitFoot() {
