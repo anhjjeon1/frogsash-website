@@ -58,27 +58,27 @@
   .qmsg { font-size:13px; margin:6px 2px 0; }
   .qmsg:empty { display:none; }
   .qmsg.ok { color:var(--primary-dark); } .qmsg.bad { color:#B45309; }
-  .whead { display:grid; grid-template-columns:70px 1fr 112px; gap:5px; padding:8px 7px 3px; font-size:11.5px; color:var(--gray); font-weight:700; text-align:center; }
+  .whead { display:grid; grid-template-columns:1fr 94px 90px; gap:5px; padding:8px 7px 3px; font-size:11.5px; color:var(--gray); font-weight:700; text-align:center; }
   .whead span:nth-child(2) { text-align:left; padding-left:4px; }
   /* 창호 카드 */
   /* 창호 1곳 = 한 줄: 왼쪽 사진, 오른쪽 위치·종류 / 가로·세로 */
   /* 창호 1곳 = 한 줄: 사진 | 위치·종류 | 가로 | 세로 | 삭제 */
   .wins { display:flex; flex-direction:column; gap:5px; }
-  .win { border:1px solid var(--line); border-radius:11px; padding:5px 6px; background:#FCFDFC; display:grid; grid-template-columns:70px 1fr 112px; gap:5px; align-items:center; min-width:0; }
+  .win { border:1px solid var(--line); border-radius:11px; padding:5px 6px; background:#FCFDFC; display:grid; grid-template-columns:1fr 94px 90px; gap:5px; align-items:center; min-width:0; }
   .win .sz { display:flex; flex-direction:column; gap:4px; }
   .win .sz label { position:relative; display:block; }
   .win .sz label span { position:absolute; left:7px; top:50%; transform:translateY(-50%); font-size:11.5px; color:var(--gray); pointer-events:none; }
   .win .lt { display:flex; flex-direction:column; gap:4px; min-width:0; }
-  .win .lt select { height:38px; padding:4px 16px 4px 7px; font-size:14.5px; border-radius:7px; background-position:right 4px center; }
+  .win .lt select { height:38px; padding:4px 13px 4px 5px; font-size:14px; letter-spacing:-.4px; border-radius:7px; background-position:right 3px center; background-size:8px; }
   .win .lt .loc { font-weight:700; }
   .win .lt .ty { font-size:13px; color:#374151; }
-  .ph { position:relative; width:70px; height:80px; border-radius:10px; background:linear-gradient(135deg,#EEF2EF,#E2E8E3); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#6B7F70; font-size:10px; cursor:pointer; overflow:hidden; }
+  .ph { position:relative; width:100%; height:80px; border-radius:10px; background:linear-gradient(135deg,#EEF2EF,#E2E8E3); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#6B7F70; font-size:10px; cursor:pointer; overflow:hidden; }
   .ph i { font-size:21px; }
   .ph .n { position:absolute; left:3px; top:3px; z-index:3; min-width:20px; height:20px; padding:0 5px; border-radius:10px; background:var(--primary); color:#fff; font-size:12px; font-weight:900; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(0,0,0,.3); pointer-events:none; }
   .ph input { position:absolute; inset:0; opacity:0; cursor:pointer; z-index:2; }
   .ph img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
   .ph .rm { position:absolute; top:3px; right:3px; z-index:3; width:20px; height:20px; border-radius:50%; border:0; background:rgba(0,0,0,.55); color:#fff; font-size:9px; cursor:pointer; padding:0; }
-  .win .w, .win .h { height:38px; padding:2px 6px 2px 32px; font-size:15.5px; font-weight:700; text-align:right; border-radius:7px; }
+  .win .w, .win .h { height:38px; padding:2px 5px 2px 30px; font-size:15.5px; font-weight:700; text-align:right; border-radius:7px; }
   .incl { margin-top:10px; border-radius:10px; background:#FFF7ED; border:1px solid #FED7AA; padding:9px 12px; font-size:13.5px; color:#9A3412; font-weight:700; line-height:1.6; }
   .win.fromq { border-color:#93C5FD; background:#F5F9FF; }
   .addwin { width:100%; margin-top:10px; padding:11px; border:1.5px dashed #9CC9A2; border-radius:12px; background:none; color:var(--primary-dark); font:inherit; font-weight:700; cursor:pointer; }
@@ -285,13 +285,13 @@
   </section>
 </main>
 
-<footer>청개구리샤시 · 010-2322-0949 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.5</span></footer>
+<footer>청개구리샤시 · 010-2322-0949 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.6</span></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.5';
+  var VER = 'od-2.6';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
