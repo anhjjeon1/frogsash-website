@@ -58,13 +58,13 @@
   .qmsg { font-size:13px; margin:6px 2px 0; }
   .qmsg:empty { display:none; }
   .qmsg.ok { color:var(--primary-dark); } .qmsg.bad { color:#B45309; }
-  .whead { display:grid; grid-template-columns:52px 1fr 112px 22px; gap:4px; padding:8px 7px 3px; font-size:11.5px; color:var(--gray); font-weight:700; text-align:center; }
-  .whead span:nth-child(2) { text-align:left; padding-left:4px; }
+  .whead { display:grid; grid-template-columns:16px 64px 1fr 112px 22px; gap:4px; padding:8px 7px 3px; font-size:11.5px; color:var(--gray); font-weight:700; text-align:center; }
+  .whead span:nth-child(3) { text-align:left; padding-left:4px; }
   /* 창호 카드 */
   /* 창호 1곳 = 한 줄: 왼쪽 사진, 오른쪽 위치·종류 / 가로·세로 */
   /* 창호 1곳 = 한 줄: 사진 | 위치·종류 | 가로 | 세로 | 삭제 */
   .wins { display:flex; flex-direction:column; gap:5px; }
-  .win { border:1px solid var(--line); border-radius:11px; padding:5px 6px; background:#FCFDFC; display:grid; grid-template-columns:52px 1fr 112px 22px; gap:4px; align-items:center; min-width:0; }
+  .win { border:1px solid var(--line); border-radius:11px; padding:5px 6px; background:#FCFDFC; display:grid; grid-template-columns:16px 64px 1fr 112px 22px; gap:4px; align-items:center; min-width:0; }
   .win .sz { display:flex; flex-direction:column; gap:3px; }
   .win .sz label { position:relative; display:block; }
   .win .sz label span { position:absolute; left:7px; top:50%; transform:translateY(-50%); font-size:11.5px; color:var(--gray); pointer-events:none; }
@@ -73,10 +73,9 @@
   .win .lt .loc { font-weight:700; }
   .win .lt .ty { font-size:13px; color:#374151; }
   .win .del { border:0; background:none; color:#D92D20; cursor:pointer; font-size:14px; padding:6px 0; }
-  .ph { position:relative; width:52px; height:52px; border-radius:9px; background:linear-gradient(135deg,#EEF2EF,#E2E8E3); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#6B7F70; font-size:10px; cursor:pointer; overflow:hidden; }
-  .ph i { font-size:17px; }
-  .ph .n { position:absolute; left:3px; top:2px; font-size:11px; font-weight:900; color:var(--primary); z-index:1; }
-  .ph:has(img) .n { color:#fff; text-shadow:0 0 3px #000; }
+  .ph { position:relative; width:64px; height:64px; border-radius:9px; background:linear-gradient(135deg,#EEF2EF,#E2E8E3); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#6B7F70; font-size:10px; cursor:pointer; overflow:hidden; }
+  .ph i { font-size:19px; }
+  .win .n { font-size:15px; font-weight:900; color:var(--primary); text-align:center; }
   .ph input { position:absolute; inset:0; opacity:0; cursor:pointer; z-index:2; }
   .ph img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
   .ph .rm { position:absolute; top:2px; right:2px; z-index:3; width:18px; height:18px; border-radius:50%; border:0; background:rgba(0,0,0,.55); color:#fff; font-size:9px; cursor:pointer; padding:0; }
@@ -179,7 +178,7 @@
       <i class="fas fa-chevron-right go-ic"></i>
     </label>
     <div class="qmsg" id="qmsg"></div>
-    <div class="whead"><span>사진</span><span>위치 · 창호 종류</span><span>가로 · 세로 (cm)</span><span></span></div>
+    <div class="whead"><span>No</span><span>사진</span><span>위치 · 창호 종류</span><span>가로 · 세로 (cm)</span><span></span></div>
     <div class="wins" id="wins"></div>
     <button type="button" class="addwin" id="addWin"><i class="fas fa-plus"></i> 창호 추가</button>
     <button type="button" class="go" id="calc"><i class="fas fa-bolt"></i> 무료 견적 보기</button>
@@ -287,13 +286,13 @@
   </section>
 </main>
 
-<footer>청개구리샤시 · 010-2322-0949 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.3</span></footer>
+<footer>청개구리샤시 · 010-2322-0949 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.4</span></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.3';
+  var VER = 'od-2.4';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
@@ -350,7 +349,7 @@
       var lo = LOCS.concat(LOCS.indexOf(e.loc) < 0 ? [e.loc] : []).map(function (l) { return '<option' + (l === e.loc ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join('');
       var to = Object.keys(TYPES).map(function (k) { return '<option value="' + k + '"' + (k === e.type ? ' selected' : '') + '>' + TYPES[k] + '</option>'; }).join('');
       var d = document.createElement('div'); d.className = 'win' + (e.q ? ' fromq' : '');
-      d.innerHTML = '<label class="ph"><span class="n">' + (i + 1) + '</span>' + (e.photo ? '<img src="' + e.photo + '" alt=""><button type="button" class="rm" aria-label="사진 지우기"><i class="fas fa-times"></i></button>' : '<i class="fas fa-camera"></i>사진') + '<input type="file" accept="image/*"></label>' +
+      d.innerHTML = '<span class="n">' + (i + 1) + '</span><label class="ph">' + (e.photo ? '<img src="' + e.photo + '" alt=""><button type="button" class="rm" aria-label="사진 지우기"><i class="fas fa-times"></i></button>' : '<i class="fas fa-camera"></i>사진') + '<input type="file" accept="image/*"></label>' +
         '<div class="lt"><select class="loc" aria-label="위치">' + lo + '</select><select class="ty" aria-label="창호 종류">' + to + '</select></div>' +
         '<div class="sz"><label><span>가로</span><input class="w" type="number" inputmode="decimal" step="0.1" placeholder="cm" value="' + esc(e.w) + '" aria-label="가로 cm"></label>' +
         '<label><span>세로</span><input class="h" type="number" inputmode="decimal" step="0.1" placeholder="cm" value="' + esc(e.h) + '" aria-label="세로 cm"></label></div>' +
