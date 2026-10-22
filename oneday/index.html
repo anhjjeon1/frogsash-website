@@ -50,11 +50,11 @@
   #addr::placeholder { color:#9CA3AF; }
   #res:invalid, #py:invalid { color:#9CA3AF; }
   #res option, #py option { color:var(--dark); }
-  .row.sub { padding-left:26px; padding-right:54px; }   /* 주소 칸 양 끝(번호 18+8, 검색 46+8)에 맞춤 */
+  .row.sub { padding-left:26px; padding-right:46px; }   /* 주소 칸 양 끝(번호 18+8, 검색 38+8)에 맞춤 */
   .row + .row { margin-top:6px; }
   .win .w::placeholder, .win .h::placeholder { font-weight:400; font-size:14px; color:#9CA3AF; }
   .addr input { cursor:pointer; }
-  .addr button { flex:none; width:46px; border:0; border-radius:10px; background:var(--primary); color:#fff; font-size:16px; cursor:pointer; }
+  .addr button { flex:none; width:38px; border:0; border-radius:9px; background:var(--primary); color:#fff; font-size:14px; cursor:pointer; }
   .hint { font-size:12.5px; color:var(--gray); margin-top:6px; }
   /* 견적서 사진 */
   .quote { display:flex; gap:10px; align-items:center; border:1.5px dashed #7DBB86; background:var(--soft); border-radius:12px; padding:8px 10px; cursor:pointer; position:relative; }
@@ -300,13 +300,13 @@
   </section>
 </main>
 
-<footer>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 통신판매업신고 제2026-경기의왕-0180호 · 대표번호 010-2322-0949 · 주소 경기도 의왕시 시청로 42, 108동 1702호(고천동, 의왕시청역 풍경채 어바니티) · toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · © 2026 · <span id="ver">od-2.18</span></footer>
+<footer>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 통신판매업신고 제2026-경기의왕-0180호 · 대표번호 010-2322-0949 · 주소 경기도 의왕시 시청로 42, 108동 1702호(고천동, 의왕시청역 풍경채 어바니티) · toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · © 2026 · <span id="ver">od-2.19</span></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.18';
+  var VER = 'od-2.19';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
