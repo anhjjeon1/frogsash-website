@@ -300,13 +300,13 @@
   </section>
 </main>
 
-<footer>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 통신판매업신고 제2026-경기의왕-0180호 · 대표번호 010-2322-0949 · 주소 경기도 의왕시 시청로 42, 108동 1702호(고천동, 의왕시청역 풍경채 어바니티) · toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · © 2026 · <span id="ver">od-2.16</span></footer>
+<footer>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 통신판매업신고 제2026-경기의왕-0180호 · 대표번호 010-2322-0949 · 주소 경기도 의왕시 시청로 42, 108동 1702호(고천동, 의왕시청역 풍경채 어바니티) · toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · © 2026 · <span id="ver">od-2.17</span></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.16';
+  var VER = 'od-2.17';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
@@ -397,9 +397,12 @@
     shrink(f, 1800, 0.85).then(function (u) {
       quote = { photo: u, company: '', total: 0, vat: '' };
       $('quoteIc').innerHTML = '<img src="' + u + '" alt="">';
-      if (DEMO) return { ok: true, company: '예시창호', total: 9800000, vat: '포함', items: [
-        { loc: '거실', w: 4500, h: 2160, type: 'S_BAL', price: 0 }, { loc: '안방 발코니', w: 3400, h: 1900, type: 'S_BAL', price: 0 },
-        { loc: '침실2', w: 2335, h: 2150, type: '', price: 0 }, { loc: '주방 중문', w: 1170, h: 2140, type: 'TURNING', price: 0 }] };
+      if (DEMO) return { ok: true, company: '예시창호', win_total: 8215000, total: 11016500, vat: '포함', items: [
+        { loc: '거실발코니', w: 0, h: 0, type: 'S_BAL', price: 1755000 }, { loc: '안방발코니', w: 0, h: 0, type: 'S_BAL', price: 1380000 },
+        { loc: '안방내창', w: 0, h: 0, type: 'D_IN', price: 1333000 }, { loc: '거실분합', w: 0, h: 0, type: 'SYS', price: 1140000 },
+        { loc: '입구방내창', w: 0, h: 0, type: 'D_IN', price: 431000 }, { loc: '중간방발코니', w: 0, h: 0, type: 'S_BAL', price: 450000 },
+        { loc: '중간방분합', w: 0, h: 0, type: 'SYS', price: 780000 }, { loc: '주방', w: 0, h: 0, type: 'S_IN', price: 206000 },
+        { loc: '주방옆발코니', w: 0, h: 0, type: 'S_BAL', price: 600000 }] };
       return ready.then(function () {
         return fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ kind: 'oneday_read', image: u.split(',')[1] }) }).then(function (r) { return r.json(); });
@@ -410,27 +413,37 @@
         qmsg('<i class="fas fa-info-circle"></i> ' + why + ' 견적서 사진은 상담 신청 때 함께 보내집니다. 아래에 치수를 직접 넣어 주세요.', 'bad'); return;
       }
       quote.company = j.company || ''; quote.total = j.total || 0; quote.vat = j.vat || '';
-      if (!j.items.length) { qmsg('<i class="fas fa-info-circle"></i> 창호 치수를 찾지 못했습니다' + (j.note ? ' (' + esc(j.note) + ')' : '') + '. 글자가 잘 보이게 다시 찍거나, 아래에 직접 넣어 주세요.', 'bad'); return; }
+      var psum = j.items.reduce(function (a, it) { return a + (it.price || 0); }, 0);
+      quote.win = psum || j.win_total || 0;   // 비교는 창호 품목 금액끼리(철거·장비·보양 등 부대비 제외)
+      if (!j.items.length) { qmsg('<i class="fas fa-info-circle"></i> 견적서에서 창호 품목을 찾지 못했습니다' + (j.note ? ' (' + esc(j.note) + ')' : '') + '. 글자가 잘 보이게 다시 찍거나, 아래에 직접 넣어 주세요.', 'bad'); return; }
       var typed = wins.some(function (e) { return +e.w > 0 || +e.h > 0; });
       if (typed && !confirm('입력하신 치수를 견적서 내용으로 바꿀까요?')) return;
       var old = wins; wins = j.items.map(function (it) {
         var loc = it.loc || '기타', w = newWin(loc);
         if (it.type) w.type = it.type;
-        w.w = String(Math.round(it.w) / 10); w.h = String(Math.round(it.h) / 10); w.q = true;
+        w.w = it.w ? String(Math.round(it.w) / 10) : ''; w.h = it.h ? String(Math.round(it.h) / 10) : ''; w.q = true; w.qp = it.price || 0;
         var same = old.filter(function (o) { return o.photo && o.loc === loc; })[0]; if (same) w.photo = same.photo;
         return w;
       });
       renderWins();
-      qmsg('<i class="fas fa-check-circle"></i> ' + (quote.company ? esc(quote.company) + ' ' : '') + '견적서에서 창호 <b>' + j.items.length + '곳</b>을 읽었습니다' +
-        (quote.total ? ' (합계 ' + nf(quote.total) + '원' + (quote.vat ? ', 부가세 ' + esc(quote.vat) : '') + ')' : '') + '. 파란 칸의 위치·종류·치수가 맞는지 확인해 주세요.', 'ok');
-      $('calc').click();   // 읽은 치수로 견적까지 바로 보여 줌
+      var nosize = wins.filter(function (e) { return !(+e.w > 0 && +e.h > 0); }).length;
+      var head = '<i class="fas fa-check-circle"></i> ' + (quote.company ? esc(quote.company) + ' ' : '') + '견적서에서 창호 <b>' + j.items.length + '곳</b>을 읽었습니다' +
+        (quote.win ? ' (창호 금액 ' + nf(quote.win) + '원)' : '') + '. ';
+      if (nosize) {
+        qmsg(head + '<b style="color:#B45309">견적서에 치수가 없어 위치·종류만 채웠습니다. 파란 칸에 가로·세로(cm)를 넣고 [무료 견적 보기]를 눌러 주세요.</b>', 'ok');
+        var first = Array.prototype.filter.call(document.querySelectorAll('.win .w'), function (x) { return !x.value; })[0];
+        if (first) { first.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(function () { first.focus(); }, 400); }
+      } else {
+        qmsg(head + '파란 칸의 위치·종류·치수가 맞는지 확인해 주세요.', 'ok');
+        $('calc').click();   // 읽은 치수로 견적까지 바로 보여 줌
+      }
     }).catch(function () { qmsg('<i class="fas fa-info-circle"></i> 견적서를 읽지 못했습니다. 아래에 치수를 직접 넣어 주세요.', 'bad'); });
   };
 
   /* ── 계산 ── */
   function qty(unit, w, h) { return unit === '개' ? 1 : unit === '㎡' ? w * h / 10000 : w * h / 900; }
   function items() {
-    return wins.map(function (e) { return { loc: e.loc, type: e.type, w: Math.round((+e.w || 0) * 10) / 10, h: Math.round((+e.h || 0) * 10) / 10 }; })
+    return wins.map(function (e) { return { loc: e.loc, type: e.type, w: Math.round((+e.w || 0) * 10) / 10, h: Math.round((+e.h || 0) * 10) / 10, qp: e.qp || 0 }; })
       .filter(function (it) { return it.w > 0 && it.h > 0; });
   }
   $('calc').onclick = function () {
@@ -447,11 +460,11 @@
   };
 
   function show(its) {
-    var total = 0, miss = 0, rows = '';
+    var total = 0, miss = 0, rows = '', hasQ = its.some(function (it) { return it.qp; });
     its.forEach(function (it) {
       var s = P.spec[it.type], p = s ? Math.round(s.price * qty(s.unit, it.w, it.h)) : 0;
       if (!s) miss++; total += p;
-      rows += '<tr><td>' + esc(it.loc) + '<br><span style="color:#9CA3AF;font-size:12px">' + esc(TYPES[it.type]) + (s && s.spec ? ' · ' + esc(s.spec) : '') + '</span></td><td>' + it.w + '×' + it.h + '</td><td class="r">' + (s ? nf(p) : '<span style="color:#B45309">문의</span>') + '</td></tr>';
+      rows += '<tr><td>' + esc(it.loc) + '<br><span style="color:#9CA3AF;font-size:12px">' + esc(TYPES[it.type]) + (s && s.spec ? ' · ' + esc(s.spec) : '') + '</span></td><td>' + it.w + '×' + it.h + '</td>' + (hasQ ? '<td class="r" style="color:#6B7280">' + (it.qp ? nf(it.qp) : '-') + '</td>' : '') + '<td class="r">' + (s ? nf(p) : '<span style="color:#B45309">문의</span>') + '</td></tr>';
     });
     var after = total - Math.round(total * P.disc / 100);
     last = { items: its, total: total, after: after };
@@ -461,14 +474,19 @@
     $('rOff').textContent = P.disc > 0 && total ? '쿠폰 -' + P.disc + '% (' + nf(total - after) + '원 할인)' : '';
     $('rOff').style.display = $('rOff').textContent ? '' : 'none';
     $('rWarn').innerHTML = miss ? '<i class="fas fa-exclamation-triangle"></i> ' + miss + '곳은 단가표에 없는 종류라 금액에서 빠졌습니다. 상담 때 따로 안내드립니다.' : '';
-    $('rTable').innerHTML = '<tr><th>위치</th><th>크기(cm)</th><th class="r">금액(원)</th></tr>' + rows + '<tr><td colspan="2"><b>합계</b></td><td class="r"><b>' + nf(total) + '</b></td></tr>';
+    var qsum = its.reduce(function (a, it) { return a + (it.qp || 0); }, 0);
+    $('rTable').innerHTML = '<tr><th>위치</th><th>크기(cm)</th>' + (hasQ ? '<th class="r">받은 견적</th>' : '') + '<th class="r">청개구리</th></tr>' + rows +
+      '<tr><td colspan="2"><b>합계</b></td>' + (hasQ ? '<td class="r" style="color:#6B7280"><b>' + nf(qsum) + '</b></td>' : '') + '<td class="r"><b>' + nf(total) + '</b></td></tr>';
     var cmp = $('cmp');
-    if (quote && quote.total > 0 && total > 0) {
-      var diff = quote.total - after;
-      cmp.innerHTML = '<div class="r"><span>받으신 견적' + (quote.company ? ' (' + esc(quote.company) + ')' : '') + '</span><b>' + nf(quote.total) + '원</b></div>' +
+    // 견적서에서 읽은 창호가 모두 치수까지 들어갔을 때만 비교(일부만 넣으면 금액이 적게 나와 잘못 비교됨)
+    var allQ = wins.filter(function (e) { return e.q; }).every(function (e) { return +e.w > 0 && +e.h > 0; });
+    var qwin = hasQ ? qsum : (quote && quote.win) || 0;
+    if (quote && qwin > 0 && total > 0 && allQ) {
+      var diff = qwin - after;
+      cmp.innerHTML = '<div class="r"><span>받으신 견적 창호 금액' + (quote.company ? ' (' + esc(quote.company) + ')' : '') + '</span><b>' + nf(qwin) + '원</b></div>' +
         '<div class="r"><span>청개구리 쿠폰 적용가</span><b>' + nf(after) + '원</b></div>' +
-        (diff > 0 ? '<div class="save">' + nf(diff) + '원 (' + Math.round(diff / quote.total * 100) + '%) 낮습니다</div>' : '<div class="save" style="color:#374151">실측 후 정확한 비교 견적을 드립니다</div>') +
-        '<div style="font-size:11.5px;color:var(--gray);margin-top:4px">받으신 견적의 품목·사양·부가세 포함 여부가 다를 수 있어 상담 때 같은 조건으로 다시 비교해 드립니다.</div>';
+        (diff > 0 ? '<div class="save">' + nf(diff) + '원 (' + Math.round(diff / qwin * 100) + '%) 낮습니다</div>' : '<div class="save" style="color:#374151">실측 후 정확한 비교 견적을 드립니다</div>') +
+        '<div style="font-size:11.5px;color:var(--gray);margin-top:4px">철거·장비·보양 같은 부대비를 뺀 창호 금액끼리 비교했습니다. 유리 사양·부가세 포함 여부가 다를 수 있어 상담 때 같은 조건으로 다시 비교해 드립니다.</div>';
       cmp.style.display = '';
     } else cmp.style.display = 'none';
     $('demoFlag').style.display = DEMO ? 'block' : 'none';
@@ -498,7 +516,7 @@
     var photos = [];
     if (quote && quote.photo) photos.push({ name: '받은 견적서', data: quote.photo.split(',')[1] });
     wins.forEach(function (e) { if (e.photo) photos.push({ name: e.loc + ' ' + TYPES[e.type], data: e.photo.split(',')[1] }); });
-    var qtxt = quote && (quote.total || quote.company) ? [quote.company, quote.total ? nf(quote.total) + '원' : '', quote.vat ? '부가세 ' + quote.vat : ''].filter(Boolean).join(' ') : '';
+    var qtxt = quote && (quote.total || quote.company) ? [quote.company, quote.win ? '창호 ' + nf(quote.win) + '원' : '', quote.total ? '최종 ' + nf(quote.total) + '원' : '', quote.vat ? '부가세 ' + quote.vat : ''].filter(Boolean).join(' ') : '';
     var data = { kind: 'oneday', name: $('name').value.trim(), tel: $('tel').value.trim(), addr: $('addr').value.trim(), res: $('res').value, py: $('py').value,
       items: its, when: radio('when'), memo: $('memo').value.trim(), quote: qtxt, photos: photos.slice(0, 10),
       t1: $('t1').checked, t2: $('t2').checked, website: $('website').value };
