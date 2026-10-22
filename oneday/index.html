@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>원데이 창호견적 | 청개구리샤시</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="받으신 창호 견적서 사진만 올리면 치수가 자동으로 들어가고, 청개구리 원데이시공 견적과 할인 쿠폰을 바로 받습니다.">
+<meta name="theme-color" content="#1B6B28">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="원데이견적">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root { --primary:#1B6B28; --primary-light:#43A047; --primary-dark:#0A4A14; --accent:#FF6B35; --dark:#111827; --gray:#6B7280; --line:#E5E7EB; --bg:#F4F7F5; --soft:#F0F7F1; }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  body { margin:0; font-family:'Noto Sans KR', -apple-system, sans-serif; background:var(--bg); color:var(--dark); line-height:1.55; word-break:keep-all; overflow-wrap:break-word; }
+  a { color:inherit; }
+  .wrap { max-width:720px; margin:0 auto; padding:0 12px; }
+  header { background:linear-gradient(135deg, var(--primary-dark), var(--primary)); color:#fff; padding:14px 0 16px; padding-top:calc(14px + env(safe-area-inset-top)); }
+  header .top { display:flex; align-items:center; gap:10px; }
+  header img { width:36px; height:36px; border-radius:8px; background:#fff; object-fit:contain; }
+  header h1 { font-size:19px; font-weight:900; margin:0; line-height:1.2; }
+  header h1 small { display:block; font-size:12px; font-weight:500; opacity:.85; }
+  .coupon-badge { margin-left:auto; flex:none; background:#fff; color:var(--accent); font-weight:900; border-radius:999px; padding:5px 12px; font-size:13px; }
+  main { padding:14px 0 40px; }
+  .card { background:#fff; border-radius:16px; border:1px solid var(--line); box-shadow:0 6px 24px rgba(0,0,0,.05); padding:16px 14px; margin-bottom:14px; }
+  .card h2 { font-size:17px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
+  .card h2 .no { width:26px; height:26px; border-radius:50%; background:var(--primary); color:#fff; font-size:13px; display:flex; align-items:center; justify-content:center; flex:none; }
+  .card h2 .cnt { margin-left:auto; font-size:13px; color:var(--gray); font-weight:500; }
+  input[type=text], input[type=tel], input[type=number], select, textarea { width:100%; padding:10px 12px; border:1.5px solid #D1D5DB; border-radius:10px; font:inherit; font-size:15px; background:#fff; color:var(--dark); }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:var(--primary-light); box-shadow:0 0 0 3px rgba(67,160,71,.15); }
+  select { appearance:none; -webkit-appearance:none; padding-right:28px; background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center; }
+  .row { display:flex; gap:8px; }
+  .row + .row { margin-top:8px; }
+  .row > * { flex:1; min-width:0; }
+  .addr input { cursor:pointer; }
+  .addr button { flex:none; width:46px; border:0; border-radius:10px; background:var(--primary); color:#fff; font-size:16px; cursor:pointer; }
+  .hint { font-size:12.5px; color:var(--gray); margin-top:6px; }
+  /* 견적서 사진 */
+  .quote { display:flex; gap:12px; align-items:center; border:2px dashed #9CC9A2; background:var(--soft); border-radius:14px; padding:14px; cursor:pointer; position:relative; }
+  .quote input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+  .quote .ic { flex:none; width:52px; height:52px; border-radius:12px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--primary); overflow:hidden; }
+  .quote .ic img { width:100%; height:100%; object-fit:cover; }
+  .quote b { font-size:15.5px; color:var(--primary-dark); }
+  .quote span { display:block; font-size:12.5px; color:#4B5563; }
+  .qmsg { font-size:13.5px; margin:8px 2px 0; min-height:0; }
+  .qmsg.ok { color:var(--primary-dark); } .qmsg.bad { color:#B45309; }
+  .or { text-align:center; font-size:12.5px; color:var(--gray); margin:12px 0 10px; }
+  /* 창호 카드 */
+  .wins { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .win { border:1px solid var(--line); border-radius:14px; padding:8px; background:#FCFDFC; display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .win .hd { display:flex; align-items:center; gap:4px; }
+  .win .n { font-weight:900; color:var(--primary); font-size:14px; width:18px; text-align:center; flex:none; }
+  .win .hd select { padding:7px 22px 7px 8px; font-size:14px; font-weight:700; background-position:right 6px center; }
+  .win .del { flex:none; border:0; background:none; color:#D92D20; cursor:pointer; font-size:14px; padding:6px 4px; }
+  .ph { position:relative; aspect-ratio:4/3; border-radius:10px; background:linear-gradient(135deg,#EEF2EF,#E2E8E3); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#6B7F70; font-size:12.5px; cursor:pointer; overflow:hidden; }
+  .ph i { font-size:22px; margin-bottom:2px; }
+  .ph input { position:absolute; inset:0; opacity:0; cursor:pointer; z-index:2; }
+  .ph img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .ph .rm { position:absolute; top:5px; right:5px; z-index:3; width:24px; height:24px; border-radius:50%; border:0; background:rgba(0,0,0,.55); color:#fff; font-size:12px; cursor:pointer; }
+  .win .ty { padding:7px 22px 7px 8px; font-size:13.5px; background-position:right 6px center; }
+  .sz { display:flex; gap:4px; align-items:center; }
+  .sz label { flex:1; min-width:0; position:relative; }
+  .sz label span { position:absolute; left:7px; top:50%; transform:translateY(-50%); font-size:11px; color:var(--gray); pointer-events:none; }
+  .sz input { padding:8px 4px 8px 28px; font-size:15px; text-align:center; }
+  .sz .x { color:var(--gray); font-size:12px; flex:none; }
+  .win .area { font-size:11.5px; color:var(--gray); text-align:center; }
+  .win .area b { color:var(--primary-dark); }
+  .win.fromq { border-color:#93C5FD; background:#F5F9FF; }
+  .addwin { width:100%; margin-top:10px; padding:11px; border:1.5px dashed #9CC9A2; border-radius:12px; background:none; color:var(--primary-dark); font:inherit; font-weight:700; cursor:pointer; }
+  .go { width:100%; margin-top:14px; padding:15px; border:0; border-radius:12px; background:linear-gradient(135deg, var(--accent), #F25C1F); color:#fff; font:inherit; font-size:17.5px; font-weight:900; cursor:pointer; box-shadow:0 8px 20px rgba(255,107,53,.3); }
+  .go:disabled { background:#D1D5DB; box-shadow:none; cursor:not-allowed; }
+  .err { color:#D92D20; font-size:13.5px; margin-top:8px; }
+  /* 결과 */
+  #result, #consult { display:none; } #result.show, #consult.show { display:block; }
+  .basis { font-size:12.5px; color:var(--gray); margin:-6px 0 10px; }
+  .big { text-align:center; border:1.5px solid var(--primary-light); background:linear-gradient(180deg,#F6FBF7,#fff); border-radius:14px; padding:16px 10px; }
+  .big .lb { font-size:13px; color:#374151; font-weight:700; }
+  .big .orig { color:var(--gray); text-decoration:line-through; font-size:15px; }
+  .big .after { font-size:30px; font-weight:900; color:var(--accent); letter-spacing:-.5px; line-height:1.25; }
+  .big .off { display:inline-block; font-size:12.5px; font-weight:700; color:#fff; background:var(--accent); border-radius:6px; padding:1px 8px; margin-top:4px; }
+  .cmp { margin-top:10px; border-radius:12px; background:#EFF6FF; border:1px solid #BFDBFE; padding:10px 12px; font-size:14px; }
+  .cmp .r { display:flex; justify-content:space-between; gap:8px; }
+  .cmp .save { margin-top:6px; padding-top:6px; border-top:1px dashed #BFDBFE; font-weight:900; color:#1D4ED8; text-align:right; }
+  .warn { font-size:12.5px; color:#B45309; margin-top:8px; }
+  details { margin-top:10px; }
+  summary { font-size:13.5px; color:var(--gray); cursor:pointer; font-weight:700; }
+  table { width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+  th, td { border-top:1px solid var(--line); padding:6px 4px; text-align:left; vertical-align:top; }
+  td.r, th.r { text-align:right; white-space:nowrap; }
+  .notice { font-size:12.5px; color:var(--gray); background:#F9FAFB; border-radius:10px; padding:10px 12px; margin-top:12px; line-height:1.7; }
+  .demo-flag { display:none; background:#FEF3C7; color:#92400E; border:1px solid #FCD34D; border-radius:10px; padding:8px 12px; font-size:13px; margin-bottom:12px; font-weight:700; }
+  /* 상담 */
+  #consult { border:2px solid var(--primary-light); }
+  .field { margin-bottom:12px; }
+  .field > label, .flabel { display:block; font-weight:700; font-size:14px; margin-bottom:5px; }
+  .req { color:#D92D20; margin-left:2px; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .chips label { font-weight:500; display:flex; align-items:center; gap:5px; border:1.5px solid #D1D5DB; border-radius:999px; padding:6px 12px; cursor:pointer; font-size:14px; margin:0; }
+  .chips label:has(input:checked) { border-color:var(--primary-light); background:var(--soft); font-weight:700; }
+  .chips input { margin:0; accent-color:var(--primary); }
+  .terms { margin:14px 0 4px; border-top:1px dashed var(--line); padding-top:14px; }
+  .terms h3 { font-size:15.5px; margin:0 0 8px; }
+  .agree-all { display:flex; gap:10px; align-items:center; font-weight:900; background:var(--soft); border-radius:10px; padding:11px 12px; cursor:pointer; margin-bottom:8px; }
+  .term { border:1px solid var(--line); border-radius:10px; margin-bottom:6px; }
+  .term .head { display:flex; gap:8px; align-items:center; padding:10px 12px; font-size:14px; }
+  .term .head label { flex:1; min-width:0; cursor:pointer; }
+  .term .head .tg { flex:none; white-space:nowrap; font-size:12.5px; color:var(--gray); background:none; border:0; cursor:pointer; text-decoration:underline; }
+  .term .body { display:none; padding:0 12px 10px 36px; font-size:12.8px; color:#4B5563; }
+  .term.open .body { display:block; }
+  .term .body ul { margin:0; padding-left:16px; }
+  input[type=checkbox] { width:18px; height:18px; accent-color:var(--primary); flex:none; }
+  .badge-req { color:#D92D20; font-weight:700; }
+  #ok { display:none; margin-top:14px; } #ok.show { display:block; }
+  .coupon { position:relative; background:linear-gradient(135deg, var(--primary-dark), var(--primary)); color:#fff; border-radius:18px; padding:20px 18px; text-align:center; overflow:hidden; }
+  .coupon::before, .coupon::after { content:''; position:absolute; top:50%; width:24px; height:24px; background:#fff; border-radius:50%; transform:translateY(-50%); }
+  .coupon::before { left:-12px; } .coupon::after { right:-12px; }
+  .coupon .t1 { font-size:13px; opacity:.85; }
+  .coupon .pct { font-size:38px; font-weight:900; line-height:1.15; margin:4px 0; }
+  .coupon .code { display:inline-block; background:#fff; color:var(--primary-dark); font-weight:900; font-size:21px; letter-spacing:2px; border-radius:10px; padding:6px 14px; margin:8px 0; font-family:ui-monospace, Consolas, monospace; }
+  .coupon .t2 { font-size:13.5px; opacity:.92; }
+  .btns { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .btns button, .btns a { flex:1; min-width:120px; text-align:center; text-decoration:none; padding:11px; border-radius:10px; font:inherit; font-weight:700; font-size:14.5px; border:0; cursor:pointer; }
+  .b-main { background:var(--primary); color:#fff; } .b-sub { background:#fff; color:var(--primary-dark); border:1.5px solid var(--primary-light) !important; } .b-tel { background:var(--dark); color:#fff; }
+  .ok-text { font-size:14.5px; margin:12px 0 0; line-height:1.75; }
+  #fail { display:none; margin-top:14px; background:#FFF7ED; border:1px solid #FED7AA; border-radius:12px; padding:14px; } #fail.show { display:block; }
+  #fail pre { white-space:pre-wrap; background:#fff; border-radius:8px; padding:10px; font:inherit; font-size:13px; margin:10px 0; border:1px solid var(--line); }
+  footer { text-align:center; font-size:12.5px; color:var(--gray); padding:16px 16px 36px; }
+  .spin { display:inline-block; width:14px; height:14px; border:2px solid rgba(0,0,0,.15); border-top-color:var(--primary); border-radius:50%; animation:sp .8s linear infinite; vertical-align:-2px; margin-right:4px; }
+  @keyframes sp { to { transform:rotate(360deg); } }
+  @media (min-width: 640px) { .wins { grid-template-columns:repeat(3, 1fr); } }
+  @media (max-width: 360px) { .wins { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap top">
+    <img src="/images/logo.jpg" alt="">
+    <h1>원데이 창호견적<small>청개구리샤시 · 무료 자동견적</small></h1>
+    <span class="coupon-badge"><i class="fas fa-ticket"></i> <span class="pctv">5</span>% 쿠폰</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ① 집 정보 -->
+  <section class="card">
+    <h2><span class="no">1</span> 집 정보</h2>
+    <div class="row addr">
+      <input type="text" id="addr" placeholder="주소 검색 (예: 래미안 101동 1501호)" readonly>
+      <button type="button" id="addrBtn" aria-label="주소 검색"><i class="fas fa-search"></i></button>
+    </div>
+    <div class="row">
+      <select id="res" aria-label="주거 형태"><option value="">주거 형태</option><option>아파트</option><option>빌라·연립</option><option>단독주택</option></select>
+      <select id="py" aria-label="평형"><option value="">평형</option><option>20평형대</option><option>30평형대</option><option>40평형대</option><option>50평형 이상</option></select>
+    </div>
+  </section>
+
+  <!-- ② 창호 -->
+  <section class="card">
+    <h2><span class="no">2</span> 창호 <span class="cnt" id="cnt"></span></h2>
+    <label class="quote" id="quoteBox">
+      <input type="file" accept="image/*" id="quoteIn">
+      <span class="ic" id="quoteIc"><i class="fas fa-file-invoice"></i></span>
+      <span><b>받으신 견적서 사진 올리기</b><span>다른 업체 견적서를 찍어 올리면 창호 치수가 자동으로 들어갑니다.</span></span>
+    </label>
+    <div class="qmsg" id="qmsg"></div>
+    <div class="or">또는 창호마다 사진을 찍고 치수(cm)를 직접 넣어 주세요</div>
+    <div class="wins" id="wins"></div>
+    <button type="button" class="addwin" id="addWin"><i class="fas fa-plus"></i> 창호 추가</button>
+    <button type="button" class="go" id="calc"><i class="fas fa-bolt"></i> 무료 견적 보기</button>
+    <div class="err" id="err1"></div>
+  </section>
+
+  <!-- ③ 결과 -->
+  <section class="card" id="result">
+    <h2><span class="no">3</span> 청개구리 원데이 견적</h2>
+    <div class="basis" id="basis"></div>
+    <div class="demo-flag" id="demoFlag"><i class="fas fa-flask"></i> 시험 화면입니다. 견적서 판독은 예시 값이고, 신청은 보내지지 않습니다.</div>
+    <div class="big">
+      <div class="lb">앱 할인 쿠폰 적용 예상가</div>
+      <div class="orig" id="rOrig"></div>
+      <div class="after" id="rAfter"></div>
+      <span class="off" id="rOff"></span>
+    </div>
+    <div class="cmp" id="cmp" style="display:none"></div>
+    <div class="warn" id="rWarn"></div>
+    <details><summary>창호별 금액 보기</summary><table id="rTable"></table></details>
+    <button type="button" class="go" id="toConsult" style="background:var(--primary);box-shadow:none"><i class="fas fa-ticket"></i> 이 견적으로 상담 신청 · 쿠폰 받기</button>
+    <div class="notice">
+      · 입력하신 크기로 계산한 참고 금액입니다. 실측 후 창호 상태·층수·철거 조건에 따라 달라질 수 있습니다.<br>
+      · 할인 쿠폰은 상담 신청 후 발급되며, 계약할 때 쿠폰번호를 알려 주시면 계약 금액에서 할인됩니다.
+    </div>
+  </section>
+
+  <!-- ④ 상담 신청 -->
+  <section class="card" id="consult">
+    <h2><span class="no">4</span> 상담 신청 · 쿠폰 받기</h2>
+    <form id="form" novalidate>
+      <div class="row">
+        <div class="field"><label for="name">이름<span class="req">*</span></label><input type="text" id="name" maxlength="30" autocomplete="name"></div>
+        <div class="field"><label for="tel">연락처<span class="req">*</span></label><input type="tel" id="tel" maxlength="14" placeholder="010-0000-0000" autocomplete="tel"></div>
+      </div>
+      <div class="field"><span class="flabel">연락 받기 편한 시간</span>
+        <div class="chips"><label><input type="radio" name="when" value="아무 때나" checked>아무 때나</label><label><input type="radio" name="when" value="오전">오전</label><label><input type="radio" name="when" value="오후">오후</label><label><input type="radio" name="when" value="저녁(6시 이후)">저녁</label></div></div>
+      <div class="field"><label for="memo">요청 사항</label><textarea id="memo" rows="2" maxlength="500" placeholder="희망 시공 시기, 궁금한 점"></textarea></div>
+      <div class="terms">
+        <h3>약관 동의</h3>
+        <label class="agree-all"><input type="checkbox" id="all"> 아래 내용에 모두 동의합니다</label>
+        <div class="term">
+          <div class="head"><input type="checkbox" class="ag" id="t1"><label for="t1"><span class="badge-req">[필수]</span> 개인정보 수집·이용 동의</label><button type="button" class="tg">보기</button></div>
+          <div class="body"><ul>
+            <li>수집 항목: 이름, 연락처, 주소, 주거 형태·평형, 창호 크기·사진, 올려 주신 견적서 사진, 요청 사항</li>
+            <li>이용 목적: 원데이시공 상담 연락, 시공 업체 연결, 할인 쿠폰 발급·확인</li>
+            <li>보유 기간: 상담이 끝난 뒤 1년간 보관한 뒤 파기합니다. 계약이 이루어지지 않으면 확인 후 바로 파기합니다.</li>
+            <li>상담 정보는 Google(미국) 시트에 저장되고, 접수 알림과 사진은 텔레그램으로 회사 담당자에게 전송됩니다(국외 이전). 견적서 사진의 글자 판독에는 Google AI를 씁니다.</li>
+            <li>동의를 거부하실 수 있으며, 이 경우 010-2322-0949로 전화 상담해 주세요.</li>
+            <li>자세한 내용은 <a href="https://frogsash.co.kr/privacy/" target="_blank" style="color:var(--primary); font-weight:700;">개인정보처리방침</a>을 확인해 주세요.</li>
+          </ul></div>
+        </div>
+        <div class="term">
+          <div class="head"><input type="checkbox" class="ag" id="t2"><label for="t2"><span class="badge-req">[필수]</span> 시공 업체에 정보 제공 동의</label><button type="button" class="tg">보기</button></div>
+          <div class="body"><ul>
+            <li>제공받는 곳: <b class="basisName">청개구리샤시 제휴 시공 업체</b></li>
+            <li>제공 항목: 이름, 연락처, 주소, 창호 크기·사진·견적 내역, 쿠폰번호</li>
+            <li>제공 목적: 실측 일정 연락과 시공 견적·계약</li>
+            <li>보유 기간: 시공 계약·하자 보수 기간이 끝날 때까지. 계약하지 않으면 상담이 끝난 뒤 바로 파기합니다.</li>
+          </ul></div>
+        </div>
+        <div class="term">
+          <div class="head"><input type="checkbox" class="ag" id="t3"><label for="t3"><span class="badge-req">[필수]</span> 견적·쿠폰 안내 확인</label><button type="button" class="tg">보기</button></div>
+          <div class="body"><ul>
+            <li>화면의 견적은 참고용 예상 금액이며, 실측 후 최종 금액이 정해집니다.</li>
+            <li>할인 쿠폰은 청개구리샤시 제휴 업체와 계약할 때 한 번 쓸 수 있고, 계약 금액에서 할인됩니다.</li>
+            <li>계약할 때 업체에 쿠폰번호를 꼭 알려 주세요. 번호를 알리지 않으면 할인이 적용되지 않을 수 있습니다.</li>
+            <li>쿠폰은 현금으로 바꾸거나 다른 사람에게 넘길 수 없습니다.</li>
+          </ul></div>
+        </div>
+      </div>
+      <input type="text" id="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" aria-hidden="true">
+      <button type="submit" class="go" id="send"><i class="fas fa-ticket"></i> 상담 신청하고 쿠폰 받기</button>
+      <div class="err" id="err2"></div>
+    </form>
+
+    <div id="ok">
+      <div class="coupon" id="couponCard">
+        <div class="t1">청개구리샤시 원데이시공 할인 쿠폰</div>
+        <div class="pct"><span class="pctv">5</span>% 할인</div>
+        <div class="code" id="cCode"></div>
+        <div class="t2" id="cComp"></div>
+        <div class="t2" id="cPrice" style="margin-top:4px"></div>
+      </div>
+      <div class="btns">
+        <button type="button" class="b-main" id="saveC"><i class="fas fa-download"></i> 쿠폰 저장</button>
+        <button type="button" class="b-sub" id="copyC"><i class="fas fa-copy"></i> 번호 복사</button>
+        <a class="b-tel" href="tel:010-2322-0949"><i class="fas fa-phone"></i> 전화</a>
+      </div>
+      <p class="ok-text"><i class="fas fa-check-circle" style="color:var(--primary)"></i> 상담 신청이 접수되었습니다 (접수번호 <b id="okNo"></b>).<br>
+        청개구리샤시가 확인 후 <b>입력하신 연락처로 전화</b>드립니다. 업체와 <b>계약하실 때 쿠폰번호를 꼭 알려 주세요.</b></p>
+    </div>
+
+    <div id="fail">
+      <b style="color:#9A3412"><i class="fas fa-exclamation-circle"></i> 자동 접수가 되지 않아 문자로 보내 주세요</b>
+      <div id="howto2" style="font-size:14px;margin-top:4px"></div>
+      <pre id="msg"></pre>
+      <div class="btns">
+        <a class="b-main" id="sms" href="#"><i class="fas fa-comment-sms"></i> 문자로 보내기</a>
+        <button type="button" class="b-sub" id="copyM"><i class="fas fa-copy"></i> 내용 복사</button>
+        <a class="b-tel" href="tel:010-2322-0949"><i class="fas fa-phone"></i> 전화</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>청개구리샤시 · 010-2322-0949 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.0</span></footer>
+
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+(function () {
+  var VER = 'od-2.0';
+  var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
+  var DEMO = /[?&]demo=1/.test(location.search);
+  var $ = function (id) { return document.getElementById(id); };
+  var nf = function (n) { return Math.round(n).toLocaleString('ko-KR'); };
+  var esc = function (s) { var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; };
+  var radio = function (n) { var r = document.querySelector('input[name="' + n + '"]:checked'); return r ? r.value : ''; };
+  var each = function (sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); };
+
+  var TYPES = { S_IN: '단창 내부', S_BAL: '단창 외부', D_IN: '이중창 내부', D_EXT: '이중창 외부', SYS: '분합창', TURNING: '중문', PJ: '루버창' };
+  var LOCS = ['거실', '안방', '침실1', '침실2', '침실3', '주방', '다용도', '세탁실', '발코니', '현관 중문', '기타'];
+  var P = { spec: null, basis: '', disc: 5, ai: false };
+  var wins = [], nid = 0, quote = null, last = null;
+
+  /* ── 단가표 ── */
+  function loadPrices() {
+    return fetch(API + '?action=oneday_prices').then(function (r) { return r.json(); }).then(function (j) {
+      if (!j || !j.ok) throw 0;
+      P.spec = j.spec || {}; P.basis = j.basis || ''; P.disc = +j.discount || 0; P.ai = !!j.ai;
+      each('.pctv', function (e) { e.textContent = P.disc; });
+      each('.basisName', function (e) { e.textContent = P.basis || '청개구리샤시 제휴 시공 업체'; });
+    }).catch(function () {});
+  }
+  var ready = loadPrices();
+
+  /* ── 사진 줄이기 ── */
+  function shrink(file, max, q) {
+    return new Promise(function (ok, no) {
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function () {
+        var s = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement('canvas');
+        c.width = Math.round(im.width * s); c.height = Math.round(im.height * s);
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url); ok(c.toDataURL('image/jpeg', q));
+      };
+      im.onerror = function () { URL.revokeObjectURL(url); no(); };
+      im.src = url;
+    });
+  }
+
+  /* ── 창호 카드 ── */
+  function defType(loc) {
+    if (/중문/.test(loc)) return 'TURNING';
+    if (/루버/.test(loc)) return 'PJ';
+    if (/분합/.test(loc)) return 'SYS';
+    if (/거실|발코니|세탁|다용도|베란다/.test(loc)) return 'S_BAL';
+    return 'D_IN';
+  }
+  function newWin(loc) { return { id: nid++, loc: loc, type: defType(loc), w: '', h: '', photo: null, q: false }; }
+  ['거실', '안방', '침실1', '침실2', '주방', '다용도'].forEach(function (l) { wins.push(newWin(l)); });
+
+  function areaText(e) {
+    var w = +e.w, h = +e.h;
+    if (!(w > 0 && h > 0)) return '가로·세로 cm';
+    if (e.type === 'TURNING') return '중문 1세트';
+    return '<b>' + (w * h / 10000).toFixed(2) + '㎡</b> · ' + (w * h / 900).toFixed(1) + '자';
+  }
+  function renderWins() {
+    var box = $('wins'); box.innerHTML = '';
+    wins.forEach(function (e, i) {
+      var lo = LOCS.concat(LOCS.indexOf(e.loc) < 0 ? [e.loc] : []).map(function (l) { return '<option' + (l === e.loc ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join('');
+      var to = Object.keys(TYPES).map(function (k) { return '<option value="' + k + '"' + (k === e.type ? ' selected' : '') + '>' + TYPES[k] + '</option>'; }).join('');
+      var d = document.createElement('div'); d.className = 'win' + (e.q ? ' fromq' : '');
+      d.innerHTML = '<div class="hd"><span class="n">' + (i + 1) + '</span><select class="loc" aria-label="위치">' + lo + '</select><button type="button" class="del" aria-label="삭제"><i class="fas fa-times"></i></button></div>' +
+        '<label class="ph">' + (e.photo ? '<img src="' + e.photo + '" alt=""><button type="button" class="rm" aria-label="사진 지우기"><i class="fas fa-times"></i></button>' : '<i class="fas fa-camera"></i>창호 사진') + '<input type="file" accept="image/*"></label>' +
+        '<select class="ty" aria-label="창호 종류">' + to + '</select>' +
+        '<div class="sz"><label><span>가로</span><input class="w" type="number" inputmode="decimal" step="0.1" value="' + esc(e.w) + '" aria-label="가로 cm"></label>' +
+        '<label><span>세로</span><input class="h" type="number" inputmode="decimal" step="0.1" value="' + esc(e.h) + '" aria-label="세로 cm"></label></div>' +
+        '<div class="area">' + areaText(e) + '</div>';
+      var area = d.querySelector('.area'), upd = function () { area.innerHTML = areaText(e); };
+      d.querySelector('.loc').onchange = function () { e.loc = this.value; e.type = defType(e.loc); d.querySelector('.ty').value = e.type; upd(); };
+      d.querySelector('.ty').onchange = function () { e.type = this.value; upd(); };
+      d.querySelector('.w').oninput = function () { e.w = this.value; upd(); };
+      d.querySelector('.h').oninput = function () { e.h = this.value; upd(); };
+      d.querySelector('.del').onclick = function () { if (wins.length <= 1) return; wins = wins.filter(function (x) { return x.id !== e.id; }); renderWins(); };
+      d.querySelector('.ph input').onchange = function () {
+        var f = this.files[0]; if (!f) return;
+        shrink(f, 1280, 0.72).then(function (u) { e.photo = u; renderWins(); }, function () { alert('사진을 열 수 없습니다.'); });
+      };
+      var rm = d.querySelector('.rm'); if (rm) rm.onclick = function (ev) { ev.preventDefault(); ev.stopPropagation(); e.photo = null; renderWins(); };
+      box.appendChild(d);
+    });
+    $('cnt').textContent = wins.length + '곳';
+  }
+  $('addWin').onclick = function () { wins.push(newWin('기타')); renderWins(); $('wins').lastElementChild.querySelector('.loc').focus(); };
+  renderWins();
+
+  /* ── 견적서 사진 → 치수 자동 입력 ── */
+  function qmsg(html, cls) { $('qmsg').className = 'qmsg ' + (cls || ''); $('qmsg').innerHTML = html; }
+  $('quoteIn').onchange = function () {
+    var f = this.files[0]; this.value = ''; if (!f) return;
+    qmsg('<span class="spin"></span>견적서를 읽고 있습니다… (10초쯤)');
+    shrink(f, 1800, 0.85).then(function (u) {
+      quote = { photo: u, company: '', total: 0, vat: '' };
+      $('quoteIc').innerHTML = '<img src="' + u + '" alt="">';
+      if (DEMO) return { ok: true, company: '예시창호', total: 9800000, vat: '포함', items: [
+        { loc: '거실', w: 4500, h: 2160, type: 'S_BAL', price: 0 }, { loc: '안방 발코니', w: 3400, h: 1900, type: 'S_BAL', price: 0 },
+        { loc: '침실2', w: 2335, h: 2150, type: '', price: 0 }, { loc: '주방 중문', w: 1170, h: 2140, type: 'TURNING', price: 0 }] };
+      return ready.then(function () {
+        return fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ kind: 'oneday_read', image: u.split(',')[1] }) }).then(function (r) { return r.json(); });
+      });
+    }).then(function (j) {
+      if (!j || !j.ok) {
+        var why = j && j.error === 'no_ai' ? '자동 판독은 준비 중입니다.' : j && (j.error === 'limit' || j.error === 'busy') ? '지금은 판독 요청이 많습니다.' : '견적서를 읽지 못했습니다.';
+        qmsg('<i class="fas fa-info-circle"></i> ' + why + ' 견적서 사진은 상담 신청 때 함께 보내집니다. 아래에 치수를 직접 넣어 주세요.', 'bad'); return;
+      }
+      quote.company = j.company || ''; quote.total = j.total || 0; quote.vat = j.vat || '';
+      if (!j.items.length) { qmsg('<i class="fas fa-info-circle"></i> 창호 치수를 찾지 못했습니다' + (j.note ? ' (' + esc(j.note) + ')' : '') + '. 글자가 잘 보이게 다시 찍거나, 아래에 직접 넣어 주세요.', 'bad'); return; }
+      var typed = wins.some(function (e) { return +e.w > 0 || +e.h > 0; });
+      if (typed && !confirm('입력하신 치수를 견적서 내용으로 바꿀까요?')) return;
+      var old = wins; wins = j.items.map(function (it) {
+        var loc = it.loc || '기타', w = newWin(loc);
+        if (it.type) w.type = it.type;
+        w.w = String(Math.round(it.w) / 10); w.h = String(Math.round(it.h) / 10); w.q = true;
+        var same = old.filter(function (o) { return o.photo && o.loc === loc; })[0]; if (same) w.photo = same.photo;
+        return w;
+      });
+      renderWins();
+      qmsg('<i class="fas fa-check-circle"></i> ' + (quote.company ? esc(quote.company) + ' ' : '') + '견적서에서 창호 <b>' + j.items.length + '곳</b>을 읽었습니다' +
+        (quote.total ? ' (합계 ' + nf(quote.total) + '원' + (quote.vat ? ', 부가세 ' + esc(quote.vat) : '') + ')' : '') + '. 파란 칸의 위치·종류·치수가 맞는지 확인해 주세요.', 'ok');
+    }).catch(function () { qmsg('<i class="fas fa-info-circle"></i> 견적서를 읽지 못했습니다. 아래에 치수를 직접 넣어 주세요.', 'bad'); });
+  };
+
+  /* ── 계산 ── */
+  function qty(unit, w, h) { return unit === '개' ? 1 : unit === '㎡' ? w * h / 10000 : w * h / 900; }
+  function items() {
+    return wins.map(function (e) { return { loc: e.loc, type: e.type, w: Math.round((+e.w || 0) * 10) / 10, h: Math.round((+e.h || 0) * 10) / 10 }; })
+      .filter(function (it) { return it.w > 0 && it.h > 0; });
+  }
+  $('calc').onclick = function () {
+    var its = items();
+    var bad = wins.filter(function (e) { var w = +e.w, h = +e.h; return (w || h) && (!(w > 0 && h > 0) || w > 2000 || h > 2000 || w < 20 || h < 20); });
+    if (!its.length) { $('err1').textContent = '창호 크기를 하나 이상 넣어 주세요.'; return; }
+    if (bad.length) { $('err1').textContent = '크기를 확인해 주세요. cm 단위로 가로·세로 모두 넣어야 합니다. (예: 180, 150)'; return; }
+    $('err1').textContent = ''; var b = $('calc'); b.disabled = true; b.innerHTML = '<span class="spin"></span> 계산 중…';
+    ready.then(function () { return P.spec ? null : (ready = loadPrices()); }).then(function () {
+      b.disabled = false; b.innerHTML = '<i class="fas fa-bolt"></i> 다시 계산';
+      if (!P.spec) { $('err1').textContent = '인터넷 연결을 확인해 주세요.'; return; }
+      show(its);
+    });
+  };
+
+  function show(its) {
+    var total = 0, miss = 0, rows = '';
+    its.forEach(function (it) {
+      var s = P.spec[it.type], p = s ? Math.round(s.price * qty(s.unit, it.w, it.h)) : 0;
+      if (!s) miss++; total += p;
+      rows += '<tr><td>' + esc(it.loc) + '<br><span style="color:#9CA3AF;font-size:12px">' + esc(TYPES[it.type]) + (s && s.spec ? ' · ' + esc(s.spec) : '') + '</span></td><td>' + it.w + '×' + it.h + '</td><td class="r">' + (s ? nf(p) : '<span style="color:#B45309">문의</span>') + '</td></tr>';
+    });
+    var after = total - Math.round(total * P.disc / 100);
+    last = { items: its, total: total, after: after };
+    $('basis').textContent = P.basis ? '견적 기준: ' + P.basis + ' 원데이시공 단가' : '';
+    $('rOrig').textContent = P.disc > 0 && total ? nf(total) + '원' : '';
+    $('rAfter').textContent = total ? nf(after) + '원' : '실측 후 안내';
+    $('rOff').textContent = P.disc > 0 && total ? '쿠폰 -' + P.disc + '% (' + nf(total - after) + '원 할인)' : '';
+    $('rOff').style.display = $('rOff').textContent ? '' : 'none';
+    $('rWarn').innerHTML = miss ? '<i class="fas fa-exclamation-triangle"></i> ' + miss + '곳은 단가표에 없는 종류라 금액에서 빠졌습니다. 상담 때 따로 안내드립니다.' : '';
+    $('rTable').innerHTML = '<tr><th>위치</th><th>크기(cm)</th><th class="r">금액(원)</th></tr>' + rows + '<tr><td colspan="2"><b>합계</b></td><td class="r"><b>' + nf(total) + '</b></td></tr>';
+    var cmp = $('cmp');
+    if (quote && quote.total > 0 && total > 0) {
+      var diff = quote.total - after;
+      cmp.innerHTML = '<div class="r"><span>받으신 견적' + (quote.company ? ' (' + esc(quote.company) + ')' : '') + '</span><b>' + nf(quote.total) + '원</b></div>' +
+        '<div class="r"><span>청개구리 쿠폰 적용가</span><b>' + nf(after) + '원</b></div>' +
+        (diff > 0 ? '<div class="save">' + nf(diff) + '원 (' + Math.round(diff / quote.total * 100) + '%) 낮습니다</div>' : '<div class="save" style="color:#374151">실측 후 정확한 비교 견적을 드립니다</div>') +
+        '<div style="font-size:11.5px;color:var(--gray);margin-top:4px">받으신 견적의 품목·사양·부가세 포함 여부가 다를 수 있어 상담 때 같은 조건으로 다시 비교해 드립니다.</div>';
+      cmp.style.display = '';
+    } else cmp.style.display = 'none';
+    $('demoFlag').style.display = DEMO ? 'block' : 'none';
+    $('result').classList.add('show');
+    $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  $('toConsult').onclick = function () {
+    $('consult').classList.add('show'); $('ok').classList.remove('show'); $('fail').classList.remove('show'); $('form').style.display = '';
+    $('consult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  /* ── 약관 ── */
+  var ags = Array.prototype.slice.call(document.querySelectorAll('.ag'));
+  $('all').onchange = function () { ags.forEach(function (c) { c.checked = $('all').checked; }); };
+  ags.forEach(function (c) { c.onchange = function () { $('all').checked = ags.every(function (x) { return x.checked; }); }; });
+  each('.term .tg', function (b) { b.onclick = function () { var t = b.closest('.term'); t.classList.toggle('open'); b.textContent = t.classList.contains('open') ? '닫기' : '보기'; }; });
+
+  /* ── 상담 신청 ── */
+  $('form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (!$('name').value.trim()) { $('err2').textContent = '이름을 적어 주세요.'; $('name').focus(); return; }
+    if (!/^[0-9\-\s]{9,14}$/.test($('tel').value.trim())) { $('err2').textContent = '연락처를 숫자로 적어 주세요. (예: 010-0000-0000)'; $('tel').focus(); return; }
+    if (!ags.every(function (c) { return c.checked; })) { $('err2').textContent = '[필수] 약관에 동의해 주세요.'; return; }
+    if (DEMO) { $('err2').textContent = '시험 화면(demo)에서는 신청이 보내지지 않습니다.'; return; }
+    $('err2').textContent = '';
+    var its = last ? last.items : items();
+    var photos = [];
+    if (quote && quote.photo) photos.push({ name: '받은 견적서', data: quote.photo.split(',')[1] });
+    wins.forEach(function (e) { if (e.photo) photos.push({ name: e.loc + ' ' + TYPES[e.type], data: e.photo.split(',')[1] }); });
+    var qtxt = quote && (quote.total || quote.company) ? [quote.company, quote.total ? nf(quote.total) + '원' : '', quote.vat ? '부가세 ' + quote.vat : ''].filter(Boolean).join(' ') : '';
+    var data = { kind: 'oneday', name: $('name').value.trim(), tel: $('tel').value.trim(), addr: $('addr').value.trim(), res: $('res').value, py: $('py').value,
+      items: its, when: radio('when'), memo: $('memo').value.trim(), quote: qtxt, photos: photos.slice(0, 10),
+      t1: $('t1').checked, t2: $('t2').checked, website: $('website').value };
+    $('msg').textContent = '[청개구리샤시 원데이시공 상담신청]\n이름: ' + data.name + '\n연락처: ' + data.tel + '\n주소: ' + (data.addr || '미기재') +
+      '\n' + [data.res, data.py].filter(Boolean).join(' ') + '\n창호: ' + its.map(function (it) { return it.loc + ' ' + TYPES[it.type] + ' ' + it.w + '×' + it.h; }).join(', ') +
+      (last && last.total ? '\n예상 견적: ' + nf(last.total) + '원' : '') + (qtxt ? '\n받은 견적: ' + qtxt : '') + '\n연락 희망: ' + data.when + (data.memo ? '\n요청: ' + data.memo : '');
+    var s = $('send'); s.disabled = true; s.innerHTML = '<span class="spin"></span> 접수하는 중…';
+    var ctl = window.AbortController ? new AbortController() : null, timer = setTimeout(function () { if (ctl) ctl.abort(); }, 40000);
+    fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data), signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { clearTimeout(timer); if (j && j.ok && j.coupon) done(j); else fail(j && j.error); })
+      .catch(function () { clearTimeout(timer); fail(); });
+  });
+  function done(j) {
+    $('form').style.display = 'none';
+    each('.pctv', function (e) { e.textContent = j.discount; });
+    $('cCode').textContent = j.coupon; $('okNo').textContent = '#' + j.no;
+    $('cComp').textContent = '사용처: ' + (j.basis || '청개구리샤시 제휴 업체');
+    $('cPrice').textContent = j.total ? '예상 ' + nf(j.total) + '원 → 쿠폰 적용 ' + nf(j.after) + '원' : '';
+    try { localStorage.setItem('od_coupon', JSON.stringify({ code: j.coupon, no: j.no, t: Date.now() })); } catch (x) {}
+    $('ok').classList.add('show'); $('ok').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function fail(code) {
+    var s = $('send'); s.disabled = false; s.innerHTML = '<i class="fas fa-ticket"></i> 상담 신청하고 쿠폰 받기';
+    if (code === 'busy') { $('err2').textContent = '잠시 후 다시 시도해 주세요. 급하시면 010-2322-0949로 전화 주세요.'; return; }
+    var mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent), sep = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?';
+    $('sms').href = 'sms:01023220949' + sep + 'body=' + encodeURIComponent($('msg').textContent);
+    $('howto2').innerHTML = mobile ? '아래 <b>[문자로 보내기]</b>를 누르고 문자 앱에서 <b>[보내기]</b>를 눌러 주세요. 쿠폰은 확인 후 문자로 보내 드립니다.'
+      : 'PC에서는 문자를 바로 보낼 수 없습니다. <b>[내용 복사]</b>를 눌러 010-2322-0949로 보내 주시거나 전화해 주세요.';
+    $('fail').classList.add('show'); $('fail').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function copy(t, btn) {
+    function ok() { btn.innerHTML = '<i class="fas fa-check"></i> 복사했습니다'; }
+    function legacy() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); ok(); } catch (x) {} a.remove(); }
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(ok, legacy); else legacy();
+  }
+  $('copyC').onclick = function () { copy($('cCode').textContent, this); };
+  $('copyM').onclick = function () { copy($('msg').textContent, this); };
+  $('saveC').onclick = function () {
+    if (!window.html2canvas) { alert('이 기기에서는 이미지 저장이 안 됩니다. 화면을 캡처해 주세요.'); return; }
+    html2canvas($('couponCard'), { scale: 2, backgroundColor: '#ffffff' }).then(function (cv) {
+      var a = document.createElement('a'); a.download = '청개구리_원데이_쿠폰_' + $('cCode').textContent + '.png'; a.href = cv.toDataURL('image/png'); a.click();
+    });
+  };
+
+  /* ── 주소: 검색 후 같은 칸에 동·호수 이어 쓰기 ── */
+  function openAddr() {
+    var a = $('addr');
+    if (!window.daum || !daum.Postcode) { a.removeAttribute('readonly'); a.focus(); return; }
+    new daum.Postcode({ oncomplete: function (d) {
+      var t = d.roadAddress || d.jibunAddress; if (d.buildingName) t += ' (' + d.buildingName + ')';
+      a.value = t + ' '; a.removeAttribute('readonly'); a.focus(); try { a.setSelectionRange(a.value.length, a.value.length); } catch (x) {}
+    } }).open();
+  }
+  $('addr').onclick = function () { if (this.hasAttribute('readonly')) openAddr(); };
+  $('addrBtn').onclick = openAddr;
+
+  /* ── 앱 설치·업데이트 ── */
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
+  $('ver').textContent = VER;
+})();
+</script>
+</body>
+</html>

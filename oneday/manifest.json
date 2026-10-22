@@ -1,0 +1,14 @@
+{
+  "name": "청개구리 원데이 창호견적",
+  "short_name": "원데이견적",
+  "description": "받으신 창호 견적서 사진으로 자동 견적 + 앱 전용 할인 쿠폰",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F4F7F5",
+  "theme_color": "#1B6B28",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
