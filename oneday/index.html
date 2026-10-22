@@ -285,13 +285,13 @@
   </section>
 </main>
 
-<footer>청개구리샤시 · 010-2322-0949 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.7</span></footer>
+<footer>청개구리샤시 · 010-2322-0949 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.8</span></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.7';
+  var VER = 'od-2.8';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
@@ -348,7 +348,7 @@
       var lo = LOCS.concat(LOCS.indexOf(e.loc) < 0 ? [e.loc] : []).map(function (l) { return '<option' + (l === e.loc ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join('') + '<option value="__del">✕ 이 칸 지우기</option>';
       var to = Object.keys(TYPES).map(function (k) { return '<option value="' + k + '"' + (k === e.type ? ' selected' : '') + '>' + TYPES[k] + '</option>'; }).join('');
       var d = document.createElement('div'); d.className = 'win' + (e.q ? ' fromq' : '');
-      d.innerHTML = '<label class="ph"><span class="n">' + (i + 1) + '</span>' + (e.photo ? '<img src="' + e.photo + '" alt=""><button type="button" class="rm" aria-label="사진 지우기"><i class="fas fa-times"></i></button>' : '<i class="fas fa-camera"></i>사진') + '<input type="file" accept="image/*"></label>' +
+      d.innerHTML = '<label class="ph">' + (e.photo ? '<img src="' + e.photo + '" alt=""><button type="button" class="rm" aria-label="사진 지우기"><i class="fas fa-times"></i></button>' : '<i class="fas fa-camera"></i>사진') + '<input type="file" accept="image/*"></label>' +
         '<div class="lt"><select class="loc" aria-label="위치">' + lo + '</select><select class="ty" aria-label="창호 종류">' + to + '</select></div>' +
         '<div class="sz"><label><span>가로</span><input class="w" type="number" inputmode="decimal" step="0.1" placeholder="" value="' + esc(e.w) + '" aria-label="가로 cm"></label>' +
         '<label><span>세로</span><input class="h" type="number" inputmode="decimal" step="0.1" placeholder="" value="' + esc(e.h) + '" aria-label="세로 cm"></label></div>' +
