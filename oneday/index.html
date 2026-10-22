@@ -23,16 +23,17 @@
   html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   body { margin:0; font-family:'Noto Sans KR', -apple-system, sans-serif; background:var(--bg); color:var(--dark); line-height:1.55; word-break:keep-all; overflow-wrap:break-word; }
   a { color:inherit; }
-  .wrap { max-width:720px; margin:0 auto; padding:0 12px; }
+  .wrap { max-width:720px; margin:0 auto; padding:0 6px; }
   header { background:linear-gradient(135deg, var(--primary-dark), var(--primary)); color:#fff; padding:14px 0 16px; padding-top:calc(14px + env(safe-area-inset-top)); }
   header .top { display:flex; align-items:center; gap:10px; }
   header img { width:36px; height:36px; border-radius:8px; background:#fff; object-fit:contain; }
   header h1 { font-size:19px; font-weight:900; margin:0; line-height:1.2; }
   header h1 small { display:block; font-size:12px; font-weight:500; opacity:.85; }
   .coupon-badge { margin-left:auto; flex:none; background:#fff; color:var(--accent); font-weight:900; border-radius:999px; padding:5px 12px; font-size:13px; }
-  main { padding:14px 0 40px; }
-  .card { background:#fff; border-radius:16px; border:1px solid var(--line); box-shadow:0 6px 24px rgba(0,0,0,.05); padding:16px 14px; margin-bottom:14px; }
-  .card h2 { font-size:17px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
+  main { padding:8px 0 36px; }
+  .card { background:#fff; border-radius:14px; border:1px solid var(--line); box-shadow:0 4px 16px rgba(0,0,0,.05); padding:10px 8px; margin-bottom:8px; }
+  .card h2 { font-size:16.5px; margin:0 0 8px; display:flex; align-items:center; gap:8px; }
+  .row .no, .stepno { flex:none; width:26px; height:26px; border-radius:50%; background:var(--primary); color:#fff; font-size:13px; font-weight:900; display:flex; align-items:center; justify-content:center; align-self:center; }
   .card h2 .no { width:26px; height:26px; border-radius:50%; background:var(--primary); color:#fff; font-size:13px; display:flex; align-items:center; justify-content:center; flex:none; }
   .card h2 .cnt { margin-left:auto; font-size:13px; color:var(--gray); font-weight:500; }
   input[type=text], input[type=tel], input[type=number], select, textarea { width:100%; padding:10px 12px; border:1.5px solid #D1D5DB; border-radius:10px; font:inherit; font-size:15px; background:#fff; color:var(--dark); }
@@ -41,43 +42,43 @@
   .row { display:flex; gap:8px; }
   .row + .row { margin-top:8px; }
   .row > * { flex:1; min-width:0; }
+  .row > .stepno { flex:none; }
+  .win .w::placeholder, .win .h::placeholder { font-weight:400; font-size:14px; color:#9CA3AF; }
   .addr input { cursor:pointer; }
   .addr button { flex:none; width:46px; border:0; border-radius:10px; background:var(--primary); color:#fff; font-size:16px; cursor:pointer; }
   .hint { font-size:12.5px; color:var(--gray); margin-top:6px; }
   /* 견적서 사진 */
-  .quote { display:flex; gap:12px; align-items:center; border:2px dashed #9CC9A2; background:var(--soft); border-radius:14px; padding:14px; cursor:pointer; position:relative; }
+  .quote { display:flex; gap:10px; align-items:center; border:1.5px dashed #7DBB86; background:var(--soft); border-radius:12px; padding:8px 10px; cursor:pointer; position:relative; }
   .quote input { position:absolute; inset:0; opacity:0; cursor:pointer; }
-  .quote .ic { flex:none; width:52px; height:52px; border-radius:12px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--primary); overflow:hidden; }
+  .quote .ic { flex:none; width:38px; height:38px; border-radius:9px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:19px; color:var(--primary); overflow:hidden; }
   .quote .ic img { width:100%; height:100%; object-fit:cover; }
-  .quote b { font-size:15.5px; color:var(--primary-dark); }
-  .quote span { display:block; font-size:12.5px; color:#4B5563; }
-  .qmsg { font-size:13.5px; margin:8px 2px 0; min-height:0; }
+  .quote b { font-size:14.5px; color:var(--primary-dark); letter-spacing:-.3px; }
+  .quote span { display:block; font-size:12px; color:#4B5563; line-height:1.35; }
+  .quote .go-ic { margin-left:auto; flex:none; color:var(--primary); font-size:15px; }
+  .qmsg { font-size:13px; margin:6px 2px 0; }
+  .qmsg:empty { display:none; }
   .qmsg.ok { color:var(--primary-dark); } .qmsg.bad { color:#B45309; }
-  .or { text-align:center; font-size:12.5px; color:var(--gray); margin:12px 0 10px; }
+  .whead { display:grid; grid-template-columns:52px 1fr 64px 64px 22px; gap:4px; padding:8px 7px 3px; font-size:11.5px; color:var(--gray); font-weight:700; text-align:center; }
+  .whead span:nth-child(2) { text-align:left; padding-left:4px; }
   /* 창호 카드 */
   /* 창호 1곳 = 한 줄: 왼쪽 사진, 오른쪽 위치·종류 / 가로·세로 */
-  .wins { display:flex; flex-direction:column; gap:8px; }
-  .win { border:1px solid var(--line); border-radius:14px; padding:8px; background:#FCFDFC; display:grid; grid-template-columns:76px 1fr; gap:6px 8px; align-items:center; min-width:0; }
-  .win .ph { grid-row:1 / span 3; }
-  .win .hd { display:flex; align-items:center; gap:4px; min-width:0; }
-  .win .n { font-weight:900; color:var(--primary); font-size:14px; width:16px; text-align:center; flex:none; }
-  .win .hd select { flex:1; min-width:0; padding:7px 20px 7px 7px; font-size:14px; background-position:right 5px center; }
-  .win .hd .loc { font-weight:700; flex:1; }
-  .win .hd .ty { flex:1.35; padding-right:16px; font-size:13.5px; background-position:right 4px center; }
-  .win .del { flex:none; border:0; background:none; color:#D92D20; cursor:pointer; font-size:14px; padding:6px 2px; }
-  .ph { position:relative; width:76px; height:76px; border-radius:10px; background:linear-gradient(135deg,#EEF2EF,#E2E8E3); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#6B7F70; font-size:11px; cursor:pointer; overflow:hidden; }
-  .ph i { font-size:20px; margin-bottom:2px; }
+  /* 창호 1곳 = 한 줄: 사진 | 위치·종류 | 가로 | 세로 | 삭제 */
+  .wins { display:flex; flex-direction:column; gap:5px; }
+  .win { border:1px solid var(--line); border-radius:11px; padding:5px 6px; background:#FCFDFC; display:grid; grid-template-columns:52px 1fr 64px 64px 22px; gap:4px; align-items:center; min-width:0; }
+  .win .lt { display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .win .lt select { padding:4px 16px 4px 6px; font-size:14px; border-radius:7px; background-position:right 4px center; }
+  .win .lt .loc { font-weight:700; }
+  .win .lt .ty { font-size:13px; color:#374151; }
+  .win .del { border:0; background:none; color:#D92D20; cursor:pointer; font-size:14px; padding:6px 0; }
+  .ph { position:relative; width:52px; height:52px; border-radius:9px; background:linear-gradient(135deg,#EEF2EF,#E2E8E3); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#6B7F70; font-size:10px; cursor:pointer; overflow:hidden; }
+  .ph i { font-size:17px; }
+  .ph .n { position:absolute; left:3px; top:2px; font-size:11px; font-weight:900; color:var(--primary); z-index:1; }
+  .ph:has(img) .n { color:#fff; text-shadow:0 0 3px #000; }
   .ph input { position:absolute; inset:0; opacity:0; cursor:pointer; z-index:2; }
   .ph img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-  .ph .rm { position:absolute; top:3px; right:3px; z-index:3; width:22px; height:22px; border-radius:50%; border:0; background:rgba(0,0,0,.55); color:#fff; font-size:11px; cursor:pointer; }
-  .sz { display:flex; gap:4px; align-items:center; }
-  .sz label { flex:1; min-width:0; position:relative; }
-  .sz label span { position:absolute; left:7px; top:50%; transform:translateY(-50%); font-size:11px; color:var(--gray); pointer-events:none; }
-  .sz input { padding:8px 4px 8px 28px; font-size:15px; text-align:center; }
-  .sz .x { color:var(--gray); font-size:12px; flex:none; }
-  .win .area { font-size:11.5px; color:var(--gray); }
+  .ph .rm { position:absolute; top:2px; right:2px; z-index:3; width:18px; height:18px; border-radius:50%; border:0; background:rgba(0,0,0,.55); color:#fff; font-size:9px; cursor:pointer; padding:0; }
+  .win .w, .win .h { height:52px; padding:4px 2px; font-size:16px; font-weight:700; text-align:center; border-radius:9px; }
   .incl { margin-top:10px; border-radius:10px; background:#FFF7ED; border:1px solid #FED7AA; padding:9px 12px; font-size:13.5px; color:#9A3412; font-weight:700; line-height:1.6; }
-  .win .area b { color:var(--primary-dark); }
   .win.fromq { border-color:#93C5FD; background:#F5F9FF; }
   .addwin { width:100%; margin-top:10px; padding:11px; border:1.5px dashed #9CC9A2; border-radius:12px; background:none; color:var(--primary-dark); font:inherit; font-weight:700; cursor:pointer; }
   .go { width:100%; margin-top:14px; padding:15px; border:0; border-radius:12px; background:linear-gradient(135deg, var(--accent), #F25C1F); color:#fff; font:inherit; font-size:17.5px; font-weight:900; cursor:pointer; box-shadow:0 8px 20px rgba(255,107,53,.3); }
@@ -154,8 +155,8 @@
 <main class="wrap">
   <!-- ① 집 정보 -->
   <section class="card">
-    <h2><span class="no">1</span> 집 정보</h2>
     <div class="row addr">
+      <span class="stepno" title="집 정보">1</span>
       <input type="text" id="addr" placeholder="주소 검색 (예: 래미안 101동 1501호)" readonly>
       <button type="button" id="addrBtn" aria-label="주소 검색"><i class="fas fa-search"></i></button>
     </div>
@@ -172,9 +173,10 @@
       <input type="file" accept="image/*" id="quoteIn">
       <span class="ic" id="quoteIc"><i class="fas fa-file-invoice"></i></span>
       <span><b>이전에 받은 타사 견적서 사진 올리기</b><span>아래에 자동으로 치수와 견적을 보여 드립니다.</span></span>
+      <i class="fas fa-chevron-right go-ic"></i>
     </label>
     <div class="qmsg" id="qmsg"></div>
-    <div class="or">또는 창호마다 사진을 찍고 치수(cm)를 직접 넣어 주세요</div>
+    <div class="whead"><span>사진</span><span>위치 · 창호 종류</span><span>가로cm</span><span>세로cm</span><span></span></div>
     <div class="wins" id="wins"></div>
     <button type="button" class="addwin" id="addWin"><i class="fas fa-plus"></i> 창호 추가</button>
     <button type="button" class="go" id="calc"><i class="fas fa-bolt"></i> 무료 견적 보기</button>
@@ -282,13 +284,13 @@
   </section>
 </main>
 
-<footer>청개구리샤시 · 010-2322-0949 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.1</span></footer>
+<footer>청개구리샤시 · 010-2322-0949 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.2</span></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.1';
+  var VER = 'od-2.2';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
@@ -339,28 +341,21 @@
   function newWin(loc) { return { id: nid++, loc: loc, type: defType(loc), w: '', h: '', photo: null, q: false }; }
   ['거실', '안방', '침실1', '침실2', '주방', '다용도'].forEach(function (l) { wins.push(newWin(l)); });
 
-  function areaText(e) {
-    var w = +e.w, h = +e.h;
-    if (!(w > 0 && h > 0)) return '가로·세로 cm';
-    if (e.type === 'TURNING') return '중문 1세트';
-    return '<b>' + (w * h / 10000).toFixed(2) + '㎡</b> · ' + (w * h / 900).toFixed(1) + '자';
-  }
   function renderWins() {
     var box = $('wins'); box.innerHTML = '';
     wins.forEach(function (e, i) {
       var lo = LOCS.concat(LOCS.indexOf(e.loc) < 0 ? [e.loc] : []).map(function (l) { return '<option' + (l === e.loc ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join('');
       var to = Object.keys(TYPES).map(function (k) { return '<option value="' + k + '"' + (k === e.type ? ' selected' : '') + '>' + TYPES[k] + '</option>'; }).join('');
       var d = document.createElement('div'); d.className = 'win' + (e.q ? ' fromq' : '');
-      d.innerHTML = '<label class="ph">' + (e.photo ? '<img src="' + e.photo + '" alt=""><button type="button" class="rm" aria-label="사진 지우기"><i class="fas fa-times"></i></button>' : '<i class="fas fa-camera"></i>사진') + '<input type="file" accept="image/*"></label>' +
-        '<div class="hd"><span class="n">' + (i + 1) + '</span><select class="loc" aria-label="위치">' + lo + '</select><select class="ty" aria-label="창호 종류">' + to + '</select><button type="button" class="del" aria-label="삭제"><i class="fas fa-times"></i></button></div>' +
-        '<div class="sz"><label><span>가로</span><input class="w" type="number" inputmode="decimal" step="0.1" value="' + esc(e.w) + '" aria-label="가로 cm"></label>' +
-        '<label><span>세로</span><input class="h" type="number" inputmode="decimal" step="0.1" value="' + esc(e.h) + '" aria-label="세로 cm"></label></div>' +
-        '<div class="area">' + areaText(e) + '</div>';
-      var area = d.querySelector('.area'), upd = function () { area.innerHTML = areaText(e); };
-      d.querySelector('.loc').onchange = function () { e.loc = this.value; e.type = defType(e.loc); d.querySelector('.ty').value = e.type; upd(); };
-      d.querySelector('.ty').onchange = function () { e.type = this.value; upd(); };
-      d.querySelector('.w').oninput = function () { e.w = this.value; upd(); };
-      d.querySelector('.h').oninput = function () { e.h = this.value; upd(); };
+      d.innerHTML = '<label class="ph"><span class="n">' + (i + 1) + '</span>' + (e.photo ? '<img src="' + e.photo + '" alt=""><button type="button" class="rm" aria-label="사진 지우기"><i class="fas fa-times"></i></button>' : '<i class="fas fa-camera"></i>사진') + '<input type="file" accept="image/*"></label>' +
+        '<div class="lt"><select class="loc" aria-label="위치">' + lo + '</select><select class="ty" aria-label="창호 종류">' + to + '</select></div>' +
+        '<input class="w" type="number" inputmode="decimal" step="0.1" placeholder="가로" value="' + esc(e.w) + '" aria-label="가로 cm">' +
+        '<input class="h" type="number" inputmode="decimal" step="0.1" placeholder="세로" value="' + esc(e.h) + '" aria-label="세로 cm">' +
+        '<button type="button" class="del" aria-label="삭제"><i class="fas fa-times"></i></button>';
+      d.querySelector('.loc').onchange = function () { e.loc = this.value; e.type = defType(e.loc); d.querySelector('.ty').value = e.type; };
+      d.querySelector('.ty').onchange = function () { e.type = this.value; };
+      d.querySelector('.w').oninput = function () { e.w = this.value; };
+      d.querySelector('.h').oninput = function () { e.h = this.value; };
       d.querySelector('.del').onclick = function () { if (wins.length <= 1) return; wins = wins.filter(function (x) { return x.id !== e.id; }); renderWins(); };
       d.querySelector('.ph input').onchange = function () {
         var f = this.files[0]; if (!f) return;
