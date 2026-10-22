@@ -151,7 +151,8 @@
   .ok-text { font-size:14.5px; margin:12px 0 0; line-height:1.75; }
   #fail { display:none; margin-top:14px; background:#FFF7ED; border:1px solid #FED7AA; border-radius:12px; padding:14px; } #fail.show { display:block; }
   #fail pre { white-space:pre-wrap; background:#fff; border-radius:8px; padding:10px; font:inherit; font-size:13px; margin:10px 0; border:1px solid var(--line); }
-  footer { font-size:min(9.5px, 2.36vw); line-height:1.5; letter-spacing:-.5px; word-spacing:-1px; color:#9CA3AF; padding:6px 8px 20px; text-align:justify; text-align-last:center; word-break:keep-all; }
+  footer { font-size:9.5px; line-height:1.55; letter-spacing:-.5px; color:#9CA3AF; padding:6px 6px 20px; text-align:center; }
+  footer div { white-space:nowrap; }
   footer a { color:#6B7280; }
   .spin { display:inline-block; width:14px; height:14px; border:2px solid rgba(0,0,0,.15); border-top-color:var(--primary); border-radius:50%; animation:sp .8s linear infinite; vertical-align:-2px; margin-right:4px; }
   @keyframes sp { to { transform:rotate(360deg); } }
@@ -300,13 +301,13 @@
   </section>
 </main>
 
-<footer>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 통신판매업신고 제2026-경기의왕-0180호 · 대표번호 010-2322-0949 · 주소 경기도 의왕시 시청로 42, 108동 1702호(고천동, 의왕시청역 풍경채 어바니티) · toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · © 2026 · <span id="ver">od-2.19</span></footer>
+<footer id="foot"><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 대표번호 010-2322-0949</div><div>통신판매업신고 제2026-경기의왕-0180호 · 주소 경기도 의왕시 시청로 42, 108동 1702호</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.20</span></div></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.19';
+  var VER = 'od-2.20';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
@@ -573,6 +574,16 @@
   }
   $('addr').onclick = function () { if (this.hasAttribute('readonly')) openAddr(); };
   $('addrBtn').onclick = openAddr;
+
+  /* ── 맨 아래 사업자 정보: 3줄 안에 들어가게 글자 크기 맞춤 ── */
+  function fitFoot() {
+    var f = $('foot'), sz = 9.5; if (!f) return;
+    f.style.fontSize = sz + 'px';
+    var over = function () { return Array.prototype.some.call(f.children, function (d) { return d.scrollWidth > d.clientWidth + 0.5; }); };
+    while (over() && sz > 7) { sz -= 0.25; f.style.fontSize = sz + 'px'; }
+  }
+  fitFoot(); window.addEventListener('resize', fitFoot);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitFoot);
 
   /* ── 앱 설치·업데이트 ── */
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
