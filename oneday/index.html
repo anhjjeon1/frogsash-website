@@ -43,6 +43,10 @@
   .row + .row { margin-top:8px; }
   .row > * { flex:1; min-width:0; }
   .row > .stepno { flex:none; }
+  #addr, #res, #py { height:38px; padding:4px 10px; font-size:15px; border-radius:9px; }
+  #res, #py { padding-right:26px; }
+  .addr button { height:38px; }
+  .row + .row { margin-top:6px; }
   .win .w::placeholder, .win .h::placeholder { font-weight:400; font-size:14px; color:#9CA3AF; }
   .addr input { cursor:pointer; }
   .addr button { flex:none; width:46px; border:0; border-radius:10px; background:var(--primary); color:#fff; font-size:16px; cursor:pointer; }
@@ -285,13 +289,13 @@
   </section>
 </main>
 
-<footer>청개구리샤시 · 010-2322-0949 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.9</span></footer>
+<footer>청개구리샤시 · 010-2322-0949 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.10</span></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.9';
+  var VER = 'od-2.10';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
