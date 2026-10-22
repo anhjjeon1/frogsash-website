@@ -88,7 +88,13 @@
   .ph img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
   .ph .rm { position:absolute; top:3px; right:3px; z-index:3; width:20px; height:20px; border-radius:50%; border:0; background:rgba(0,0,0,.55); color:#fff; font-size:9px; cursor:pointer; padding:0; }
   .win .w, .win .h { height:38px; padding:2px 4px 2px 25px; font-size:15px; letter-spacing:-.3px; font-weight:700; text-align:right; border-radius:7px; }
-  .incl { margin-top:10px; border-radius:10px; background:#FFF7ED; border:1px solid #FED7AA; padding:9px 12px; font-size:13.5px; color:#9A3412; font-weight:700; line-height:1.6; }
+  .incl { margin-top:10px; border-radius:10px; background:#FFF7ED; border:1px solid #FED7AA; padding:9px 10px; font-size:13px; color:#7C2D12; line-height:1.5; }
+  .incl .in-row { display:flex; gap:6px; align-items:center; margin-bottom:4px; }
+  .incl .tag { flex:none; font-size:11.5px; color:#fff; border-radius:5px; padding:0 6px; line-height:19px; }
+  .incl .tag.ok { background:var(--primary); } .incl .tag.no { background:#C2410C; }
+  .incl .nolist { margin:2px 0 6px; padding:0 0 0 2px; list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:1px 8px; }
+  .incl .nolist li::before { content:'· '; color:#C2410C; font-weight:900; }
+  .incl .warn2 { font-weight:700; color:#9A3412; border-top:1px dashed #FDBA74; padding-top:6px; }
   .win.fromq { border-color:#93C5FD; background:#F5F9FF; }
   .addwin { width:100%; margin-top:10px; padding:11px; border:1.5px dashed #9CC9A2; border-radius:12px; background:none; color:var(--primary-dark); font:inherit; font-weight:700; cursor:pointer; }
   .go { width:100%; margin-top:14px; padding:15px; border:0; border-radius:12px; background:linear-gradient(135deg, var(--accent), #F25C1F); color:#fff; font:inherit; font-size:17.5px; font-weight:900; cursor:pointer; box-shadow:0 8px 20px rgba(255,107,53,.3); }
@@ -211,13 +217,23 @@
       <div class="after" id="rAfter"></div>
       <span class="off" id="rOff"></span>
     </div>
-    <div class="incl"><i class="fas fa-info-circle"></i> 위 견적은 시공비+자재비 포함 단가이며, 사다리차 사용료·철거비·추가 시공비는 포함되지 않습니다.</div>
+    <div class="incl">
+      <div class="in-row"><b class="tag ok">포함</b><span>창호 자재비 + 시공비</span></div>
+      <div class="in-row"><b class="tag no">불포함</b><span>아래 항목은 현장을 보고 따로 안내합니다.</span></div>
+      <ul class="nolist">
+        <li>기존 창호 철거비</li><li>사다리차(양중) 사용료</li>
+        <li>몰딩</li><li>스텐 방충망</li>
+        <li>내부창 자동핸들</li><li>타일 보수</li>
+        <li>보양비</li><li>그 밖의 추가 시공</li>
+      </ul>
+      <div class="warn2"><i class="fas fa-exclamation-circle"></i> 상기 가격은 현장 여건에 따라 변경될 수 있습니다.</div>
+    </div>
     <div class="cmp" id="cmp" style="display:none"></div>
     <div class="warn" id="rWarn"></div>
     <details><summary>창호별 금액 보기</summary><table id="rTable"></table></details>
     <button type="button" class="go" id="toConsult" style="background:var(--primary);box-shadow:none"><i class="fas fa-ticket"></i> 이 견적으로 상담 신청 · 쿠폰 받기</button>
     <div class="notice">
-      · 입력하신 크기로 계산한 참고 금액입니다. 실측 후 창호 상태·층수에 따라 달라질 수 있습니다.<br>
+      · 입력하신 크기로 계산한 참고 금액입니다. 정확한 금액은 실측 후 정해집니다.<br>
       · 할인 쿠폰은 상담 신청 후 발급되며, 계약할 때 쿠폰번호를 알려 주시면 계약 금액에서 할인됩니다.
     </div>
   </section>
@@ -301,13 +317,13 @@
   </section>
 </main>
 
-<footer id="foot"><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 대표번호 010-2322-0949</div><div>통신판매업신고 제2026-경기의왕-0180호 · 주소 경기도 의왕시 시청로 42, 108동 1702호</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.21</span></div></footer>
+<footer id="foot"><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 대표번호 010-2322-0949</div><div>통신판매업신고 제2026-경기의왕-0180호 · 주소 경기도 의왕시 시청로 42, 108동 1702호</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.22</span></div></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.21';
+  var VER = 'od-2.22';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
