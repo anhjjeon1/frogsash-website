@@ -87,6 +87,9 @@
   .win.fromq { border-color:#93C5FD; background:#F5F9FF; }
   .addwin { width:100%; margin-top:10px; padding:11px; border:1.5px dashed #9CC9A2; border-radius:12px; background:none; color:var(--primary-dark); font:inherit; font-weight:700; cursor:pointer; }
   .go { width:100%; margin-top:14px; padding:15px; border:0; border-radius:12px; background:linear-gradient(135deg, var(--accent), #F25C1F); color:#fff; font:inherit; font-size:17.5px; font-weight:900; cursor:pointer; box-shadow:0 8px 20px rgba(255,107,53,.3); }
+  .btnrow { display:flex; gap:6px; margin-top:8px; }
+  .btnrow .addwin { flex:0 0 36%; margin:0; height:44px; padding:0 6px; font-size:15px; }
+  .btnrow .go { flex:1; margin:0; height:44px; padding:0 8px; font-size:16.5px; box-shadow:0 4px 12px rgba(255,107,53,.28); white-space:nowrap; }
   .go:disabled { background:#D1D5DB; box-shadow:none; cursor:not-allowed; }
   .err { color:#D92D20; font-size:13.5px; margin-top:8px; }
   /* 결과 */
@@ -185,8 +188,10 @@
     <div class="qmsg" id="qmsg"></div>
     <div class="whead"><span>사진</span><span>위치·종류</span><span>치수(cm)</span></div>
     <div class="wins" id="wins"></div>
-    <button type="button" class="addwin" id="addWin"><i class="fas fa-plus"></i> 창호 추가</button>
-    <button type="button" class="go" id="calc"><i class="fas fa-bolt"></i> 무료 견적 보기</button>
+    <div class="btnrow">
+      <button type="button" class="addwin" id="addWin"><i class="fas fa-plus"></i> 창호 추가</button>
+      <button type="button" class="go" id="calc"><i class="fas fa-bolt"></i> 무료 견적 보기</button>
+    </div>
     <div class="err" id="err1"></div>
   </section>
 
@@ -291,13 +296,13 @@
   </section>
 </main>
 
-<footer><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426</div><div>통신판매업신고 제2026-경기의왕-0180호 · 대표번호 010-2322-0949</div><div>경기도 의왕시 시청로 42, 108동 1702호(고천동, 의왕시청역 풍경채 어바니티)</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · © 2026 · <span id="ver">od-2.11</span></div></footer>
+<footer><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426</div><div>통신판매업신고 제2026-경기의왕-0180호 · 대표번호 010-2322-0949</div><div>경기도 의왕시 시청로 42, 108동 1702호(고천동, 의왕시청역 풍경채 어바니티)</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · © 2026 · <span id="ver">od-2.12</span></div></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.11';
+  var VER = 'od-2.12';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
