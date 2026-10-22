@@ -46,6 +46,7 @@
   #addr, #res, #py { height:38px; padding:4px 10px; font-size:15px; border-radius:9px; }
   #res, #py { padding-right:26px; }
   .addr button { height:38px; }
+  #addr::placeholder { font-size:14px; letter-spacing:-.4px; }
   .row.sub { padding-left:34px; padding-right:54px; }   /* 주소 칸 양 끝(번호 26+8, 검색 46+8)에 맞춤 */
   .row + .row { margin-top:6px; }
   .win .w::placeholder, .win .h::placeholder { font-weight:400; font-size:14px; color:#9CA3AF; }
@@ -167,7 +168,7 @@
   <section class="card">
     <div class="row addr">
       <span class="stepno" title="집 정보">1</span>
-      <input type="text" id="addr" placeholder="주소 검색 (예: 래미안 101동 1501호)" readonly>
+      <input type="text" id="addr" placeholder="주소 검색 (예: 사당동 래미안 101동 1502호)" readonly>
       <button type="button" id="addrBtn" aria-label="주소 검색"><i class="fas fa-search"></i></button>
     </div>
     <div class="row sub">
@@ -296,13 +297,13 @@
   </section>
 </main>
 
-<footer>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 통신판매업신고 제2026-경기의왕-0180호 · 대표번호 010-2322-0949 · 주소 경기도 의왕시 시청로 42, 108동 1702호(고천동, 의왕시청역 풍경채 어바니티) · toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · © 2026 · <span id="ver">od-2.14</span></footer>
+<footer>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 통신판매업신고 제2026-경기의왕-0180호 · 대표번호 010-2322-0949 · 주소 경기도 의왕시 시청로 42, 108동 1702호(고천동, 의왕시청역 풍경채 어바니티) · toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · © 2026 · <span id="ver">od-2.15</span></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.14';
+  var VER = 'od-2.15';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
