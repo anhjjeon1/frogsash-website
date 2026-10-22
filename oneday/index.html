@@ -147,6 +147,11 @@
   .agree-row .agree-all { flex:1; margin:0; font-size:13px; font-weight:700; padding:9px 10px; line-height:1.4; }
   .agree-row .tg { flex:none; font-size:12.5px; color:var(--gray); background:none; border:0; text-decoration:underline; cursor:pointer; }
   #termList { margin-top:6px; }
+  .pnote { font-size:13px; color:var(--text2); background:#F6F8F7; border-radius:10px; padding:9px 10px; margin:0 0 8px; line-height:1.6; }
+  .pnote i { color:var(--primary); margin-right:3px; }
+  .pnote a { color:var(--primary); font-weight:700; }
+  .term.opt .head label { font-size:14px; }
+  .badge-opt { color:var(--text3); font-weight:700; }
   .sendto { font-size:12px; color:var(--gray); text-align:center; margin-top:6px; line-height:1.5; }
   .terms h3 { font-size:15.5px; margin:0 0 8px; }
   .agree-all { display:flex; gap:10px; align-items:center; font-weight:900; background:var(--soft); border-radius:10px; padding:11px 12px; cursor:pointer; margin-bottom:8px; }
@@ -390,42 +395,21 @@
     </div>
     <form id="form" novalidate>
       <div class="terms">
-        <div class="agree-row"><label class="agree-all"><input type="checkbox" id="all"><span><span style="color:#D92D20">[필수]</span> 개인정보 수집·이용, <span class="basisName">시공 업체</span> 정보 제공, 견적·쿠폰 안내에 모두 동의합니다</span></label><button type="button" class="tg" id="termsTg">보기</button></div>
-        <div id="termList" style="display:none">
-        <div class="term">
-          <div class="head"><input type="checkbox" class="ag" id="t1"><label for="t1"><span class="badge-req">[필수]</span> 개인정보 수집·이용 동의</label><button type="button" class="tg">보기</button></div>
-          <div class="body"><ul>
-            <li>수집 항목: 이름, 연락처, 주소, 주거 형태·평형, 창호 크기·사진, 올려 주신 견적서 사진, 요청 사항</li>
-            <li>이용 목적: 원데이시공 상담 연락, 시공 업체 연결, 쿠폰 예약번호 발급과 계약 시 할인 확인</li>
-            <li>보유 기간: 상담이 끝난 뒤 1년간 보관한 뒤 파기합니다. 계약이 이루어지지 않으면 확인 후 바로 파기합니다.</li>
-            <li>상담 정보는 Google(미국) 시트에 저장되고, 접수 알림과 사진은 텔레그램으로 회사 담당자에게 전송됩니다(국외 이전). 견적서 사진의 글자 판독에는 Google AI를 씁니다.</li>
-            <li>동의를 거부하실 수 있으며, 이 경우 010-2322-0949로 전화 상담해 주세요.</li>
-            <li>자세한 내용은 <a href="https://frogsash.co.kr/privacy/" target="_blank" style="color:var(--primary); font-weight:700;">개인정보처리방침</a>을 확인해 주세요.</li>
-          </ul></div>
-        </div>
-        <div class="term">
-          <div class="head"><input type="checkbox" class="ag" id="t2"><label for="t2"><span class="badge-req">[필수]</span> 시공 업체에 정보 제공 동의</label><button type="button" class="tg">보기</button></div>
+        <p class="pnote"><i class="fas fa-shield-halved"></i> [상담 요청]을 누르면 입력하신 연락처·주소·창호 정보와 사진이 <b>청개구리샤시</b>에 전달됩니다. 견적은 참고 금액이며, 쿠폰 할인은 계약할 때 반영됩니다. <a href="https://frogsash.co.kr/privacy/" target="_blank">개인정보처리방침</a></p>
+        <div class="term opt">
+          <div class="head"><input type="checkbox" id="t2"><label for="t2"><span class="badge-opt">[선택]</span> <b class="basisName">시공 업체</b> 담당자에게도 바로 전달</label><button type="button" class="tg">보기</button></div>
           <div class="body"><ul>
             <li>제공받는 곳: <b class="basisName">청개구리샤시 제휴 시공 업체</b></li>
-            <li>제공 항목: 이름, 연락처, 주소, 창호 크기·사진·견적 내역, 쿠폰 예약번호</li>
+            <li>제공 항목: 연락처, 주소, 주거 형태·평형, 창호 정보·사진, 견적 내역, 쿠폰 예약번호</li>
             <li>제공 목적: 실측 일정 연락과 시공 견적·계약</li>
             <li>보유 기간: 시공 계약·하자 보수 기간이 끝날 때까지. 계약하지 않으면 상담이 끝난 뒤 바로 파기합니다.</li>
+            <li>체크하지 않아도 상담 요청은 그대로 접수되며, 청개구리샤시가 연락드린 뒤 업체를 연결해 드립니다.</li>
           </ul></div>
-        </div>
-        <div class="term">
-          <div class="head"><input type="checkbox" class="ag" id="t3"><label for="t3"><span class="badge-req">[필수]</span> 견적·쿠폰 안내 확인</label><button type="button" class="tg">보기</button></div>
-          <div class="body"><ul>
-            <li>화면의 견적은 참고용 예상 금액이며, 실측 후 최종 금액이 정해집니다.</li>
-            <li>상담 신청 때 받는 번호는 쿠폰 예약번호이며, 할인은 청개구리샤시 제휴 업체와 계약할 때 계약 금액에 한 번 반영됩니다.</li>
-            <li>계약할 때 업체에 예약번호를 꼭 알려 주세요. 번호를 알리지 않으면 할인이 반영되지 않을 수 있습니다.</li>
-            <li>쿠폰은 현금으로 바꾸거나 다른 사람에게 넘길 수 없습니다.</li>
-          </ul></div>
-        </div>
         </div>
       </div>
       <input type="text" id="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" aria-hidden="true">
       <button type="submit" class="go" id="send"><i class="fas fa-paper-plane"></i> 상담 요청 · 바로 전송</button>
-      <div class="sendto">청개구리샤시와 <b class="basisName">시공 업체</b> 담당자에게 견적·주소·연락처가 바로 전송되고, 쿠폰 예약번호가 나옵니다.</div>
+      <div class="sendto">청개구리샤시에 견적·주소·연락처가 바로 전송되고, 쿠폰 예약번호가 나옵니다.</div>
       <div class="err" id="err2"></div>
     </form>
     </div>
@@ -449,7 +433,7 @@
         <a class="b-tel" href="tel:010-2322-0949"><i class="fas fa-phone"></i> 전화</a>
       </div>
       <p class="ok-text"><i class="fas fa-check-circle" style="color:var(--primary)"></i> 상담 요청이 접수되었습니다 (접수번호 <b id="okNo"></b>).<br>
-        청개구리샤시와 <b class="basisName">시공 업체</b> 담당자에게 전달되었습니다. 곧 <b>입력하신 연락처로 전화</b>드립니다. <b>계약하실 때 이 예약번호를 알려 주시면 계약 금액에서 할인이 반영</b>됩니다.</p>
+        <span id="okTo">청개구리샤시에</span> 전달되었습니다. 곧 <b>입력하신 연락처로 전화</b>드립니다. <b>계약하실 때 이 예약번호를 알려 주시면 계약 금액에서 할인이 반영</b>됩니다.</p>
     </div>
 
     <div id="fail">
@@ -465,13 +449,13 @@
   </section>
 </main>
 
-<footer id="foot"><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 대표번호 010-2322-0949</div><div>통신판매업신고 제2026-경기의왕-0180호 · 주소 경기도 의왕시 시청로 42, 108동 1702호</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.32</span></div></footer>
+<footer id="foot"><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 대표번호 010-2322-0949</div><div>통신판매업신고 제2026-경기의왕-0180호 · 주소 경기도 의왕시 시청로 42, 108동 1702호</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.33</span></div></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.32';
+  var VER = 'od-2.33';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
@@ -658,19 +642,14 @@
     $('resEmpty').style.display = 'none'; $('resBody').style.display = '';
     $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-  $('termsTg').onclick = function () { var t = $('termList'), on = t.style.display === 'none'; t.style.display = on ? '' : 'none'; this.textContent = on ? '닫기' : '보기'; };
 
   /* ── 약관 ── */
-  var ags = Array.prototype.slice.call(document.querySelectorAll('.ag'));
-  $('all').onchange = function () { ags.forEach(function (c) { c.checked = $('all').checked; }); };
-  ags.forEach(function (c) { c.onchange = function () { $('all').checked = ags.every(function (x) { return x.checked; }); }; });
   each('.term .tg', function (b) { b.onclick = function () { var t = b.closest('.term'); t.classList.toggle('open'); b.textContent = t.classList.contains('open') ? '닫기' : '보기'; }; });
 
   /* ── 상담 신청 ── */
   $('form').addEventListener('submit', function (ev) {
     ev.preventDefault();
     if (!/^[0-9\-\s]{9,14}$/.test($('tel').value.trim())) { $('err2').textContent = '맨 위 ① 연락처 칸에 연락처를 적어 주세요. (예: 010-0000-0000)'; $('tel').scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(function () { $('tel').focus(); }, 400); return; }
-    if (!ags.every(function (c) { return c.checked; })) { $('err2').textContent = '[필수] 약관에 동의해 주세요.'; return; }
     if (DEMO) { $('err2').textContent = '시험 화면(demo)에서는 신청이 보내지지 않습니다.'; return; }
     $('err2').textContent = '';
     var its = last ? last.items : items();
@@ -680,7 +659,7 @@
     var qtxt = quote && (quote.total || quote.company) ? [quote.company, quote.win ? '창호 ' + nf(quote.win) + '원' : '', quote.total ? '최종 ' + nf(quote.total) + '원' : '', quote.vat ? '부가세 ' + quote.vat : ''].filter(Boolean).join(' ') : '';
     var data = { kind: 'oneday', name: '', tel: $('tel').value.trim(), addr: $('addr').value.trim(), res: $('res').value, py: $('py').value,
       items: its, when: '', memo: '', quote: qtxt, photos: photos.slice(0, 10),
-      t1: $('t1').checked, t2: $('t2').checked, website: $('website').value };
+      t1: true, t2: $('t2').checked, website: $('website').value };
     $('msg').textContent = '[청개구리샤시 원데이시공 상담요청]\n연락처: ' + data.tel + '\n주소: ' + (data.addr || '미기재') +
       '\n' + [data.res, data.py].filter(Boolean).join(' ') + '\n창호: ' + its.map(function (it) { return it.loc + ' ' + TYPES[it.type] + ' ' + it.w + '×' + it.h; }).join(', ') +
       (last && last.total ? '\n예상 견적: ' + nf(last.total) + '원' : '') + (qtxt ? '\n받은 견적: ' + qtxt : '');
@@ -695,6 +674,7 @@
     $('form').style.display = 'none'; $('consult').classList.add('show'); $('fail').classList.remove('show');
     each('.pctv', function (e) { e.textContent = j.discount; });
     $('cCode').textContent = j.coupon; $('okNo').textContent = '#' + j.no;
+    $('okTo').textContent = j.partner ? '청개구리샤시와 ' + (j.basis || '시공 업체') + ' 담당자에게' : '청개구리샤시에';
     $('cComp').textContent = '사용처: ' + (j.basis || '청개구리샤시 제휴 업체');
     $('cPrice').textContent = j.total ? '예상 ' + nf(j.total) + '원 → 쿠폰 적용 ' + nf(j.after) + '원' : '';
     try { localStorage.setItem('od_coupon', JSON.stringify({ code: j.coupon, no: j.no, t: Date.now() })); } catch (x) {}
