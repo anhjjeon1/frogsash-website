@@ -344,13 +344,13 @@
   </section>
 </main>
 
-<footer id="foot"><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 대표번호 010-2322-0949</div><div>통신판매업신고 제2026-경기의왕-0180호 · 주소 경기도 의왕시 시청로 42, 108동 1702호</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.25</span></div></footer>
+<footer id="foot"><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 대표번호 010-2322-0949</div><div>통신판매업신고 제2026-경기의왕-0180호 · 주소 경기도 의왕시 시청로 42, 108동 1702호</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.26</span></div></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.25';
+  var VER = 'od-2.26';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
@@ -462,8 +462,8 @@
       if (!j.items.length) { qmsg('<i class="fas fa-info-circle"></i> 견적서에서 창호 품목을 찾지 못했습니다' + (j.note ? ' (' + esc(j.note) + ')' : '') + '. 글자가 잘 보이게 다시 찍거나, 아래에 직접 넣어 주세요.', 'bad'); return; }
       var typed = wins.some(function (e) { return +e.w > 0 || +e.h > 0; });
       if (typed && !confirm('입력하신 치수를 견적서 내용으로 바꿀까요?')) return;
-      var old = wins; wins = j.items.map(function (it) {
-        var loc = it.loc || '기타', w = newWin(loc);
+      var old = wins; wins = j.items.map(function (it, i) {
+        var loc = it.loc || ('견적 ' + (it.no || i + 1) + '번'), w = newWin(loc);   // 위치가 없으면 견적서 NO로 이름
         if (it.type) w.type = it.type;
         w.w = it.w ? String(Math.round(it.w) / 10) : ''; w.h = it.h ? String(Math.round(it.h) / 10) : ''; w.q = true; w.qp = it.price || 0;
         var same = old.filter(function (o) { return o.photo && o.loc === loc; })[0]; if (same) w.photo = same.photo;
