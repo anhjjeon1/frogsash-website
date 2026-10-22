@@ -112,7 +112,9 @@
   .go:disabled { background:#D1D5DB; box-shadow:none; cursor:not-allowed; }
   .err { color:#D92D20; font-size:13.5px; margin-top:8px; }
   /* 결과 */
-  #result, #consult { display:none; } #result.show, #consult.show { display:block; }
+  #consult { display:none; } #consult.show { display:block; }
+  .resempty { font-size:13.5px; color:var(--gray); background:#F9FAFB; border:1px dashed #D1D5DB; border-radius:10px; padding:12px; text-align:center; }
+  .resempty i { color:var(--primary-light); margin-right:4px; }
   .basis { font-size:12.5px; color:var(--gray); margin:-6px 0 10px; }
   .big { text-align:center; border:1.5px solid var(--primary-light); background:linear-gradient(180deg,#F6FBF7,#fff); border-radius:14px; padding:16px 10px; }
   .big .lb { font-size:13px; color:#374151; font-weight:700; }
@@ -231,6 +233,8 @@
   <!-- ③ 결과 -->
   <section class="card" id="result">
     <h2><span class="no">3</span> 청개구리 원데이 견적</h2>
+    <div class="resempty" id="resEmpty"><i class="fas fa-calculator"></i> 창호 크기를 넣고 <b>[무료 견적 보기]</b>를 누르면 여기에 견적이 나옵니다.</div>
+    <div id="resBody" style="display:none">
     <div class="basis" id="basis"></div>
     <div class="demo-flag" id="demoFlag"><i class="fas fa-flask"></i> 시험 화면입니다. 견적서 판독은 예시 값이고, 신청은 보내지지 않습니다.</div>
     <div class="big">
@@ -257,6 +261,7 @@
     <div class="notice">
       · 입력하신 크기로 계산한 참고 금액입니다. 정확한 금액은 실측 후 정해집니다.<br>
       · 할인 쿠폰은 상담 신청 후 발급되며, 계약할 때 쿠폰번호를 알려 주시면 계약 금액에서 할인됩니다.
+    </div>
     </div>
   </section>
 
@@ -339,13 +344,13 @@
   </section>
 </main>
 
-<footer id="foot"><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 대표번호 010-2322-0949</div><div>통신판매업신고 제2026-경기의왕-0180호 · 주소 경기도 의왕시 시청로 42, 108동 1702호</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.23</span></div></footer>
+<footer id="foot"><div>상호 청개구리샤시 · 대표 전영웅 · 사업자등록번호 123-36-31426 · 대표번호 010-2322-0949</div><div>통신판매업신고 제2026-경기의왕-0180호 · 주소 경기도 의왕시 시청로 42, 108동 1702호</div><div>toi9113@naver.com · 개인정보 보호책임자 전영웅 · <a href="https://frogsash.co.kr/privacy/">개인정보처리방침</a> · <span id="ver">od-2.24</span></div></footer>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 (function () {
-  var VER = 'od-2.23';
+  var VER = 'od-2.24';
   var API = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
   var DEMO = /[?&]demo=1/.test(location.search);
   var $ = function (id) { return document.getElementById(id); };
@@ -529,7 +534,7 @@
       cmp.style.display = '';
     } else cmp.style.display = 'none';
     $('demoFlag').style.display = DEMO ? 'block' : 'none';
-    $('result').classList.add('show');
+    $('resEmpty').style.display = 'none'; $('resBody').style.display = '';
     $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   $('toConsult').onclick = function () {
