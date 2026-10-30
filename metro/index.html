@@ -316,7 +316,6 @@
         <select id="siteSelect" onchange="App.changeSite(this.value)" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.78rem;font-family:'Noto Sans KR';font-weight:700;background:var(--surface);color:var(--text);outline:none;cursor:pointer;appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22%230891B2%22><path d=%22M7 10l5 5 5-5z%22/></svg>');background-repeat:no-repeat;background-position:right 8px center;padding-right:30px">
           <option value="">시트 목록 불러오는 중...</option>
         </select>
-        <div class="sf-hint" id="siteSelectHint" style="font-size:.5rem;color:var(--text-dim);margin-top:3px">현장을 선택하면 해당 시트가 자동 로드됩니다</div>
       </div>
 
       <!-- 로드된 상태 -->
@@ -336,16 +335,19 @@
 
     <!-- 2. 하자 리스트 (동/호 필터) -->
     <div class="sec sec-tight" id="secLog">
-      <div class="log-head" style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px">
+      <div class="log-head" style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
         <h3 style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
           <span class="sec-num">2</span>
-          <span style="font-size:.78rem;font-weight:800">하자 리스트</span>
+          <span style="font-size:.78rem;font-weight:800;white-space:nowrap">하자 리스트</span>
           <span class="log-count" id="logCount" style="font-size:.6rem;color:var(--text-dim);font-weight:600">(0건)</span>
         </h3>
-        <button id="btnToggleDone" onclick="App.toggleHideCompleted()" style="font-size:.55rem;font-weight:700;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap">✅ 완료 숨김</button>
-        <button id="btnTogglePhotos" onclick="App.toggleHidePhotos()" style="font-size:.55rem;font-weight:700;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap">📷 사진 숨김</button>
-        <button id="btnRestore" onclick="App.restoreLast()" title="방금 삭제한 행 즉시 복구 (텍스트만, 사진은 Drive 휴지통에서 별도 복원)" style="font-size:.55rem;font-weight:700;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap;margin-left:4px">↶ 복구</button>
         <input type="hidden" id="fSite">
+      </div>
+      <!-- v23.44: 완료·사진·복구 버튼은 제목 아래 한 줄 -->
+      <div class="log-btns" style="display:flex;gap:6px;margin-bottom:8px">
+        <button id="btnToggleDone" onclick="App.toggleHideCompleted()" style="font-size:.55rem;font-weight:700;flex:1;padding:6px 4px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap">✅ 완료 숨김</button>
+        <button id="btnTogglePhotos" onclick="App.toggleHidePhotos()" style="font-size:.55rem;font-weight:700;flex:1;padding:6px 4px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap">📷 사진 숨김</button>
+        <button id="btnRestore" onclick="App.restoreLast()" title="방금 삭제한 행 즉시 복구 (텍스트만, 사진은 Drive 휴지통에서 별도 복원)" style="font-size:.55rem;font-weight:700;flex:1;padding:6px 4px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap">↶ 복구</button>
       </div>
       <!-- 동/호 필터 -->
       <div class="no-print" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px;align-items:center">
@@ -386,7 +388,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.43'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.44'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC',VERSION:'METRO_APP_VERSION',ADMIN:'METRO_ADMIN'};
 // v23.40: 관리자 모드 키. 관리자 PC에서 1회 frogsash.co.kr/metro?admin=mrns2026 접속 시 그 브라우저에 영구 저장.
 //         폰(작업자)은 일반 URL → 삭제 버튼 숨김(추가·사진교체만). ?admin=off 로 해제.
