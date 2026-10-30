@@ -393,7 +393,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.48'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.49'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC',VERSION:'METRO_APP_VERSION',ADMIN:'METRO_ADMIN'};
 // v23.40: 관리자 모드 키. 관리자 PC에서 1회 frogsash.co.kr/metro?admin=mrns2026 접속 시 그 브라우저에 영구 저장.
 //         폰(작업자)은 일반 URL → 삭제 버튼 숨김(추가·사진교체만). ?admin=off 로 해제.
@@ -790,9 +790,11 @@ var App={
     for(var i=0;i<this.sourceData.length;i++){var w=this.gv(this.sourceData[i],'work'); if(w&&w.length<=20) cnt[w]=(cnt[w]||0)+1;}
     // v23.48: 일매출 단가 = VLOOKUP(K, 그 현장 하자분류표 Q~U) → 표에 있는 이름만 고르게 함(없는 이름은 0원)
     var qset={},qn=0;
-    for(var q=0;q<this.sourceData.length&&q<60;q++){
+    // v23.49: 표의 '합 계' 줄에서 멈춤 (그 아래 월별 매출 보고서 글자가 섞이지 않게), 숫자·빈값 제외
+    for(var q=0;q<this.sourceData.length&&q<40;q++){
       var qv=String(this.sourceData[q]['하자분류']||'').trim();
-      if(qv&&!/^합\s*계$/.test(qv)&&qv.length<=20&&!qset[qv]){qset[qv]=1;qn++;}
+      if(/^합\s*계$/.test(qv)) break;
+      if(qv&&!/^[\d.,\s-]+$/.test(qv)&&qv.length<=20&&!qset[qv]){qset[qv]=1;qn++;}
     }
     if(qn){ for(var qk in qset){ if(!cnt[qk]) cnt[qk]=0; } for(var ck in cnt){ if(!qset[ck]) delete cnt[ck]; } }
     var ks=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a];});
