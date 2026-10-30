@@ -108,6 +108,12 @@
     .photo-cell.has-photo .pc-empty{display:none}
     .photo-cell .pc-del{position:absolute;top:0;right:0;width:20px;height:20px;background:var(--danger);color:white;border:none;border-radius:0 0 0 5px;font-size:12px;font-weight:900;line-height:1;padding:0;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:10;box-shadow:0 2px 4px rgba(0,0,0,.35);touch-action:manipulation}
     .photo-cell.has-photo .pc-del{display:flex}
+    /* v23.43: 완료 체크박스 + 완료일 / 사진칸 숨김 */
+    .log-table.no-photos .ph-col{display:none}
+    .done-cell{padding:0!important;width:34px;cursor:pointer}
+    .done-cell input{width:22px;height:22px;margin:0;accent-color:#16A34A;cursor:pointer;vertical-align:middle}
+    .done-cell.busy input{opacity:.35}
+    .td-ddate{width:34px;font-size:.6rem!important;color:#15803D!important}
     .photo-cell.uploading::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center}
     .photo-cell.uploading::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;z-index:6}
     .log-table tbody tr:nth-child(even){background:var(--surface-alt)}
@@ -337,6 +343,7 @@
           <span class="log-count" id="logCount" style="font-size:.6rem;color:var(--text-dim);font-weight:600">(0건)</span>
         </h3>
         <button id="btnToggleDone" onclick="App.toggleHideCompleted()" style="font-size:.55rem;font-weight:700;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap">✅ 완료 숨김</button>
+        <button id="btnTogglePhotos" onclick="App.toggleHidePhotos()" style="font-size:.55rem;font-weight:700;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap">📷 사진 숨김</button>
         <button id="btnRestore" onclick="App.restoreLast()" title="방금 삭제한 행 즉시 복구 (텍스트만, 사진은 Drive 휴지통에서 별도 복원)" style="font-size:.55rem;font-weight:700;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap;margin-left:4px">↶ 복구</button>
         <input type="hidden" id="fSite">
       </div>
@@ -355,9 +362,9 @@
       <div class="table-wrap">
         <table class="log-table">
           <thead><tr>
-            <th style="width:20px">No</th><th style="width:24px">동</th><th style="width:30px">호</th><th style="width:36px">위치</th><th>하자내용</th><th style="width:46px">수리전</th><th style="width:46px">수리후</th><th style="width:46px">확인서</th>
+            <th style="width:20px">No</th><th style="width:24px">동</th><th style="width:30px">호</th><th style="width:36px">위치</th><th>하자내용</th><th class="ph-col" style="width:46px">수리전</th><th class="ph-col" style="width:46px">수리후</th><th class="ph-col" style="width:46px">확인서</th><th style="width:34px">완료</th><th style="width:34px">완료일</th>
           </tr></thead>
-          <tbody id="logBody"><tr><td colspan="8" class="log-empty">구글시트에서 데이터를 불러오세요</td></tr></tbody>
+          <tbody id="logBody"><tr><td colspan="10" class="log-empty">구글시트에서 데이터를 불러오세요</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -379,7 +386,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.40'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.43'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC',VERSION:'METRO_APP_VERSION',ADMIN:'METRO_ADMIN'};
 // v23.40: 관리자 모드 키. 관리자 PC에서 1회 frogsash.co.kr/metro?admin=mrns2026 접속 시 그 브라우저에 영구 저장.
 //         폰(작업자)은 일반 URL → 삭제 버튼 숨김(추가·사진교체만). ?admin=off 로 해제.
@@ -693,6 +700,7 @@ var App={
 
   // === 하자 리스트 렌더링 ===
   renderLog:function(){
+    this._applyPhotoVisibility();
     if(!this.sourceData.length){
       document.getElementById('logCount').textContent='(0건)';
       document.getElementById('logBody').innerHTML='<tr><td colspan="10" class="log-empty">구글시트에서 데이터를 불러오세요</td></tr>';
@@ -755,12 +763,29 @@ var App={
         +this._photoCell(rn,'before',ph.before)
         +this._photoCell(rn,'after',ph.after)
         +this._photoCell(rn,'confirm',ph.confirm)
+        +this._doneCell(rn,no,isDone)
+        +'<td class="td-ddate">'+(isDone?this._shortDate(this.gv(r,'doneDate')):'')+'</td>'
       +'</tr>';
     }
     document.getElementById('logBody').innerHTML=html;
   },
 
   // v23.3: 완료 행 숨김 토글
+  // v23.43: 사진칸(수리전·수리후·확인서) 숨김 — 현장(시트)별로 이 폰에 기억. 기본=숨김
+  _photosKey:function(){return 'METRO_HIDE_PHOTOS_'+(this.getSetting('SHEET_NAME')||'');},
+  isPhotosHidden:function(){try{return localStorage.getItem(this._photosKey())!=='0';}catch(e){return true;}},
+  toggleHidePhotos:function(){
+    var hide=!this.isPhotosHidden();
+    try{localStorage.setItem(this._photosKey(),hide?'1':'0');}catch(e){}
+    this.renderLog();
+  },
+  _applyPhotoVisibility:function(){
+    var hide=this.isPhotosHidden();
+    var t=document.querySelector('.log-table'); if(t) t.classList.toggle('no-photos',hide);
+    var b=document.getElementById('btnTogglePhotos');
+    if(b){ b.textContent=hide?'📷 사진 숨김':'📷 사진 보임'; b.style.background=hide?'var(--surface)':'var(--accent-pale)'; }
+  },
+
   toggleHideCompleted:function(){
     this.hideCompleted=!this.hideCompleted;
     this.renderLog();
@@ -803,12 +828,75 @@ var App={
       .finally(function(){self.hideLoader();});
   },
 
+  // v23.43: 완료 체크박스 (작업자·관리자 모두) — 체크=완료일 오늘+완료 / 해제=둘 다 지움
+  _doneCell:function(rn,no,isDone){
+    var busy=this.doneBusy&&this.doneBusy[rn];
+    return '<td class="done-cell'+(busy?' busy':'')+'" onclick="event.stopPropagation();if(event.target.tagName!==\'INPUT\')App.toggleDone('+rn+',\''+String(no).replace(/'/g,'')+'\','+(isDone?'false':'true')+')">'
+      +'<input type="checkbox" '+(isDone?'checked ':'')+(busy?'disabled ':'')
+      +'onclick="event.stopPropagation();event.preventDefault();App.toggleDone('+rn+',\''+String(no).replace(/'/g,'')+'\','+(isDone?'false':'true')+')" aria-label="완료"></td>';
+  },
+  // 폰 표시는 10/30 (시트에는 yyyy-MM-dd 그대로)
+  _shortDate:function(v){
+    v=String(v||'').trim(); if(!v) return '';
+    var m=v.match(/^(\d{4})[-.\/]\s*(\d{1,2})[-.\/]\s*(\d{1,2})/);
+    if(m) return (+m[2])+'/'+(+m[3]);
+    // 시트 날짜가 'Wed May 21 2025 00:00:00 GMT+0900' 형태로 올 때 (시트 기준 날짜 그대로)
+    var mm=v.match(/^[A-Za-z]{3} ([A-Za-z]{3}) (\d{1,2}) \d{4}/);
+    if(mm){var mi='JanFebMarAprMayJunJulAugSepOctNovDec'.indexOf(mm[1]);if(mi>=0) return (mi/3+1)+'/'+(+mm[2]);}
+    var d=new Date(v); if(!isNaN(d)) return (d.getMonth()+1)+'/'+d.getDate();
+    return v;
+  },
+  _rowByNum:function(rn){
+    for(var i=0;i<this.sourceData.length;i++){ if(this.sourceData[i]._rowNum===rn) return this.sourceData[i]; }
+    return null;
+  },
+  toggleDone:function(rn,no,on){
+    this.doneBusy=this.doneBusy||{};
+    if(this.doneBusy[rn]) return;
+    var row=this._rowByNum(rn);
+    var dh=row?this.parseDH(row):{dong:'',ho:''};
+    var who=(dh.dong?dh.dong+'동 ':'')+(dh.ho?dh.ho+'호 ':'')+'(No.'+no+')';
+    var msg=on?who+'\n완료 처리할까요?\n(완료일에 오늘 날짜가 들어갑니다)':who+'\n완료를 해제할까요?\n(완료일이 지워지고 그날 매출에서도 빠집니다)';
+    if(!confirm(msg)) return;
+    var url=this.getSetting('SCRIPT'),sid=this.getSetting('SHEET'),sn=this.getSetting('SHEET_NAME');
+    if(!url||!sid){this.toast('설정을 먼저 완료하세요','error');return;}
+    var self=this;
+    this.doneBusy[rn]=true; this.renderLog();
+    var xhr=new XMLHttpRequest();
+    xhr.open('POST',url,true);
+    xhr.timeout=30000;
+    var finish=function(ok,text){
+      delete self.doneBusy[rn];
+      if(ok) self.toast(text,'success',2500); else self.toast(text,'error',5000);
+      self.renderLog();
+    };
+    xhr.onload=function(){
+      try{
+        var d=JSON.parse(xhr.responseText||'');
+        if(d.status==='ok'){
+          if(row){
+            var cm=self.colMap;
+            if(cm.done) row[cm.done]=d.done?(d.doneValue||'완료'):'';
+            if(cm.doneDate) row[cm.doneDate]=d.done?(d.doneDate||''):'';
+          }
+          finish(true,d.done?'완료 처리됨 ('+self._shortDate(d.doneDate)+')':'완료 해제됨');
+        }else{
+          finish(false,'실패: '+(d.message||''));
+          if(d.code==='ROW_MOVED') setTimeout(function(){self.loadFromSheet();},800);
+        }
+      }catch(e){ finish(false,'실패: 응답 오류 — 새로고침 후 확인하세요'); }
+    };
+    xhr.onerror=function(){finish(false,'실패: 네트워크 오류');};
+    xhr.ontimeout=function(){finish(false,'시간 초과 — 새로고침해서 반영됐는지 확인하세요');};
+    xhr.send(JSON.stringify({action:'setDone',sheetId:sid,sheetName:sn,rowNum:rn,expectNo:(row?this.gv(row,'no'):''),done:!!on}));
+  },
+
   _photoCell:function(rn,type,src){
     var has=src?'has-photo':'';
     var uploading=this.uploadingCells[rn+'_'+type]?'uploading':'';
     // v21.7: 폰 X 버튼 터치 인식 강화 — touchend가 click보다 먼저 발화하도록
     var delHandler="event.stopPropagation();event.preventDefault();App.delRowPhoto("+rn+",'"+type+"');return false;";
-    return '<td class="photo-cell '+has+' '+uploading+'" onclick="App.takeRowPhoto('+rn+',\''+type+'\')">'
+    return '<td class="photo-cell ph-col '+has+' '+uploading+'" onclick="App.takeRowPhoto('+rn+',\''+type+'\')">'
       +(src?'<img src="'+src+'">':'<div class="pc-empty"><i class="fa-solid fa-camera"></i><span>촬영</span></div>')
       // v23.40: 사진 삭제 X는 관리자만. 작업자는 셀 탭으로 재촬영(덮어쓰기)만 가능 — 삭제 차단
       +(this.isAdmin?'<button class="pc-del" ontouchend="'+delHandler+'" onclick="'+delHandler+'">&#10005;</button>':'')
