@@ -347,20 +347,23 @@
       </div>
       <!-- v23.44: 완료·사진·복구 버튼은 제목 아래 한 줄 -->
       <div class="log-btns" style="display:flex;gap:6px;margin-bottom:8px">
-        <button id="btnToggleDone" onclick="App.toggleHideCompleted()" style="font-size:.55rem;font-weight:700;flex:1;padding:6px 4px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap">✅ 완료 숨김</button>
-        <button id="btnTogglePhotos" onclick="App.toggleHidePhotos()" style="font-size:.55rem;font-weight:700;flex:1;padding:6px 4px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap">📷 사진 숨김</button>
-        <button id="btnRestore" onclick="App.restoreLast()" title="방금 삭제한 행 즉시 복구 (텍스트만, 사진은 Drive 휴지통에서 별도 복원)" style="font-size:.55rem;font-weight:700;flex:1;padding:6px 4px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap">↶ 복구</button>
+        <!-- v23.46: 완료 숨김 / 완료 표시 — 둘 중 하나만 체크 -->
+        <label id="lblDoneHide" style="font-size:.55rem;font-weight:700;flex:1;padding:6px 3px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:3px"><input type="checkbox" id="chkDoneHide" onchange="App.setHideCompleted(true)" style="width:14px;height:14px;margin:0;accent-color:#16A34A">완료 숨김</label>
+        <label id="lblDoneShow" style="font-size:.55rem;font-weight:700;flex:1;padding:6px 3px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:3px"><input type="checkbox" id="chkDoneShow" onchange="App.setHideCompleted(false)" style="width:14px;height:14px;margin:0;accent-color:#16A34A">완료 표시</label>
+        <button id="btnTogglePhotos" onclick="App.toggleHidePhotos()" style="font-size:.55rem;font-weight:700;flex:1;padding:6px 3px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap">📷 사진 숨김</button>
+        <button id="btnRestore" onclick="App.restoreLast()" title="방금 삭제한 행 즉시 복구 (텍스트만, 사진은 Drive 휴지통에서 별도 복원)" style="font-size:.55rem;font-weight:700;flex:1;padding:6px 3px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap">↶ 복구</button>
       </div>
-      <!-- 동/호 필터 -->
-      <div class="no-print" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px;align-items:center">
+      <!-- 동/호 필터 + 위치 (v23.46: 한 줄) -->
+      <div class="no-print" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px;align-items:center">
         <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fDong" placeholder="동" inputmode="numeric" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micDong" onclick="App.startVoiceInput('fDong','micDong')" aria-label="동 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
         <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="fHo" placeholder="호" inputmode="numeric" oninput="App.renderLog()" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="micHo" onclick="App.startVoiceInput('fHo','micHo')" aria-label="호 음성입력" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
+        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="addLoc" placeholder="위치" style="font-size:.75rem;padding:7px 28px 7px 8px"><button class="mic-btn" id="addMicLoc" onclick="App.startVoiceForField('addLoc','addMicLoc','text')" aria-label="위치 음성" style="width:22px;height:22px;font-size:.6rem;right:5px"><i class="fa-solid fa-microphone"></i></button></div>
       </div>
-      <!-- 새 하자 인라인 입력 (위치·하자내용 음성) -->
-      <div class="no-print" style="display:grid;grid-template-columns:1fr 2fr auto;gap:4px;margin-bottom:8px;align-items:center;padding:8px 6px 6px;background:var(--accent-pale);border:1px solid var(--accent-light);border-radius:var(--r);position:relative">
+      <!-- 새 하자 인라인 입력 (하자내용 음성 + 상세분류 → K열) -->
+      <div class="no-print" style="display:grid;grid-template-columns:2fr 1fr auto;gap:4px;margin-bottom:8px;align-items:center;padding:8px 6px 6px;background:var(--accent-pale);border:1px solid var(--accent-light);border-radius:var(--r);position:relative">
         <span style="position:absolute;top:-7px;left:8px;font-size:.5rem;font-weight:800;color:var(--accent-dark);background:var(--surface);padding:1px 5px;border-radius:3px;letter-spacing:.3px">+ 새 하자</span>
-        <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="addLoc" placeholder="위치" style="font-size:.7rem;padding:7px 26px 7px 7px"><button class="mic-btn" id="addMicLoc" onclick="App.startVoiceForField('addLoc','addMicLoc','text')" aria-label="위치 음성" style="width:22px;height:22px;font-size:.6rem;right:4px"><i class="fa-solid fa-microphone"></i></button></div>
         <div class="field-inline" style="min-width:0"><input class="has-mic" type="text" id="addMemo" placeholder="하자내용" style="font-size:.7rem;padding:7px 26px 7px 7px"><button class="mic-btn" id="addMicMemo" onclick="App.startVoiceForField('addMemo','addMicMemo','text')" aria-label="내용 음성" style="width:22px;height:22px;font-size:.6rem;right:4px"><i class="fa-solid fa-microphone"></i></button></div>
+        <div class="field-inline" style="min-width:0"><select id="addWork" style="font-size:.7rem;padding:7px 4px;width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--surface);color:var(--text);font-family:'Noto Sans KR';font-weight:700"><option value="">상세분류</option></select></div>
         <button id="btnSaveNew" onclick="App.saveNewDefect()" style="padding:7px 9px;font-size:.65rem;font-weight:800;font-family:'Noto Sans KR';border:none;border-radius:var(--r);background:#0891B2;color:white;cursor:pointer;white-space:nowrap;letter-spacing:.2px;box-shadow:var(--shadow-3d)" title="구글시트에 추가"><i class="fa-solid fa-floppy-disk"></i></button>
       </div>
       <div class="table-wrap">
@@ -390,7 +393,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.45'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.46'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC',VERSION:'METRO_APP_VERSION',ADMIN:'METRO_ADMIN'};
 // v23.40: 관리자 모드 키. 관리자 PC에서 1회 frogsash.co.kr/metro?admin=mrns2026 접속 시 그 브라우저에 영구 저장.
 //         폰(작업자)은 일반 URL → 삭제 버튼 숨김(추가·사진교체만). ?admin=off 로 해제.
@@ -705,6 +708,7 @@ var App={
   // === 하자 리스트 렌더링 ===
   renderLog:function(){
     this._applyPhotoVisibility();
+    this._fillWorkList();
     if(!this.sourceData.length){
       document.getElementById('logCount').textContent='(0건)';
       document.getElementById('logBody').innerHTML='<tr><td colspan="10" class="log-empty">구글시트에서 데이터를 불러오세요</td></tr>';
@@ -732,10 +736,11 @@ var App={
     cntTxt+=')';
     document.getElementById('logCount').textContent=cntTxt;
     // 토글 버튼 표기 갱신
-    var btn=document.getElementById('btnToggleDone');
-    if(btn){
-      btn.textContent=this.hideCompleted?'✅ 완료 숨김':'👁 완료 보임';
-      btn.style.background=this.hideCompleted?'var(--surface)':'var(--accent-pale)';
+    var cH=document.getElementById('chkDoneHide'),cS=document.getElementById('chkDoneShow');
+    if(cH&&cS){
+      cH.checked=!!this.hideCompleted; cS.checked=!this.hideCompleted;
+      document.getElementById('lblDoneHide').style.background=this.hideCompleted?'var(--accent-pale)':'var(--surface)';
+      document.getElementById('lblDoneShow').style.background=this.hideCompleted?'var(--surface)':'var(--accent-pale)';
     }
     if(!filtered.length){
       // v23.3: 동·호 입력했는데 매칭 0건 → 새 하자 폼 안내
@@ -775,6 +780,21 @@ var App={
   },
 
   // v23.3: 완료 행 숨김 토글
+  // v23.46: 상세분류 고르기 목록 = 이 현장 K열에 이미 쓰인 값(많이 쓴 순)
+  _fillWorkList:function(){
+    // v23.46: 상세분류는 고르기만 가능(오타 방지) — 이 현장 K열에 쓰인 값을 많이 쓴 순서로. 안 고르면 빈칸 → PC 시트에서 입력
+    var sel=document.getElementById('addWork'); if(!sel) return;
+    var key=(this.getSetting('SHEET_NAME')||'')+'|'+this.sourceData.length;
+    if(this._workListKey===key) return; this._workListKey=key;
+    var cnt={};
+    for(var i=0;i<this.sourceData.length;i++){var w=this.gv(this.sourceData[i],'work'); if(w&&w.length<=20) cnt[w]=(cnt[w]||0)+1;}
+    var ks=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a];});
+    var cur=sel.value;
+    var esc=function(k){return k.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');};
+    sel.innerHTML='<option value="">상세분류</option>'+ks.map(function(k){return '<option value="'+esc(k)+'">'+esc(k)+'</option>';}).join('');
+    if(cur&&cnt[cur]) sel.value=cur;
+  },
+
   // v23.43: 사진칸(수리전·수리후·확인서) 숨김 — 현장(시트)별로 이 폰에 기억. 기본=숨김
   _photosKey:function(){return 'METRO_HIDE_PHOTOS_'+(this.getSetting('SHEET_NAME')||'');},
   isPhotosHidden:function(){try{return localStorage.getItem(this._photosKey())!=='0';}catch(e){return true;}},
@@ -790,6 +810,7 @@ var App={
     if(b){ b.textContent=hide?'📷 사진 숨김':'📷 사진 보임'; b.style.background=hide?'var(--surface)':'var(--accent-pale)'; }
   },
 
+  setHideCompleted:function(v){this.hideCompleted=!!v;this.renderLog();},
   toggleHideCompleted:function(){
     this.hideCompleted=!this.hideCompleted;
     this.renderLog();
@@ -1208,6 +1229,7 @@ var App={
     var ho=document.getElementById('fHo').value.trim();
     var loc=document.getElementById('addLoc').value.trim();
     var memo=document.getElementById('addMemo').value.trim();
+    var work=document.getElementById('addWork').value.trim(); // v23.46: 비우면 나중에 PC 시트에서 K열 입력
     if(!dong||!ho){this.toast('동/호 필터를 먼저 입력하세요','error');return;}
     if(!memo){this.toast('하자내용을 입력하세요','error');return;}
 
@@ -1228,7 +1250,7 @@ var App={
       sheetId:sid,
       sheetName:sn,
       worker:this.getSetting('WORKER')||'',
-      data:{ dong:dong, ho:ho, loc:loc, memo:memo }
+      data:{ dong:dong, ho:ho, loc:loc, memo:memo, work:work }
     };
 
     // v20.5: LockService 충돌 시 자동 2회 재시도 (백오프 1.5s, 3s)
@@ -1249,6 +1271,7 @@ var App={
           self.toast('추가 완료! (No.'+d.no+')','success',2200);
           document.getElementById('addLoc').value='';
           document.getElementById('addMemo').value='';
+          document.getElementById('addWork').value='';
           self.loadFromSheet();
           setTimeout(function(){document.getElementById('addLoc').focus();},400);
         })
