@@ -111,8 +111,8 @@
     /* v23.43: 완료 체크박스 + 완료일 / 사진칸 숨김 */
     .log-table.no-photos .ph-col{display:none}
     #loadedInfo{display:none!important} /* v23.45: 현장 선택칸과 겹쳐 숨김 */
-    .done-cell{padding:0!important;width:34px;cursor:pointer}
-    .done-cell input{width:22px;height:22px;margin:0;accent-color:#16A34A;cursor:pointer;vertical-align:middle}
+    .done-cell{padding:5px 0!important;width:34px;cursor:pointer}
+    .done-cell input{width:17px;height:17px;margin:0;accent-color:#16A34A;cursor:pointer;vertical-align:middle}
     .done-cell.busy input{opacity:.35}
     .td-ddate{width:34px;font-size:.6rem!important;color:#15803D!important}
     .photo-cell.uploading::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center}
@@ -393,7 +393,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.46'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.47'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'METRO_V70_LOG',SOURCE:'METRO_V70_SRC',VERSION:'METRO_APP_VERSION',ADMIN:'METRO_ADMIN'};
 // v23.40: 관리자 모드 키. 관리자 PC에서 1회 frogsash.co.kr/metro?admin=mrns2026 접속 시 그 브라우저에 영구 저장.
 //         폰(작업자)은 일반 URL → 삭제 버튼 숨김(추가·사진교체만). ?admin=off 로 해제.
