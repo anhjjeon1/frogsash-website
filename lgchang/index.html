@@ -403,7 +403,7 @@
 </div>
 
 <script>
-var APP_VERSION='v23.47-lg14'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
+var APP_VERSION='v23.47-lg15'; // 배포 시마다 변경 — 폰 localStorage 옛 SCRIPT URL 자동 갱신 트리거 + 헤더 배지 자동 바인딩
 var STORAGE={LOG:'LGCW_V70_LOG',SOURCE:'LGCW_V70_SRC',VERSION:'LGCW_APP_VERSION'};
 var SETTINGS_KEYS={SCRIPT:'LGCW_SCRIPT_URL',SHEET:'LGCW_SHEET_ID',SHEET_NAME:'LGCW_SHEET_NAME',WORKER:'LGCW_WORKER'};
 var DEFAULTS={
@@ -438,6 +438,7 @@ var App={
     }
     this.loadLocalData();
     this.renderLog();
+    this._bindAutoRefresh();
     var w=this.getSetting('WORKER');
     if(w){document.getElementById('workerBadge').textContent=w;document.getElementById('workerBadge').style.display='inline-flex';}
     // v23.3: 현장 시트 목록 자동 로딩 (1회)
@@ -864,6 +865,65 @@ var App={
     });
   },
 
+  // lg15: 줄 확인 — PC에서 시트 줄을 끼워넣기·삭제·정렬하면 폰의 줄 번호가 어긋남.
+  //   삭제·사진 저장 직전에 시트를 다시 읽어 그 줄의 NO·동·호가 화면과 같은지 확인. 다르면 거절(moved=true).
+  _readGrid:function(){
+    var url=this.getSetting('SCRIPT'),sid=this.getSetting('SHEET'),sn=this.getSetting('SHEET_NAME');
+    return fetch(url+'?action=readGrid&sheetId='+encodeURIComponent(sid)+'&sheetName='+encodeURIComponent(sn))
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.status!=='ok') throw new Error(d.message||'시트 확인 실패');
+        var vals=(d.sheet&&d.sheet.values)||[];
+        return {vals:vals,hd:(vals[0]||[]).map(function(h){return String(h).replace(/\s/g,'');})};
+      });
+  },
+  _verifyRow:function(rn){
+    var self=this,row=this._rowByNum(rn),cm=this.colMap;
+    return this._readGrid().then(function(g){
+      var cur=g.vals[rn-1],bad=!row||!cur;
+      ['no','dong','ho'].forEach(function(k){
+        if(bad||!cm[k]) return;
+        var i=g.hd.indexOf(String(cm[k]).replace(/\s/g,''));
+        if(i>=0&&String(cur[i]==null?'':cur[i]).trim()!==self.gv(row,k)) bad=true;
+      });
+      if(bad){var e=new Error('시트 줄이 바뀌었습니다 (PC에서 수정됨) — 새로 불러옵니다. 다시 해 주세요');e.moved=true;throw e;}
+      return g;
+    });
+  },
+
+  // lg15: 앱으로 돌아오면 자동 새로고침 (PC에서 고친 내용 반영). 20초 넘게 떠나 있었고, 작업 중이 아닐 때만.
+  _bindAutoRefresh:function(){
+    var self=this,hiddenAt=0;
+    document.addEventListener('visibilitychange',function(){
+      if(document.hidden){hiddenAt=Date.now();return;}
+      if(!hiddenAt||Date.now()-hiddenAt<20000) return;
+      hiddenAt=0;
+      if(!self.getSetting('SHEET_NAME')) return;
+      if(self._cameraAt&&Date.now()-self._cameraAt<5*60000) return; // 사진 찍으러 카메라 다녀온 경우
+      if(Object.keys(self.uploadingCells||{}).length) return;
+      if(self.doneBusy&&Object.keys(self.doneBusy).length) return;
+      if(self._saving) return;
+      self.loadFromSheet();
+    });
+  },
+
+  _fixNewRow:function(rowNum,no){
+    var self=this;
+    var url=this.getSetting('SCRIPT'),sid=this.getSetting('SHEET'),sn=this.getSetting('SHEET_NAME');
+    if(!rowNum) return Promise.resolve();
+    return this._readGrid().then(function(g){
+      var cur=g.vals[rowNum-1]; if(!cur) return;
+      var nI=g.hd.indexOf('NO'); if(nI>=0&&String(cur[nI]).trim()!==String(no)) return; // 다른 줄이면 손대지 않음
+      var jobs=[],fI=g.hd.indexOf('완료'),bI=g.hd.indexOf('접수일');
+      if(fI>=0&&String(cur[fI]==null?'':cur[fI]).trim()==='') jobs.push([self._colLetter(fI+1)+rowNum,'미완료']);
+      if(bI>=0&&/^\d{1,2}월\s*\d{1,2}일$/.test(String(cur[bI]).trim())) jobs.push([self._colLetter(bI+1)+rowNum,new Date(Date.now()+9*3600*1000).toISOString().slice(0,10)]);
+      return jobs.reduce(function(p,j){return p.then(function(){
+        return fetch(url+'?action=setRange&sheetId='+encodeURIComponent(sid)+'&sheetName='+encodeURIComponent(sn)+'&range='+encodeURIComponent(j[0])+'&values='+encodeURIComponent(j[1]))
+          .then(function(r){return r.json();}).then(function(d){if(d.status!=='ok')throw new Error(d.message||'쓰기 실패');});
+      });},Promise.resolve());
+    });
+  },
+
   setHideCompleted:function(v){this.hideCompleted=!!v;this.renderLog();},
   // v23.3: 완료 행 숨김 토글
   toggleHideCompleted:function(){
@@ -922,7 +982,7 @@ var App={
 
   // === 사진 촬영 → 즉시 Drive 업로드 ===
   takeRowPhoto:function(rn,type){
-    this._pendingRow=rn;this._pendingType=type;
+    this._pendingRow=rn;this._pendingType=type;this._cameraAt=Date.now();
     var f=document.getElementById('fCapture');f.value='';f.click();
   },
 
@@ -977,10 +1037,23 @@ var App={
     this.uploadingCells[rn+'_'+type]=true;
     this.renderLog();
     this.toast('시트 저장 중...','info',3000);
+    // lg15: 저장 직전 줄 확인 — 어긋났으면 다른 줄에 사진이 붙지 않게 중단
+    this._verifyRow(rn).then(function(){self._sendPhoto(url,sid,sn,rn,type,base64);}).catch(function(err){
+      delete self.uploadingCells[rn+'_'+type];
+      if(self.rowPhotos[rn]) self.rowPhotos[rn][type]='';
+      self._cameraAt=0;
+      self.toast('사진 저장 안 함: '+err.message,'error',6000);
+      self.renderLog();
+      if(err.moved) setTimeout(function(){self.loadFromSheet();},800);
+    });
+  },
+  _sendPhoto:function(url,sid,sn,rn,type,base64){
+    var self=this;
     var xhr=new XMLHttpRequest();
     xhr.open('POST',url,true);
     xhr.onload=function(){
       delete self.uploadingCells[rn+'_'+type];
+      self._cameraAt=0;
       try{
         var d=JSON.parse(xhr.responseText);
         if(d.status==='ok'){
@@ -1022,6 +1095,16 @@ var App={
     this.uploadingCells[rn+'_'+type]=true;
     this.renderLog();
     this.toast('삭제 중...','info',3000);
+    // lg15: 삭제 직전 줄 확인
+    this._verifyRow(rn).then(function(){self._sendDelPhoto(url,sid,sn,rn,type,typeKR,pw);}).catch(function(err){
+      delete self.uploadingCells[rn+'_'+type];
+      self.toast('삭제 안 함: '+err.message,'error',6000);
+      self.renderLog();
+      if(err.moved) setTimeout(function(){self.loadFromSheet();},800);
+    });
+  },
+  _sendDelPhoto:function(url,sid,sn,rn,type,typeKR,pw){
+    var self=this;
     var xhr=new XMLHttpRequest();
     xhr.open('POST',url,true);
     xhr.timeout=30000;
@@ -1083,7 +1166,17 @@ var App={
     var sn=this.getSetting('SHEET_NAME');
     if(!url||!sid){this.toast('설정을 먼저 완료하세요','error');return;}
     var self=this;
-    this.showLoader('행 삭제 중...');
+    this.showLoader('줄 확인 중...');
+    // lg15: 삭제 직전 줄 확인 — 어긋났으면 다른 줄이 지워지지 않게 중단
+    this._verifyRow(rn).then(function(){self.showLoader('행 삭제 중...');self._sendDeleteRow(url,sid,sn,rn,no,pw);}).catch(function(err){
+      self.hideLoader();
+      self.lastDeleted=null;
+      self.toast('삭제 안 함: '+err.message,'error',6000);
+      if(err.moved) setTimeout(function(){self.loadFromSheet();},800);
+    });
+  },
+  _sendDeleteRow:function(url,sid,sn,rn,no,pw){
+    var self=this;
     var xhr=new XMLHttpRequest();
     xhr.open('POST',url,true);
     xhr.timeout=30000;
@@ -1243,6 +1336,7 @@ var App={
     var self=this;
     var btn=document.getElementById('btnSaveNew');
     btn.disabled=true;
+    this._saving=true;
     var oldHtml=btn.innerHTML;
     btn.innerHTML='<i class="fa-solid fa-circle-notch fa-spin"></i>';
     this.showLoader('GAS 시트에 추가 중...');
@@ -1273,13 +1367,18 @@ var App={
           self.toast('추가 완료! (No.'+d.no+')','success',2200);
           document.getElementById('addLoc').value='';
           document.getElementById('addMemo').value='';
-          self.loadFromSheet();
           setTimeout(function(){document.getElementById('addLoc').focus();},400);
+          // lg15: 새 줄의 완료(L)가 빈칸이면 전체공정표 미완료·합계에서 빠짐 → '미완료' 채움.
+          //       접수일도 GAS가 '11월1일' 글자로 넣으므로 날짜(yyyy-MM-dd)로 바꿈. 실패해도 추가 자체는 성공.
+          return self._fixNewRow(d.rowNum,d.no).catch(function(e){
+            self.toast('추가는 됐지만 완료칸 정리 실패 — PC에서 L열에 미완료 입력: '+e.message,'error',6000);
+          }).then(function(){self.loadFromSheet();});
         })
         .catch(function(err){
           self.toast('오류: '+err.message,'error',4000);
         })
         .finally(function(){
+          self._saving=false;
           self.hideLoader();
           btn.disabled=false;
           btn.innerHTML=oldHtml;
