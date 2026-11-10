@@ -218,7 +218,7 @@ table.r-res td.l{text-align:left}
 </head>
 <body>
 <header>
-  <div class="hbar"><h1 class="app-title"><span class="windico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h14a3 3 0 1 1-3 3"/><path d="M3 16h7a2.4 2.4 0 1 1-2.4 2.4"/></svg></span>창호 외풍 점검</h1><span class="ver" id="verBadge">V 1.0</span></div>
+  <div class="hbar"><h1 class="app-title"><span class="windico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h14a3 3 0 1 1-3 3"/><path d="M3 16h7a2.4 2.4 0 1 1-2.4 2.4"/></svg></span>창호 외풍 점검</h1><span class="ver" id="verBadge">V 1.1</span></div>
   <nav class="modetabs"><a href="./">차음 수리 전·후</a><a href="draft.html" class="on">외풍 점검</a></nav>
   <div class="steps"><div class="step" id="st1"></div><div class="step" id="st2"></div><div class="step" id="st3"></div></div>
 </header>
@@ -317,7 +317,7 @@ function uid(){return String(Date.now())+Math.random().toString(36).slice(2,6)}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function toast(m){var t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("show")},2200)}
 function today(){var d=new Date(),z=function(n){return String(n).padStart(2,"0")};return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())}
-function newWin(){return{id:uid(),name:"",type:"미서기 이중창",front:null,close:null,note:"",parts:{},fix:[]}}
+function newWin(){return{id:uid(),name:"",type:"미서기 이중창",front:null,close:null,note:"",ins:"",sill:"",parts:{},fix:[]}}
 function getWin(id){return S.wins.filter(function(w){return w.id===id})[0]}
 function getPart(w,k){if(!w.parts[k])w.parts[k]={lv:0,sash:"",how:[],us:"",temp:"",ws:"",memo:"",photo:null};return w.parts[k]}
 function isDouble(w){return /이중창/.test(w.type)}
@@ -352,7 +352,10 @@ function renderWins(){
       +'<div class="seg-label before" style="margin-top:0"><span class="stepno">2</span>창호 사진</div>'
       +'<div class="photo-row"><div class="photo-cell"><div class="photo-slot ratio34">'+photoHtml(w.front,"전면","front",w.id,"전면 촬영")+'</div></div><div class="photo-cell"><div class="photo-slot ratio34">'+photoHtml(w.close,"근접","close",w.id,"근접 촬영")+'</div></div></div>'
       +'<textarea class="prenote" rows="2" placeholder="고객이 말한 증상 (예: 겨울에 창가 쪽이 서늘하고 커튼이 흔들림)" data-wf="note" data-w="'+w.id+'">'+esc(w.note)+'</textarea>'
-      +'<div class="seg-label before"><span class="stepno">3</span>부위별 외풍 점검</div>'
+      +'<div class="seg-label before"><span class="stepno">3</span>창호 설치 상태</div>'
+      +'<div class="det-lab" style="margin-top:2px">창호 주위 단열재</div><div class="chips">'+["있음","없음","확인 불가"].map(function(s){return '<button class="chip'+(w.ins===s?' on':'')+'" data-act="ins" data-w="'+w.id+'" data-v="'+s+'">'+s+'</button>'}).join("")+'</div>'
+      +'<div class="dbcell" style="margin-top:8px"><span class="mini-lab">창틀 하부 높이 (바닥에서)</span><input class="db" inputmode="decimal" placeholder="cm" value="'+esc(w.sill)+'" data-wf="sill" data-w="'+w.id+'"><span class="mini-lab">cm</span></div>'
+      +'<div class="seg-label before"><span class="stepno">4</span>부위별 외풍 점검</div>'
       +PARTS.map(function(p){var x=w.parts[p.k]||{lv:0};
         var seg='<span class="lvseg">'+[1,2,3].map(function(v){var on=x.lv===v;return '<button data-act="lv" data-w="'+w.id+'" data-p="'+p.k+'" data-v="'+v+'" class="'+(on?'on':'')+'"'+(on?' style="background:'+LV[v].c+';border-color:'+LV[v].c+'"':'')+'>'+LV[v].n+'</button>'}).join("")+'</span>';
         var det="";
@@ -372,7 +375,7 @@ function renderWins(){
         }
         return '<div class="part'+(x.lv>=2?' lv'+x.lv:'')+'"><div class="part-top"><div class="part-nm">'+p.n+'<small>'+p.d+'</small></div>'+seg+'</div>'+det+'</div>';
       }).join("")
-      +'<div class="seg-label before"><span class="stepno">4</span>권장 수리 <span style="font-size:11px;color:var(--ink-3);font-weight:650">(파란 테두리 = 점검 결과로 추천)</span></div>'
+      +'<div class="seg-label before"><span class="stepno">5</span>권장 수리 <span style="font-size:11px;color:var(--ink-3);font-weight:650">(파란 테두리 = 점검 결과로 추천)</span></div>'
       +'<div class="repair-grid">'+FIX.map(function(f,fi){var on=!!w.fix[fi];return '<label class="repair-item fix-item'+(on?' on':'')+(sug[fi]&&!on?' sug':'')+'"><input type="checkbox" data-fix="'+fi+'" data-w="'+w.id+'"'+(on?' checked':'')+'><span>'+esc(f.n)+'</span>'+(sug[fi]&&!on?'<span class="sugtag">추천</span>':'')+'</label>'}).join("")+'</div>'
       +'</div></div>';
   }).join("");
@@ -414,6 +417,9 @@ function report(){
     if(parts.length)s+=parts.join("이고, ")+"입니다.";else s+="점검한 자리에서 외풍이 확인되지 않았습니다.";
     if(ok.length&&(strong.length||mid.length))s+=" "+jo(ok.map(fLabel).join(", "),"은","는")+" 정상입니다.";
     if(w.note)s+=" (증상: "+w.note+")";
+    var inst=[];if(w.ins)inst.push("창호 주위 단열재 "+w.ins);if(num(w.sill)!==null)inst.push("창틀 하부 높이 바닥에서 "+w.sill+"cm");
+    if(inst.length)s+=" 설치 상태는 "+inst.join(", ")+"입니다.";
+    if(w.ins==="없음")s+=" 창틀 둘레에 단열재가 없으면 틈이 없어도 창 주변 벽이 차가워져 냉기가 느껴질 수 있어, 틈으로 들어오는 외풍과 구분해서 판단했습니다.";
     L.push(s);
     strong.concat(mid).forEach(function(f){anyBad=true;if(f.x.lv===3)anyStrong=true;agg[f.n]=(agg[f.n]||0)+1;
       var m=[];if(num(f.x.us)!==null)m.push("초음파 "+f.x.us+"dB");if(num(f.x.ws)!==null)m.push("풍속 "+f.x.ws+"m/s");if(num(f.x.temp)!==null)m.push("표면 "+f.x.temp+"℃");
@@ -440,10 +446,10 @@ function renderAI(){
 }
 
 // ── 저장 (사진 제외)
-function save(){try{localStorage.setItem(CFG.STORAGE_KEY,JSON.stringify({site:$("#c_site").value,date:$("#c_date").value,env:S.env,wins:S.wins.map(function(w){var p={};Object.keys(w.parts).forEach(function(k){var x=w.parts[k];p[k]={lv:x.lv,sash:x.sash,how:x.how,us:x.us,temp:x.temp,ws:x.ws,memo:x.memo}});return{id:w.id,name:w.name,type:w.type,note:w.note,parts:p,fix:w.fix}})}))}catch(e){}}
+function save(){try{localStorage.setItem(CFG.STORAGE_KEY,JSON.stringify({site:$("#c_site").value,date:$("#c_date").value,env:S.env,wins:S.wins.map(function(w){var p={};Object.keys(w.parts).forEach(function(k){var x=w.parts[k];p[k]={lv:x.lv,sash:x.sash,how:x.how,us:x.us,temp:x.temp,ws:x.ws,memo:x.memo}});return{id:w.id,name:w.name,type:w.type,note:w.note,ins:w.ins,sill:w.sill,parts:p,fix:w.fix}})}))}catch(e){}}
 function load(){try{var d=JSON.parse(localStorage.getItem(CFG.STORAGE_KEY)||"null");if(!d)return false;$("#c_site").value=d.site||"";$("#c_date").value=d.date||"";
   if(d.env)Object.keys(S.env).forEach(function(k){if(d.env[k]!==undefined)S.env[k]=d.env[k]});
-  S.wins=(d.wins||[]).map(function(w){var n=newWin();n.id=w.id||n.id;n.name=w.name||"";n.type=w.type||n.type;n.note=w.note||"";n.fix=Array.isArray(w.fix)?w.fix:[];
+  S.wins=(d.wins||[]).map(function(w){var n=newWin();n.id=w.id||n.id;n.name=w.name||"";n.type=w.type||n.type;n.note=w.note||"";n.ins=w.ins||"";n.sill=w.sill||"";n.fix=Array.isArray(w.fix)?w.fix:[];
     Object.keys(w.parts||{}).forEach(function(k){var x=w.parts[k],y=getPart(n,k);y.lv=x.lv||0;y.sash=x.sash||"";y.how=Array.isArray(x.how)?x.how:[];y.us=x.us||"";y.temp=x.temp||"";y.ws=x.ws||"";y.memo=x.memo||""});return n});
   return S.wins.length>0}catch(e){return false}}
 function syncEnvInputs(){document.querySelectorAll("[data-env]").forEach(function(el){var k=el.dataset.env;if(el.type==="checkbox")el.checked=!!S.env[k];else el.value=S.env[k]||""});$("#wxSrc").textContent=S.env.src||"";updateDew()}
@@ -478,6 +484,7 @@ function buildPrint(){
   $("#print-area").innerHTML=
     '<div class="pblock"><div class="r-head"><div class="r-title">창호 외풍 점검 소견서</div><div class="r-org">'+esc(CFG.COMPANY)+'</div></div></div>'
    +'<div class="pblock"><table class="r-info"><tr><th>현장 / 고객명</th><td>'+site+'</td><th>점검일자</th><td>'+date+'</td></tr><tr><th>점검 조건</th><td colspan="3">'+(cond.join(" · ")||"-")+(e.fan?"<br>주방 후드·욕실 환기팬 가동(실내 감압) 상태에서 점검":"")+'</td></tr><tr><th>점검 방법</th><td colspan="3">창호 부위별(여밈대·상부·물구멍·세로·하부·벽 접합부)로 손 감각·연기·초음파·열화상·풍속계 중 현장에 맞는 방법으로 외풍 자리를 확인</td></tr><tr><th>종합 판정</th><td colspan="3"><b style="color:'+(r?r.color:"#333")+'">'+(r?r.grade:"-")+'</b></td></tr></table></div>'
+   +(S.wins.some(function(w){return w.ins||num(w.sill)!==null})?'<div class="pblock"><div class="r-sec">창호 설치 상태</div><table class="r-res"><thead><tr><th style="text-align:left">위치</th><th>창 종류</th><th>주위 단열재</th><th>창틀 하부 높이</th></tr></thead><tbody>'+S.wins.map(function(w,i){return '<tr><td class="l">'+esc(winName(w,i))+'</td><td>'+esc(w.type)+'</td><td>'+esc(w.ins||"-")+'</td><td>'+(num(w.sill)!==null?esc(w.sill)+"cm":"-")+'</td></tr>'}).join("")+'</tbody></table></div>':'')
    +'<div class="pblock"><div class="r-sec">1. 외풍 확인 자리</div><table class="r-res"><thead><tr><th style="text-align:left">위치</th><th style="text-align:left">부위</th><th>정도</th><th>확인 방법</th><th>측정값</th></tr></thead><tbody>'+(rows||'<tr><td colspan="5">점검 결과 없음</td></tr>')+'</tbody></table></div>'
    +(r?'<div class="pblock"><div class="r-sec">2. 종합 소견</div><ul class="r-ai">'+r.lines.map(function(s){return '<li>'+esc(s.replace(/^\s+·\s/,"└ "))+'</li>'}).join("")+'</ul></div>':'')
    +(photos?'<div class="pblock"><div class="r-sec">3. 점검 사진</div></div>'+photos:'')
@@ -502,6 +509,7 @@ document.addEventListener("DOMContentLoaded",function(){
   list.addEventListener("click",function(ev){
     var b=ev.target.closest("[data-act]");if(!b)return;var w=getWin(b.dataset.w);if(!w)return;var a=b.dataset.act;
     if(a==="lv"){var x=getPart(w,b.dataset.p),v=+b.dataset.v;x.lv=(x.lv===v?0:v)}
+    else if(a==="ins"){w.ins=(w.ins===b.dataset.v?"":b.dataset.v)}
     else if(a==="sash"){var x2=getPart(w,b.dataset.p);x2.sash=(x2.sash===b.dataset.v?"":b.dataset.v)}
     else if(a==="how"){var x3=getPart(w,b.dataset.p),h=b.dataset.v,ix=x3.how.indexOf(h);if(ix>=0)x3.how.splice(ix,1);else x3.how.push(h)}
     else if(a==="addphoto"){var inp=list.querySelector('input[data-file="'+b.dataset.slot+'"][data-w="'+w.id+'"]');if(inp)inp.click();return}
