@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0F3D26">
+<title>창호 외풍 점검 · 청개구리샤시</title>
+<style>
+:root{--brand:#2E7D32;--brand-700:#1B5E20;--brand-900:#0E3A23;--brand-300:#5FC07A;--brand-50:#ECF6EE;--accent:#10B981;--ink:#0C1611;--ink-2:#3D4D45;--ink-3:#7C8B82;--line:#E9EEEA;--line-2:#F2F6F3;--surface:#FFFFFF;--surface-2:#F7FAF8;--bg:#EDF2EE;--warn:#B8860B;--bad:#DC2626;--neutral:#8B978F;--r-sm:12px;--r-md:16px;--r-lg:22px;--r-xl:28px;--sh-sm:0 1px 2px rgba(13,38,24,.04),0 2px 6px rgba(13,38,24,.05);--sh-md:0 4px 16px rgba(13,38,24,.07),0 1px 3px rgba(13,38,24,.05);--sh-lg:0 18px 44px rgba(13,38,24,.16),0 4px 12px rgba(13,38,24,.07);--ring:0 0 0 3.5px rgba(46,125,50,.15);--safe-b:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;background:radial-gradient(820px 360px at 6% -8%,rgba(95,192,122,.13),transparent 56%),radial-gradient(820px 420px at 102% 2%,rgba(16,185,129,.08),transparent 55%),var(--bg);color:var(--ink);font-size:15.5px;line-height:1.5;letter-spacing:-.011em;-webkit-font-smoothing:antialiased;padding-bottom:calc(18px + var(--safe-b))}
+.wrap{max-width:600px;margin:0 auto;padding:0 8px}
+button{font-family:inherit}
+header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(13,38,24,.06)}
+.hbar{position:relative;max-width:600px;margin:0 auto;padding:9px 10px;display:flex;align-items:center;justify-content:center}
+.ver{position:absolute;right:12px;top:7px;font-size:10px;font-weight:700;color:var(--ink-3);letter-spacing:.02em}
+.app-title{margin:0;font-size:22px;font-weight:820;letter-spacing:-.02em;color:var(--brand-700);display:inline-flex;align-items:center;justify-content:center}
+.windico{display:inline-grid;place-items:center;width:25px;height:25px;flex:0 0 auto;border-radius:8px;background:linear-gradient(135deg,#42A5F5,#1565C0);margin-right:7px;box-shadow:0 2px 6px rgba(21,101,192,.3)}
+.logo{width:38px;height:42px;flex:0 0 auto;filter:drop-shadow(0 2px 4px rgba(15,61,38,.2))}
+.htxt h1{font-size:16px;margin:0;font-weight:750;letter-spacing:-.02em}
+.htxt .tag{font-size:11px;color:var(--ink-3);font-weight:600;letter-spacing:.02em}
+.hbadge{margin-left:auto;font-size:11px;font-weight:700;color:var(--brand-700);background:var(--brand-50);border:1px solid #D3EAD9;padding:5px 10px;border-radius:999px}
+.steps{display:flex;gap:6px;max-width:600px;margin:0 auto;padding:5px 8px 0}
+.step{flex:1;height:4px;border-radius:999px;background:var(--line);overflow:hidden}
+.step.on{background:linear-gradient(90deg,var(--brand-300),var(--brand))}
+.hero{position:relative;margin:16px 0;border-radius:var(--r-xl);overflow:hidden;background:radial-gradient(460px 240px at 88% -50%,rgba(16,185,129,.5),transparent 60%),radial-gradient(360px 200px at 0% 120%,rgba(95,192,122,.28),transparent 55%),linear-gradient(155deg,#1F7A3D,var(--brand-900));color:#fff;box-shadow:var(--sh-lg);padding:22px 22px 20px}
+.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border:1px solid rgba(255,255,255,.12);border-radius:50%}
+.hero .eyebrow{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.78;font-weight:700}
+.hero .figure{display:flex;align-items:baseline;gap:8px;margin-top:6px}
+.hero .big{font-size:62px;font-weight:820;line-height:.92;letter-spacing:-.03em;font-variant-numeric:tabular-nums;text-shadow:0 2px 18px rgba(0,0,0,.18)}
+.hero .unit{font-size:22px;font-weight:700;opacity:.92}
+.hero .delta{margin-left:auto;font-size:12px;font-weight:700;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);padding:6px 11px;border-radius:999px;align-self:center}
+.hero .comment{margin-top:12px;font-size:13.5px;line-height:1.55;opacity:.96;max-width:90%}
+.hero .mini{display:flex;gap:10px;margin-top:16px}
+.hero .mchip{flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:var(--r-md);padding:10px 12px}
+.hero .mchip .k{font-size:10.5px;opacity:.78;letter-spacing:.04em}
+.hero .mchip .v{font-size:18px;font-weight:780;font-variant-numeric:tabular-nums;margin-top:2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-md);margin:8px 0;overflow:hidden}
+.card-head{display:flex;align-items:center;gap:10px;padding:10px 12px}
+.card-head .ic{width:32px;height:32px;border-radius:11px;flex:0 0 auto;display:grid;place-items:center;background:linear-gradient(140deg,var(--brand-50),#DCEFE1);color:var(--brand-700);box-shadow:inset 0 0 0 1px rgba(46,125,50,.09)}
+.card-head h2{font-size:14.5px;margin:0;font-weight:740;letter-spacing:-.01em}
+.card-head .hint{font-size:11.5px;color:var(--ink-3);margin-top:1px}
+.card-head .chev{margin-left:auto;color:var(--ink-3);transition:transform .25s ease;font-size:12px}
+.collapsible .card-head{cursor:pointer}
+.collapsible.closed .chev{transform:rotate(-90deg)}
+.collapsible.closed .card-body{display:none}
+.card-body{padding:0 12px 9px}
+.field{margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+.field label{display:flex;align-items:center;min-height:20px;font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:5px;letter-spacing:.01em}
+.inp,.field select{width:100%;padding:9px 12px;font-size:15px;color:var(--ink);background:#FBFDFC;border:1.5px solid var(--line);border-radius:var(--r-sm);transition:border-color .15s,box-shadow .15s,background .15s;appearance:none}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7A72' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
+.inp:focus,.field select:focus{outline:none;border-color:var(--brand);background:var(--surface);box-shadow:var(--ring)}
+.inp::placeholder{color:#A9B4AD}
+#c_site{font-size:11.5px;height:30px;padding-top:0;padding-bottom:0}
+#c_date{height:30px;padding-top:0;padding-bottom:0;font-size:11px;font-weight:600;font-family:"Segoe UI",Roboto,"Pretendard",-apple-system,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:0;color:var(--ink-2)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.unit-inp{position:relative}
+.unit-inp .u{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--ink-3);font-weight:700;pointer-events:none}
+.unit-inp .inp{padding-right:38px}
+.loc{border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);margin-bottom:9px;overflow:hidden;box-shadow:var(--sh-md)}
+.loc-head{display:flex;align-items:center;gap:9px;padding:8px 13px;background:var(--surface-2);border-bottom:1px solid var(--line-2)}
+.loc-no{width:20px;height:20px;border-radius:50%;background:var(--brand);color:#fff;font-size:11.5px;font-weight:800;display:grid;place-items:center;flex:0 0 auto}
+.stepno{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--brand);color:#fff;font-size:11.5px;font-weight:800;flex:0 0 auto;margin-right:5px;vertical-align:-4px}
+.loc-no,.stepno{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:12px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.loc-head .name-inp{flex:1;border:none;background:transparent;font-size:13px;font-weight:740;padding:4px 4px;color:var(--ink)}
+.loc-head .name-inp:focus{outline:none}
+.del-btn{flex:0 0 auto;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--bad);display:grid;place-items:center}
+.loc-pad{padding:11px}
+.seg-label{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;margin:6px 0 4px;letter-spacing:.02em}
+.seg-label:first-child{margin-top:0}
+.dot{width:9px;height:9px;border-radius:3px;flex:0 0 auto}
+.dot.before{background:var(--neutral)}
+.dot.after{background:var(--brand)}
+.seg-label.before{color:var(--ink-2)}
+.seg-label.after{color:var(--brand-700)}
+.mini-lab{font-size:10.5px;font-weight:700;color:var(--ink-3);margin:7px 0 4px}
+.mic-btn{flex:0 0 auto;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--brand-700);display:grid;place-items:center;font-size:15px}
+.mic-btn.rec{background:var(--bad);color:#fff;border-color:var(--bad);animation:micpulse 1s infinite}
+@keyframes micpulse{0%,100%{opacity:1}50%{opacity:.55}}
+.onoff{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:4px}
+.onoff .mini-lab{margin:0 0 4px}
+.repair-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 9px;margin:4px 0 2px}
+.repair-item{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:650;color:var(--ink-2);background:var(--surface-2);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:9px 11px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;-webkit-user-select:none;user-select:none}
+.repair-item input{width:18px;height:18px;flex:0 0 auto;accent-color:var(--brand);margin:0;cursor:pointer}
+.repair-item.on{background:var(--brand-50);border-color:var(--brand-300);color:var(--brand-700);font-weight:750}
+.prenote{width:100%;box-sizing:border-box;margin:8px 0 2px;padding:10px 12px;font-family:inherit;font-size:13.5px;line-height:1.55;color:var(--ink);background:var(--surface-2);border:1.5px solid var(--line);border-radius:var(--r-sm);resize:vertical;-webkit-appearance:none}
+.prenote:focus{outline:none;border-color:var(--brand-300);box-shadow:var(--ring)}
+.prenote::placeholder{color:var(--ink-3);font-weight:500;line-height:1.5}
+.dbcell{display:flex;align-items:center;gap:5px}
+.dbcell .mini-lab{margin:0;white-space:nowrap;font-size:12.5px;line-height:1.15}
+.dbcell .db{width:62px;flex:0 0 auto;padding:3px 4px;font-size:14px}
+.photo-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:6px}
+.photo-cell .mini-lab{margin:0 0 5px}
+.photo-slot.ratio34{aspect-ratio:1/1}
+.photo-slot.ratio916{aspect-ratio:9/16}
+.photo-slot.ratio34 .photo-btn,.photo-slot.ratio916 .photo-btn{height:100%;flex-direction:column;gap:3px;font-size:12px;line-height:1.35}
+.cam{font-size:12px;line-height:1}
+.ph-lab{font-size:12px;font-weight:700;color:#A9B4AD;text-align:center;line-height:1.3;margin-top:4px}
+.photo-slot.ratio34 .photo-thumb,.photo-slot.ratio916 .photo-thumb{height:100%}
+.photo-slot.ratio34 .photo-thumb img,.photo-slot.ratio916 .photo-thumb img{height:100%;max-height:none}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.db{width:100%;padding:3px 4px;text-align:center;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface);transition:border-color .15s,box-shadow .15s}
+.db::placeholder{color:#C4CCC7;font-weight:500}
+.db:focus{outline:none;border-color:var(--brand);box-shadow:var(--ring)}
+.loc-res{display:flex;align-items:center;gap:10px;margin-top:8px;padding:10px 12px;border-radius:var(--r-sm);background:var(--surface-2);border:1px solid var(--line-2)}
+.loc-res .flow{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.loc-res .v{font-size:16px;font-weight:800;color:var(--ink)}
+.loc-res .arrow{color:var(--ink-3);font-size:13px}
+.loc-res .imp{font-weight:850;font-size:16px;font-variant-numeric:tabular-nums}
+.badge{margin-left:auto;padding:7px 12px;border-radius:999px;font-size:11.5px;font-weight:800;color:#fff;white-space:nowrap;letter-spacing:.01em;box-shadow:0 2px 8px rgba(13,38,24,.18)}
+.loc-res.empty{display:none}
+.photo-slot{margin-top:9px}
+.photo-btn{width:100%;padding:11px;border:1.5px dashed #CFD8D2;background:var(--surface-2);color:#A9B4AD;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.photo-thumb{position:relative;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--line)}
+.photo-thumb img{width:100%;display:block;max-height:260px;object-fit:cover}
+.photo-del{position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:8px;border:none;background:rgba(14,26,18,.66);color:#fff;font-size:15px;cursor:pointer;display:grid;place-items:center}
+.photo-cap{position:absolute;left:6px;bottom:6px;font-size:10.5px;font-weight:700;color:#fff;background:rgba(14,26,18,.6);padding:3px 8px;border-radius:6px}
+.hidden-file{display:none}
+.btn{width:100%;border:none;border-radius:var(--r-md);font-size:15.5px;font-weight:750;letter-spacing:-.01em;padding:14px;cursor:pointer;transition:transform .08s ease,box-shadow .2s,background .15s,filter .15s}
+.btn:active{transform:scale(.975)}
+.btn-add{background:var(--brand-50);color:var(--brand-700);border:1.5px dashed #B6D8BD}
+.us-add{display:inline-block;width:auto;margin-top:8px;padding:4px 9px;font-size:11px;font-weight:700;border-radius:999px;background:var(--brand-50);color:var(--brand-700);border:1.5px dashed #B6D8BD;cursor:pointer}
+.us-pair-head{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;color:var(--ink-3);margin:9px 0 0}
+.us-pair-head button{border:none;background:transparent;color:var(--bad);font-size:11px;font-weight:700;cursor:pointer;padding:2px 4px}
+.act-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:250px;margin:2px auto 0}
+.act-row .btn{padding:5px 6px;font-size:12px;font-weight:700;border-radius:var(--r-sm)}
+.act-row .btn-ai svg{width:14px;height:14px}
+.btn-ai{background:linear-gradient(135deg,var(--accent),var(--brand));color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 6px 16px rgba(16,185,129,.32)}
+@keyframes cardflash{0%,100%{box-shadow:var(--sh-sm)}30%{box-shadow:0 0 0 3px var(--brand-300),var(--sh-lg)}}
+.flash{animation:cardflash 1.1s ease}
+.seg-toggle{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px;margin-left:auto}
+.seg-toggle button{border:none;background:transparent;font-size:11.5px;font-weight:700;color:var(--ink-3);padding:5px 11px;border-radius:999px;cursor:pointer}
+.seg-toggle button.on{background:#fff;color:var(--brand-700);box-shadow:var(--sh-sm)}
+.chart-row{padding:13px 0;border-bottom:1px dashed var(--line-2)}
+.chart-row:last-child{border-bottom:none;padding-bottom:2px}
+.chart-row .name{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:740;margin-bottom:9px}
+.chart-row .impchip{font-size:11.5px;font-weight:800;color:var(--brand-700);background:var(--brand-50);border:1px solid #D5E8D9;padding:3px 9px;border-radius:999px;font-variant-numeric:tabular-nums}
+.bar-line{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.bar-line:last-child{margin-bottom:0}
+.bar-line .tag{width:24px;flex:0 0 auto;font-size:11px;font-weight:800;color:var(--ink-3);text-align:right}
+.bar-track{flex:1;height:26px;background:var(--line-2);border-radius:8px;overflow:hidden}
+.bar-fill{height:100%;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:9px;font-size:11.5px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;transition:width .55s cubic-bezier(.22,.61,.36,1);min-width:30px}
+.bar-before .bar-fill{background:linear-gradient(90deg,#B7C2BB,#9AA7A0);color:#23302a}
+.bar-after .bar-fill{background:linear-gradient(90deg,var(--accent),var(--brand))}
+.empty-state{text-align:center;color:var(--ink-3);font-size:13px;padding:26px 10px}
+.empty-state .em{font-size:26px;display:block;margin-bottom:6px;opacity:.5}
+.ai-toggle{margin-left:auto;display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:2px}
+.ai-toggle button{border:none;background:transparent;font-size:11px;font-weight:700;color:var(--ink-3);padding:4px 9px;border-radius:999px;cursor:pointer}
+.ai-toggle button.on{background:#fff;color:var(--brand-700);box-shadow:var(--sh-sm)}
+.ai{border:1px solid #D6EBDB;border-radius:var(--r-md);background:linear-gradient(180deg,#F2FBF5,#fff);padding:15px;box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+.ai .hl{font-size:14px;font-weight:800;color:var(--brand-700);margin-bottom:9px;display:flex;align-items:center;gap:7px}
+.ai .grade{font-size:11px;font-weight:800;color:#fff;padding:3px 9px;border-radius:999px}
+.ai ul{margin:0;padding-left:17px}
+.ai li{font-size:13px;line-height:1.62;margin-bottom:5px;color:var(--ink-2)}
+.ai li:last-child{margin-bottom:0}
+.ai .empty{color:var(--ink-3);font-size:13px;text-align:center;padding:8px}
+.notice{display:flex;gap:10px;font-size:11.5px;color:#6B5B12;line-height:1.6;background:#FFF9E6;border:1px solid #F2E2A6;border-radius:var(--r-md);padding:12px 13px;margin:14px 0}
+.notice .ni{flex:0 0 auto;color:var(--warn);font-weight:900}
+footer{text-align:center;font-size:12px;color:var(--ink-3);padding:20px 0 4px;font-weight:600}
+footer .ph{color:var(--brand-700);font-weight:800}
+.foot-actions{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:240px;margin:16px auto 6px}
+.foot-actions .btn{padding:5px 6px;font-size:12px;font-weight:700;border-radius:var(--r-sm)}
+.foot-actions .btn svg{width:14px;height:14px}
+.btn-reset{background:#E2E6E4;color:var(--ink-2);border:1.5px solid #CFD6D2}
+.btn-reset:active{background:var(--surface-2)}
+.btn-pdf{background:linear-gradient(135deg,#33433B,#16241C);color:#fff;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 8px 20px rgba(13,38,24,.28)}
+.actionbar .wrap{display:flex;gap:10px;padding:0}
+.btn-ghost{flex:0 0 auto;width:120px;background:var(--surface);color:var(--brand-700);border:1.5px solid var(--line)}
+.btn-primary{flex:1;background:linear-gradient(135deg,var(--brand),var(--brand-700));color:#fff;box-shadow:0 6px 18px rgba(27,94,32,.32);display:flex;align-items:center;justify-content:center;gap:8px}
+.toast{position:fixed;left:50%;bottom:calc(110px + var(--safe-b));transform:translateX(-50%) translateY(8px);background:rgba(14,26,18,.94);color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;font-weight:600;z-index:60;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;box-shadow:var(--sh-lg);max-width:88%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#print-area{display:none;font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#1b1b1b;background:#fff}#print-area .pblock{padding:0 4px}.r-head{padding:4px 4px 10px;border-bottom:2.5px solid #16341f;margin-bottom:4px}.r-title{font-size:21px;font-weight:800;color:#16341f;letter-spacing:-.5px}.r-org{font-size:11px;color:#555;margin-top:5px;letter-spacing:.2px}.r-sec{font-size:13.5px;font-weight:800;color:#16341f;margin:11px 0 6px;padding-left:9px;border-left:4px solid #2E7D32}table.r-info,table.r-res{width:100%;border-collapse:collapse}table.r-info{font-size:11.5px}table.r-info th{background:#eef4f0;border:1px solid #cdd8d1;padding:7px 9px;text-align:left;width:96px;color:#16341f;font-weight:700;vertical-align:top}table.r-info td{border:1px solid #cdd8d1;padding:7px 9px;line-height:1.5}table.r-res{font-size:11.5px}table.r-res th{background:#16341f;color:#fff;border:1px solid #16341f;padding:7px 6px;font-weight:700}table.r-res td{border:1px solid #cdd8d1;padding:7px 6px;text-align:center}ul.r-ai{margin:0;padding-left:16px}ul.r-ai li{font-size:11px;line-height:1.62;color:#262626;margin-bottom:4px}.r-gem{font-size:11px;line-height:1.65;color:#262626;white-space:pre-wrap;margin-bottom:4px}.r-ploc{font-size:12px;font-weight:700;color:#16341f;margin:6px 0 5px;padding:5px 10px;background:#f1f6f2;border-left:3px solid #2E7D32;border-radius:4px}.r-note{font-size:10.5px;color:#3a4a40;line-height:1.6;background:#f5f8f6;border:1px solid #dde7e0;border-radius:5px;padding:8px 11px;margin-bottom:4px}.r-photos{display:flex;gap:14px;justify-content:center}.r-photo{width:355px;flex:0 0 355px}.r-photo img{width:355px;height:355px;object-fit:cover;border:1px solid #b9c2bc;border-radius:5px;display:block}.r-noimg{width:355px;height:355px;border:1px dashed #c6cec8;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#aeb6b0;font-size:11px}.r-photo .cap{font-size:10.5px;color:#3a4a40;text-align:center;margin-top:4px;font-weight:600}.r-photos.r-natural .r-photo img{height:auto;max-height:640px;object-fit:contain;background:#f4f6f5}.r-notice{font-size:9.5px;color:#666;border-top:1px solid #ddd;padding-top:8px;margin-top:14px;line-height:1.6}.r-foot{font-size:10px;color:#16341f;font-weight:700;text-align:center;margin-top:6px;letter-spacing:.2px}
+@media print{@page{margin:14mm}header,.steps,.actionbar,.btn,.del-btn,#app,.toast,.notice{display:none!important}body{background:#fff;padding:0}#print-area{display:block;color:#111;font-size:12px}.p-head{display:flex;align-items:center;gap:12px;border-bottom:2.5px solid #2E7D32;padding-bottom:12px;margin-bottom:16px}.p-head h2{margin:0;color:#1B5E20;font-size:18px}.p-sub{font-size:11px;color:#555;margin-top:2px}.p-summary{display:flex;align-items:center;gap:16px;margin:14px 0;padding:14px 18px;background:#EAF4EC;border:1px solid #CDE3D2;border-radius:12px}.p-summary .big{font-size:40px;font-weight:800;color:#1B5E20;line-height:1}.p-summary .cm{font-size:12px;color:#33493b}table{width:100%;border-collapse:collapse;margin:12px 0;font-size:11px}th,td{border:1px solid #d4ddd6;padding:7px 6px;text-align:center}th{background:#F1F8F2;color:#1B5E20;font-weight:700}.p-cond{font-size:11px;color:#333;margin:6px 0 2px;line-height:1.7;background:#F7FAF7;border:1px solid #E6EBE7;border-radius:8px;padding:10px 12px}.p-notice{font-size:10px;color:#555;border-top:1px solid #ddd;padding-top:9px;margin-top:16px;line-height:1.6}.p-ploc{margin:10px 0;page-break-inside:avoid}.p-ploc .nm{font-size:12px;font-weight:700;color:#1B5E20;margin-bottom:4px}.p-photos{display:flex;gap:8px}.p-photo{width:48%}.p-photo img{width:100%;border:1px solid #ccc;border-radius:6px}.p-photo .cap{font-size:10px;color:#555;margin-top:2px;text-align:center}.p-ai{margin:12px 0;padding:10px 12px;background:#F3FAF4;border:1px solid #CDE3D2;border-radius:8px}.p-ai .t{font-size:12px;font-weight:800;color:#1B5E20;margin-bottom:5px}.p-ai ul{margin:0;padding-left:16px}.p-ai li{font-size:10.5px;line-height:1.55;color:#33493b;margin-bottom:2px}.p-foot{text-align:center;font-size:11px;color:#1B5E20;margin-top:10px;font-weight:800;letter-spacing:.02em}}
+.modetabs{display:flex;gap:6px;max-width:600px;margin:0 auto;padding:2px 10px 6px}
+.modetabs a{flex:1;text-align:center;font-size:12.5px;font-weight:750;padding:6px 0;border-radius:999px;text-decoration:none;color:var(--ink-3);background:var(--surface-2);border:1px solid var(--line)}
+.modetabs a.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.envgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.envgrid .field{margin-bottom:0}
+.envgrid .field label{font-size:11.5px;min-height:16px;margin-bottom:3px}
+.envgrid .inp{padding:6px 8px;font-size:14px;text-align:center}
+.wx-btn{margin-top:8px;width:100%;padding:8px;font-size:12.5px;font-weight:750;border-radius:var(--r-sm);border:1.5px dashed #9CC5E8;background:#EEF6FD;color:#1565C0;cursor:pointer}
+.wx-src{font-size:11px;color:var(--ink-3);margin-top:4px;text-align:center}
+.fan-row{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;font-weight:650;color:var(--ink-2)}
+.fan-row input{width:18px;height:18px;accent-color:var(--brand)}
+.typesel{flex:0 0 auto;font-size:12px;font-weight:700;padding:5px 6px;border:1.5px solid var(--line);border-radius:9px;background:#fff;color:var(--ink-2)}
+.part{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-top:6px;background:#fff}
+.part.lv2{border-color:#EBC77A;background:#FFFBF1}
+.part.lv3{border-color:#E9A3A3;background:#FFF6F6}
+.part-top{display:flex;align-items:center;gap:8px}
+.part-nm{flex:1;min-width:0;font-size:13.5px;font-weight:780;color:var(--ink)}
+.part-nm small{display:block;font-size:10.5px;color:var(--ink-3);font-weight:600;margin-top:1px}
+.lvseg{display:inline-flex;gap:4px;flex:0 0 auto}
+.lvseg button{border:1.5px solid var(--line);background:var(--surface-2);font-size:12px;font-weight:750;color:var(--ink-3);padding:6px 9px;border-radius:9px;cursor:pointer}
+.lvseg button.on{color:#fff}
+.part-det{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.det-lab{font-size:11px;font-weight:750;color:var(--ink-3);margin:6px 0 4px}
+.det-lab:first-child{margin-top:0}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{border:1.5px solid var(--line);background:#fff;font-size:12px;font-weight:700;color:var(--ink-2);padding:5px 10px;border-radius:999px;cursor:pointer}
+.chip.on{background:var(--brand-50);border-color:var(--brand-300);color:var(--brand-700)}
+.vals{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.vals label{display:block;font-size:10.5px;color:var(--ink-3);font-weight:700;margin-bottom:2px;text-align:center}
+.vals .db{padding:5px 4px;font-size:14px}
+.dewtag{margin-top:6px;font-size:11.5px;font-weight:700;padding:5px 9px;border-radius:8px}
+.memo-inp{width:100%;margin-top:6px;padding:7px 10px;font-size:13px;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2);font-family:inherit}
+.part-photo{width:34%;margin-top:6px}
+.part-photo .photo-slot{margin-top:0;aspect-ratio:1/1}
+.part-photo .photo-btn{height:100%;flex-direction:column;font-size:12px}
+.part-photo .photo-thumb,.part-photo .photo-thumb img{height:100%;max-height:none}
+.fix-item.sug{border-color:#9CC5E8}
+.fix-item .sugtag{margin-left:auto;font-size:10px;font-weight:800;color:#1565C0;background:#EEF6FD;border-radius:999px;padding:2px 6px;white-space:nowrap}
+.add-win{display:block;width:100%;margin-top:4px;padding:10px;font-size:13px;font-weight:750;border-radius:var(--r-md);background:var(--brand-50);color:var(--brand-700);border:1.5px dashed #B6D8BD;cursor:pointer}
+.link-dew{display:block;margin-top:10px;text-align:center;font-size:12.5px;font-weight:750;color:#1565C0;text-decoration:none;padding:8px;border:1.5px solid #CFE3F5;border-radius:var(--r-sm);background:#F4F9FE}
+table.r-res td.l{text-align:left}
+</style>
+</head>
+<body>
+<header>
+  <div class="hbar"><h1 class="app-title"><span class="windico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h14a3 3 0 1 1-3 3"/><path d="M3 16h7a2.4 2.4 0 1 1-2.4 2.4"/></svg></span>창호 외풍 점검</h1><span class="ver" id="verBadge">V 1.0</span></div>
+  <nav class="modetabs"><a href="./">차음 수리 전·후</a><a href="draft.html" class="on">외풍 점검</a></nav>
+  <div class="steps"><div class="step" id="st1"></div><div class="step" id="st2"></div><div class="step" id="st3"></div></div>
+</header>
+
+<div id="app" class="wrap">
+  <section class="card collapsible" id="condCard">
+    <div class="card-head" id="condHead">
+      <div class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></div>
+      <div><h2>현장 정보 · 점검 조건</h2></div>
+      <span class="chev">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="row2" style="grid-template-columns:1fr 132px">
+        <div class="field"><label><span class="stepno">1</span>현장 / 고객명</label><input class="inp" id="c_site" placeholder="예 : 아파트명 101동 101호"></div>
+        <div class="field"><label>점검일자</label><input class="inp" id="c_date" type="date"></div>
+      </div>
+      <div class="envgrid" style="margin-top:4px">
+        <div class="field"><label>실외 온도(℃)</label><input class="inp" inputmode="decimal" data-env="tOut" placeholder="-"></div>
+        <div class="field"><label>바람(m/s)</label><input class="inp" inputmode="decimal" data-env="wind" placeholder="-"></div>
+        <div class="field"><label>바람 방향</label><input class="inp" data-env="wdir" placeholder="예: 북서"></div>
+        <div class="field"><label>실내 온도(℃)</label><input class="inp" inputmode="decimal" data-env="tIn" placeholder="-"></div>
+        <div class="field"><label>실내 습도(%)</label><input class="inp" inputmode="decimal" data-env="rh" placeholder="-"></div>
+        <div class="field"><label>이슬점(℃)</label><input class="inp" id="dewOut" readonly placeholder="자동" style="background:var(--surface-2)"></div>
+      </div>
+      <button class="wx-btn" id="btnWx">📍 지금 이 자리 날씨 불러오기 (실외 온도·바람)</button>
+      <div class="wx-src" id="wxSrc"></div>
+      <label class="fan-row"><input type="checkbox" data-env="fan">주방 후드·욕실 환기팬을 켜고 점검 (실내 감압)</label>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-body" style="padding-top:14px">
+      <div id="winList"></div>
+      <button class="add-win" id="btnAddWin">＋ 창호 추가</button>
+      <div class="act-row" style="margin-top:12px;max-width:130px;grid-template-columns:1fr">
+        <button class="btn btn-ai" id="goAi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"/></svg>종합 소견</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card collapsible closed" id="aiCard">
+    <div class="card-head">
+      <div class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"/></svg></div>
+      <div><h2>종합 소견 · 외풍 자리 정리</h2></div>
+      <span class="chev" style="margin-left:8px">▼</span>
+    </div>
+    <div class="card-body"><div id="aiReport"></div><a class="link-dew" href="https://anhjjeon1.github.io/dewpoint-pro/" target="_blank" rel="noopener">❄️ 결로 문의도 있으면 → 결로진단앱 열기</a></div>
+  </section>
+
+  <div class="foot-actions">
+    <button class="btn btn-reset" id="btnReset">초기화</button>
+    <button class="btn btn-pdf" id="btnSave"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF 저장</button>
+  </div>
+  <footer>청개구리샤시 · <span class="ph">010-2322-0949</span> · frogsash.co.kr</footer>
+</div>
+
+<div id="print-area"></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+var CFG={STORAGE_KEY:"frogsash_draft_v1",
+COMPANY:"청개구리샤시 · 010-2322-0949 · frogsash.co.kr",
+NOTICE:"본 점검은 외풍이 들어오는 자리를 현장에서 찾기 위한 정성 점검이며, 법적 기밀성 등급(KS F 2292 통기량)과는 다른 지표입니다. 외풍 세기는 그날의 바람과 실내외 온도차에 따라 달라집니다."};
+// 미서기 이중창 외풍 경로 순위 순서(여밈대 > 상부 > 물구멍 > 세로 > 하부), 접합부는 별도
+var PARTS=[
+ {k:"meet",n:"여밈대",d:"맞물림·잠금(크리센트)"},
+ {k:"top",n:"상부 레일",d:"윗틀·창짝 들림"},
+ {k:"drain",n:"물구멍",d:"배수구·반대 타공"},
+ {k:"side",n:"좌우 세로 레일",d:"마구리·모헤어"},
+ {k:"bottom",n:"하부 레일",d:"아래틀 접촉면"},
+ {k:"wall",n:"창틀–벽 접합부",d:"실리콘·사춤"},
+ {k:"etc",n:"기타",d:"유리 실링·환기구 등"}];
+var LV={1:{n:"정상",c:"#2E7D32"},2:{n:"약함",c:"#C77C02"},3:{n:"강함",c:"#C62828"}};
+var HOW=["손 감각","휴지·연기","초음파","열화상","풍속계"];
+var WTYPES=["미서기 이중창","미서기 단창","분합창","여닫이·틸트","고정창","기타"];
+var FIX=[
+ {n:"청개구리 기류차단 시스템",p:["drain","meet"]},
+ {n:"풍지판 교체",p:["meet"]},
+ {n:"잠금(크리센트) 위치 수정",p:["meet"]},
+ {n:"스트라이커 교체",p:["meet"]},
+ {n:"마구리판 모헤어 시공",p:["top","side"]},
+ {n:"모헤어 교체",p:["top","side","bottom"]},
+ {n:"호차 높이 조절",p:["top","bottom","meet"]},
+ {n:"창틀 사춤 보수",p:["wall"]},
+ {n:"외부 실리콘 재시공",p:["wall"]}];
+var WDIR=["북","북북동","북동","동북동","동","동남동","남동","남남동","남","남남서","남서","서남서","서","서북서","북서","북북서"];
+
+var S={env:{tOut:"",wind:"",wdir:"",tIn:"",rh:"",fan:false,src:""},wins:[]},aiOpenOnce=false;
+
+function $(s){return document.querySelector(s)}
+function num(v){var n=parseFloat(v);return isNaN(n)?null:n}
+function r1(n){return Math.round(n*10)/10}
+function uid(){return String(Date.now())+Math.random().toString(36).slice(2,6)}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function toast(m){var t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("show")},2200)}
+function today(){var d=new Date(),z=function(n){return String(n).padStart(2,"0")};return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())}
+function newWin(){return{id:uid(),name:"",type:"미서기 이중창",front:null,close:null,note:"",parts:{},fix:[]}}
+function getWin(id){return S.wins.filter(function(w){return w.id===id})[0]}
+function getPart(w,k){if(!w.parts[k])w.parts[k]={lv:0,sash:"",how:[],us:"",temp:"",ws:"",memo:"",photo:null};return w.parts[k]}
+function isDouble(w){return /이중창/.test(w.type)}
+function partName(k){for(var i=0;i<PARTS.length;i++)if(PARTS[i].k===k)return PARTS[i].n;return k}
+function jo(w,a,b){var c=String(w).replace(/[)\]\s]+$/,"").slice(-1),code=c.charCodeAt(0);var has=(code>=0xAC00&&code<=0xD7A3)?((code-0xAC00)%28>0):/[0-9]/.test(c)?/[136780]/.test(c):false;return w+(has?a:b)}
+function winName(w,i){return w.name||("창호 "+(i+1))}
+
+// 이슬점(Magnus 식)
+function dewPoint(){var t=num(S.env.tIn),rh=num(S.env.rh);if(t===null||rh===null||rh<=0||rh>100)return null;var a=17.62,b=243.12,g=Math.log(rh/100)+a*t/(b+t);return r1(b*g/(a-g))}
+function dewJudge(temp){var dp=dewPoint(),t=num(temp);if(dp===null||t===null)return null;var gap=r1(t-dp);
+  if(gap<=0)return{c:"#C62828",bg:"#FDECEC",t:"표면 "+t+"℃ ≤ 이슬점 "+dp+"℃ → 결로가 생기는 온도입니다",lv:2,gap:gap};
+  if(gap<=3)return{c:"#B26A00",bg:"#FFF4E0",t:"표면 "+t+"℃, 이슬점과 "+gap+"℃ 차이 → 결로 직전 온도입니다",lv:1,gap:gap};
+  return{c:"#2E7D32",bg:"#ECF6EE",t:"표면 "+t+"℃, 이슬점보다 "+gap+"℃ 높음",lv:0,gap:gap}}
+
+function readPhoto(file,cb){var r=new FileReader();r.onload=function(e){var img=new Image();img.onload=function(){var max=1200,w=img.width,h=img.height;if(w>max||h>max){if(w>=h){h=Math.round(h*max/w);w=max}else{w=Math.round(w*max/h);h=max}}var cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);cb(cv.toDataURL("image/jpeg",0.7))};img.src=e.target.result};r.readAsDataURL(file)}
+function photoHtml(url,cap,slot,wid,label){
+  if(url)return '<div class="photo-thumb"><img src="'+url+'"><span class="photo-cap">'+esc(cap)+'</span><button class="photo-del" data-act="delphoto" data-slot="'+slot+'" data-w="'+wid+'" aria-label="사진 삭제">✕</button></div>';
+  return '<button class="photo-btn" data-act="addphoto" data-slot="'+slot+'" data-w="'+wid+'"><span class="cam">📷</span><span class="ph-lab">'+esc(label)+'</span></button><input type="file" accept="image/*" class="hidden-file" data-file="'+slot+'" data-w="'+wid+'">';
+}
+function setPhoto(w,slot,url){if(slot==="front"||slot==="close")w[slot]=url;else if(slot.indexOf("p:")===0)getPart(w,slot.slice(2)).photo=url}
+
+function suggestedFix(w){var bad={};PARTS.forEach(function(p){var x=w.parts[p.k];if(x&&x.lv>=2)bad[p.k]=1});return FIX.map(function(f){return f.p.some(function(k){return bad[k]})})}
+
+function renderWins(){
+  $("#winList").innerHTML=S.wins.map(function(w,i){
+    var sug=suggestedFix(w);
+    return '<div class="loc"><div class="loc-head"><span class="loc-no">'+(i+1)+'</span>'
+      +'<input class="name-inp" value="'+esc(w.name)+'" placeholder="위치명 (예: 거실 큰창)" data-wf="name" data-w="'+w.id+'">'
+      +'<select class="typesel" data-wf="type" data-w="'+w.id+'">'+WTYPES.map(function(t){return '<option'+(t===w.type?' selected':'')+'>'+t+'</option>'}).join("")+'</select>'
+      +(S.wins.length>1?'<button class="del-btn" data-act="delwin" data-w="'+w.id+'" aria-label="창호 삭제">✕</button>':'')
+      +'</div><div class="loc-pad">'
+      +'<div class="seg-label before" style="margin-top:0"><span class="stepno">2</span>창호 사진</div>'
+      +'<div class="photo-row"><div class="photo-cell"><div class="photo-slot ratio34">'+photoHtml(w.front,"전면","front",w.id,"전면 촬영")+'</div></div><div class="photo-cell"><div class="photo-slot ratio34">'+photoHtml(w.close,"근접","close",w.id,"근접 촬영")+'</div></div></div>'
+      +'<textarea class="prenote" rows="2" placeholder="고객이 말한 증상 (예: 겨울에 창가 쪽이 서늘하고 커튼이 흔들림)" data-wf="note" data-w="'+w.id+'">'+esc(w.note)+'</textarea>'
+      +'<div class="seg-label before"><span class="stepno">3</span>부위별 외풍 점검</div>'
+      +PARTS.map(function(p){var x=w.parts[p.k]||{lv:0};
+        var seg='<span class="lvseg">'+[1,2,3].map(function(v){var on=x.lv===v;return '<button data-act="lv" data-w="'+w.id+'" data-p="'+p.k+'" data-v="'+v+'" class="'+(on?'on':'')+'"'+(on?' style="background:'+LV[v].c+';border-color:'+LV[v].c+'"':'')+'>'+LV[v].n+'</button>'}).join("")+'</span>';
+        var det="";
+        if(x.lv>=2){
+          var dj=dewJudge(x.temp);
+          det='<div class="part-det">'
+            +(isDouble(w)?'<div class="det-lab">어느 창</div><div class="chips">'+["내창","외창","둘 다"].map(function(s){return '<button class="chip'+(x.sash===s?' on':'')+'" data-act="sash" data-w="'+w.id+'" data-p="'+p.k+'" data-v="'+s+'">'+s+'</button>'}).join("")+'</div>':'')
+            +'<div class="det-lab">확인 방법</div><div class="chips">'+HOW.map(function(h){var on=x.how&&x.how.indexOf(h)>=0;return '<button class="chip'+(on?' on':'')+'" data-act="how" data-w="'+w.id+'" data-p="'+p.k+'" data-v="'+h+'">'+h+'</button>'}).join("")+'</div>'
+            +'<div class="det-lab">측정값 (잰 것만)</div><div class="vals">'
+            +'<div><label>초음파(dB)</label><input class="db" inputmode="decimal" data-pf="us" data-w="'+w.id+'" data-p="'+p.k+'" value="'+esc(x.us)+'"></div>'
+            +'<div><label>표면 온도(℃)</label><input class="db" inputmode="decimal" data-pf="temp" data-w="'+w.id+'" data-p="'+p.k+'" value="'+esc(x.temp)+'"></div>'
+            +'<div><label>풍속(m/s)</label><input class="db" inputmode="decimal" data-pf="ws" data-w="'+w.id+'" data-p="'+p.k+'" value="'+esc(x.ws)+'"></div></div>'
+            +'<div class="dewtag" id="dew_'+w.id+'_'+p.k+'"'+(dj?' style="color:'+dj.c+';background:'+dj.bg+'"':' style="display:none"')+'>'+(dj?esc(dj.t):'')+'</div>'
+            +'<input class="memo-inp" placeholder="메모 (예: 크리센트 걸림 약함, 외창 쪽 바람 셈)" data-pf="memo" data-w="'+w.id+'" data-p="'+p.k+'" value="'+esc(x.memo)+'">'
+            +'<div class="part-photo"><div class="photo-slot">'+photoHtml(x.photo,p.n,"p:"+p.k,w.id,p.n+" 사진")+'</div></div>'
+            +'</div>';
+        }
+        return '<div class="part'+(x.lv>=2?' lv'+x.lv:'')+'"><div class="part-top"><div class="part-nm">'+p.n+'<small>'+p.d+'</small></div>'+seg+'</div>'+det+'</div>';
+      }).join("")
+      +'<div class="seg-label before"><span class="stepno">4</span>권장 수리 <span style="font-size:11px;color:var(--ink-3);font-weight:650">(파란 테두리 = 점검 결과로 추천)</span></div>'
+      +'<div class="repair-grid">'+FIX.map(function(f,fi){var on=!!w.fix[fi];return '<label class="repair-item fix-item'+(on?' on':'')+(sug[fi]&&!on?' sug':'')+'"><input type="checkbox" data-fix="'+fi+'" data-w="'+w.id+'"'+(on?' checked':'')+'><span>'+esc(f.n)+'</span>'+(sug[fi]&&!on?'<span class="sugtag">추천</span>':'')+'</label>'}).join("")+'</div>'
+      +'</div></div>';
+  }).join("");
+  updateSteps();
+}
+
+function updateSteps(){
+  $("#st1").classList.toggle("on",!!$("#c_site").value);
+  $("#st2").classList.toggle("on",S.wins.some(function(w){return Object.keys(w.parts).some(function(k){return w.parts[k].lv>0})}));
+  $("#st3").classList.toggle("on",S.wins.some(function(w){return w.fix.some(Boolean)}));
+}
+function updateDew(){
+  var dp=dewPoint();$("#dewOut").value=dp===null?"":dp;
+  S.wins.forEach(function(w){PARTS.forEach(function(p){var el=document.getElementById("dew_"+w.id+"_"+p.k);if(!el)return;var dj=dewJudge(w.parts[p.k].temp);if(dj){el.style.display="";el.style.color=dj.c;el.style.background=dj.bg;el.textContent=dj.t}else el.style.display="none"})});
+}
+
+// ── 종합 소견 (규칙 기반, 입력값만 사용)
+function findings(w){return PARTS.map(function(p,idx){var x=w.parts[p.k];return x&&x.lv>0?{k:p.k,n:p.n,idx:idx,x:x}:null}).filter(Boolean)}
+function fLabel(f){return f.n+(f.x.sash?("("+f.x.sash+")"):"")}
+function report(){
+  var e=S.env,L=[],grade="기록",color="#7A8A80",anyBad=false,anyStrong=false,anyChecked=false;
+  var tO=num(e.tOut),tI=num(e.tIn),wd=num(e.wind);
+  var cond=[];
+  if(tO!==null)cond.push("실외 "+tO+"℃");
+  if(tI!==null)cond.push("실내 "+tI+"℃");
+  if(tO!==null&&tI!==null)cond.push("실내외 온도차 "+r1(tI-tO)+"℃");
+  if(wd!==null)cond.push("바람 "+wd+"m/s"+(e.wdir?("("+e.wdir+"풍)"):""));
+  if(cond.length)L.push("점검 당시 조건은 "+cond.join(", ")+"입니다."+(e.fan?" 주방 후드와 욕실 환기팬을 켜서 실내를 약하게 감압한 상태로 점검했습니다.":""));
+  var weak=(wd!==null&&wd<2)&&(tO===null||tI===null||(tI-tO)<10)&&!e.fan;
+  if(weak)L.push("바람이 약하고 실내외 온도차도 크지 않은 날이라, 바람 센 날보다 외풍이 작게 나타났을 수 있습니다.");
+  var agg={};
+  S.wins.forEach(function(w,i){
+    var F=findings(w);if(!F.length)return;anyChecked=true;
+    var strong=F.filter(function(f){return f.x.lv===3}),mid=F.filter(function(f){return f.x.lv===2}),ok=F.filter(function(f){return f.x.lv===1});
+    var s=jo("'"+winName(w,i)+"'("+w.type+")","은","는")+" ";
+    var parts=[];
+    if(strong.length)parts.push("외풍이 강한 자리가 "+strong.map(fLabel).join(", "));
+    if(mid.length)parts.push("약하게 들어오는 자리가 "+mid.map(fLabel).join(", "));
+    if(parts.length)s+=parts.join("이고, ")+"입니다.";else s+="점검한 자리에서 외풍이 확인되지 않았습니다.";
+    if(ok.length&&(strong.length||mid.length))s+=" "+jo(ok.map(fLabel).join(", "),"은","는")+" 정상입니다.";
+    if(w.note)s+=" (증상: "+w.note+")";
+    L.push(s);
+    strong.concat(mid).forEach(function(f){anyBad=true;if(f.x.lv===3)anyStrong=true;agg[f.n]=(agg[f.n]||0)+1;
+      var m=[];if(num(f.x.us)!==null)m.push("초음파 "+f.x.us+"dB");if(num(f.x.ws)!==null)m.push("풍속 "+f.x.ws+"m/s");if(num(f.x.temp)!==null)m.push("표면 "+f.x.temp+"℃");
+      if(m.length||f.x.memo)L.push("  · "+fLabel(f)+": "+(m.length?m.join(", "):"")+(m.length&&f.x.memo?" — ":"")+(f.x.memo||"")+(f.x.how&&f.x.how.length?" ["+f.x.how.join("·")+"로 확인]":""));
+    });
+  });
+  var aggK=Object.keys(agg).filter(function(k){return agg[k]>=2}).sort(function(a,b){return agg[b]-agg[a]});
+  if(aggK.length)L.push("여러 창에서 공통으로 외풍이 확인된 자리는 "+aggK.map(function(k){return k+"("+agg[k]+"곳)"}).join(", ")+"입니다.");
+  var outerOnly=S.wins.some(function(w){return isDouble(w)&&findings(w).some(function(f){return f.x.lv>=2&&f.x.sash==="외창"})});
+  if(outerOnly)L.push("이중창에서 외창 쪽 외풍이 확인되었습니다. 외창만 막으면 결로 자리가 내창 쪽으로 옮겨 갈 수 있어, 내창 기밀도 함께 점검·보강하는 것을 권합니다.");
+  var dp=dewPoint(),dewL=[];
+  if(dp!==null){S.wins.forEach(function(w,i){findings(w).forEach(function(f){var dj=dewJudge(f.x.temp);if(dj&&dj.lv>0)dewL.push("'"+winName(w,i)+"' "+fLabel(f)+" 표면 "+f.x.temp+"℃"+(dj.lv===2?"(이슬점 이하)":"(이슬점과 "+dj.gap+"℃ 차이)"))})});
+    if(dewL.length)L.push("실내 "+e.tIn+"℃·습도 "+e.rh+"%의 이슬점은 "+dp+"℃입니다. 외풍 자리 중 "+jo(dewL.join(", "),"은","는")+" 결로가 생기거나 생기기 직전의 온도여서, 외풍과 함께 결로도 확인이 필요합니다.");}
+  var fixL=[];S.wins.forEach(function(w,i){var f=FIX.filter(function(x,fi){return w.fix[fi]}).map(function(x){return x.n});if(f.length)fixL.push("'"+winName(w,i)+"': "+f.join(", "))});
+  if(fixL.length)L.push("권장 수리는 "+fixL.join(" / ")+"입니다.");
+  if(!anyChecked)return null;
+  if(anyStrong){grade="외풍 강함";color="#C62828"}else if(anyBad){grade="외풍 있음";color="#C77C02"}else{grade="이상 없음";color="#2E7D32"}
+  return{grade:grade,color:color,lines:L};
+}
+function renderAI(){
+  var r=report(),box=$("#aiReport");
+  if(!r){box.innerHTML='<div class="ai empty">부위별 점검 결과를 하나 이상 선택하면 종합 소견이 표시됩니다.</div>';return}
+  box.innerHTML='<div class="ai"><div class="hl">✨ 종합 소견<span class="grade" style="background:'+r.color+'">'+r.grade+'</span></div><ul>'+r.lines.map(function(s){return '<li>'+esc(s.replace(/^\s+·\s/,"└ "))+'</li>'}).join("")+'</ul></div>';
+}
+
+// ── 저장 (사진 제외)
+function save(){try{localStorage.setItem(CFG.STORAGE_KEY,JSON.stringify({site:$("#c_site").value,date:$("#c_date").value,env:S.env,wins:S.wins.map(function(w){var p={};Object.keys(w.parts).forEach(function(k){var x=w.parts[k];p[k]={lv:x.lv,sash:x.sash,how:x.how,us:x.us,temp:x.temp,ws:x.ws,memo:x.memo}});return{id:w.id,name:w.name,type:w.type,note:w.note,parts:p,fix:w.fix}})}))}catch(e){}}
+function load(){try{var d=JSON.parse(localStorage.getItem(CFG.STORAGE_KEY)||"null");if(!d)return false;$("#c_site").value=d.site||"";$("#c_date").value=d.date||"";
+  if(d.env)Object.keys(S.env).forEach(function(k){if(d.env[k]!==undefined)S.env[k]=d.env[k]});
+  S.wins=(d.wins||[]).map(function(w){var n=newWin();n.id=w.id||n.id;n.name=w.name||"";n.type=w.type||n.type;n.note=w.note||"";n.fix=Array.isArray(w.fix)?w.fix:[];
+    Object.keys(w.parts||{}).forEach(function(k){var x=w.parts[k],y=getPart(n,k);y.lv=x.lv||0;y.sash=x.sash||"";y.how=Array.isArray(x.how)?x.how:[];y.us=x.us||"";y.temp=x.temp||"";y.ws=x.ws||"";y.memo=x.memo||""});return n});
+  return S.wins.length>0}catch(e){return false}}
+function syncEnvInputs(){document.querySelectorAll("[data-env]").forEach(function(el){var k=el.dataset.env;if(el.type==="checkbox")el.checked=!!S.env[k];else el.value=S.env[k]||""});$("#wxSrc").textContent=S.env.src||"";updateDew()}
+
+// ── 현재 위치 날씨 (Open-Meteo)
+function fetchWeather(){
+  if(!navigator.geolocation){toast("이 기기는 위치 확인을 지원하지 않습니다");return}
+  toast("현재 위치 확인 중…");
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var u="https://api.open-meteo.com/v1/forecast?latitude="+pos.coords.latitude.toFixed(3)+"&longitude="+pos.coords.longitude.toFixed(3)+"&current=temperature_2m,wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=ms&timezone=Asia%2FSeoul";
+    fetch(u).then(function(r){return r.json()}).then(function(d){var c=d&&d.current;if(!c){toast("날씨를 불러오지 못했습니다");return}
+      S.env.tOut=String(r1(c.temperature_2m));S.env.wind=String(r1(c.wind_speed_10m));S.env.wdir=WDIR[Math.round(((c.wind_direction_10m%360)/22.5))%16];
+      S.env.src="Open-Meteo 기상 자료 "+(c.time||"").replace("T"," ")+" · 순간최대 "+r1(c.wind_gusts_10m)+"m/s (지상 10m 기준, 현장 체감과 다를 수 있음)";
+      syncEnvInputs();save();renderAI();toast("실외 온도·바람을 불러왔습니다");
+    }).catch(function(){toast("날씨를 불러오지 못했습니다 — 직접 입력해 주세요")});
+  },function(){toast("위치 권한이 없어 날씨를 불러오지 못했습니다")},{timeout:10000,maximumAge:600000});
+}
+
+// ── PDF
+function buildPrint(){
+  var site=esc($("#c_site").value||"-"),date=esc($("#c_date").value||"-"),e=S.env,r=report();
+  var cond=[];if(e.tOut)cond.push("실외 "+esc(e.tOut)+"℃");if(e.tIn)cond.push("실내 "+esc(e.tIn)+"℃");if(e.rh)cond.push("습도 "+esc(e.rh)+"%");var dp=dewPoint();if(dp!==null)cond.push("이슬점 "+dp+"℃");if(e.wind)cond.push("바람 "+esc(e.wind)+"m/s"+(e.wdir?" "+esc(e.wdir)+"풍":""));
+  var rows="";S.wins.forEach(function(w,i){findings(w).forEach(function(f){var m=[];if(num(f.x.us)!==null)m.push("초음파 "+f.x.us+"dB");if(num(f.x.ws)!==null)m.push(f.x.ws+"m/s");if(num(f.x.temp)!==null)m.push(f.x.temp+"℃");
+    rows+='<tr><td class="l">'+esc(winName(w,i))+'</td><td class="l">'+esc(fLabel(f))+'</td><td style="color:'+LV[f.x.lv].c+';font-weight:800">'+LV[f.x.lv].n+'</td><td>'+esc((f.x.how||[]).join("·")||"-")+'</td><td>'+esc(m.join(", ")||"-")+'</td></tr>'})});
+  var photos="";
+  S.wins.forEach(function(w,i){var items=[];if(w.front)items.push([w.front,"전면 촬영"]);if(w.close)items.push([w.close,"근접 촬영"]);
+    findings(w).forEach(function(f){if(f.x.photo)items.push([f.x.photo,fLabel(f)+" · "+LV[f.x.lv].n+(num(f.x.us)!==null?" · 초음파 "+f.x.us+"dB":"")])});
+    if(!items.length)return;
+    photos+='<div class="pblock"><div class="r-ploc">점검 위치 · '+esc(winName(w,i))+' ('+esc(w.type)+')</div></div>';
+    for(var j=0;j<items.length;j+=2){photos+='<div class="pblock"><div class="r-photos">'+[items[j],items[j+1]].map(function(it){return it?'<div class="r-photo"><img src="'+it[0]+'"><div class="cap">'+esc(it[1])+'</div></div>':'<div class="r-photo"></div>'}).join("")+'</div></div>'}
+  });
+  $("#print-area").innerHTML=
+    '<div class="pblock"><div class="r-head"><div class="r-title">창호 외풍 점검 소견서</div><div class="r-org">'+esc(CFG.COMPANY)+'</div></div></div>'
+   +'<div class="pblock"><table class="r-info"><tr><th>현장 / 고객명</th><td>'+site+'</td><th>점검일자</th><td>'+date+'</td></tr><tr><th>점검 조건</th><td colspan="3">'+(cond.join(" · ")||"-")+(e.fan?"<br>주방 후드·욕실 환기팬 가동(실내 감압) 상태에서 점검":"")+'</td></tr><tr><th>점검 방법</th><td colspan="3">창호 부위별(여밈대·상부·물구멍·세로·하부·벽 접합부)로 손 감각·연기·초음파·열화상·풍속계 중 현장에 맞는 방법으로 외풍 자리를 확인</td></tr><tr><th>종합 판정</th><td colspan="3"><b style="color:'+(r?r.color:"#333")+'">'+(r?r.grade:"-")+'</b></td></tr></table></div>'
+   +'<div class="pblock"><div class="r-sec">1. 외풍 확인 자리</div><table class="r-res"><thead><tr><th style="text-align:left">위치</th><th style="text-align:left">부위</th><th>정도</th><th>확인 방법</th><th>측정값</th></tr></thead><tbody>'+(rows||'<tr><td colspan="5">점검 결과 없음</td></tr>')+'</tbody></table></div>'
+   +(r?'<div class="pblock"><div class="r-sec">2. 종합 소견</div><ul class="r-ai">'+r.lines.map(function(s){return '<li>'+esc(s.replace(/^\s+·\s/,"└ "))+'</li>'}).join("")+'</ul></div>':'')
+   +(photos?'<div class="pblock"><div class="r-sec">3. 점검 사진</div></div>'+photos:'')
+   +'<div class="pblock"><div class="r-notice">※ '+esc(CFG.NOTICE)+'</div><div class="r-foot">'+esc(CFG.COMPANY)+' &nbsp;|&nbsp; 발행일 '+date+'</div></div>';
+}
+function pdfName(){var s=($("#c_site").value||"현장").replace(/[\\/:*?"<>|]+/g,"").replace(/\s+/g," ").trim().slice(0,40);return "청개구리샤시_외풍점검_"+s+"_"+($("#c_date").value||today())+".pdf"}
+function savePDF(){
+  if(!report()){toast("부위별 점검 결과를 하나 이상 입력해 주세요");return}
+  if(!window.jspdf||!window.html2canvas){toast("PDF 모듈을 불러오는 중입니다. 잠시 후 다시 눌러 주세요");return}
+  buildPrint();toast("PDF를 만드는 중…");
+  var area=$("#print-area");area.style.cssText="display:block;position:fixed;left:-10000px;top:0;width:760px;background:#fff;color:#111";
+  var pdf=new window.jspdf.jsPDF("p","mm","a4"),mL=14,mT=14,pw=pdf.internal.pageSize.getWidth(),ph=pdf.internal.pageSize.getHeight(),cw=pw-mL*2,y=mT;
+  var blocks=Array.prototype.slice.call(area.querySelectorAll(".pblock"));
+  function step(i){if(i>=blocks.length){area.style.cssText="display:none";pdf.save(pdfName());toast("PDF 저장 완료 — '내 파일 > 다운로드' 폴더를 확인하세요");return}
+    window.html2canvas(blocks[i],{scale:2,backgroundColor:"#ffffff"}).then(function(cv){var ih=cv.height*cw/cv.width;if(y+ih>ph-mT&&y>mT){pdf.addPage();y=mT}pdf.addImage(cv.toDataURL("image/jpeg",0.9),"JPEG",mL,y,cw,ih);y+=ih+3.5;step(i+1)}).catch(function(){area.style.cssText="display:none";toast("PDF 생성 실패 — 다시 시도해 주세요")})}
+  step(0);
+}
+
+// ── 이벤트 (위임)
+document.addEventListener("DOMContentLoaded",function(){
+  var list=$("#winList");
+  list.addEventListener("click",function(ev){
+    var b=ev.target.closest("[data-act]");if(!b)return;var w=getWin(b.dataset.w);if(!w)return;var a=b.dataset.act;
+    if(a==="lv"){var x=getPart(w,b.dataset.p),v=+b.dataset.v;x.lv=(x.lv===v?0:v)}
+    else if(a==="sash"){var x2=getPart(w,b.dataset.p);x2.sash=(x2.sash===b.dataset.v?"":b.dataset.v)}
+    else if(a==="how"){var x3=getPart(w,b.dataset.p),h=b.dataset.v,ix=x3.how.indexOf(h);if(ix>=0)x3.how.splice(ix,1);else x3.how.push(h)}
+    else if(a==="addphoto"){var inp=list.querySelector('input[data-file="'+b.dataset.slot+'"][data-w="'+w.id+'"]');if(inp)inp.click();return}
+    else if(a==="delphoto"){setPhoto(w,b.dataset.slot,null)}
+    else if(a==="delwin"){if(!confirm("이 창호 점검 내용을 지울까요?"))return;S.wins=S.wins.filter(function(x){return x!==w})}
+    renderWins();renderAI();save();
+  });
+  list.addEventListener("input",function(ev){var t=ev.target,w=getWin(t.dataset.w);if(!w)return;
+    if(t.dataset.wf&&t.tagName!=="SELECT"){w[t.dataset.wf]=t.value}
+    else if(t.dataset.pf){getPart(w,t.dataset.p)[t.dataset.pf]=t.value;if(t.dataset.pf==="temp")updateDew()}
+    else return;renderAI();updateSteps();save()});
+  list.addEventListener("change",function(ev){var t=ev.target,w=getWin(t.dataset.w);if(!w)return;
+    if(t.dataset.wf==="type"){w.type=t.value;renderWins()}
+    else if(t.dataset.fix!==undefined){w.fix[+t.dataset.fix]=t.checked;renderWins()}
+    else if(t.dataset.file){var f=t.files[0];if(!f)return;readPhoto(f,function(url){setPhoto(w,t.dataset.file,url);renderWins()});return}
+    else return;renderAI();save()});
+  document.querySelectorAll("[data-env]").forEach(function(el){el.addEventListener(el.type==="checkbox"?"change":"input",function(){S.env[el.dataset.env]=el.type==="checkbox"?el.checked:el.value;if(el.dataset.env!=="fan"&&el.dataset.env!=="rh"&&el.dataset.env!=="tIn"){S.env.src="직접 입력";$("#wxSrc").textContent=""}updateDew();renderAI();save()})});
+  $("#c_site").addEventListener("input",function(){updateSteps();save()});
+  $("#c_date").addEventListener("input",save);
+  $("#condHead").addEventListener("click",function(){$("#condCard").classList.toggle("closed")});
+  $("#aiCard .card-head").addEventListener("click",function(){$("#aiCard").classList.toggle("closed");renderAI()});
+  $("#btnWx").addEventListener("click",fetchWeather);
+  $("#btnAddWin").addEventListener("click",function(){S.wins.push(newWin());renderWins();save();toast("창호를 추가했습니다")});
+  $("#goAi").addEventListener("click",function(){renderAI();var el=$("#aiCard");el.classList.remove("closed");el.scrollIntoView({behavior:"smooth",block:"start"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash")});
+  $("#btnSave").addEventListener("click",savePDF);
+  $("#btnReset").addEventListener("click",function(){if(!confirm("모든 입력을 지우고 새로 시작할까요?"))return;localStorage.removeItem(CFG.STORAGE_KEY);S={env:{tOut:"",wind:"",wdir:"",tIn:"",rh:"",fan:false,src:""},wins:[newWin()]};$("#c_site").value="";$("#c_date").value=today();syncEnvInputs();renderWins();renderAI();toast("초기화되었습니다")});
+  if(!load())S.wins=[newWin()];
+  if(!$("#c_date").value)$("#c_date").value=today();
+  syncEnvInputs();renderWins();renderAI();
+});
+</script>
+<script>
+/* 자동 빌드 지문 + 새 버전이면 화면 복귀 때 자동 새로고침 */
+(function(){try{
+  function fp(src){var h=5381;for(var j=0;j<src.length;j++)h=(((h<<5)+h)+src.charCodeAt(j))>>>0;return('00000'+h.toString(36)).slice(-5)}
+  var src='',ns=document.querySelectorAll('style,script');for(var i=0;i<ns.length;i++)src+=(ns[i].textContent||'');
+  var tag=fp(src),el=document.getElementById('verBadge');if(el)el.textContent=el.textContent.replace(/\s*·.*$/,'')+' · '+tag;
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState!=='visible')return;
+    fetch(location.href.split('#')[0],{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var d=new DOMParser().parseFromString(t,'text/html'),s='',n=d.querySelectorAll('style,script');for(var k=0;k<n.length;k++)s+=(n[k].textContent||'');if(s&&fp(s)!==tag)location.reload()}).catch(function(){})});
+}catch(e){}})();
+</script>
+</body>
+</html>
