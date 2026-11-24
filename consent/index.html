@@ -43,6 +43,9 @@
   .err { color:var(--red); font-size:14px; margin:8px 0 0; min-height:1em; }
   .done img { width:100%; border-radius:10px; border:1px solid var(--line); }
   .linkbox { word-break:break-all; background:var(--g2); border-radius:10px; padding:10px 12px; font-size:13px; margin:8px 0; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .chips button { border:1.5px solid var(--line); background:#fff; border-radius:20px; padding:9px 13px; font-size:15px; font-family:inherit; color:var(--ink); cursor:pointer; }
+  .chips button.on { border-color:var(--g); background:var(--g); color:#fff; font-weight:700; }
   .hide { display:none !important; }
   #ver { text-align:center; font-size:11px; color:#A4ADA7; margin-top:14px; }
 </style>
@@ -56,6 +59,14 @@
     <div class="card">
       <h2>동의서 링크 만들기</h2>
       <input class="f" type="date" id="mDate" aria-label="점검일">
+      <div class="chips" id="mKinds">
+        <button type="button" data-k="dew">결로검사</button>
+        <button type="button" data-k="draft">외풍검사</button>
+        <button type="button" data-k="noise">소음검사</button>
+        <button type="button" data-k="work">시공불량검사</button>
+        <button type="button" data-k="etc">기타</button>
+      </div>
+      <input class="f hide" id="mEtc" maxlength="30" placeholder="기타 검사 내용 (예: 누수검사)">
       <select class="f" id="mFee" aria-label="검사비">
         <option value="">검사비 선택</option>
         <option value="300000">30만 원 (84㎡ 미만)</option>
@@ -63,7 +74,13 @@
         <option value="custom">검사비 직접 입력</option>
       </select>
       <input class="f hide" type="number" inputmode="numeric" id="mFeeCustom" placeholder="검사비 (원 단위 숫자)">
-      <input class="f" type="number" inputmode="numeric" id="mTravel" placeholder="출장비 (원 단위, 없으면 비워 두세요)">
+      <select class="f" id="mTravelSel" aria-label="출장비">
+        <option value="0">출장비 없음</option>
+        <option value="50000">출장비 5만 원</option>
+        <option value="100000">출장비 10만 원</option>
+        <option value="custom">출장비 기타 (직접 입력)</option>
+      </select>
+      <input class="f hide" type="number" inputmode="numeric" id="mTravel" placeholder="출장비 (원 단위 숫자)">
       <p class="small" id="mSum" style="margin:0 0 10px; font-weight:700; color:var(--g);"></p>
       <button class="btn" id="mMake">링크 만들기</button>
       <p class="err" id="mErr"></p>
@@ -84,6 +101,7 @@
       <h2>점검 내용</h2>
       <dl class="info">
         <dt>점검일</dt><dd id="vDate"></dd>
+        <dt>검사 항목</dt><dd id="vKinds"></dd>
         <dt>검사비</dt><dd id="vFee"></dd>
         <dt class="tr">출장비</dt><dd class="tr" id="vTravel"></dd>
         <dt class="tr">합계</dt><dd class="tr" id="vTotal"></dd>
@@ -144,7 +162,7 @@
 </div>
 
 <script>
-var BUILD = 'consent-1.2';
+var BUILD = 'consent-1.3';
 var GAS = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
 var $ = function (id) { return document.getElementById(id); };
 document.getElementById('ver').textContent = BUILD;
@@ -163,7 +181,12 @@ function won(n) { return Number(n).toLocaleString('ko-KR') + '원'; }
 function dateKo(s) { var p = s.split('-'); var d = new Date(+p[0], p[1] - 1, +p[2]); return p[0] + '년 ' + (+p[1]) + '월 ' + (+p[2]) + '일 (' + '일월화수목금토'[d.getDay()] + ')'; }
 function params() { var o = {}; location.hash.replace(/^#/, '').split('&').forEach(function (kv) { var a = kv.split('='); if (a[0]) o[a[0]] = decodeURIComponent(a[1] || ''); }); return o; }
 
+var KIND = { dew: '결로검사', draft: '외풍검사', noise: '소음검사', work: '시공불량검사' };
+function kindNames(ks, etc) { return ks.map(function (k) { return k === 'etc' ? '기타(' + etc + ')' : KIND[k]; }).filter(Boolean).join(' · '); }
 var P = params();
+P.ks = (P.k || '').split('.').filter(function (k) { return KIND[k] || k === 'etc'; });
+P.e = (P.e || '').slice(0, 30);
+P.kindTxt = kindNames(P.ks, P.e);
 var ok = /^\d{4}-\d{2}-\d{2}$/.test(P.d || '') && /^\d{4,8}$/.test(P.f || '') && /^\d{0,7}$/.test(P.t || '');
 P.t = String(+(P.t || 0));
 function total() { return +P.f + +P.t; }
@@ -176,8 +199,14 @@ else $('bad').classList.remove('hide');
 /* ---------- 사장님: 링크 만들기 ---------- */
 function startMaker() {
   $('maker').classList.remove('hide');
+  function travel() { return $('mTravelSel').value === 'custom' ? Math.max(0, Math.round(+$('mTravel').value || 0)) : +$('mTravelSel').value; }
+  function kinds() { return [].map.call(document.querySelectorAll('#mKinds button.on'), function (b) { return b.dataset.k; }); }
+  [].forEach.call(document.querySelectorAll('#mKinds button'), function (b) {
+    b.onclick = function () { b.classList.toggle('on'); $('mEtc').classList.toggle('hide', kinds().indexOf('etc') < 0); };
+  });
+  $('mTravelSel').onchange = function () { $('mTravel').classList.toggle('hide', this.value !== 'custom'); sum(); };
   function sum() {
-    var f = $('mFee').value === 'custom' ? Math.round(+$('mFeeCustom').value || 0) : +$('mFee').value || 0, t = Math.round(+$('mTravel').value || 0);
+    var f = $('mFee').value === 'custom' ? Math.round(+$('mFeeCustom').value || 0) : +$('mFee').value || 0, t = travel();
     $('mSum').textContent = f ? '검사비 ' + won(f) + (t ? ' + 출장비 ' + won(t) + ' = 합계 ' + won(f + t) : ' (출장비 없음)') : '';
   }
   $('mFee').onchange = function () { $('mFeeCustom').classList.toggle('hide', this.value !== 'custom'); sum(); };
@@ -185,20 +214,24 @@ function startMaker() {
   $('mMake').onclick = function () {
     var d = $('mDate').value, f = $('mFee').value === 'custom' ? String(Math.round(+$('mFeeCustom').value || 0)) : $('mFee').value;
     if (!d) return $('mErr').textContent = '점검일을 골라 주세요.';
+    var ks = kinds(), etc = $('mEtc').value.trim().replace(/[&#=]/g, ' ');
+    if (!ks.length) return $('mErr').textContent = '검사 항목을 하나 이상 골라 주세요.';
+    if (ks.indexOf('etc') >= 0 && !etc) return $('mErr').textContent = '기타 검사 내용을 적어 주세요.';
     if (!/^\d{4,8}$/.test(f)) return $('mErr').textContent = '검사비를 골라 주세요.';
-    var t = String(Math.max(0, Math.round(+$('mTravel').value || 0)));
+    var t = String(travel());
     if (t.length > 7) return $('mErr').textContent = '출장비를 확인해 주세요.';
     $('mErr').textContent = '';
-    var url = location.origin + location.pathname + '#d=' + d + '&f=' + f + (+t ? '&t=' + t : '');
+    var url = location.origin + location.pathname + '#d=' + d + '&k=' + ks.join('.') + (ks.indexOf('etc') >= 0 ? '&e=' + encodeURIComponent(etc) : '') + '&f=' + f + (+t ? '&t=' + t : '');
+    var kindTxt = kindNames(ks, etc);
     var money = +t ? '검사비 ' + won(f) + ' + 출장비 ' + won(t) + ' (합계 ' + won(+f + +t) + ')' : '검사비 ' + won(f);
     $('mLink').textContent = url; $('mOut').classList.remove('hide');
     $('mCopy').onclick = function () {
-      var msg = '청개구리샤시 창호 점검 동의서입니다.\n' + dateKo(d) + ' · ' + money + '\n아래 링크에서 확인 후 서명해 주세요.\n' + url;
+      var msg = '청개구리샤시 창호 점검 동의서입니다.\n' + dateKo(d) + '\n검사 항목: ' + kindTxt + '\n' + money + '\n아래 링크에서 확인 후 서명해 주세요.\n' + url;
       (navigator.clipboard ? navigator.clipboard.writeText(msg) : Promise.reject()).then(function () { $('mCopy').textContent = '복사됨 ✓'; setTimeout(function () { $('mCopy').textContent = '링크 복사'; }, 1500); })
         .catch(function () { prompt('아래 내용을 복사하세요', msg); });
     };
     $('mShare').classList.toggle('hide', !navigator.share);
-    $('mShare').onclick = function () { navigator.share({ title: '창호 점검 동의서', text: '청개구리샤시 창호 점검 동의서입니다. ' + dateKo(d) + ' · ' + money, url: url }).catch(function () {}); };
+    $('mShare').onclick = function () { navigator.share({ title: '창호 점검 동의서', text: '청개구리샤시 창호 점검 동의서입니다. ' + dateKo(d) + ' · ' + kindTxt + ' · ' + money, url: url }).catch(function () {}); };
   };
 }
 
@@ -207,6 +240,8 @@ var sigDrawn = 0;
 function startForm() {
   $('form').classList.remove('hide');
   $('vDate').textContent = dateKo(P.d);
+  $('vKinds').textContent = P.kindTxt;
+  $('vKinds').classList.toggle('hide', !P.kindTxt); $('vKinds').previousElementSibling.classList.toggle('hide', !P.kindTxt);
   $('vFee').textContent = won(P.f); $('vFee2').textContent = feeLine();
   $('vTravel').textContent = won(P.t); $('vTotal').textContent = won(total());
   document.querySelectorAll('.tr').forEach(function (e) { e.classList.toggle('hide', !+P.t); });
@@ -252,7 +287,8 @@ function docJpeg(f, at, no) {
   ops.push(['bar']);
   ops.push(['text', '창호 점검 동의서', 34, '#fff', true, 0]);
   ops.push(['gap', 30]);
-  [['고객', f.name + '  (' + f.tel + ')'], ['점검 장소', f.place], ['점검일', dateKo(P.d)]].concat(+P.t ? [['검사비', won(P.f)], ['출장비', won(P.t)], ['합계', won(total()) + ' · 점검 전 전액 입금']] : [['검사비', won(P.f) + ' · 점검 전 전액 입금']]).forEach(function (r) { ops.push(['kv', r[0], r[1]]); });
+  var kindRows = P.kindTxt ? wrap(P.kindTxt, 21, W - pad * 2 - 160).map(function (l, i) { return [i ? '' : '검사 항목', l]; }) : [];
+  [['고객', f.name + '  (' + f.tel + ')'], ['점검 장소', f.place], ['점검일', dateKo(P.d)]].concat(kindRows).concat(+P.t ? [['검사비', won(P.f)], ['출장비', won(P.t)], ['합계', won(total()) + ' · 점검 전 전액 입금']] : [['검사비', won(P.f) + ' · 점검 전 전액 입금']]).forEach(function (r) { ops.push(['kv', r[0], r[1]]); });
   ops.push(['gap', 16]); ops.push(['line']);
   terms.forEach(function (t) { wrap(t, 21, W - pad * 2 - 40).forEach(function (l, i) { ops.push(['term', l, i === 0]); }); ops.push(['gap', 8]); });
   ops.push(['line']);
@@ -293,7 +329,7 @@ function send() {
   if (sigDrawn < 40) return err.textContent = '서명란에 서명해 주세요.';
   var btn = $('fSend'); btn.disabled = true; btn.textContent = '보내는 중…';
   var at = nowKo();
-  var body = { kind: 'consent', website: $('website').value, name: f.name, tel: f.tel, place: f.place, date: P.d, fee: P.f, travel: P.t,
+  var body = { kind: 'consent', website: $('website').value, name: f.name, tel: f.tel, place: f.place, date: P.d, fee: P.f, travel: P.t, kinds: P.ks.join('.'), etc: P.e,
     c1: 1, c2: 1, c3: 1, c4: 1, c5: 1, yt: f.yt, sig: sigPng(), img: docJpeg(f, at, 0) };
   fetch(GAS, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) })
     .then(function (r) { return r.json(); })
