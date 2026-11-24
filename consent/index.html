@@ -113,6 +113,7 @@
     <div class="card">
       <h2>동의 항목</h2>
       <label class="chk"><input type="checkbox" id="c1"><span><span class="req">필수</span> <span id="vFee2"></span> 현장에서 금액을 조정하지 않습니다.</span></label>
+      <label class="chk"><input type="checkbox" id="c6"><span><span class="req">필수</span> 검사는 위 검사 항목만 합니다. 다른 항목은 추가 비용이 듭니다.</span></label>
       <label class="chk"><input type="checkbox" id="c2"><span><span class="req">필수</span> 금액은 점검 전에 전액 입금합니다. 입금이 확인되면 예약이 확정됩니다. 점검일 7일 전까지 취소하면 전액 돌려드립니다. 7일 이내 취소는 돌려드리지 않습니다.</span></label>
       <label class="chk"><input type="checkbox" id="c3"><span><span class="req">필수</span> 결과지는 PDF 파일로만 보내드립니다.</span></label>
       <label class="chk"><input type="checkbox" id="c4"><span><span class="req">필수</span> 현장에서는 측정값만 알려드립니다. 원인 판단과 대책은 결과지에 담습니다.</span></label>
@@ -162,7 +163,7 @@
 </div>
 
 <script>
-var BUILD = 'consent-1.3';
+var BUILD = 'consent-1.4';
 var GAS = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
 var $ = function (id) { return document.getElementById(id); };
 document.getElementById('ver').textContent = BUILD;
@@ -245,7 +246,7 @@ function startForm() {
   $('vFee').textContent = won(P.f); $('vFee2').textContent = feeLine();
   $('vTravel').textContent = won(P.t); $('vTotal').textContent = won(total());
   document.querySelectorAll('.tr').forEach(function (e) { e.classList.toggle('hide', !+P.t); });
-  var cs = ['c1', 'c2', 'c3', 'c4', 'c5'];
+  var cs = ['c1', 'c6', 'c2', 'c3', 'c4', 'c5'];
   $('cAll').onchange = function () { var v = this.checked; cs.forEach(function (c) { $(c).checked = v; }); };
   cs.forEach(function (c) { $(c).onchange = function () { $('cAll').checked = cs.every(function (x) { return $(x).checked; }); }; });
   setupSig();
@@ -278,6 +279,7 @@ function docJpeg(f, at, no) {
   function wrap(text, size, maxW) { x.font = size + 'px ' + font; var out = [], line = ''; for (var i = 0; i < text.length; i++) { var t = line + text[i]; if (x.measureText(t).width > maxW && line) { out.push(line); line = text[i]; } else line = t; } if (line) out.push(line); return out; }
   var terms = [
     feeLine() + ' 현장에서 금액을 조정하지 않습니다.',
+    '검사는 위 검사 항목만 합니다. 다른 항목은 추가 비용이 듭니다.',
     '금액은 점검 전에 전액 입금합니다. 입금이 확인되면 예약이 확정됩니다. 점검일 7일 전까지 취소하면 전액 돌려드립니다. 7일 이내 취소는 돌려드리지 않습니다.',
     '결과지는 PDF 파일로만 보내드립니다.',
     '현장에서는 측정값만 알려드립니다. 원인 판단과 대책은 결과지에 담습니다.',
@@ -322,7 +324,7 @@ function send() {
   var err = $('fErr'); err.textContent = '';
   var f = { name: $('fName').value.trim(), tel: $('fTel').value.trim(), place: $('fPlace').value.trim() };
   var y = document.querySelector('input[name=yt]:checked'); f.yt = y ? y.value : '';
-  if (!['c1', 'c2', 'c3', 'c4', 'c5'].every(function (c) { return $(c).checked; })) return err.textContent = '필수 항목에 모두 체크해 주세요.';
+  if (!['c1', 'c6', 'c2', 'c3', 'c4', 'c5'].every(function (c) { return $(c).checked; })) return err.textContent = '필수 항목에 모두 체크해 주세요.';
   if (!f.yt) return err.textContent = '유튜브 영상 활용에서 하나를 골라 주세요.';
   if (!f.name || !f.tel || !f.place) return err.textContent = '이름·연락처·점검 장소를 적어 주세요.';
   if (!/^[0-9\-\s]{9,14}$/.test(f.tel)) return err.textContent = '연락처를 숫자로 적어 주세요.';
@@ -330,7 +332,7 @@ function send() {
   var btn = $('fSend'); btn.disabled = true; btn.textContent = '보내는 중…';
   var at = nowKo();
   var body = { kind: 'consent', website: $('website').value, name: f.name, tel: f.tel, place: f.place, date: P.d, fee: P.f, travel: P.t, kinds: P.ks.join('.'), etc: P.e,
-    c1: 1, c2: 1, c3: 1, c4: 1, c5: 1, yt: f.yt, sig: sigPng(), img: docJpeg(f, at, 0) };
+    c1: 1, c2: 1, c3: 1, c4: 1, c5: 1, c6: 1, yt: f.yt, sig: sigPng(), img: docJpeg(f, at, 0) };
   fetch(GAS, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) })
     .then(function (r) { return r.json(); })
     .then(function (j) {
