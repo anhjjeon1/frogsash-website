@@ -126,7 +126,9 @@
       <h2>제출되었습니다</h2>
       <p class="small" style="margin:0 0 10px;">동의서가 청개구리샤시로 전달되었습니다. 검사비를 입금해 주시면 예약이 확정됩니다.</p>
       <img id="dImg" alt="서명된 동의서">
-      <button class="btn" id="dSave" style="margin-top:10px;">동의서 그림 저장</button>
+      <button class="btn" id="dKakao" style="margin-top:10px; background:#FEE500; color:#191919;">카톡으로 보내기</button>
+      <p class="small hide" id="dKakaoHelp">이 폰에서는 바로 보내기가 되지 않습니다. 이 화면을 캡처해서 청개구리샤시 카톡으로 보내 주세요.</p>
+      <button class="btn sub" id="dSave" style="margin-top:8px;">동의서 그림 저장</button>
     </div>
   </section>
 
@@ -138,7 +140,7 @@
 </div>
 
 <script>
-var BUILD = 'consent-1.0';
+var BUILD = 'consent-1.1';
 var GAS = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
 var $ = function (id) { return document.getElementById(id); };
 document.getElementById('ver').textContent = BUILD;
@@ -281,7 +283,15 @@ function send() {
       if (!j.ok) throw new Error(j.error || 'server');
       var img = docJpeg(f, (j.at || at).slice(0, 16), j.no);
       $('dImg').src = img;
-      $('dSave').onclick = function () { var a = document.createElement('a'); a.href = img; a.download = '청개구리샤시_점검동의서_' + P.d + '.jpg'; document.body.appendChild(a); a.click(); a.remove(); };
+      var fname = '청개구리샤시_점검동의서_' + P.d + '.jpg';
+      $('dKakao').onclick = function () {
+        fetch(img).then(function (r) { return r.blob(); }).then(function (b) {
+          var file = new File([b], fname, { type: 'image/jpeg' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: '창호 점검 동의서', text: '창호 점검 동의서를 보내드립니다.' });
+          throw new Error('noshare');
+        }).catch(function (e) { if (e && e.name === 'AbortError') return; $('dKakaoHelp').classList.remove('hide'); });
+      };
+      $('dSave').onclick = function () { var a = document.createElement('a'); a.href = img; a.download = fname; document.body.appendChild(a); a.click(); a.remove(); };
       $('form').classList.add('hide'); $('done').classList.remove('hide'); window.scrollTo(0, 0);
     })
     .catch(function (e) {
