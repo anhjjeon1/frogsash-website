@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>창호 점검 동의서 | 청개구리샤시</title>
+<style>
+  :root { --g:#1B6B28; --g2:#E8F3EA; --line:#D6E2D8; --ink:#111827; --gray:#5B6470; --red:#C0392B; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:'Noto Sans KR', -apple-system, 'Malgun Gothic', sans-serif; background:#F4F7F5; color:var(--ink); word-break:keep-all; }
+  .wrap { max-width:560px; margin:0 auto; padding:16px 14px 40px; }
+  .head { background:var(--g); color:#fff; border-radius:14px; padding:16px 18px; margin-bottom:12px; }
+  .head b { font-size:19px; display:block; }
+  .head span { font-size:13px; opacity:.85; }
+  .card { background:#fff; border-radius:14px; padding:16px; margin-bottom:12px; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+  .card h2 { font-size:16px; margin:0 0 10px; color:var(--g); }
+  .info { display:grid; grid-template-columns:76px 1fr; gap:6px 10px; font-size:15px; }
+  .info dt { color:var(--gray); }
+  .info dd { margin:0; font-weight:700; }
+  .acct { margin-top:10px; background:var(--g2); border-radius:10px; padding:10px 12px; font-size:14px; line-height:1.6; }
+  label.chk { display:flex; gap:10px; align-items:flex-start; padding:11px 0; border-top:1px solid #EEF2EF; font-size:15px; line-height:1.55; cursor:pointer; }
+  label.chk:first-of-type { border-top:0; }
+  label.chk input { width:22px; height:22px; margin:1px 0 0; accent-color:var(--g); flex:none; }
+  .req { color:var(--red); font-size:12px; font-weight:700; }
+  .opt { color:var(--gray); font-size:12px; font-weight:700; }
+  .yt { display:flex; gap:8px; margin-top:8px; }
+  .yt label { flex:1; border:1.5px solid var(--line); border-radius:10px; padding:11px 6px; text-align:center; font-size:15px; cursor:pointer; }
+  .yt input { display:none; }
+  .yt input:checked + span { color:var(--g); font-weight:700; }
+  .yt label:has(input:checked) { border-color:var(--g); background:var(--g2); }
+  .small { font-size:13px; color:var(--gray); line-height:1.6; margin:6px 0 0; }
+  input.f, select.f { width:100%; font-size:16px; padding:12px; border:1.5px solid var(--line); border-radius:10px; margin-bottom:8px; background:#fff; font-family:inherit; }
+  input.f:focus, select.f:focus { outline:none; border-color:var(--g); }
+  .sigbox { position:relative; border:1.5px dashed var(--g); border-radius:10px; background:#FBFDFB; }
+  #sig { display:block; width:100%; height:170px; touch-action:none; border-radius:10px; }
+  .sigph { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#9AA9A0; font-size:15px; pointer-events:none; }
+  .row { display:flex; gap:8px; }
+  .btn { display:block; width:100%; border:0; border-radius:12px; padding:15px; font-size:17px; font-weight:700; font-family:inherit; cursor:pointer; background:var(--g); color:#fff; }
+  .btn.sub { background:#fff; color:var(--g); border:1.5px solid var(--g); }
+  .btn.mini { padding:8px 12px; font-size:13px; width:auto; margin-top:8px; }
+  .btn:disabled { opacity:.5; }
+  .err { color:var(--red); font-size:14px; margin:8px 0 0; min-height:1em; }
+  .done img { width:100%; border-radius:10px; border:1px solid var(--line); }
+  .linkbox { word-break:break-all; background:var(--g2); border-radius:10px; padding:10px 12px; font-size:13px; margin:8px 0; }
+  .hide { display:none !important; }
+  #ver { text-align:center; font-size:11px; color:#A4ADA7; margin-top:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><b>창호 점검 동의서</b><span>청개구리샤시 · 010-2322-0949</span></div>
+
+  <!-- 사장님: 링크 만들기 -->
+  <section id="maker" class="hide">
+    <div class="card">
+      <h2>동의서 링크 만들기</h2>
+      <input class="f" type="date" id="mDate" aria-label="점검일">
+      <select class="f" id="mFee" aria-label="검사비">
+        <option value="">검사비 선택</option>
+        <option value="300000">30만 원 (84㎡ 미만)</option>
+        <option value="350000">35만 원 (84㎡ 이상)</option>
+        <option value="custom">직접 입력 (교통비 포함 등)</option>
+      </select>
+      <input class="f hide" type="number" inputmode="numeric" id="mFeeCustom" placeholder="검사비 (원 단위 숫자)">
+      <button class="btn" id="mMake">링크 만들기</button>
+      <p class="err" id="mErr"></p>
+      <div id="mOut" class="hide">
+        <div class="linkbox" id="mLink"></div>
+        <div class="row">
+          <button class="btn" id="mCopy">링크 복사</button>
+          <button class="btn sub" id="mShare">카톡으로 공유</button>
+        </div>
+        <p class="small">복사한 링크를 카톡 고객 채팅방에 붙여 넣어 보내세요. 고객이 제출하면 시트와 텔레그램에 자동 저장됩니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 고객: 동의서 -->
+  <section id="form" class="hide">
+    <div class="card">
+      <h2>점검 내용</h2>
+      <dl class="info">
+        <dt>점검일</dt><dd id="vDate"></dd>
+        <dt>검사비</dt><dd id="vFee"></dd>
+        <dt>결제</dt><dd>점검 전 전액 입금</dd>
+      </dl>
+      <div class="acct">입금 계좌: KB국민은행 090537-04-003309<br>예금주: 전영웅(청개구리샤시)</div>
+    </div>
+
+    <div class="card">
+      <h2>동의 항목</h2>
+      <label class="chk"><input type="checkbox" id="c1"><span><span class="req">필수</span> 검사비는 <b id="vFee2"></b>입니다. 현장에서 금액을 조정하지 않습니다.</span></label>
+      <label class="chk"><input type="checkbox" id="c2"><span><span class="req">필수</span> 검사비는 점검 전에 전액 입금합니다. 입금이 확인되면 예약이 확정됩니다. 점검일 7일 전까지 취소하면 전액 돌려드립니다. 7일 이내 취소는 돌려드리지 않습니다.</span></label>
+      <label class="chk"><input type="checkbox" id="c3"><span><span class="req">필수</span> 결과지는 PDF 파일로만 보내드립니다.</span></label>
+      <label class="chk"><input type="checkbox" id="c4"><span><span class="req">필수</span> 현장에서는 측정값만 알려드립니다. 원인 판단과 대책은 결과지에 담습니다.</span></label>
+      <label class="chk"><input type="checkbox" id="c5"><span><span class="req">필수</span> 이름·연락처·주소는 점검과 결과지 전송에만 씁니다. 점검 후 1년 동안 보관한 뒤 지웁니다.</span></label>
+      <label class="chk"><input type="checkbox" id="cAll"><span><b>위 필수 항목에 모두 동의합니다.</b></span></label>
+    </div>
+
+    <div class="card">
+      <h2>유튜브 영상 활용 <span class="opt">선택</span></h2>
+      <p class="small" style="margin:0;">현장 촬영 영상을 청개구리샤시 유튜브에 쓸 수 있습니다. 얼굴·동호수·단지명은 가립니다. 동의하지 않아도 점검은 똑같이 진행합니다.</p>
+      <div class="yt">
+        <label><input type="radio" name="yt" value="yes"><span>동의합니다</span></label>
+        <label><input type="radio" name="yt" value="no"><span>동의하지 않습니다</span></label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>고객 정보·서명</h2>
+      <input class="f" id="fName" placeholder="이름" autocomplete="name" maxlength="30">
+      <input class="f" id="fTel" placeholder="연락처 (예: 010-1234-5678)" inputmode="tel" autocomplete="tel" maxlength="20">
+      <input class="f" id="fPlace" placeholder="점검 장소 (아파트 이름·동·호수)" maxlength="80">
+      <div class="sigbox"><canvas id="sig"></canvas><div class="sigph" id="sigph">여기에 손가락으로 서명해 주세요</div></div>
+      <button class="btn sub mini" id="sigClear" type="button">서명 지우기</button>
+      <input type="text" id="website" class="hide" tabindex="-1" autocomplete="off">
+      <p class="err" id="fErr"></p>
+      <button class="btn" id="fSend">동의하고 제출</button>
+    </div>
+  </section>
+
+  <!-- 제출 완료 -->
+  <section id="done" class="hide">
+    <div class="card done">
+      <h2>제출되었습니다</h2>
+      <p class="small" style="margin:0 0 10px;">동의서가 청개구리샤시로 전달되었습니다. 검사비를 입금해 주시면 예약이 확정됩니다.</p>
+      <img id="dImg" alt="서명된 동의서">
+      <button class="btn" id="dSave" style="margin-top:10px;">동의서 그림 저장</button>
+    </div>
+  </section>
+
+  <section id="bad" class="hide">
+    <div class="card"><h2>링크가 올바르지 않습니다</h2><p class="small">청개구리샤시(010-2322-0949)에 다시 요청해 주세요.</p></div>
+  </section>
+
+  <div id="ver"></div>
+</div>
+
+<script>
+var BUILD = 'consent-1.0';
+var GAS = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
+var $ = function (id) { return document.getElementById(id); };
+document.getElementById('ver').textContent = BUILD;
+
+/* 새 판이 올라오면 다시 열 때 자동 새로고침 (입력 시작 전만) */
+var touched = false;
+document.addEventListener('input', function () { touched = true; }, true);
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState !== 'visible' || touched) return;
+  fetch(location.pathname + '?b=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (t) {
+    var m = t.match(/var BUILD = '([^']+)'/); if (m && m[1] !== BUILD) location.reload();
+  }).catch(function () {});
+});
+
+function won(n) { return Number(n).toLocaleString('ko-KR') + '원'; }
+function dateKo(s) { var p = s.split('-'); var d = new Date(+p[0], p[1] - 1, +p[2]); return p[0] + '년 ' + (+p[1]) + '월 ' + (+p[2]) + '일 (' + '일월화수목금토'[d.getDay()] + ')'; }
+function params() { var o = {}; location.hash.replace(/^#/, '').split('&').forEach(function (kv) { var a = kv.split('='); if (a[0]) o[a[0]] = decodeURIComponent(a[1] || ''); }); return o; }
+
+var P = params();
+var ok = /^\d{4}-\d{2}-\d{2}$/.test(P.d || '') && /^\d{4,8}$/.test(P.f || '');
+if (!location.hash) startMaker();
+else if (ok) startForm();
+else $('bad').classList.remove('hide');
+
+/* ---------- 사장님: 링크 만들기 ---------- */
+function startMaker() {
+  $('maker').classList.remove('hide');
+  $('mFee').onchange = function () { $('mFeeCustom').classList.toggle('hide', this.value !== 'custom'); };
+  $('mMake').onclick = function () {
+    var d = $('mDate').value, f = $('mFee').value === 'custom' ? String(Math.round(+$('mFeeCustom').value || 0)) : $('mFee').value;
+    if (!d) return $('mErr').textContent = '점검일을 골라 주세요.';
+    if (!/^\d{4,8}$/.test(f)) return $('mErr').textContent = '검사비를 골라 주세요.';
+    $('mErr').textContent = '';
+    var url = location.origin + location.pathname + '#d=' + d + '&f=' + f;
+    $('mLink').textContent = url; $('mOut').classList.remove('hide');
+    $('mCopy').onclick = function () {
+      var msg = '청개구리샤시 창호 점검 동의서입니다.\n' + dateKo(d) + ' · 검사비 ' + won(f) + '\n아래 링크에서 확인 후 서명해 주세요.\n' + url;
+      (navigator.clipboard ? navigator.clipboard.writeText(msg) : Promise.reject()).then(function () { $('mCopy').textContent = '복사됨 ✓'; setTimeout(function () { $('mCopy').textContent = '링크 복사'; }, 1500); })
+        .catch(function () { prompt('아래 내용을 복사하세요', msg); });
+    };
+    $('mShare').classList.toggle('hide', !navigator.share);
+    $('mShare').onclick = function () { navigator.share({ title: '창호 점검 동의서', text: '청개구리샤시 창호 점검 동의서입니다. ' + dateKo(d) + ' · 검사비 ' + won(f), url: url }).catch(function () {}); };
+  };
+}
+
+/* ---------- 고객: 동의서 ---------- */
+var sigDrawn = 0;
+function startForm() {
+  $('form').classList.remove('hide');
+  $('vDate').textContent = dateKo(P.d);
+  $('vFee').textContent = won(P.f); $('vFee2').textContent = won(P.f);
+  var cs = ['c1', 'c2', 'c3', 'c4', 'c5'];
+  $('cAll').onchange = function () { var v = this.checked; cs.forEach(function (c) { $(c).checked = v; }); };
+  cs.forEach(function (c) { $(c).onchange = function () { $('cAll').checked = cs.every(function (x) { return $(x).checked; }); }; });
+  setupSig();
+  $('fSend').onclick = send;
+}
+
+function setupSig() {
+  var c = $('sig'), ctx = c.getContext('2d'), drawing = false, last = null;
+  function fit() { var r = c.getBoundingClientRect(), k = window.devicePixelRatio || 1; var keep = sigDrawn ? c.toDataURL() : null; c.width = r.width * k; c.height = r.height * k; ctx.setTransform(k, 0, 0, k, 0, 0); ctx.lineWidth = 2.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#111'; if (keep) { var im = new Image(); im.onload = function () { ctx.drawImage(im, 0, 0, r.width, r.height); }; im.src = keep; } }
+  fit(); window.addEventListener('resize', fit);
+  function pt(e) { var r = c.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+  c.addEventListener('pointerdown', function (e) { drawing = true; last = pt(e); c.setPointerCapture(e.pointerId); $('sigph').classList.add('hide'); touched = true; });
+  c.addEventListener('pointermove', function (e) { if (!drawing) return; var p = pt(e); ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke(); sigDrawn += Math.hypot(p.x - last.x, p.y - last.y); last = p; });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { c.addEventListener(ev, function () { drawing = false; }); });
+  $('sigClear').onclick = function () { ctx.clearRect(0, 0, c.width, c.height); sigDrawn = 0; $('sigph').classList.remove('hide'); };
+}
+
+/* 서명만 작게 (시트 보관용, 흰 바탕 PNG) */
+function sigPng() {
+  var s = $('sig'), w = 480, h = Math.round(w * s.height / s.width);
+  var o = document.createElement('canvas'); o.width = w; o.height = h;
+  var x = o.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.drawImage(s, 0, 0, w, h);
+  return o.toDataURL('image/png');
+}
+
+/* 서명된 동의서 한 장 그림 */
+function docJpeg(f, at, no) {
+  var W = 900, pad = 48, cv = document.createElement('canvas'), x = cv.getContext('2d');
+  var font = "'Noto Sans KR','Malgun Gothic',-apple-system,sans-serif";
+  function wrap(text, size, maxW) { x.font = size + 'px ' + font; var out = [], line = ''; for (var i = 0; i < text.length; i++) { var t = line + text[i]; if (x.measureText(t).width > maxW && line) { out.push(line); line = text[i]; } else line = t; } if (line) out.push(line); return out; }
+  var terms = [
+    '검사비는 ' + won(P.f) + '입니다. 현장에서 금액을 조정하지 않습니다.',
+    '검사비는 점검 전에 전액 입금합니다. 입금이 확인되면 예약이 확정됩니다. 점검일 7일 전까지 취소하면 전액 돌려드립니다. 7일 이내 취소는 돌려드리지 않습니다.',
+    '결과지는 PDF 파일로만 보내드립니다.',
+    '현장에서는 측정값만 알려드립니다. 원인 판단과 대책은 결과지에 담습니다.',
+    '이름·연락처·주소는 점검과 결과지 전송에만 씁니다. 점검 후 1년 동안 보관한 뒤 지웁니다.'
+  ];
+  var ops = [];
+  ops.push(['bar']);
+  ops.push(['text', '창호 점검 동의서', 34, '#fff', true, 0]);
+  ops.push(['gap', 30]);
+  [['고객', f.name + '  (' + f.tel + ')'], ['점검 장소', f.place], ['점검일', dateKo(P.d)], ['검사비', won(P.f) + ' · 점검 전 전액 입금']].forEach(function (r) { ops.push(['kv', r[0], r[1]]); });
+  ops.push(['gap', 16]); ops.push(['line']);
+  terms.forEach(function (t) { wrap(t, 21, W - pad * 2 - 40).forEach(function (l, i) { ops.push(['term', l, i === 0]); }); ops.push(['gap', 8]); });
+  ops.push(['line']);
+  ops.push(['kv', '유튜브 활용', f.yt === 'yes' ? '동의합니다 (얼굴·동호수·단지명 가림)' : '동의하지 않습니다']);
+  ops.push(['gap', 16]);
+  ops.push(['sig']);
+  ops.push(['kv', '제출 시각', at + (no ? '   · 접수 #' + no : '')]);
+  ops.push(['gap', 10]);
+  ops.push(['text', '청개구리샤시 · 대표 전영웅 · 010-2322-0949', 17, '#6B7280', false, 0]);
+  /* 높이 계산 */
+  var H = 0; ops.forEach(function (o) { H += o[0] === 'bar' ? 0 : o[0] === 'text' ? (o[5] || 0) + o[2] + 14 : o[0] === 'gap' ? o[1] : o[0] === 'kv' ? 40 : o[0] === 'term' ? 33 : o[0] === 'line' ? 20 : o[0] === 'sig' ? 200 : 0; });
+  H += 50;
+  cv.width = W; cv.height = H;
+  x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+  var y = 0;
+  ops.forEach(function (o) {
+    if (o[0] === 'bar') { x.fillStyle = '#1B6B28'; x.fillRect(0, 0, W, 86); y = 24; }
+    else if (o[0] === 'text') { x.font = (o[4] ? '700 ' : '') + o[2] + 'px ' + font; x.fillStyle = o[3]; x.textBaseline = 'top'; x.fillText(o[1], pad, y); y += o[2] + 14; }
+    else if (o[0] === 'gap') y += o[1];
+    else if (o[0] === 'kv') { x.textBaseline = 'top'; x.font = '20px ' + font; x.fillStyle = '#6B7280'; x.fillText(o[1], pad, y); x.font = '700 21px ' + font; x.fillStyle = '#111827'; x.fillText(o[2], pad + 150, y); y += 40; }
+    else if (o[0] === 'line') { x.fillStyle = '#E5E7EB'; x.fillRect(pad, y + 6, W - pad * 2, 2); y += 20; }
+    else if (o[0] === 'term') { x.textBaseline = 'top'; if (o[2]) { x.font = '700 22px ' + font; x.fillStyle = '#1B6B28'; x.fillText('☑', pad, y - 1); } x.font = '21px ' + font; x.fillStyle = '#111827'; x.fillText(o[1], pad + 40, y); y += 33; }
+    else if (o[0] === 'sig') { x.font = '20px ' + font; x.fillStyle = '#6B7280'; x.textBaseline = 'top'; x.fillText('서명', pad, y); var s = $('sig'), sw = 520, sh = Math.min(170, sw * s.height / s.width); x.strokeStyle = '#D6E2D8'; x.lineWidth = 2; x.strokeRect(pad + 150, y - 6, sw, sh + 12); x.drawImage(s, pad + 150, y, sw, sh); y += 200; }
+  });
+  return cv.toDataURL('image/jpeg', 0.85);
+}
+
+function nowKo() { return new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }).slice(0, 16); }
+
+function send() {
+  var err = $('fErr'); err.textContent = '';
+  var f = { name: $('fName').value.trim(), tel: $('fTel').value.trim(), place: $('fPlace').value.trim() };
+  var y = document.querySelector('input[name=yt]:checked'); f.yt = y ? y.value : '';
+  if (!['c1', 'c2', 'c3', 'c4', 'c5'].every(function (c) { return $(c).checked; })) return err.textContent = '필수 항목에 모두 체크해 주세요.';
+  if (!f.yt) return err.textContent = '유튜브 영상 활용에서 하나를 골라 주세요.';
+  if (!f.name || !f.tel || !f.place) return err.textContent = '이름·연락처·점검 장소를 적어 주세요.';
+  if (!/^[0-9\-\s]{9,14}$/.test(f.tel)) return err.textContent = '연락처를 숫자로 적어 주세요.';
+  if (sigDrawn < 40) return err.textContent = '서명란에 서명해 주세요.';
+  var btn = $('fSend'); btn.disabled = true; btn.textContent = '보내는 중…';
+  var at = nowKo();
+  var body = { kind: 'consent', website: $('website').value, name: f.name, tel: f.tel, place: f.place, date: P.d, fee: P.f,
+    c1: 1, c2: 1, c3: 1, c4: 1, c5: 1, yt: f.yt, sig: sigPng(), img: docJpeg(f, at, 0) };
+  fetch(GAS, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) })
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      if (!j.ok) throw new Error(j.error || 'server');
+      var img = docJpeg(f, (j.at || at).slice(0, 16), j.no);
+      $('dImg').src = img;
+      $('dSave').onclick = function () { var a = document.createElement('a'); a.href = img; a.download = '청개구리샤시_점검동의서_' + P.d + '.jpg'; document.body.appendChild(a); a.click(); a.remove(); };
+      $('form').classList.add('hide'); $('done').classList.remove('hide'); window.scrollTo(0, 0);
+    })
+    .catch(function (e) {
+      btn.disabled = false; btn.textContent = '동의하고 제출';
+      var m = { busy: '잠시 뒤 다시 눌러 주세요.', tel: '연락처를 확인해 주세요.', sig: '서명을 다시 해 주세요.' }[e.message];
+      err.textContent = m || '보내지 못했습니다. 다시 눌러 주시거나 010-2322-0949로 연락해 주세요.';
+    });
+}
+</script>
+</body>
+</html>
