@@ -142,6 +142,22 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f5;color:#333;line-he
 .nav-item:hover{color:#fff;background:rgba(255,255,255,.08);border-bottom-color:#ff6b6b}
 .nav-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:rgba(255,255,255,.15);color:#fff;font-size:12px;font-weight:700;border-radius:6px;flex-shrink:0}
 .nav-item:hover .nav-num{background:#ff6b6b}
+/* 유튜브 많이 본 영상 카드 */
+.yt-head{font-size:17px;font-weight:800;color:#c62828;margin:36px 0 4px}
+.yt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:16px 0 24px}
+.yt-grid-3{grid-template-columns:repeat(3,1fr)}
+.yt-card{display:block;text-decoration:none;color:#333;background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden;transition:transform .2s}
+.yt-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.yt-thumb{position:relative;aspect-ratio:3/4;background:#111;overflow:hidden}
+.yt-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.yt-rank{position:absolute;top:8px;left:8px;background:#c62828;color:#fff;font-size:13px;font-weight:900;padding:2px 9px;border-radius:8px}
+.yt-views{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.75);color:#fff;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px}
+.yt-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,0,0,.85);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;padding-left:3px}
+.yt-body{padding:10px 12px 12px}
+.yt-body h5{font-size:14px;font-weight:700;color:#1a237e;line-height:1.4;margin-bottom:4px}
+.yt-body p{font-size:12px;color:#666;line-height:1.5}
+.yt-note{font-size:12px;color:#999;text-align:right;margin-top:-14px}
+@media(max-width:600px){.yt-grid{grid-template-columns:1fr 1fr;gap:10px}.yt-grid-3{grid-template-columns:repeat(3,1fr);gap:8px}.yt-grid-3 .yt-body{padding:8px}.yt-grid-3 .yt-body h5{font-size:12px}.yt-grid-3 .yt-body p{font-size:11px}.yt-grid-3 .yt-play{width:34px;height:34px;font-size:14px}.yt-grid-3 .yt-views{font-size:11px;padding:1px 6px}}
 @media(max-width:600px){.content{padding:30px 20px}.hero{padding:40px 20px}.hero h1{font-size:24px}.benefit-grid{grid-template-columns:1fr}.stat-row{flex-direction:column}.nav-item{padding:12px 14px;font-size:12px}}
 
 .recommend-list-wrap{margin:24px 0}
@@ -162,6 +178,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f5;color:#333;line-he
 
 <!-- 네비게이션 -->
 <nav class="nav-bar">
+    <a class="nav-item" href="#top8"><span class="nav-num" style="background:#c62828">&#9654;</span>많이 본 영상</a>
     <a class="nav-item" href="#section1"><span class="nav-num">1</span>창틀 하부 쳐짐</a>
     <a class="nav-item" href="#section2"><span class="nav-num">2</span>외풍 유입 경로</a>
     <a class="nav-item" href="#section3"><span class="nav-num" style="background:#c62828">3</span>실패하는 시공</a>
@@ -191,6 +208,53 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f5;color:#333;line-he
         <li>창호공사의 하자담보책임기간은 <strong>3년</strong>입니다 (공동주택관리법 시행령 별표4)</li>
     </ul>
 </div>
+
+<div class="section-header" id="top8">
+    <div class="section-number" style="background:#c62828">&#9654;</div>
+    <div>
+        <div class="section-title" style="color:#c62828">유튜브에서 가장 많이 본 창호 하자 TOP 8</div>
+    </div>
+</div>
+
+<p class="body-text">청개구리샤시 유튜브 조회수 순서입니다. 우리 집과 같은 증상인지 먼저 확인해 보세요.</p>
+
+<div class="yt-grid">
+    <a class="yt-card" href="https://www.youtube.com/shorts/nMHvmR4fwKo" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/nMHvmR4fwKo/hqdefault.jpg" alt="샤시 수직·수평 불량" loading="lazy"><span class="yt-rank">1</span><span class="yt-play">&#9654;</span><span class="yt-views">7.1만회</span></div>
+        <div class="yt-body"><h5>샤시 수직·수평 불량</h5><p>창짝이 벌어지고 기울어집니다. 교체 없이 바로잡습니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/7OiqGjNe2VY" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/7OiqGjNe2VY/hqdefault.jpg" alt="샤시 하부 처짐" loading="lazy"><span class="yt-rank">2</span><span class="yt-play">&#9654;</span><span class="yt-views">5만회</span></div>
+        <div class="yt-body"><h5>샤시 하부 처짐</h5><p>마루·타일을 뜯지 않고 창틀을 들어 올립니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/watch?v=C8f4WrDYSZ8" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/C8f4WrDYSZ8/hqdefault.jpg" alt="창문 외풍 원인과 수리" loading="lazy"><span class="yt-rank">3</span><span class="yt-play">&#9654;</span><span class="yt-views">2.7만회</span></div>
+        <div class="yt-body"><h5>창문 외풍 원인과 수리</h5><p>바람이 들어오는 자리를 찾고 막는 과정입니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/U2RDc1yWzJU" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/U2RDc1yWzJU/hqdefault.jpg" alt="창틀 떨림 수리 2가지" loading="lazy"><span class="yt-rank">4</span><span class="yt-play">&#9654;</span><span class="yt-views">1.5만회</span></div>
+        <div class="yt-body"><h5>창틀 떨림 수리 2가지</h5><p>폼 충진과 접착 방식을 비교합니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/watch?v=-BQEsPeBwiw" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/-BQEsPeBwiw/hqdefault.jpg" alt="터닝도어 잠금 불량" loading="lazy"><span class="yt-rank">5</span><span class="yt-play">&#9654;</span><span class="yt-views">1.5만회</span></div>
+        <div class="yt-body"><h5>터닝도어 잠금 불량</h5><p>잠금이 안 될 때 직접 고치는 방법입니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/kSHL6X__OYA" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/kSHL6X__OYA/hqdefault.jpg" alt="창틀 상부 처짐" loading="lazy"><span class="yt-rank">6</span><span class="yt-play">&#9654;</span><span class="yt-views">9.1천회</span></div>
+        <div class="yt-body"><h5>창틀 상부 처짐</h5><p>입주 후 창문이 안 열릴 때 확인하세요.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/jxi7K3CpjOE" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/jxi7K3CpjOE/hqdefault.jpg" alt="창틀 흔들림 셀프 수리" loading="lazy"><span class="yt-rank">7</span><span class="yt-play">&#9654;</span><span class="yt-views">8.4천회</span></div>
+        <div class="yt-body"><h5>창틀 흔들림 셀프 수리</h5><p>업체를 부르기 전에 해 볼 수 있습니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/6UTPMR297Ng" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/6UTPMR297Ng/hqdefault.jpg" alt="모헤어 교체" loading="lazy"><span class="yt-rank">8</span><span class="yt-play">&#9654;</span><span class="yt-views">7.6천회</span></div>
+        <div class="yt-body"><h5>모헤어 교체</h5><p>창짝을 빼지 않고 틈새바람을 잡습니다.</p></div>
+    </a>
+</div>
+<p class="yt-note">조회수는 2026년 11월 25일 기준입니다.</p>
+
+<div class="divider"></div>
 
 <!-- ===== 1 ===== -->
 <div class="section-header" id="section1">
@@ -293,6 +357,22 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f5;color:#333;line-he
     </ul>
 </div>
 
+<div class="yt-head">&#9654; 창틀 처짐 · 탈창, 많이 본 영상</div>
+<div class="yt-grid yt-grid-3">
+    <a class="yt-card" href="https://www.youtube.com/shorts/gakiolaqJgY" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/gakiolaqJgY/hqdefault.jpg" alt="창짝이 위아래로 벌어짐" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">4.4천회</span></div>
+        <div class="yt-body"><h5>창짝이 위아래로 벌어짐</h5><p>창틀 하부 처짐에서 시작됩니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/f3Fp8L5rZHc" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/f3Fp8L5rZHc/hq1.jpg" alt="창문 위쪽 틈새 벌어짐" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">4.2천회</span></div>
+        <div class="yt-body"><h5>창문 위쪽 틈새 벌어짐</h5><p>하부 처짐을 바로잡아 틈을 닫습니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/pzGikOoV5d8" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/pzGikOoV5d8/hqdefault.jpg" alt="창짝 빠짐 · 탈창" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">2.9천회</span></div>
+        <div class="yt-body"><h5>창짝 빠짐 · 탈창</h5><p>마감재 손상 없이 수리합니다.</p></div>
+    </a>
+</div>
+
 <div class="divider"></div>
 
 <!-- ===== 2 ===== -->
@@ -390,6 +470,22 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f5;color:#333;line-he
         <li>창짝 네 변의 모헤어를 정상 규격으로 회복시킵니다</li>
         <li><strong>개폐감을 확인합니다 &mdash; 뻑뻑해지면 실패입니다</strong></li>
     </ul>
+</div>
+
+<div class="yt-head">&#9654; 외풍, 많이 본 영상</div>
+<div class="yt-grid yt-grid-3">
+    <a class="yt-card" href="https://www.youtube.com/shorts/WZXnyIw8kLs" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/WZXnyIw8kLs/hqdefault.jpg" alt="창짝이 휘었을 때 외풍" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">5.1천회</span></div>
+        <div class="yt-body"><h5>창짝이 휘었을 때 외풍</h5><p>휜 창짝으로 드는 바람을 줄입니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/ORse81880Y0" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/ORse81880Y0/hqdefault.jpg" alt="창짝 제작 치수 불량" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">2.6천회</span></div>
+        <div class="yt-body"><h5>창짝 제작 치수 불량</h5><p>외풍·결로의 원인이 될 수 있습니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/6UTPMR297Ng" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/6UTPMR297Ng/hqdefault.jpg" alt="모헤어 교체" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">7.6천회</span></div>
+        <div class="yt-body"><h5>모헤어 교체</h5><p>창짝을 빼지 않고 틈새바람을 잡습니다.</p></div>
+    </a>
 </div>
 
 <div class="divider"></div>
@@ -604,6 +700,22 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f5;color:#333;line-he
     </p>
 </div>
 
+<div class="yt-head">&#9654; 시공 불량, 많이 본 영상</div>
+<div class="yt-grid yt-grid-3">
+    <a class="yt-card" href="https://www.youtube.com/shorts/o5TWSru6vyM" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/o5TWSru6vyM/hqdefault.jpg" alt="샤시 시공 하자 수리" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">4.7천회</span></div>
+        <div class="yt-body"><h5>샤시 시공 하자 수리</h5><p>시공 불량을 바로잡는 과정입니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/mvCnzw0BL1w" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/mvCnzw0BL1w/hqdefault.jpg" alt="재시공한 창문에서 찬바람" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">1.7천회</span></div>
+        <div class="yt-body"><h5>재시공한 창문에서 찬바람</h5><p>외풍·결로를 부르는 시공 불량입니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/FtyUK27xHng" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/FtyUK27xHng/hqdefault.jpg" alt="실리콘 덧칠로 감춘 하자" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">1.3천회</span></div>
+        <div class="yt-body"><h5>실리콘 덧칠로 감춘 하자</h5><p>교체 후 창틀 파손을 덮은 사례입니다.</p></div>
+    </a>
+</div>
+
 <div class="divider"></div>
 
 <!-- ===== 4 ===== -->
@@ -727,6 +839,18 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f5;color:#333;line-he
     </ul>
 </div>
 
+<div class="yt-head">&#9654; 진단 장비, 많이 본 영상</div>
+<div class="yt-grid yt-grid-3">
+    <a class="yt-card" href="https://www.youtube.com/shorts/dLTqlofQsfA" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/dLTqlofQsfA/hqdefault.jpg" alt="열화상만으론 부족합니다" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">984회</span></div>
+        <div class="yt-body"><h5>열화상만으론 부족합니다</h5><p>결로 원인을 못 찾는 이유입니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/kLsqMoSEZvc" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/kLsqMoSEZvc/hqdefault.jpg" alt="열화상 카메라로 원인 찾기" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">958회</span></div>
+        <div class="yt-body"><h5>열화상 카메라로 원인 찾기</h5><p>결로·외풍 자리를 찍어 확인합니다.</p></div>
+    </a>
+</div>
+
 <div class="divider"></div>
 
 <!-- ===== 5 ===== -->
@@ -835,6 +959,22 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f5;color:#333;line-he
     결로는 온도와 습도의 문제입니다. 어디가 차가운지, 습기가 어디서 오는지를 봐야 합니다.
     그래서 저희는 측정하고, 조건을 따져보고, <strong>필요 없으면 필요 없다고 말씀드립니다.</strong>
     </p>
+</div>
+
+<div class="yt-head">&#9654; 결로, 많이 본 영상</div>
+<div class="yt-grid yt-grid-3">
+    <a class="yt-card" href="https://www.youtube.com/shorts/YriioJYXUo4" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/YriioJYXUo4/hq2.jpg" alt="창문 주변 곰팡이" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">5.7천회</span></div>
+        <div class="yt-body"><h5>창문 주변 곰팡이</h5><p>결로가 아닌 숨은 원인이 있습니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/lfFiXzbYBis" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/lfFiXzbYBis/hqdefault.jpg" alt="창호 결로 유형별 원인" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">4.2천회</span></div>
+        <div class="yt-body"><h5>창호 결로 유형별 원인</h5><p>맺힌 자리마다 원인이 다릅니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/watch?v=SoSuhdEEzyc" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/SoSuhdEEzyc/hqdefault.jpg" alt="결로, 맺힌 자리로 찾기" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">2.2천회</span></div>
+        <div class="yt-body"><h5>결로, 맺힌 자리로 찾기</h5><p>안쪽 창과 바깥 창을 나눠 봅니다.</p></div>
+    </a>
 </div>
 
 <div class="divider"></div>
@@ -1150,6 +1290,24 @@ PVC 프레임 위에 무늬가 인쇄된 필름을 입힌 것이고, 이것을 <
 
 <div class="divider"></div>
 
+<div class="yt-head">&#9654; 파손 복원, 많이 본 영상</div>
+<div class="yt-grid yt-grid-3">
+    <a class="yt-card" href="https://www.youtube.com/shorts/vToeJ8DM1pY" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/vToeJ8DM1pY/hqdefault.jpg" alt="창틀 모서리 충격 파손" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">6.1천회</span></div>
+        <div class="yt-body"><h5>창틀 모서리 충격 파손</h5><p>용접 방식으로 복원합니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/3OHbb9gTxnk" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/3OHbb9gTxnk/hqdefault.jpg" alt="시스템창 창틀 파손" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">6.1천회</span></div>
+        <div class="yt-body"><h5>시스템창 창틀 파손</h5><p>핀으로 고정해 수리합니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/G2LPgi26s78" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/G2LPgi26s78/hqdefault.jpg" alt="불에 그을린 샤시" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">2.6천회</span></div>
+        <div class="yt-body"><h5>불에 그을린 샤시</h5><p>교체 없이 복원했습니다.</p></div>
+    </a>
+</div>
+
+<div class="divider"></div>
+
 <!-- 그 외 수리 -->
 <div class="sub-title">그 외에 이런 것도 고칩니다</div>
 
@@ -1178,6 +1336,22 @@ PVC 프레임 위에 무늬가 인쇄된 필름을 입힌 것이고, 이것을 <
         <p>수직·수평 불량, 롤러·하드웨어 문제, 걸림 치수 부족.
         재현되는 상태를 확인하고 원인에 맞춰 조정합니다.</p>
     </div>
+</div>
+
+<div class="yt-head">&#9654; 잠금 · 개폐 불량, 많이 본 영상</div>
+<div class="yt-grid yt-grid-3">
+    <a class="yt-card" href="https://www.youtube.com/shorts/AXnccAjC7Ts" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/AXnccAjC7Ts/hqdefault.jpg" alt="창문이 안 열려요" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">3.9천회</span></div>
+        <div class="yt-body"><h5>창문이 안 열려요</h5><p>단종된 손잡이도 수리됩니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/ri9x_twPjF8" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/ri9x_twPjF8/hqdefault.jpg" alt="터닝도어 창짝 처짐" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">2.9천회</span></div>
+        <div class="yt-body"><h5>터닝도어 창짝 처짐</h5><p>처진 창짝을 바로잡습니다.</p></div>
+    </a>
+    <a class="yt-card" href="https://www.youtube.com/shorts/-EwXzJkNXkw" target="_blank" rel="noopener">
+        <div class="yt-thumb"><img src="https://i.ytimg.com/vi/-EwXzJkNXkw/hqdefault.jpg" alt="샤시 잠금 불량" loading="lazy"><span class="yt-play">&#9654;</span><span class="yt-views">2.6천회</span></div>
+        <div class="yt-body"><h5>샤시 잠금 불량</h5><p>시공 불량이 원인일 수 있습니다.</p></div>
+    </a>
 </div>
 
 <div class="divider"></div>
