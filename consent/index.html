@@ -2,62 +2,143 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F5F7F6">
 <title>창호 점검 동의서 | 청개구리샤시</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
-  :root { --g:#1B6B28; --g2:#E8F3EA; --line:#D6E2D8; --ink:#111827; --gray:#5B6470; --red:#C0392B; }
-  * { box-sizing:border-box; }
-  body { margin:0; font-family:'Noto Sans KR', -apple-system, 'Malgun Gothic', sans-serif; background:#F4F7F5; color:var(--ink); word-break:keep-all; }
-  .wrap { max-width:560px; margin:0 auto; padding:16px 14px 40px; }
-  .head { background:var(--g); color:#fff; border-radius:14px; padding:16px 18px; margin-bottom:12px; }
-  .head b { font-size:19px; display:block; }
-  .head span { font-size:13px; opacity:.85; }
-  .card { background:#fff; border-radius:14px; padding:16px; margin-bottom:12px; box-shadow:0 2px 8px rgba(0,0,0,.05); }
-  .card h2 { font-size:16px; margin:0 0 10px; color:var(--g); }
-  .info { display:grid; grid-template-columns:76px 1fr; gap:6px 10px; font-size:15px; }
-  .info dt { color:var(--gray); }
-  .info dd { margin:0; font-weight:700; }
-  .acct { margin-top:10px; background:var(--g2); border-radius:10px; padding:10px 12px; font-size:14px; line-height:1.6; }
-  label.chk { display:flex; gap:10px; align-items:flex-start; padding:11px 0; border-top:1px solid #EEF2EF; font-size:15px; line-height:1.55; cursor:pointer; }
-  label.chk:first-of-type { border-top:0; }
-  label.chk input { width:22px; height:22px; margin:1px 0 0; accent-color:var(--g); flex:none; }
-  .req { color:var(--red); font-size:12px; font-weight:700; }
-  .opt { color:var(--gray); font-size:12px; font-weight:700; }
-  .yt { display:flex; gap:8px; margin-top:8px; }
-  .yt label { flex:1; border:1.5px solid var(--line); border-radius:10px; padding:11px 6px; text-align:center; font-size:15px; cursor:pointer; }
-  .yt input { display:none; }
-  .yt input:checked + span { color:var(--g); font-weight:700; }
-  .yt label:has(input:checked) { border-color:var(--g); background:var(--g2); }
-  .small { font-size:13px; color:var(--gray); line-height:1.6; margin:6px 0 0; }
-  input.f, select.f { width:100%; font-size:16px; padding:12px; border:1.5px solid var(--line); border-radius:10px; margin-bottom:8px; background:#fff; font-family:inherit; }
-  input.f:focus, select.f:focus { outline:none; border-color:var(--g); }
-  .sigbox { position:relative; border:1.5px dashed var(--g); border-radius:10px; background:#FBFDFB; }
-  #sig { display:block; width:100%; height:170px; touch-action:none; border-radius:10px; }
-  .sigph { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#9AA9A0; font-size:15px; pointer-events:none; }
-  .row { display:flex; gap:8px; }
-  .btn { display:block; width:100%; border:0; border-radius:12px; padding:15px; font-size:17px; font-weight:700; font-family:inherit; cursor:pointer; background:var(--g); color:#fff; }
-  .btn.sub { background:#fff; color:var(--g); border:1.5px solid var(--g); }
-  .btn.mini { padding:8px 12px; font-size:13px; width:auto; margin-top:8px; }
-  .btn:disabled { opacity:.5; }
-  .err { color:var(--red); font-size:14px; margin:8px 0 0; min-height:1em; }
-  .done img { width:100%; border-radius:10px; border:1px solid var(--line); }
-  .linkbox { word-break:break-all; background:var(--g2); border-radius:10px; padding:10px 12px; font-size:13px; margin:8px 0; }
-  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
-  .chips button { border:1.5px solid var(--line); background:#fff; border-radius:20px; padding:9px 13px; font-size:15px; font-family:inherit; color:var(--ink); cursor:pointer; }
-  .chips button.on { border-color:var(--g); background:var(--g); color:#fff; font-weight:700; }
+  :root {
+    --g:#1B6B28; --g-deep:#124D1C; --g-soft:#EAF4EC; --g-line:#CFE5D3;
+    --bg:#F5F7F6; --card:#FFFFFF; --line:#E7ECE9; --ink:#0F1A14; --sub:#5E6B63; --mute:#98A39C;
+    --red:#D64545; --kakao:#FEE500;
+    --r:20px; --r-s:14px;
+    --shadow:0 1px 2px rgba(15,26,20,.04), 0 8px 24px rgba(15,26,20,.05);
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font-family:'Pretendard Variable', Pretendard, -apple-system, 'Malgun Gothic', sans-serif; background:var(--bg); color:var(--ink); word-break:keep-all; letter-spacing:-0.01em; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:520px; margin:0 auto; padding:0 16px 140px; }
+
+  /* 상단 바 */
+  .top { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:10px; padding:14px 2px 12px; background:rgba(245,247,246,.86); backdrop-filter:saturate(1.4) blur(12px); -webkit-backdrop-filter:saturate(1.4) blur(12px); }
+  .logo { width:34px; height:34px; border-radius:11px; background:linear-gradient(140deg,#2E8B3E,var(--g-deep)); display:grid; place-items:center; color:#fff; font-weight:800; font-size:15px; box-shadow:0 4px 10px rgba(27,107,40,.25); }
+  .top b { font-size:17px; font-weight:800; display:block; line-height:1.2; }
+  .top span { font-size:12.5px; color:var(--sub); }
+  .top a { margin-left:auto; text-decoration:none; color:var(--g); font-size:13px; font-weight:700; background:var(--g-soft); padding:8px 12px; border-radius:99px; }
+
+  .card { background:var(--card); border-radius:var(--r); padding:20px 18px; margin-top:12px; box-shadow:var(--shadow); border:1px solid rgba(231,236,233,.7); }
+  .ttl { display:flex; align-items:center; gap:8px; font-size:15px; font-weight:800; margin:0 0 14px; }
+  .ttl .n { width:22px; height:22px; border-radius:50%; background:var(--g); color:#fff; font-size:12px; display:grid; place-items:center; }
+  .tag { font-size:11.5px; font-weight:700; padding:3px 8px; border-radius:99px; }
+  .tag.req { color:var(--red); background:#FDECEC; }
+  .tag.opt { color:var(--sub); background:#EFF2F0; }
+
+  /* 금액 요약 */
+  .hero { background:linear-gradient(150deg,#1F7A2E 0%,var(--g-deep) 100%); color:#fff; border:0; position:relative; overflow:hidden; }
+  .hero::after { content:''; position:absolute; right:-60px; top:-60px; width:200px; height:200px; border-radius:50%; background:rgba(255,255,255,.07); }
+  .hero .lbl { font-size:13px; opacity:.8; }
+  .hero .amt { font-size:34px; font-weight:800; letter-spacing:-0.03em; margin:2px 0 14px; }
+  .hero .amt small { font-size:18px; font-weight:700; margin-left:2px; }
+  .pills { display:flex; flex-wrap:wrap; gap:6px; }
+  .pill { font-size:13px; font-weight:600; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.18); padding:6px 11px; border-radius:99px; }
+  .rows { margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,.16); display:grid; gap:7px; font-size:14px; }
+  .rows div { display:flex; justify-content:space-between; }
+  .rows span { opacity:.78; }
+  .rows b { font-weight:700; }
+  .acct { margin-top:14px; display:flex; align-items:center; gap:10px; background:#fff; color:var(--ink); border-radius:var(--r-s); padding:12px 12px 12px 14px; }
+  .acct div { font-size:13px; line-height:1.45; flex:1; }
+  .acct div b { font-size:15px; display:block; }
+  .acct button { border:0; background:var(--g-soft); color:var(--g); font:inherit; font-size:13px; font-weight:800; padding:9px 12px; border-radius:10px; cursor:pointer; white-space:nowrap; }
+
+  /* 체크 행 */
+  .all { display:flex; align-items:center; gap:12px; padding:14px; border-radius:var(--r-s); background:var(--g-soft); border:1.5px solid var(--g-line); cursor:pointer; font-weight:800; font-size:15.5px; margin-bottom:6px; }
+  label.chk { display:flex; gap:12px; align-items:flex-start; padding:12px 4px; font-size:14.5px; line-height:1.6; cursor:pointer; color:#26312B; }
+  label.chk + label.chk { border-top:1px solid #F0F3F1; }
+  label.chk .tag { margin-right:4px; vertical-align:1px; }
+  input.ck { appearance:none; -webkit-appearance:none; flex:none; width:24px; height:24px; margin:0; border-radius:50%; border:1.8px solid #C9D2CC; background:#fff; display:grid; place-items:center; transition:.15s; cursor:pointer; }
+  input.ck::after { content:''; width:11px; height:6px; border:2.4px solid #fff; border-top:0; border-right:0; transform:rotate(-45deg) translate(1px,-1px); opacity:0; }
+  input.ck:checked { background:var(--g); border-color:var(--g); }
+  input.ck:checked::after { opacity:1; }
+  label.chk input.ck { margin-top:1px; }
+
+  /* 유튜브 선택 */
+  .desc { font-size:13.5px; color:var(--sub); line-height:1.6; margin:-6px 0 12px; }
+  .seg { display:grid; grid-template-columns:1fr 1fr; gap:4px; background:#EEF2EF; padding:4px; border-radius:var(--r-s); }
+  .seg label { text-align:center; padding:12px 6px; border-radius:11px; font-size:14.5px; font-weight:600; color:var(--sub); cursor:pointer; transition:.15s; }
+  .seg input { display:none; }
+  .seg label:has(input:checked) { background:#fff; color:var(--g); font-weight:800; box-shadow:0 1px 3px rgba(15,26,20,.12); }
+
+  /* 입력 */
+  .f { width:100%; font:inherit; font-size:16px; padding:15px 14px; border:1.5px solid var(--line); border-radius:var(--r-s); background:#FAFBFA; color:var(--ink); margin-bottom:8px; transition:.15s; }
+  .f::placeholder { color:var(--mute); }
+  .f:focus { outline:none; border-color:var(--g); background:#fff; box-shadow:0 0 0 4px rgba(27,107,40,.1); }
+  select.f { appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235E6B63' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:34px; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .two .f { margin-bottom:8px; }
+
+  /* 서명 */
+  .sighead { display:flex; justify-content:space-between; align-items:center; margin:6px 0 8px; }
+  .sighead span { font-size:14px; font-weight:700; }
+  .sighead button { border:0; background:none; color:var(--sub); font:inherit; font-size:13px; font-weight:600; cursor:pointer; padding:4px; }
+  .sigbox { position:relative; border:1.5px dashed #BFD3C3; border-radius:var(--r-s); background:#FBFCFB; }
+  .sigbox::before { content:''; position:absolute; left:18px; right:18px; bottom:42px; border-bottom:1.5px solid #E1E8E3; pointer-events:none; }
+  .sigbox::after { content:'✕'; position:absolute; left:20px; bottom:48px; color:#C3CEC6; font-size:15px; pointer-events:none; }
+  #sig { position:relative; z-index:1; display:block; width:100%; height:180px; touch-action:none; border-radius:var(--r-s); }
+  .sigph { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--mute); font-size:14.5px; pointer-events:none; padding-bottom:30px; }
+
+  /* 하단 고정 바 */
+  .cta { position:fixed; left:0; right:0; bottom:0; z-index:6; background:rgba(255,255,255,.92); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border-top:1px solid var(--line); padding:10px 16px calc(12px + env(safe-area-inset-bottom)); }
+  .cta .in { max-width:520px; margin:0 auto; }
+  .bar { height:4px; background:#EDF1EE; border-radius:99px; overflow:hidden; margin-bottom:8px; }
+  .bar i { display:block; height:100%; width:0; background:linear-gradient(90deg,#3BA24D,var(--g)); border-radius:99px; transition:width .25s; }
+  .meta { display:flex; justify-content:space-between; font-size:12.5px; color:var(--sub); margin-bottom:8px; }
+  .meta b { color:var(--g); }
+  .err { color:var(--red); font-size:13.5px; font-weight:600; margin:0 0 8px; }
+  .err:empty { display:none; }
+
+  .btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; border:0; border-radius:var(--r-s); padding:16px; font:inherit; font-size:16.5px; font-weight:800; cursor:pointer; background:var(--g); color:#fff; transition:transform .1s, background .15s, opacity .15s; }
+  .btn:active { transform:scale(.985); }
+  .btn.dim { background:#AFC4B3; }
+  .btn.line { background:#fff; color:var(--g); border:1.5px solid var(--g-line); }
+  .btn.kakao { background:var(--kakao); color:#191919; }
+  .btn:disabled { opacity:.6; }
+  .row { display:flex; gap:8px; margin-top:8px; }
+
+  /* 사장님 화면 */
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .chips button { border:1.5px solid var(--line); background:#fff; border-radius:99px; padding:9px 14px; font:inherit; font-size:14.5px; font-weight:600; color:var(--sub); cursor:pointer; transition:.15s; }
+  .chips button.on { border-color:var(--g); background:var(--g); color:#fff; }
+  .sum { display:flex; justify-content:space-between; align-items:baseline; background:var(--g-soft); border-radius:var(--r-s); padding:12px 14px; margin:2px 0 10px; font-size:13px; color:var(--sub); }
+  .sum b { font-size:20px; color:var(--g); font-weight:800; }
+  .sum:has(b:empty) { display:none; }
+  .linkbox { word-break:break-all; background:#F3F6F4; border-radius:var(--r-s); padding:12px 14px; font-size:12.5px; color:var(--sub); margin-top:12px; }
+
+  /* 완료 */
+  .ok { text-align:center; padding:26px 18px 20px; }
+  .okc { width:64px; height:64px; margin:0 auto 12px; border-radius:50%; background:var(--g); display:grid; place-items:center; animation:pop .45s cubic-bezier(.2,1.4,.4,1); box-shadow:0 10px 24px rgba(27,107,40,.3); }
+  .okc::after { content:''; width:24px; height:12px; border:4px solid #fff; border-top:0; border-right:0; transform:rotate(-45deg) translate(2px,-3px); }
+  @keyframes pop { from { transform:scale(.4); opacity:0; } to { transform:scale(1); opacity:1; } }
+  .ok h2 { margin:0 0 6px; font-size:21px; font-weight:800; }
+  .ok p { margin:0; font-size:14px; color:var(--sub); line-height:1.6; }
+  .done img { width:100%; border-radius:var(--r-s); border:1px solid var(--line); display:block; }
+  .help { font-size:13px; color:var(--sub); text-align:center; margin:8px 0 0; }
+
   .hide { display:none !important; }
-  #ver { text-align:center; font-size:11px; color:#A4ADA7; margin-top:14px; }
+  #ver { text-align:center; font-size:11px; color:#B5BEB8; margin-top:18px; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="head"><b>창호 점검 동의서</b><span>청개구리샤시 · 010-2322-0949</span></div>
+  <header class="top">
+    <div class="logo">청</div>
+    <div><b>창호 점검 동의서</b><span>청개구리샤시</span></div>
+    <a href="tel:010-2322-0949">전화</a>
+  </header>
 
   <!-- 사장님: 링크 만들기 -->
   <section id="maker" class="hide">
     <div class="card">
-      <h2>동의서 링크 만들기</h2>
+      <div class="ttl">링크 만들기</div>
       <input class="f" type="date" id="mDate" aria-label="점검일">
       <div class="chips" id="mKinds">
         <button type="button" data-k="dew">결로검사</button>
@@ -67,103 +148,119 @@
         <button type="button" data-k="etc">기타</button>
       </div>
       <input class="f hide" id="mEtc" maxlength="30" placeholder="기타 검사 내용 (예: 누수검사)">
-      <select class="f" id="mFee" aria-label="검사비">
-        <option value="">검사비 선택</option>
-        <option value="300000">30만 원 (84㎡ 미만)</option>
-        <option value="350000">35만 원 (84㎡ 이상)</option>
-        <option value="custom">검사비 직접 입력</option>
-      </select>
-      <input class="f hide" type="number" inputmode="numeric" id="mFeeCustom" placeholder="검사비 (원 단위 숫자)">
-      <select class="f" id="mTravelSel" aria-label="출장비">
-        <option value="0">출장비 없음</option>
-        <option value="50000">출장비 5만 원</option>
-        <option value="100000">출장비 10만 원</option>
-        <option value="custom">출장비 기타 (직접 입력)</option>
-      </select>
-      <input class="f hide" type="number" inputmode="numeric" id="mTravel" placeholder="출장비 (원 단위 숫자)">
-      <p class="small" id="mSum" style="margin:0 0 10px; font-weight:700; color:var(--g);"></p>
-      <button class="btn" id="mMake">링크 만들기</button>
+      <div class="two">
+        <select class="f" id="mFee" aria-label="검사비">
+          <option value="">검사비</option>
+          <option value="300000">검사비 30만 원</option>
+          <option value="350000">검사비 35만 원</option>
+          <option value="custom">검사비 직접 입력</option>
+        </select>
+        <select class="f" id="mTravelSel" aria-label="출장비">
+          <option value="0">출장비 없음</option>
+          <option value="50000">출장비 5만 원</option>
+          <option value="100000">출장비 10만 원</option>
+          <option value="custom">출장비 직접 입력</option>
+        </select>
+      </div>
+      <div class="two">
+        <input class="f hide" type="number" inputmode="numeric" id="mFeeCustom" placeholder="검사비 (원)">
+        <input class="f hide" type="number" inputmode="numeric" id="mTravel" placeholder="출장비 (원)">
+      </div>
+      <div class="sum"><span>합계</span><b id="mSum"></b></div>
       <p class="err" id="mErr"></p>
+      <button class="btn" id="mMake">링크 만들기</button>
       <div id="mOut" class="hide">
         <div class="linkbox" id="mLink"></div>
         <div class="row">
           <button class="btn" id="mCopy">링크 복사</button>
-          <button class="btn sub" id="mShare">카톡으로 공유</button>
+          <button class="btn kakao" id="mShare">카톡 공유</button>
         </div>
-        <p class="small">복사한 링크를 카톡 고객 채팅방에 붙여 넣어 보내세요. 고객이 제출하면 시트와 텔레그램에 자동 저장됩니다.</p>
       </div>
     </div>
   </section>
 
   <!-- 고객: 동의서 -->
   <section id="form" class="hide">
-    <div class="card">
-      <h2>점검 내용</h2>
-      <dl class="info">
-        <dt>점검일</dt><dd id="vDate"></dd>
-        <dt>검사 항목</dt><dd id="vKinds"></dd>
-        <dt>검사비</dt><dd id="vFee"></dd>
-        <dt class="tr">출장비</dt><dd class="tr" id="vTravel"></dd>
-        <dt class="tr">합계</dt><dd class="tr" id="vTotal"></dd>
-        <dt>결제</dt><dd>점검 전 전액 입금</dd>
-      </dl>
-      <div class="acct">입금 계좌: KB국민은행 090537-04-003309<br>예금주: 전영웅(청개구리샤시)</div>
-    </div>
-
-    <div class="card">
-      <h2>동의 항목</h2>
-      <label class="chk"><input type="checkbox" id="c1"><span><span class="req">필수</span> <span id="vFee2"></span> 현장에서 금액을 조정하지 않습니다.</span></label>
-      <label class="chk"><input type="checkbox" id="c6"><span><span class="req">필수</span> 검사는 위 검사 항목만 합니다. 다른 항목은 추가 비용이 듭니다.</span></label>
-      <label class="chk"><input type="checkbox" id="c2"><span><span class="req">필수</span> 금액은 점검 전에 전액 입금합니다. 입금이 확인되면 예약이 확정됩니다. 점검일 7일 전까지 취소하면 전액 돌려드립니다. 7일 이내 취소는 돌려드리지 않습니다.</span></label>
-      <label class="chk"><input type="checkbox" id="c3"><span><span class="req">필수</span> 결과지는 PDF 파일로만 보내드립니다.</span></label>
-      <label class="chk"><input type="checkbox" id="c4"><span><span class="req">필수</span> 현장에서는 측정값만 알려드립니다. 원인 판단과 대책은 결과지에 담습니다.</span></label>
-      <label class="chk"><input type="checkbox" id="c5"><span><span class="req">필수</span> 이름·연락처·주소는 점검과 결과지 전송에만 씁니다. 점검 후 1년 동안 보관한 뒤 지웁니다.</span></label>
-      <label class="chk"><input type="checkbox" id="cAll"><span><b>위 필수 항목에 모두 동의합니다.</b></span></label>
-    </div>
-
-    <div class="card">
-      <h2>유튜브 영상 활용 <span class="opt">선택</span></h2>
-      <p class="small" style="margin:0;">현장 촬영 영상을 청개구리샤시 유튜브에 쓸 수 있습니다. 얼굴·동호수·단지명은 가립니다. 동의하지 않아도 점검은 똑같이 진행합니다.</p>
-      <div class="yt">
-        <label><input type="radio" name="yt" value="yes"><span>동의합니다</span></label>
-        <label><input type="radio" name="yt" value="no"><span>동의하지 않습니다</span></label>
+    <div class="card hero">
+      <div class="lbl">점검 전 입금 금액</div>
+      <div class="amt" id="vTotalBig"></div>
+      <div class="pills"><span class="pill" id="vDate"></span><span class="pill" id="vKinds"></span></div>
+      <div class="rows">
+        <div><span>검사비</span><b id="vFee"></b></div>
+        <div class="tr"><span>출장비</span><b id="vTravel"></b></div>
+        <div class="tr"><span>합계</span><b id="vTotal"></b></div>
+      </div>
+      <div class="acct">
+        <div>KB국민은행 · 전영웅(청개구리샤시)<b>090537-04-003309</b></div>
+        <button type="button" id="acctCopy">계좌 복사</button>
       </div>
     </div>
 
     <div class="card">
-      <h2>고객 정보·서명</h2>
+      <div class="ttl"><span class="n">1</span>동의 항목</div>
+      <label class="all"><input type="checkbox" class="ck" id="cAll">필수 항목 모두 동의</label>
+      <label class="chk"><input type="checkbox" class="ck" id="c1"><span><span class="tag req">필수</span><span id="vFee2"></span> 현장에서 금액을 조정하지 않습니다.</span></label>
+      <label class="chk"><input type="checkbox" class="ck" id="c6"><span><span class="tag req">필수</span>검사는 위 검사 항목만 합니다. 다른 항목은 추가 비용이 듭니다.</span></label>
+      <label class="chk"><input type="checkbox" class="ck" id="c2"><span><span class="tag req">필수</span>금액은 점검 전에 전액 입금합니다. 입금이 확인되면 예약이 확정됩니다. 점검일 7일 전까지 취소하면 전액 돌려드립니다. 7일 이내 취소는 돌려드리지 않습니다.</span></label>
+      <label class="chk"><input type="checkbox" class="ck" id="c3"><span><span class="tag req">필수</span>결과지는 PDF 파일로만 보내드립니다.</span></label>
+      <label class="chk"><input type="checkbox" class="ck" id="c4"><span><span class="tag req">필수</span>현장에서는 측정값만 알려드립니다. 원인 판단과 대책은 결과지에 담습니다.</span></label>
+      <label class="chk"><input type="checkbox" class="ck" id="c5"><span><span class="tag req">필수</span>이름·연락처·주소는 점검과 결과지 전송에만 씁니다. 점검 후 1년 동안 보관한 뒤 지웁니다.</span></label>
+    </div>
+
+    <div class="card">
+      <div class="ttl"><span class="n">2</span>유튜브 영상 활용 <span class="tag opt">선택</span></div>
+      <p class="desc">얼굴·동호수·단지명은 가립니다. 동의하지 않아도 점검은 똑같이 진행합니다.</p>
+      <div class="seg">
+        <label><input type="radio" name="yt" value="yes">동의합니다</label>
+        <label><input type="radio" name="yt" value="no">동의하지 않습니다</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ttl"><span class="n">3</span>고객 정보·서명</div>
       <input class="f" id="fName" placeholder="이름" autocomplete="name" maxlength="30">
-      <input class="f" id="fTel" placeholder="연락처 (예: 010-1234-5678)" inputmode="tel" autocomplete="tel" maxlength="20">
-      <input class="f" id="fPlace" placeholder="점검 장소 (아파트 이름·동·호수)" maxlength="80">
-      <div class="sigbox"><canvas id="sig"></canvas><div class="sigph" id="sigph">여기에 손가락으로 서명해 주세요</div></div>
-      <button class="btn sub mini" id="sigClear" type="button">서명 지우기</button>
+      <input class="f" id="fTel" placeholder="연락처 (010-1234-5678)" inputmode="tel" autocomplete="tel" maxlength="20">
+      <input class="f" id="fPlace" placeholder="점검 장소 (아파트·동·호수)" maxlength="80">
+      <div class="sighead"><span>서명</span><button type="button" id="sigClear">다시 쓰기</button></div>
+      <div class="sigbox"><canvas id="sig"></canvas><div class="sigph" id="sigph">손가락으로 서명해 주세요</div></div>
       <input type="text" id="website" class="hide" tabindex="-1" autocomplete="off">
-      <p class="err" id="fErr"></p>
-      <button class="btn" id="fSend">동의하고 제출</button>
     </div>
   </section>
 
   <!-- 제출 완료 -->
   <section id="done" class="hide">
-    <div class="card done">
+    <div class="card ok">
+      <div class="okc"></div>
       <h2>제출되었습니다</h2>
-      <p class="small" style="margin:0 0 10px;">동의서가 청개구리샤시로 전달되었습니다. 검사비를 입금해 주시면 예약이 확정됩니다.</p>
+      <p>입금이 확인되면 예약이 확정됩니다.</p>
+    </div>
+    <div class="card done">
       <img id="dImg" alt="서명된 동의서">
-      <button class="btn" id="dKakao" style="margin-top:10px; background:#FEE500; color:#191919;">카톡으로 보내기</button>
-      <p class="small hide" id="dKakaoHelp">이 폰에서는 바로 보내기가 되지 않습니다. 이 화면을 캡처해서 청개구리샤시 카톡으로 보내 주세요.</p>
-      <button class="btn sub" id="dSave" style="margin-top:8px;">동의서 그림 저장</button>
+      <button class="btn kakao" id="dKakao" style="margin-top:12px;">카톡으로 보내기</button>
+      <p class="help hide" id="dKakaoHelp">이 폰에서는 바로 보내기가 되지 않습니다. 이 화면을 캡처해서 카톡으로 보내 주세요.</p>
+      <button class="btn line" id="dSave" style="margin-top:8px;">동의서 그림 저장</button>
     </div>
   </section>
 
   <section id="bad" class="hide">
-    <div class="card"><h2>링크가 올바르지 않습니다</h2><p class="small">청개구리샤시(010-2322-0949)에 다시 요청해 주세요.</p></div>
+    <div class="card ok"><h2>링크가 올바르지 않습니다</h2><p>청개구리샤시(010-2322-0949)에 다시 요청해 주세요.</p></div>
   </section>
 
   <div id="ver"></div>
 </div>
 
+<!-- 하단 고정 제출 바 (고객 화면) -->
+<div class="cta hide" id="cta">
+  <div class="in">
+    <div class="bar"><i id="pBar"></i></div>
+    <div class="meta"><span>진행 <b id="pTxt">0/11</b></span><span>필수 동의 <b id="pReq">0/6</b></span></div>
+    <p class="err" id="fErr"></p>
+    <button class="btn dim" id="fSend">동의하고 제출</button>
+  </div>
+</div>
+
 <script>
-var BUILD = 'consent-1.4';
+var BUILD = 'consent-2.0';
 var GAS = 'https://script.google.com/macros/s/AKfycbzLUqWzs3Bbwa8JlshRP2elI_m5GJCqn4m-MT-ztTAACPfh5QWahUCaUYH5AHsrWJyRTQ/exec';
 var $ = function (id) { return document.getElementById(id); };
 document.getElementById('ver').textContent = BUILD;
@@ -181,6 +278,10 @@ document.addEventListener('visibilitychange', function () {
 function won(n) { return Number(n).toLocaleString('ko-KR') + '원'; }
 function dateKo(s) { var p = s.split('-'); var d = new Date(+p[0], p[1] - 1, +p[2]); return p[0] + '년 ' + (+p[1]) + '월 ' + (+p[2]) + '일 (' + '일월화수목금토'[d.getDay()] + ')'; }
 function params() { var o = {}; location.hash.replace(/^#/, '').split('&').forEach(function (kv) { var a = kv.split('='); if (a[0]) o[a[0]] = decodeURIComponent(a[1] || ''); }); return o; }
+function copyText(t, btn, label) {
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { btn.textContent = '복사됨 ✓'; setTimeout(function () { btn.textContent = label; }, 1500); })
+    .catch(function () { prompt('아래 내용을 복사하세요', t); });
+}
 
 var KIND = { dew: '결로검사', draft: '외풍검사', noise: '소음검사', work: '시공불량검사' };
 function kindNames(ks, etc) { return ks.map(function (k) { return k === 'etc' ? '기타(' + etc + ')' : KIND[k]; }).filter(Boolean).join(' · '); }
@@ -193,6 +294,8 @@ P.t = String(+(P.t || 0));
 function total() { return +P.f + +P.t; }
 /* 금액 한 줄: 출장비가 있으면 검사비+출장비=합계 */
 function feeLine() { return +P.t ? '검사비 ' + won(P.f) + ' + 출장비 ' + won(P.t) + ' = 합계 ' + won(total()) + '입니다.' : '검사비는 ' + won(P.f) + '입니다.'; }
+var sigDrawn = 0;
+var CS = ['c1', 'c6', 'c2', 'c3', 'c4', 'c5'];
 if (!location.hash) startMaker();
 else if (ok) startForm();
 else $('bad').classList.remove('hide');
@@ -200,20 +303,22 @@ else $('bad').classList.remove('hide');
 /* ---------- 사장님: 링크 만들기 ---------- */
 function startMaker() {
   $('maker').classList.remove('hide');
+  function fee() { return $('mFee').value === 'custom' ? Math.max(0, Math.round(+$('mFeeCustom').value || 0)) : +$('mFee').value || 0; }
   function travel() { return $('mTravelSel').value === 'custom' ? Math.max(0, Math.round(+$('mTravel').value || 0)) : +$('mTravelSel').value; }
   function kinds() { return [].map.call(document.querySelectorAll('#mKinds button.on'), function (b) { return b.dataset.k; }); }
   [].forEach.call(document.querySelectorAll('#mKinds button'), function (b) {
     b.onclick = function () { b.classList.toggle('on'); $('mEtc').classList.toggle('hide', kinds().indexOf('etc') < 0); };
   });
-  $('mTravelSel').onchange = function () { $('mTravel').classList.toggle('hide', this.value !== 'custom'); sum(); };
   function sum() {
-    var f = $('mFee').value === 'custom' ? Math.round(+$('mFeeCustom').value || 0) : +$('mFee').value || 0, t = travel();
-    $('mSum').textContent = f ? '검사비 ' + won(f) + (t ? ' + 출장비 ' + won(t) + ' = 합계 ' + won(f + t) : ' (출장비 없음)') : '';
+    var f = fee(), t = travel();
+    $('mSum').textContent = f ? won(f + t) : '';
+    $('mSum').previousElementSibling.textContent = f ? (t ? '검사비 ' + won(f) + ' + 출장비 ' + won(t) : '검사비 ' + won(f) + ' · 출장비 없음') : '합계';
   }
   $('mFee').onchange = function () { $('mFeeCustom').classList.toggle('hide', this.value !== 'custom'); sum(); };
+  $('mTravelSel').onchange = function () { $('mTravel').classList.toggle('hide', this.value !== 'custom'); sum(); };
   $('mFeeCustom').oninput = sum; $('mTravel').oninput = sum;
   $('mMake').onclick = function () {
-    var d = $('mDate').value, f = $('mFee').value === 'custom' ? String(Math.round(+$('mFeeCustom').value || 0)) : $('mFee').value;
+    var d = $('mDate').value, f = String(fee());
     if (!d) return $('mErr').textContent = '점검일을 골라 주세요.';
     var ks = kinds(), etc = $('mEtc').value.trim().replace(/[&#=]/g, ' ');
     if (!ks.length) return $('mErr').textContent = '검사 항목을 하나 이상 골라 주세요.';
@@ -227,9 +332,7 @@ function startMaker() {
     var money = +t ? '검사비 ' + won(f) + ' + 출장비 ' + won(t) + ' (합계 ' + won(+f + +t) + ')' : '검사비 ' + won(f);
     $('mLink').textContent = url; $('mOut').classList.remove('hide');
     $('mCopy').onclick = function () {
-      var msg = '청개구리샤시 창호 점검 동의서입니다.\n' + dateKo(d) + '\n검사 항목: ' + kindTxt + '\n' + money + '\n아래 링크에서 확인 후 서명해 주세요.\n' + url;
-      (navigator.clipboard ? navigator.clipboard.writeText(msg) : Promise.reject()).then(function () { $('mCopy').textContent = '복사됨 ✓'; setTimeout(function () { $('mCopy').textContent = '링크 복사'; }, 1500); })
-        .catch(function () { prompt('아래 내용을 복사하세요', msg); });
+      copyText('청개구리샤시 창호 점검 동의서입니다.\n' + dateKo(d) + '\n검사 항목: ' + kindTxt + '\n' + money + '\n아래 링크에서 확인 후 서명해 주세요.\n' + url, $('mCopy'), '링크 복사');
     };
     $('mShare').classList.toggle('hide', !navigator.share);
     $('mShare').onclick = function () { navigator.share({ title: '창호 점검 동의서', text: '청개구리샤시 창호 점검 동의서입니다. ' + dateKo(d) + ' · ' + kindTxt + ' · ' + money, url: url }).catch(function () {}); };
@@ -237,20 +340,33 @@ function startMaker() {
 }
 
 /* ---------- 고객: 동의서 ---------- */
-var sigDrawn = 0;
 function startForm() {
-  $('form').classList.remove('hide');
+  $('form').classList.remove('hide'); $('cta').classList.remove('hide');
   $('vDate').textContent = dateKo(P.d);
-  $('vKinds').textContent = P.kindTxt;
-  $('vKinds').classList.toggle('hide', !P.kindTxt); $('vKinds').previousElementSibling.classList.toggle('hide', !P.kindTxt);
+  $('vKinds').textContent = P.kindTxt; $('vKinds').classList.toggle('hide', !P.kindTxt);
+  $('vTotalBig').innerHTML = Number(total()).toLocaleString('ko-KR') + '<small>원</small>';
   $('vFee').textContent = won(P.f); $('vFee2').textContent = feeLine();
   $('vTravel').textContent = won(P.t); $('vTotal').textContent = won(total());
   document.querySelectorAll('.tr').forEach(function (e) { e.classList.toggle('hide', !+P.t); });
-  var cs = ['c1', 'c6', 'c2', 'c3', 'c4', 'c5'];
-  $('cAll').onchange = function () { var v = this.checked; cs.forEach(function (c) { $(c).checked = v; }); };
-  cs.forEach(function (c) { $(c).onchange = function () { $('cAll').checked = cs.every(function (x) { return $(x).checked; }); }; });
+  $('acctCopy').onclick = function () { copyText('KB국민은행 090537-04-003309', $('acctCopy'), '계좌 복사'); };
+  $('cAll').onchange = function () { var v = this.checked; CS.forEach(function (c) { $(c).checked = v; }); prog(); };
+  CS.forEach(function (c) { $(c).onchange = function () { $('cAll').checked = CS.every(function (x) { return $(x).checked; }); prog(); }; });
+  document.querySelectorAll('input[name=yt]').forEach(function (r) { r.onchange = prog; });
+  ['fName', 'fTel', 'fPlace'].forEach(function (id) { $(id).addEventListener('input', prog); });
   setupSig();
   $('fSend').onclick = send;
+  prog();
+}
+
+/* 진행 막대: 필수 동의 6 + 유튜브 선택 + 이름·연락처·장소 + 서명 = 11 */
+function prog() {
+  var req = CS.filter(function (c) { return $(c).checked; }).length;
+  var n = req + (document.querySelector('input[name=yt]:checked') ? 1 : 0) +
+    ['fName', 'fTel', 'fPlace'].filter(function (id) { return $(id).value.trim(); }).length + (sigDrawn >= 40 ? 1 : 0);
+  $('pBar').style.width = (n / 11 * 100) + '%';
+  $('pTxt').textContent = n + '/11'; $('pReq').textContent = req + '/6';
+  $('fSend').classList.toggle('dim', n < 11);
+  $('fErr').textContent = '';
 }
 
 function setupSig() {
@@ -260,8 +376,8 @@ function setupSig() {
   function pt(e) { var r = c.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
   c.addEventListener('pointerdown', function (e) { drawing = true; last = pt(e); c.setPointerCapture(e.pointerId); $('sigph').classList.add('hide'); touched = true; });
   c.addEventListener('pointermove', function (e) { if (!drawing) return; var p = pt(e); ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke(); sigDrawn += Math.hypot(p.x - last.x, p.y - last.y); last = p; });
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { c.addEventListener(ev, function () { drawing = false; }); });
-  $('sigClear').onclick = function () { ctx.clearRect(0, 0, c.width, c.height); sigDrawn = 0; $('sigph').classList.remove('hide'); };
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { c.addEventListener(ev, function () { if (drawing) prog(); drawing = false; }); });
+  $('sigClear').onclick = function () { ctx.clearRect(0, 0, c.width, c.height); sigDrawn = 0; $('sigph').classList.remove('hide'); prog(); };
 }
 
 /* 서명만 작게 (시트 보관용, 흰 바탕 PNG) */
@@ -275,7 +391,7 @@ function sigPng() {
 /* 서명된 동의서 한 장 그림 */
 function docJpeg(f, at, no) {
   var W = 900, pad = 48, cv = document.createElement('canvas'), x = cv.getContext('2d');
-  var font = "'Noto Sans KR','Malgun Gothic',-apple-system,sans-serif";
+  var font = "'Pretendard Variable',Pretendard,'Malgun Gothic',-apple-system,sans-serif";
   function wrap(text, size, maxW) { x.font = size + 'px ' + font; var out = [], line = ''; for (var i = 0; i < text.length; i++) { var t = line + text[i]; if (x.measureText(t).width > maxW && line) { out.push(line); line = text[i]; } else line = t; } if (line) out.push(line); return out; }
   var terms = [
     feeLine() + ' 현장에서 금액을 조정하지 않습니다.',
@@ -320,15 +436,20 @@ function docJpeg(f, at, no) {
 
 function nowKo() { return new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }).slice(0, 16); }
 
+/* 빠진 곳으로 화면을 옮기고 알림 */
+function need(msg, el) { $('fErr').textContent = msg; if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); return false; }
+
 function send() {
-  var err = $('fErr'); err.textContent = '';
+  $('fErr').textContent = '';
   var f = { name: $('fName').value.trim(), tel: $('fTel').value.trim(), place: $('fPlace').value.trim() };
   var y = document.querySelector('input[name=yt]:checked'); f.yt = y ? y.value : '';
-  if (!['c1', 'c6', 'c2', 'c3', 'c4', 'c5'].every(function (c) { return $(c).checked; })) return err.textContent = '필수 항목에 모두 체크해 주세요.';
-  if (!f.yt) return err.textContent = '유튜브 영상 활용에서 하나를 골라 주세요.';
-  if (!f.name || !f.tel || !f.place) return err.textContent = '이름·연락처·점검 장소를 적어 주세요.';
-  if (!/^[0-9\-\s]{9,14}$/.test(f.tel)) return err.textContent = '연락처를 숫자로 적어 주세요.';
-  if (sigDrawn < 40) return err.textContent = '서명란에 서명해 주세요.';
+  var miss = CS.filter(function (c) { return !$(c).checked; })[0];
+  if (miss) return need('필수 항목에 모두 체크해 주세요.', $(miss));
+  if (!f.yt) return need('유튜브 영상 활용에서 하나를 골라 주세요.', document.querySelector('.seg'));
+  if (!f.name) return need('이름을 적어 주세요.', $('fName'));
+  if (!f.tel || !/^[0-9\-\s]{9,14}$/.test(f.tel)) return need('연락처를 숫자로 적어 주세요.', $('fTel'));
+  if (!f.place) return need('점검 장소를 적어 주세요.', $('fPlace'));
+  if (sigDrawn < 40) return need('서명란에 서명해 주세요.', $('sig'));
   var btn = $('fSend'); btn.disabled = true; btn.textContent = '보내는 중…';
   var at = nowKo();
   var body = { kind: 'consent', website: $('website').value, name: f.name, tel: f.tel, place: f.place, date: P.d, fee: P.f, travel: P.t, kinds: P.ks.join('.'), etc: P.e,
@@ -348,12 +469,12 @@ function send() {
         }).catch(function (e) { if (e && e.name === 'AbortError') return; $('dKakaoHelp').classList.remove('hide'); });
       };
       $('dSave').onclick = function () { var a = document.createElement('a'); a.href = img; a.download = fname; document.body.appendChild(a); a.click(); a.remove(); };
-      $('form').classList.add('hide'); $('done').classList.remove('hide'); window.scrollTo(0, 0);
+      $('form').classList.add('hide'); $('cta').classList.add('hide'); $('done').classList.remove('hide'); window.scrollTo(0, 0);
     })
     .catch(function (e) {
       btn.disabled = false; btn.textContent = '동의하고 제출';
       var m = { busy: '잠시 뒤 다시 눌러 주세요.', tel: '연락처를 확인해 주세요.', sig: '서명을 다시 해 주세요.' }[e.message];
-      err.textContent = m || '보내지 못했습니다. 다시 눌러 주시거나 010-2322-0949로 연락해 주세요.';
+      $('fErr').textContent = m || '보내지 못했습니다. 다시 눌러 주시거나 010-2322-0949로 연락해 주세요.';
     });
 }
 </script>
