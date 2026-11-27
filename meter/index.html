@@ -245,7 +245,7 @@ details>summary::before{content:"⚙ ";}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.35</div>
+  <div class="badge" id="verBadge">v1.36</div>
 </header>
 
 <div id="toast" class="toast"></div>
@@ -453,7 +453,7 @@ details>summary::before{content:"⚙ ";}
   <div class="card" style="padding:10px 14px">
     <div class="set-row">
       <div class="lab">측정 시간</div>
-      <div class="seg" id="segImpMin"><button data-v="3">3분</button><button data-v="5">5분</button><button data-v="10">10분</button></div>
+      <div class="seg" id="segImpMin"><button data-v="1">1분</button><button data-v="3">3분</button><button data-v="5">5분</button></div>
     </div>
     <div style="display:flex;gap:6px;margin:6px 0 0">
       <input id="impAddr" class="txtin sm" type="text" maxlength="60" placeholder="현장 주소" style="flex:1.7;min-width:0">
@@ -1392,7 +1392,7 @@ renderRecs();
 const FFT_SUM_DB=10*Math.log10(0.5*0.3046); // FFT 합산 레벨(블랙맨 창) − 시간영역 레벨 ≈ −8.17dB → 같은 눈금
 const IMP_LS=LS+"_imp";
 let impRecs=[]; try{ impRecs=JSON.parse(localStorage.getItem(IMP_LS)||"[]"); }catch(e){ impRecs=[]; }
-if(![3,5,10].includes(cfg.impMin)) cfg.impMin=5;
+if(![1,3,5].includes(cfg.impMin)) cfg.impMin=5;
 cfg.appMode="impact"; // 앱을 열면 항상 충격음측정기부터
 let imp=null, impProc=null, impSink=null, impUi=null, impR=null, impTok=0;
 
@@ -1866,7 +1866,7 @@ function impReportHTML(R){
   '<tr><th>실내 기준</th><td>공동주택 실내 소음 45dB(A) 이하 · WHO 거실 35 · 침실 30dB(A). 보정한 기기에서만 비교합니다.</td></tr></table>'+
   '<div class="legal">※ 태블릿·휴대폰 마이크로 잰 참고 자료입니다. 공인 시험이 아니며, 소리 나는 위치는 이 측정으로 알 수 없습니다.</div></div>'+uReportHTML(7)+'</body></html>';
 }
-const METER_VER="v1.35";
+const METER_VER="v1.36";
 function impHead(title){
   return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+title+'</title><style>'+
   '*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}@page{size:A4;margin:14mm 13mm}'+
