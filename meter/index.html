@@ -181,6 +181,37 @@ details>summary::before{content:"⚙ ";}
 .manual li{margin-bottom:7px}
 .manual li b{color:var(--txt)}
 .err{color:var(--bad);font-weight:600}
+/* v1.28 — 상단 측정기 선택 (소음측정기 / 충격음측정기) */
+.modebar{display:flex;gap:10px;margin:4px 0 0}
+.modebar button{flex:1;font-family:inherit;font-size:15px;font-weight:800;padding:10px 6px 8px;border-radius:13px;
+  border:1.5px solid var(--line);background:var(--card);color:var(--dim);cursor:pointer;line-height:1.25}
+.modebar button .ms{display:block;font-size:11px;font-weight:600;opacity:.85;margin-top:2px}
+.modebar button .chk{display:inline-block;width:17px;height:17px;border-radius:5px;border:2px solid currentColor;
+  vertical-align:-3px;margin-right:7px;position:relative;opacity:.45}
+.modebar button.on{background:#123a24;border-color:var(--accent);color:#7fe0a8}
+.modebar button.on.imp{background:#3a2412;border-color:#e0954a;color:#ffc58a}
+.modebar button.on .chk{opacity:1;background:currentColor}
+.modebar button.on .chk::after{content:"✓";position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);
+  font-size:12px;font-weight:900;color:var(--bg)}
+/* 충격음측정기 */
+.istats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.istats .s{background:var(--card2);border-radius:12px;padding:8px 6px;text-align:center}
+.istats .s .k{font-size:11px;color:var(--dim);font-weight:600}
+.istats .s .v{font-size:23px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:2px}
+.istats .s .v small{font-size:12px;color:var(--dim);font-weight:700;margin-left:2px}
+.istats .s.hot .v{color:#ffc58a}
+.ifig{background:#fff;border-radius:10px;width:100%;height:auto;display:block}
+.ifig-t{font-size:13px;font-weight:800;margin:14px 2px 6px}
+.ifig-t:first-child{margin-top:0}
+.ievt{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.ievt th,.ievt td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:right}
+.ievt th{color:var(--dim);font-weight:700}
+.ievt td:first-child,.ievt th:first-child{text-align:left}
+.ievt tr.ring td{color:var(--txt)} .ievt tr.short td{color:var(--dim)}
+.iwrap{max-height:260px;overflow:auto}
+.iverd{padding:11px 12px;border-radius:12px;background:#2a1c10;border:1px solid #5a3b1c;border-left:3px solid #e0954a;
+  font-size:13px;line-height:1.7;color:var(--dim)}
+.iverd b{color:var(--txt)}
 .hidden{display:none!important}
 </style>
 </head>
@@ -192,10 +223,15 @@ details>summary::before{content:"⚙ ";}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.27</div>
+  <div class="badge" id="verBadge">v1.28</div>
 </header>
 
 <div id="toast" class="toast"></div>
+
+<div class="modebar" id="modebar">
+  <button data-m="normal"><span class="chk"></span>소음측정기<span class="ms">평균 소음 · 수리 전·후</span></button>
+  <button data-m="impact" class="imp"><span class="chk"></span>충격음측정기<span class="ms">바람 금속소리 · 딸깍</span></button>
+</div>
 
 <!-- permission gate -->
 <div class="card" id="gate">
@@ -224,6 +260,7 @@ details>summary::before{content:"⚙ ";}
 
 <!-- meter -->
 <div id="app" class="hidden">
+ <div id="normalMode">
   <div class="phasebar" id="phasebar">
     <button data-p="수리전" class="on before"><span class="chk"></span>수리 전</button>
     <button data-p="수리후" class="after"><span class="chk"></span>수리 후</button>
@@ -410,6 +447,85 @@ details>summary::before{content:"⚙ ";}
   본 측정은 상대적 밀폐·차음 개선 확인용이며 KS F 2292(통기량) 등급과는 다른 지표입니다.</div>
 
   <button class="b-wide" id="btnReport" style="margin-top:14px">📄 측정 보고서 PDF 저장</button>
+ </div>
+
+ <!-- v1.28 충격음측정기 -->
+ <div id="impactMode" class="hidden">
+  <div class="card" style="padding:10px 14px">
+    <div class="set-row">
+      <div class="lab">측정 시간</div>
+      <div class="seg" id="segImpMin"><button data-v="3">3분</button><button data-v="5">5분</button><button data-v="10">10분</button></div>
+    </div>
+    <input id="impMemo" class="txtin" type="text" maxlength="40" placeholder="현장·조건 (예: 거실 창, 남서풍 셈)" style="margin:6px 0 4px">
+  </div>
+
+  <div class="card readout live" id="impReadout" style="padding:14px">
+    <div class="state" id="impState">측정 대기</div>
+    <div class="istats" style="margin-top:10px">
+      <div class="s"><div class="k">경과</div><div class="v" id="impEl">--</div></div>
+      <div class="s"><div class="k">지금</div><div class="v" id="impNow">--<small>dB</small></div></div>
+      <div class="s"><div class="k">최대</div><div class="v" id="impMax">--<small>dB</small></div></div>
+      <div class="s hot"><div class="k">충격음</div><div class="v" id="impCnt">--</div></div>
+      <div class="s hot"><div class="k">1분당</div><div class="v" id="impRing">--</div></div>
+      <div class="s"><div class="k">남은 시간</div><div class="v" id="impLeft">--</div></div>
+    </div>
+    <div class="count" id="impCount">
+      <div class="n" id="impCountN">5</div>
+      <div class="t">기기를 창가에 두고 손을 떼세요</div>
+    </div>
+  </div>
+
+  <div class="btns">
+    <button class="b-main" id="impStart">🔩 충격음 측정 시작</button>
+    <button class="b-sec hidden" id="impStop">측정 끝내기</button>
+  </div>
+  <button class="b-ghost hidden" id="impCancel" style="width:100%;margin-top:10px">측정 취소</button>
+
+  <div id="impResult" class="hidden">
+    <div class="sec-title">측정 결과</div>
+    <div class="card">
+      <div class="istats">
+        <div class="s"><div class="k">순간 최대 LAFmax</div><div class="v" id="irMax">--</div></div>
+        <div class="s"><div class="k">평균 LAeq</div><div class="v" id="irLeq">--</div></div>
+        <div class="s"><div class="k">바탕 L90</div><div class="v" id="irL90">--</div></div>
+        <div class="s hot"><div class="k">울림 충격음</div><div class="v" id="irRing">--</div></div>
+        <div class="s hot"><div class="k">1분당</div><div class="v" id="irRate">--</div></div>
+        <div class="s"><div class="k">짧은 딸깍</div><div class="v" id="irShort">--</div></div>
+        <div class="s hot"><div class="k">울림 높이</div><div class="v" id="irHz">--</div></div>
+        <div class="s"><div class="k">울림 길이</div><div class="v" id="irDur">--</div></div>
+        <div class="s"><div class="k">바탕보다</div><div class="v" id="irRise">--</div></div>
+      </div>
+      <div class="iverd" id="irVerd" style="margin-top:12px"></div>
+      <div class="mini" id="irWx" style="margin-top:10px"></div>
+      <button class="b-ghost" id="irWxBtn" style="width:100%;margin-top:8px">🌬️ 측정 시각 바람 불러오기</button>
+    </div>
+
+    <div class="sec-title">소리 그림</div>
+    <div class="card">
+      <div class="ifig-t">① 소리 높이 지도 — 빨간 화살표 = 울림 충격음</div>
+      <canvas class="ifig" id="ifMap" width="1000" height="420" style="height:auto"></canvas>
+      <div class="ifig-t">② 순간 충격음 시간표</div>
+      <canvas class="ifig" id="ifTime" width="1000" height="340" style="height:auto"></canvas>
+      <div class="ifig-t">③ 가장 많이 부딪힌 구간 확대</div>
+      <canvas class="ifig" id="ifZoom" width="1000" height="360" style="height:auto"></canvas>
+      <div class="ifig-t">④ 충격 뒤에 남는 울림의 높이</div>
+      <canvas class="ifig" id="ifRing" width="1000" height="360" style="height:auto"></canvas>
+    </div>
+
+    <div class="sec-title">충격음 목록</div>
+    <div class="card"><div class="iwrap" id="irList"></div></div>
+
+    <button class="b-wide" id="irWav" style="margin-top:4px">🎧 원음(WAV) 저장</button>
+    <button class="b-wide" id="irPdf" style="margin-top:10px">📄 충격음 분석 보고서 PDF</button>
+  </div>
+
+  <div class="sec-title">충격음 기록</div>
+  <div class="card">
+    <div id="impRecList"><div class="note">저장된 충격음 측정이 없습니다.</div></div>
+    <button class="b-ghost hidden" id="impRecClear" style="width:100%;margin-top:10px">기록 전체 삭제</button>
+  </div>
+  <div class="note legal">※ 원음과 그림은 이 화면에만 있고, 새로고침하면 사라집니다. 필요하면 바로 저장하세요. 절대 dB는 보정한 기기에서만 믿을 수 있습니다.</div>
+ </div>
 </div>
 
 <script>
@@ -440,7 +556,7 @@ function esc(s){ return String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",
 function saveCfg(){localStorage.setItem(LS,JSON.stringify(cfg));}
 
 // ---- audio state ----
-let ac,analyser,freq,wPow,binLo,binHi,rafId,stream;
+let ac,analyser,freq,wPow,binLo,binHi,rafId,stream,micSrc;
 let live={min:Infinity,max:-Infinity,eSum:0,eN:0,disp:0};
 let mode="idle"; // idle | settle | measure | done
 let capture=null;
@@ -498,6 +614,7 @@ async function startMic(){
   ac=new (window.AudioContext||window.webkitAudioContext)();
   if(ac.state==="suspended") await ac.resume();
   const src=ac.createMediaStreamSource(stream);
+  micSrc=src;
   analyser=ac.createAnalyser();
   analyser.fftSize=8192;
   analyser.smoothingTimeConstant=0;
@@ -1247,6 +1364,491 @@ document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==
 $("#startMic").addEventListener("click",keepAwake);
 
 renderRecs();
+
+// =====================================================================
+// v1.28 충격음측정기 — 바람에 금속 부재가 부딪히는 소리(충격음·울림) 측정
+//  · 레벨: A가중 시간영역 + Fast(0.125초) → LAFmax·LAeq·L90 (소음측정기와 같은 보정값 사용)
+//  · 충격음: 2~10kHz 2ms 포락선이 바탕보다 20dB↑ → 40ms 안의 튐은 한 번으로 묶음
+//  · 울림: 충격 직후 가장 솟은 높이(f*)의 좁은 대역이 앞 0.5초보다 6dB↑로 0.04초 이상 남으면 '울림 충격음'
+//  · 원음은 16비트로 보관 → WAV 저장(압축 없음)
+// =====================================================================
+const FFT_SUM_DB=10*Math.log10(0.5*0.3046); // FFT 합산 레벨(블랙맨 창) − 시간영역 레벨 ≈ −8.17dB → 같은 눈금
+const IMP_LS=LS+"_imp";
+let impRecs=[]; try{ impRecs=JSON.parse(localStorage.getItem(IMP_LS)||"[]"); }catch(e){ impRecs=[]; }
+if(![3,5,10].includes(cfg.impMin)) cfg.impMin=5;
+if(cfg.appMode!=="impact") cfg.appMode="normal";
+let imp=null, impProc=null, impSink=null, impUi=null, impR=null, impTok=0;
+
+function fftInPlace(re,im){ const n=re.length;
+  for(let i=1,j=0;i<n;i++){ let bit=n>>1; for(;j&bit;bit>>=1) j^=bit; j^=bit;
+    if(i<j){ let t=re[i];re[i]=re[j];re[j]=t; t=im[i];im[i]=im[j];im[j]=t; } }
+  for(let len=2;len<=n;len<<=1){ const ang=-2*Math.PI/len, wr=Math.cos(ang), wi=Math.sin(ang);
+    for(let i=0;i<n;i+=len){ let cr=1,ci=0;
+      for(let k=0;k<len/2;k++){ const a=i+k,b=a+len/2;
+        const tr=re[b]*cr-im[b]*ci, ti=re[b]*ci+im[b]*cr;
+        re[b]=re[a]-tr; im[b]=im[a]-ti; re[a]+=tr; im[a]+=ti;
+        const nr=cr*wr-ci*wi; ci=cr*wi+ci*wr; cr=nr; } } } }
+const _hann={};
+function hannW(n){ if(!_hann[n]){ const w=new Float32Array(n); for(let i=0;i<n;i++) w[i]=0.5-0.5*Math.cos(2*Math.PI*i/(n-1)); _hann[n]=w; } return _hann[n]; }
+function powSpec(x){ const n=x.length, w=hannW(n), re=new Float64Array(n), im=new Float64Array(n);
+  for(let i=0;i<n;i++) re[i]=x[i]*w[i]; fftInPlace(re,im);
+  const p=new Float64Array(n/2); for(let k=0;k<n/2;k++) p[k]=re[k]*re[k]+im[k]*im[k]; return p; }
+
+function mkBq(b0,b1,b2,a1,a2){ return {b0:b0,b1:b1,b2:b2,a1:a1,a2:a2,x1:0,x2:0,y1:0,y2:0}; }
+function bqRun(f,x){ const y=f.b0*x+f.b1*f.x1+f.b2*f.x2-f.a1*f.y1-f.a2*f.y2; f.x2=f.x1;f.x1=x;f.y2=f.y1;f.y1=y; return y; }
+function rbj(type,fc,Q,sr){ const w=2*Math.PI*fc/sr, c=Math.cos(w), s=Math.sin(w), al=s/(2*Q); let b0,b1,b2;
+  if(type==="hp"){b0=(1+c)/2;b1=-(1+c);b2=(1+c)/2;} else if(type==="lp"){b0=(1-c)/2;b1=1-c;b2=(1-c)/2;} else {b0=al;b1=0;b2=-al;}
+  const a0=1+al; return mkBq(b0/a0,b1/a0,b2/a0,(-2*c)/a0,(1-al)/a0); }
+// A가중 = 쌍선형 변환(극점별 사전 왜곡) 2차 3단, 1kHz에서 0dB로 맞춤
+function aWeightSos(sr){
+  const K=2*sr, pw=f=>2*sr*Math.tan(Math.PI*f/sr);
+  const p1=pw(20.598997), p2=pw(107.65265), p3=pw(737.86223), p4=pw(12194.217);
+  function sec(hp,a,b){ const A1=K+a,B1=a-K,A2=K+b,B2=b-K;
+    const d0=A1*A2, d1=A1*B2+B1*A2, d2=B1*B2;
+    const n=hp?[K*K,-2*K*K,K*K]:[1,2,1];
+    return mkBq(n[0]/d0,n[1]/d0,n[2]/d0,d1/d0,d2/d0); }
+  const S=[sec(true,p1,p1),sec(true,p4,p4),sec(false,p2,p3)];
+  const w=2*Math.PI*1000/sr; let mag=1;
+  S.forEach(f=>{ const cr=Math.cos(w),ci=-Math.sin(w),c2r=Math.cos(2*w),c2i=-Math.sin(2*w);
+    const nr=f.b0+f.b1*cr+f.b2*c2r, ni=f.b1*ci+f.b2*c2i, dr=1+f.a1*cr+f.a2*c2r, di=f.a1*ci+f.a2*c2i;
+    mag*=Math.sqrt((nr*nr+ni*ni)/(dr*dr+di*di)); });
+  S[2].b0/=mag; S[2].b1/=mag; S[2].b2/=mag; return S; }
+
+function ImpEngine(sr,calOff){
+  const E={sr:sr,calOff:calOff,n:0,CH:4096,chunks:[],aw:aWeightSos(sr),
+    bp:[rbj("hp",2000,0.707,sr),rbj("hp",2000,0.707,sr),rbj("lp",Math.min(10000,sr*0.45),0.707,sr),rbj("lp",Math.min(10000,sr*0.45),0.707,sr)],
+    alphaF:1-Math.exp(-1/(0.125*sr)), ms:0, aSum:0, aN:0, lafStep:Math.round(sr*0.01), lafCnt:0, laf:[],
+    envN:Math.round(sr*0.002), envAcc:0, envCnt:0, env:[], base:null, baseInit:[], cur:null, events:[], pending:[],
+    ringPost:null, ringPre:null, ringN:0, specCols:[], specHop:2048, specCnt:0, warm:Math.round(sr*0.5)};
+  return E; }
+function impSample(E,i){ const c=E.chunks[(i/E.CH)|0]; return c?c[i%E.CH]/32768:0; }
+function impSlice(E,i0,n){ const out=new Float32Array(n);
+  for(let k=0;k<n;k++){ const i=i0+k; out[k]=(i>=0&&i<E.n)?impSample(E,i):0; } return out; }
+function impPush(E,buf){
+  const aw=E.aw, bp=E.bp;
+  for(let j=0;j<buf.length;j++){
+    const x=buf[j];
+    const ci=(E.n/E.CH)|0; if(!E.chunks[ci]) E.chunks[ci]=new Int16Array(E.CH);
+    E.chunks[ci][E.n%E.CH]=Math.max(-32768,Math.min(32767,Math.round(x*32767)));
+    let a=bqRun(aw[0],x); a=bqRun(aw[1],a); a=bqRun(aw[2],a);
+    const a2=a*a; E.ms+=(a2-E.ms)*E.alphaF;
+    if(E.n>=E.warm){ E.aSum+=a2; E.aN++; }
+    if(++E.lafCnt>=E.lafStep){ E.lafCnt=0; E.laf.push(E.n>=E.warm ? 10*Math.log10(E.ms+1e-20)+E.calOff : null); }
+    let b=bqRun(bp[0],x); b=bqRun(bp[1],b); b=bqRun(bp[2],b); b=bqRun(bp[3],b);
+    E.envAcc+=b*b;
+    if(++E.envCnt>=E.envN){ impEnv(E,10*Math.log10(E.envAcc/E.envN+1e-20)); E.envAcc=0; E.envCnt=0; }
+    E.n++;
+    if(++E.specCnt>=E.specHop){ E.specCnt=0; impSpecCol(E); }
+  }
+  impAnalyzeReady(E,false);
+}
+function impEnv(E,db){
+  const k=E.env.length, t=k*E.envN/E.sr; E.env.push(db);
+  if(E.base===null){ if(t<0.5) return; E.baseInit.push(db); if(E.baseInit.length<150) return;
+    const s=E.baseInit.slice().sort((p,q)=>p-q); E.base=s[s.length>>1]; return; }
+  if(db<E.base) E.base+=(db-E.base)*0.05; else if(db<E.base+10) E.base+=(db-E.base)*0.002;
+  const hot=db>E.base+20 && t>=1.0;
+  if(E.cur && t-E.cur.last>0.04){ E.pending.push(E.cur); E.cur=null; }
+  if(hot){
+    if(E.cur){ E.cur.last=t; if(t-E.cur.t<=0.03) E.cur.h=Math.max(E.cur.h,db-E.cur.base); E.cur.hits++; }
+    else { // 새 충격음은 '갑자기' 튀어야 함: 6~20ms 전보다 15dB↑ (서서히 커지는 바람 소리는 제외)
+      let mn=1e9; for(let i=Math.max(0,k-10);i<=k-3;i++) mn=Math.min(mn,E.env[i]);
+      if(db-mn>=15) E.cur={t:t,s:Math.round(t*E.sr),last:t,h:db-E.base,base:E.base,hits:1}; }
+  }
+}
+function impSpecCol(E){
+  const n=E.specHop, x=impSlice(E,E.n-n,n), p=powSpec(x), sr=E.sr, nb=72, fLo=500, fHi=Math.min(16000,sr*0.45);
+  const col=new Float32Array(nb);
+  for(let b=0;b<nb;b++){ const f0=fLo*Math.pow(fHi/fLo,b/nb), f1=fLo*Math.pow(fHi/fLo,(b+1)/nb);
+    const k0=Math.max(1,Math.floor(f0*n/sr)), k1=Math.max(k0,Math.ceil(f1*n/sr)); let m=0;
+    for(let k=k0;k<=k1&&k<p.length;k++) if(p[k]>m) m=p[k]; col[b]=10*Math.log10(m+1e-20); }
+  E.specCols.push(col); E.specMeta={nb:nb,fLo:fLo,fHi:fHi,hop:n};
+  // 충격 없이 조용했던 구간 → '평소 소리' 스펙트럼으로 누적
+  if(E.base!==null && E.n>=E.warm){ const i0=Math.floor((E.n-n)/E.envN), i1=Math.min(E.env.length,Math.floor(E.n/E.envN)); let mx=-1e9;
+    for(let i=i0;i<i1;i++) if(E.env[i]>mx) mx=E.env[i];
+    if(mx<E.base+6){ if(!E.quiet){E.quiet=new Float64Array(n/2);E.quietN=0;} for(let k=0;k<n/2;k++) E.quiet[k]+=p[k]; E.quietN++; } }
+}
+function impAnalyzeReady(E,force){
+  const need=Math.round(0.45*E.sr);
+  while(E.pending.length && (force || E.pending[0].s+need<=E.n)){ impAnalyze(E,E.pending.shift()); }
+}
+function median(a){ if(!a.length) return null; const s=a.slice().sort((p,q)=>p-q); return s[s.length>>1]; }
+function impAnalyze(E,ev){
+  const sr=E.sr, N=2048, s=ev.s;
+  ev.ring=false; ev.hz=null; ev.dur=0; ev.ok=s>=Math.round(0.5*sr);
+  // 1차: 충격 직후(15ms~) 스펙트럼을 모아 둠 → 측정이 끝나면 '여러 충격에 공통으로 솟는 높이'를 찾고(2차) 그 높이로 울림 판정
+  if(ev.ok) ev._post=Float32Array.from(powSpec(impSlice(E,s+Math.round(0.015*sr),N)));
+  const li=Math.round(ev.t/0.01); let lm=null;
+  for(let i=li;i<Math.min(E.laf.length,li+16);i++) if(E.laf[i]!=null && (lm===null||E.laf[i]>lm)) lm=E.laf[i];
+  ev.laf=lm; E.events.push(ev);
+}
+// 그 높이(hz)의 좁은 대역이 충격 뒤 앞 0.5초 평소보다 6dB 넘게 몇 초 남는지
+function ringDur(E,ev,hz){
+  const sr=E.sr, p0=ev.s-Math.round(0.5*sr), f1=rbj("bp",hz,8,sr), f2=rbj("bp",hz,8,sr);
+  const seg=impSlice(E,p0,Math.round(0.95*sr)), bl=Math.round(0.005*sr), envs=[];
+  let acc=0,cnt=0; for(let i=0;i<seg.length;i++){ const y=bqRun(f2,bqRun(f1,seg[i])); acc+=y*y;
+    if(++cnt>=bl){ envs.push(10*Math.log10(acc/bl+1e-20)); acc=0; cnt=0; } }
+  const iEv=Math.round(0.5*sr/bl), preLv=median(envs.slice(Math.round(0.05*sr/bl),iEv-Math.round(0.02*sr/bl)));
+  let ip=iEv; for(let i=iEv;i<Math.min(envs.length,iEv+Math.round(0.03*sr/bl));i++) if(envs[i]>envs[ip]) ip=i;
+  let j=ip; while(j<envs.length && envs[j]>preLv+6) j++;
+  return (j-ip)*bl/sr; }
+// 실제로 소리가 담긴 위쪽 한계(문자·메신저로 압축된 녹음은 9~10kHz 위가 잘림)
+function topBin(post,N,sr){ const db=k=>10*Math.log10(post[k]+1e-20); let ref=-1e9;
+  for(let k=Math.round(2000*N/sr);k<=Math.round(4000*N/sr);k++) ref=Math.max(ref,db(k));
+  let top=Math.min(N/2-3,Math.round(Math.min(12000,sr*0.45)*N/sr));
+  while(top>Math.round(3000*N/sr) && db(top)<ref-45) top--; return top-Math.round(300*N/sr); }
+// 여러 충격에 공통으로 솟는 높이 = 평균 '충격 직후 − 평소' 차이의 봉우리 (주변 ±0.4kHz에서 가장 높은 곳)
+//  평소 = 측정 전체에서 충격이 없던 조용한 구간의 평균, 직후 = 모든 충격 직후의 평균(파워)
+//  봉우리 조건: ±0.4kHz 안에서 가장 높고, 주변 ±0.6kHz 중앙값보다 2dB↑, 평소보다 6dB↑
+function commonPeaks(P,Q,N,sr){
+  const k0=Math.round(2000*N/sr), k1=topBin(P,N,sr), d=[];
+  for(let k=0;k<N/2;k++) d.push(10*Math.log10((P[k]+1e-20)/(Q[k]+1e-20)));
+  const sm=k=>{ let s=0; for(let m=-2;m<=2;m++) s+=d[k+m]; return s/5; }, w=Math.round(400*N/sr), w2=Math.round(600*N/sr), pk=[];
+  for(let k=k0+2;k<=k1-2;k++){ const v=sm(k); if(v<6) continue; let ok=true;
+    for(let m=-w;m<=w&&ok;m++){ const j=k+m; if(m&&j>=k0+2&&j<=k1-2&&sm(j)>v) ok=false; } if(!ok) continue;
+    const nb=[]; for(let m=-w2;m<=w2;m++){ const j=k+m; if(j>=k0&&j<=k1) nb.push(d[j]); }
+    if(v-median(nb)>=2) pk.push({hz:k*sr/N,d:v}); }
+  return pk.sort((a,b)=>b.d-a.d).slice(0,3); }
+function impFinish(E){
+  if(E.cur){ E.pending.push(E.cur); E.cur=null; }
+  impAnalyzeReady(E,true);
+  const N2=2048;
+  const okEv=E.events.filter(ev=>ev._post), P=new Float64Array(N2/2);
+  okEv.forEach(ev=>{ for(let k=0;k<N2/2;k++) P[k]+=ev._post[k]/okEv.length; });
+  E.quietAvg=new Float64Array(N2/2); if(E.quietN) for(let k=0;k<N2/2;k++) E.quietAvg[k]=E.quiet[k]/E.quietN;
+  E.common=(okEv.length&&E.quietN)?commonPeaks(P,E.quietAvg,N2,E.sr):[];
+  E.ringPost=null; E.ringN=0;
+  E.events.forEach(ev=>{ if(!ev.ok||!E.common.length) return; let best=0,bh=null;
+    E.common.forEach(p=>{ const du=ringDur(E,ev,p.hz); if(du>best){best=du;bh=p.hz;} });
+    ev.dur=best; ev.hz=bh; ev.ring=best>=0.04;
+    if(ev.ring){ if(!E.ringPost) E.ringPost=new Float64Array(N2/2);
+      for(let k=0;k<N2/2;k++) E.ringPost[k]+=ev._post[k]; E.ringN++; } });
+  const dur=E.n/E.sr, lafs=E.laf.filter(v=>v!=null).sort((a,b)=>a-b);
+  const pct=p=>lafs.length?lafs[Math.min(lafs.length-1,Math.floor(p*lafs.length))]:null;
+  const L90=pct(0.10), LAeq=E.aN?10*Math.log10(E.aSum/E.aN)+E.calOff:null, LAFmax=lafs.length?lafs[lafs.length-1]:null;
+  const ev=E.events.slice().sort((a,b)=>a.t-b.t), ring=ev.filter(e=>e.ring), shortEv=ev.filter(e=>!e.ring);
+  const groups=[]; ring.forEach(e=>{ const g=groups[groups.length-1]; if(g&&e.t-g[g.length-1].t<=0.5) g.push(e); else groups.push([e]); });
+  const rise=ring.filter(e=>e.laf!=null).map(e=>e.laf-L90);
+  // 가장 강한 울림 높이 = 여러 충격에 공통으로 가장 크게 솟은 높이
+  const peaks=E.common||[];
+  const hzMode=(ring.length&&peaks.length)?peaks[0].hz:null, hzShare=ring.length/Math.max(1,ev.length);
+  const camBand=peaks.length?[Math.max(2,Math.min.apply(null,peaks.map(p=>p.hz))/1000-1),Math.max.apply(null,peaks.map(p=>p.hz))/1000+1]:null;
+  return {dur:dur,sr:E.sr,LAFmax:LAFmax,LAeq:LAeq,L90:L90,L10:pct(0.90),events:ev,ring:ring,short:shortEv,groups:groups,
+    rate:ring.length/(dur/60),riseMed:median(rise),riseMax:rise.length?Math.max.apply(null,rise):null,
+    durMed:median(ring.map(e=>e.dur)),hzMode:hzMode,hzShare:hzShare,peaks:peaks,camBand:camBand,cal:cfg.cal};
+}
+
+// ---- 화면 ----
+function fmtT(t){ return Math.floor(t/60)+":"+String(Math.floor(t%60)).padStart(2,"0")+"."+Math.floor((t%1)*10); }
+function fmtMS(s){ s=Math.max(0,Math.round(s)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+function kHz(h){ return h==null?"--":(h/1000).toFixed(1); }
+function impBusy(){ return !!(imp&&imp.running) || !!impUi; }
+function setAppMode(m){
+  if(m!==cfg.appMode){
+    if(m==="impact" && (mode==="settle"||mode==="measure"||mode==="gap")){ toast("소음 측정 중에는 바꿀 수 없습니다"); return; }
+    if(m==="normal" && impBusy()){ toast("충격음 측정 중에는 바꿀 수 없습니다"); return; }
+  }
+  cfg.appMode=m; saveCfg();
+  $("#modebar").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
+  $("#normalMode").classList.toggle("hidden",m!=="normal");
+  $("#impactMode").classList.toggle("hidden",m!=="impact");
+}
+$("#modebar").querySelectorAll("button").forEach(b=>b.onclick=()=>setAppMode(b.dataset.m));
+setAppMode(cfg.appMode);
+(function(){ const el=$("#segImpMin"); el.querySelectorAll("button").forEach(b=>{ b.classList.toggle("on",+b.dataset.v===cfg.impMin);
+  b.onclick=()=>{ if(impBusy()){ toast("측정 중에는 바꿀 수 없습니다"); return; } cfg.impMin=+b.dataset.v; saveCfg();
+    el.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b)); }; }); })();
+
+function impAttach(){
+  if(impProc||!ac||!micSrc) return;
+  impProc=ac.createScriptProcessor(4096,1,1); impSink=ac.createGain(); impSink.gain.value=0;
+  micSrc.connect(impProc); impProc.connect(impSink); impSink.connect(ac.destination);
+  impProc.onaudioprocess=e=>{ if(imp&&imp.running) impPush(imp.E,e.inputBuffer.getChannelData(0)); };
+}
+function impUiReset(){ ["#impEl","#impLeft","#impCnt","#impRing"].forEach(s=>$(s).textContent="--");
+  $("#impNow").innerHTML="--<small>dB</small>"; $("#impMax").innerHTML="--<small>dB</small>"; }
+function impStartClick(){
+  if(!ac){ toast("먼저 마이크를 켜세요"); return; }
+  if(impBusy()) return;
+  impAttach(); if(ac.state==="suspended") ac.resume();
+  const tk=++impTok; impUiReset();
+  $("#impResult").classList.add("hidden"); $("#impStart").classList.add("hidden");
+  $("#impCancel").classList.remove("hidden"); $("#impCount").classList.add("on");
+  let left=5; $("#impCountN").textContent=left; $("#impState").textContent="준비 중";
+  impUi=setInterval(()=>{ if(tk!==impTok) return; left--; if(left>0){ $("#impCountN").textContent=left; return; }
+    clearInterval(impUi); impUi=null; $("#impCount").classList.remove("on"); impBegin(tk); },1000);
+}
+function impBegin(tk){
+  imp={E:ImpEngine(ac.sampleRate,DEFAULT_CAL+cfg.cal+FFT_SUM_DB),running:true,t0:performance.now(),start:new Date(),tk:tk,memo:($("#impMemo").value||"").trim()};
+  $("#impStop").classList.remove("hidden"); $("#impState").textContent="측정 중 — 손대지 마세요";
+  const total=cfg.impMin*60;
+  impUi=setInterval(()=>{
+    if(!imp||imp.tk!==tk) return;
+    const E=imp.E, el=E.n/E.sr, last=E.laf.length?E.laf[E.laf.length-1]:null;
+    let mx=null; for(let i=Math.max(0,(E._mxI||0));i<E.laf.length;i++){ const v=E.laf[i]; if(v!=null&&(mx===null||v>mx)) mx=v; }
+    E._mxI=E.laf.length; if(mx!=null) E._mx=Math.max(E._mx==null?-1e9:E._mx,mx);
+    $("#impEl").textContent=fmtMS(el); $("#impLeft").textContent=fmtMS(total-el);
+    if(last!=null) $("#impNow").innerHTML=last.toFixed(0)+"<small>dB</small>";
+    if(E._mx!=null) $("#impMax").innerHTML=E._mx.toFixed(0)+"<small>dB</small>";
+    $("#impCnt").textContent=E.events.length+E.pending.length+(E.cur?1:0);
+    $("#impRing").textContent=el>=10?Math.round((E.events.length+E.pending.length)/(el/60)):"--";
+    if(el>=total) impEnd(true);
+  },250);
+}
+function impStopTimers(){ if(impUi){ clearInterval(impUi); impUi=null; } }
+function impCancel(){ impTok++; impStopTimers(); if(imp) imp.running=false; imp=null;
+  $("#impCount").classList.remove("on"); $("#impStop").classList.add("hidden"); $("#impCancel").classList.add("hidden");
+  $("#impStart").classList.remove("hidden"); $("#impState").textContent="측정 대기"; impUiReset(); }
+function impEnd(auto){
+  if(!imp) return; imp.running=false; impStopTimers();
+  const E=imp.E;
+  if(E.n/E.sr<10){ toast("10초 넘게 재야 분석할 수 있습니다"); impCancel(); return; }
+  $("#impState").textContent="분석 중…";
+  setTimeout(()=>{
+    const R=impFinish(E); R.E=E; R.start=imp.start; R.memo=imp.memo; R.wx=null; impR=R; imp=null;
+    $("#impStop").classList.add("hidden"); $("#impCancel").classList.add("hidden"); $("#impStart").classList.remove("hidden");
+    $("#impState").textContent="측정 완료 · "+fmtMS(R.dur);
+    if(cfg.beep){ try{ doneBeep(); }catch(e){} if(navigator.vibrate) navigator.vibrate(200); }
+    impRender(R); impSaveRec(R);
+  },60);
+}
+function impVerdict(R){
+  const out=[];
+  if(R.ring.length>=3){
+    out.push("울림이 남는 충격음이 <b>"+R.ring.length+"회</b> 났습니다(1분에 약 "+R.rate.toFixed(0)+"회).");
+    out.push("전체 충격음 "+R.events.length+"회 중 <b>"+Math.round(R.hzShare*100)+"%</b>가 같은 높이들로 울렸습니다.");
+    if(R.hzMode) out.push("가장 강한 울림 높이는 <b>약 "+kHz(R.hzMode)+"kHz</b>입니다"+(R.peaks.length>1?" (함께 솟은 높이 "+R.peaks.slice(1).map(p=>kHz(p.hz)).join("·")+"kHz).":"."));
+    out.push("충격 뒤 울림이 남는 것은 <b>얇은 금속판·덮개·가는 틀</b>이 부딪힐 때의 특징과 맞습니다.");
+    if(R.camBand) out.push("초음파 음향카메라는 <b>"+R.camBand[0].toFixed(1)+"~"+R.camBand[1].toFixed(1)+"kHz</b>로 맞추면 이 울림만 골라 볼 수 있습니다.");
+  } else if(R.events.length){
+    out.push("충격음 "+R.events.length+"회가 있었지만 울림이 남는 것은 "+R.ring.length+"회입니다. 금속 울림으로 보기는 어렵습니다.");
+  } else out.push("충격음이 검출되지 않았습니다. 바람이 센 날 다시 재 보세요.");
+  out.push("마이크 하나로는 소리 나는 <b>위치</b>는 알 수 없습니다.");
+  if(R.cal===0) out.push("<span style='opacity:.8'>보정 전이라 dB 절대값은 참고용입니다.</span>");
+  else if(R.LAeq!=null) out.push("평균 "+R.LAeq.toFixed(1)+"dB(A)는 실내 소음 기준 45dB(A) "+(R.LAeq<=45?"이내":"초과")+"입니다(창 닫은 상태일 때).");
+  return out.join("<br>");
+}
+function impRender(R){
+  const f1=v=>v==null?"--":v.toFixed(1);
+  $("#irMax").textContent=f1(R.LAFmax); $("#irLeq").textContent=f1(R.LAeq); $("#irL90").textContent=f1(R.L90);
+  $("#irRing").textContent=R.ring.length; $("#irRate").textContent=R.rate.toFixed(0); $("#irShort").textContent=R.short.length;
+  $("#irHz").innerHTML=R.hzMode?kHz(R.hzMode)+"<small>kHz</small>":"--";
+  $("#irDur").innerHTML=R.durMed!=null?R.durMed.toFixed(2)+"<small>초</small>":"--";
+  $("#irRise").innerHTML=R.riseMed!=null?"+"+R.riseMed.toFixed(0)+"<small>dB</small>":"--";
+  $("#irVerd").innerHTML=impVerdict(R);
+  impRenderWx(R);
+  impDrawMap($("#ifMap"),R); impDrawTime($("#ifTime"),R); impDrawZoom($("#ifZoom"),R); impDrawRing($("#ifRing"),R);
+  const rows=R.events.slice(0,200).map((e,i)=>'<tr class="'+(e.ring?"ring":"short")+'"><td>'+(i+1)+'</td><td>'+fmtT(e.t)+'</td><td>'+
+    (e.laf!=null?e.laf.toFixed(0):"--")+'</td><td>+'+e.h.toFixed(0)+'</td><td>'+(e.ring?kHz(e.hz):"—")+'</td><td>'+(e.ring?e.dur.toFixed(2):"—")+'</td><td>'+(e.ring?"울림":"딸깍")+'</td></tr>').join("");
+  $("#irList").innerHTML=R.events.length?'<table class="ievt"><tr><th>#</th><th>시각</th><th>LAF</th><th>바탕+</th><th>kHz</th><th>울림초</th><th>구분</th></tr>'+rows+'</table>':'<div class="note">충격음이 없습니다.</div>';
+  $("#impResult").classList.remove("hidden");
+}
+function impRenderWx(R){ const w=R.wx;
+  $("#irWx").innerHTML=w?("측정 시각 바람(격자 계산값, 지상 10m): <b>"+w.ws.toFixed(1)+"m/s</b> · 순간 <b>"+w.wg.toFixed(1)+"m/s</b> · "+w.dir+"풍"):"측정 시각의 바람 세기를 함께 남기면 비교가 쉽습니다."; }
+function dirKo(d){ const n=["북","북북동","북동","동북동","동","동남동","남동","남남동","남","남남서","남서","서남서","서","서북서","북서","북북서"]; return n[Math.round(((d%360)+360)%360/22.5)%16]; }
+function impWeather(){
+  const R=impR; if(!R){ return; }
+  if(!navigator.geolocation){ toast("이 기기는 위치를 쓸 수 없습니다"); return; }
+  toast("위치 확인 중…");
+  navigator.geolocation.getCurrentPosition(async p=>{
+    try{
+      const la=p.coords.latitude.toFixed(2), lo=p.coords.longitude.toFixed(2), d=R.start, z=n=>String(n).padStart(2,"0");
+      const ds=d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate());
+      const url="https://api.open-meteo.com/v1/forecast?latitude="+la+"&longitude="+lo+"&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m&wind_speed_unit=ms&timezone=auto&start_date="+ds+"&end_date="+ds;
+      const j=await (await fetch(url)).json();
+      const hh=Math.min(23,d.getHours()+(d.getMinutes()>=30?1:0)), i=j.hourly.time.findIndex(t=>+t.slice(11,13)===hh);
+      if(i<0) throw new Error("no hour");
+      R.wx={ws:j.hourly.wind_speed_10m[i],wg:j.hourly.wind_gusts_10m[i],dir:dirKo(j.hourly.wind_direction_10m[i])};
+      impRenderWx(R); impSaveRec(R,true); toast("바람 정보를 넣었습니다");
+    }catch(e){ toast("기상 정보를 가져오지 못했습니다"); }
+  },()=>toast("위치 권한이 없어 기상 조회를 못 했습니다"),{timeout:12000,maximumAge:600000});
+}
+
+// ---- 그림 (흰 바탕 — 보고서에도 그대로 씀) ----
+function cmap(v){ const st=[[0,0,4],[40,11,84],[101,21,110],[159,42,99],[212,72,66],[245,125,21],[250,193,39],[252,255,164]];
+  v=Math.max(0,Math.min(1,v))*(st.length-1); const i=Math.floor(Math.min(v,st.length-1.001)), f=v-i, a=st[i], b=st[i+1];
+  return [a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f]; }
+function figFrame(c,cv,title,L,T,W,H){ c.fillStyle="#fff"; c.fillRect(0,0,cv.width,cv.height);
+  c.fillStyle="#1d2939"; c.font="bold 20px 'Malgun Gothic',sans-serif"; c.textAlign="center"; c.fillText(title,L+W/2,30); c.textAlign="left"; }
+function axisX(c,L,T,W,H,x0,x1,lab){ c.strokeStyle="#344054"; c.lineWidth=1; c.strokeRect(L,T,W,H);
+  c.fillStyle="#344054"; c.font="15px 'Malgun Gothic',sans-serif"; c.textAlign="center";
+  const span=x1-x0, steps=[0.1,0.2,0.5,1,2,5,10,15,30,60,120], st=steps.find(s=>span/s<=8)||300;
+  for(let v=Math.ceil(x0/st)*st; v<=x1+1e-9; v+=st){ const x=L+(v-x0)/span*W; c.beginPath(); c.moveTo(x,T+H); c.lineTo(x,T+H+5); c.stroke();
+    c.fillText(st<1?v.toFixed(1):(span>120?fmtMS(v):String(Math.round(v))),x,T+H+22); }
+  c.fillText(lab,L+W/2,T+H+44); c.textAlign="left"; }
+function axisY(c,L,T,W,H,y0,y1,step,lab,fmt){ c.fillStyle="#344054"; c.font="15px 'Malgun Gothic',sans-serif"; c.textAlign="right";
+  for(let v=Math.ceil(y0/step)*step; v<=y1+1e-9; v+=step){ const y=T+H-(v-y0)/(y1-y0)*H; c.fillText(fmt?fmt(v):String(v),L-8,y+5);
+    c.strokeStyle="#eaecf0"; c.beginPath(); c.moveTo(L,y); c.lineTo(L+W,y); c.stroke(); }
+  c.save(); c.translate(22,T+H/2); c.rotate(-Math.PI/2); c.textAlign="center"; c.fillText(lab,0,0); c.restore(); c.textAlign="left"; }
+function impDrawMap(cv,R){
+  const c=cv.getContext("2d"), L=80,T=46,W=cv.width-110,H=cv.height-T-60, E=R.E, cols=E.specCols, m=E.specMeta;
+  figFrame(c,cv,"소리 높이 지도 — 빨간 화살표 = 울림 충격음",L,T,W,H);
+  if(!cols.length||!m) return;
+  const all=[]; for(let i=0;i<cols.length;i+=Math.max(1,(cols.length/400)|0)) for(let b=0;b<m.nb;b++) all.push(cols[i][b]);
+  all.sort((a,b)=>a-b); const hi=all[Math.floor(all.length*0.995)], lo=hi-55;
+  const img=c.createImageData(W,H);
+  for(let x=0;x<W;x++){ const i0=Math.floor(x/W*cols.length), i1=Math.max(i0+1,Math.floor((x+1)/W*cols.length));
+    for(let y=0;y<H;y++){ const b=Math.min(m.nb-1,Math.floor((H-1-y)/H*m.nb)); let v=-1e9;
+      for(let i=i0;i<i1&&i<cols.length;i++) if(cols[i][b]>v) v=cols[i][b];
+      const rgb=cmap((v-lo)/(hi-lo)), o=(y*W+x)*4; img.data[o]=rgb[0];img.data[o+1]=rgb[1];img.data[o+2]=rgb[2];img.data[o+3]=255; } }
+  c.putImageData(img,L,T);
+  axisX(c,L,T,W,H,0,R.dur,"시간 (초)");
+  c.fillStyle="#344054"; c.font="15px 'Malgun Gothic',sans-serif"; c.textAlign="right";
+  [500,1000,2000,4000,8000,16000].forEach(f=>{ if(f<m.fLo||f>m.fHi) return; const y=T+H-Math.log(f/m.fLo)/Math.log(m.fHi/m.fLo)*H; c.fillText(f>=1000?(f/1000)+"k":String(f),L-8,y+5); });
+  c.save(); c.translate(22,T+H/2); c.rotate(-Math.PI/2); c.textAlign="center"; c.fillText("소리 높이 (Hz)",0,0); c.restore(); c.textAlign="left";
+  c.fillStyle="#e53935"; R.ring.forEach(e=>{ const x=L+e.t/R.dur*W; c.beginPath(); c.moveTo(x,T+16); c.lineTo(x-5,T+4); c.lineTo(x+5,T+4); c.closePath(); c.fill(); c.fillRect(x-1,T-6,2,12); });
+}
+function impDrawTime(cv,R){
+  const c=cv.getContext("2d"), L=80,T=46,W=cv.width-110,H=cv.height-T-60, E=R.E, env=E.env, dt=E.envN/E.sr;
+  figFrame(c,cv,"순간 충격음 — 2~10kHz 대역, 평소보다 큰 정도",L,T,W,H);
+  const base=median(env.filter((v,i)=>i%5===0))||0, y0=-10, y1=Math.max(40,Math.ceil(((R.events.reduce((a,e)=>Math.max(a,e.h),0))+5)/10)*10);
+  axisY(c,L,T,W,H,y0,y1,10,"평소보다 큰 정도 (dB)");
+  c.strokeStyle="#667085"; c.lineWidth=1; c.beginPath();
+  for(let x=0;x<W;x++){ const i0=Math.floor(x/W*env.length), i1=Math.max(i0+1,Math.floor((x+1)/W*env.length)); let v=-1e9;
+    for(let i=i0;i<i1;i++) if(env[i]>v) v=env[i]; const y=T+H-(Math.max(y0,Math.min(y1,v-base))-y0)/(y1-y0)*H; x?c.lineTo(L+x,y):c.moveTo(L+x,y); }
+  c.stroke();
+  R.events.forEach(e=>{ const x=L+e.t/R.dur*W, y=T+H-(Math.max(y0,Math.min(y1,e.h))-y0)/(y1-y0)*H;
+    if(e.ring){ c.fillStyle="#dc2626"; c.beginPath(); c.arc(x,y,5,0,7); c.fill(); } else { c.fillStyle="#98a2b3"; c.fillRect(x-4,y-4,8,8); } });
+  axisX(c,L,T,W,H,0,R.dur,"시간 (초)");
+  c.font="14px 'Malgun Gothic',sans-serif"; c.fillStyle="#dc2626"; c.beginPath(); c.arc(L+14,T+16,5,0,7); c.fill();
+  c.fillStyle="#1d2939"; c.fillText("울림 남는 충격음 "+R.ring.length+"회",L+26,T+21);
+  c.fillStyle="#98a2b3"; c.fillRect(L+200,T+12,8,8); c.fillStyle="#1d2939"; c.fillText("울림 없는 짧은 소리 "+R.short.length+"회",L+214,T+21);
+}
+function impDrawZoom(cv,R){
+  const c=cv.getContext("2d"), L=80,T=46,W=cv.width-110,H=cv.height-T-60, E=R.E, sr=E.sr;
+  let g=R.groups.slice().sort((a,b)=>b.length-a.length)[0];
+  const t0=g?Math.max(0,g[0].t-0.15):Math.max(0,R.dur/2-0.75), span=1.5, t1=Math.min(R.dur,t0+span);
+  figFrame(c,cv,(t0).toFixed(1)+"초 부근 확대 — 부딪힐 때마다(세로 띠) 남는 울림",L,T,W,H);
+  const N=1024, hop=96, s0=Math.round(t0*sr), ns=Math.round((t1-t0)*sr), fMax=Math.min(12000,sr*0.45), kMax=Math.floor(fMax*N/sr);
+  const cols=[]; for(let s=s0;s+N<=s0+ns;s+=hop){ const p=powSpec(impSlice(E,s,N)); const col=new Float32Array(kMax); for(let k=0;k<kMax;k++) col[k]=10*Math.log10(p[k]+1e-20); cols.push(col); }
+  if(!cols.length) return;
+  const all=[]; cols.forEach(col=>{ for(let k=0;k<kMax;k+=4) all.push(col[k]); }); all.sort((a,b)=>a-b);
+  const hi=all[Math.floor(all.length*0.997)], lo=hi-55, img=c.createImageData(W,H);
+  for(let x=0;x<W;x++){ const col=cols[Math.min(cols.length-1,Math.floor(x/W*cols.length))];
+    for(let y=0;y<H;y++){ const k=Math.min(kMax-1,Math.floor((H-1-y)/H*kMax)); const rgb=cmap((col[k]-lo)/(hi-lo)), o=(y*W+x)*4;
+      img.data[o]=rgb[0];img.data[o+1]=rgb[1];img.data[o+2]=rgb[2];img.data[o+3]=255; } }
+  c.putImageData(img,L,T);
+  axisX(c,L,T,W,H,t0,t1,"시간 (초)");
+  c.fillStyle="#344054"; c.font="15px 'Malgun Gothic',sans-serif"; c.textAlign="right";
+  for(let f=0;f<=fMax;f+=2000){ const y=T+H-f/fMax*H; c.fillText((f/1000)+"k",L-8,y+5); } c.textAlign="left";
+  c.save(); c.translate(22,T+H/2); c.rotate(-Math.PI/2); c.textAlign="center"; c.fillText("소리 높이 (Hz)",0,0); c.restore(); c.textAlign="left";
+  if(R.hzMode){ const y=T+H-R.hzMode/fMax*H; c.setLineDash([4,4]); c.strokeStyle="#7ec8ff"; c.beginPath(); c.moveTo(L,y); c.lineTo(L+W,y); c.stroke(); c.setLineDash([]);
+    c.fillStyle="#175cd3"; c.font="bold 14px 'Malgun Gothic',sans-serif"; c.fillText(kHz(R.hzMode)+"k",L+W+4,y+5); }
+}
+function impDrawRing(cv,R){
+  const c=cv.getContext("2d"), L=80,T=46,W=cv.width-110,H=cv.height-T-60, E=R.E, N=2048, sr=E.sr;
+  figFrame(c,cv,"충격 뒤에 남는 울림의 높이 — 빨강=충격 직후, 회색=평소",L,T,W,H);
+  if(!E.ringN){ c.fillStyle="#667085"; c.font="16px 'Malgun Gothic',sans-serif"; c.fillText("울림 남는 충격음이 없습니다",L+20,T+40); c.strokeStyle="#344054"; c.strokeRect(L,T,W,H); return; }
+  const fLo=1000, fHi=Math.min(16000,sr*0.45,(topBin(E.ringPost,N,sr)+Math.round(300*N/sr))*sr/N), sm=(a,k)=>{ let s=0,n=0; for(let m=-2;m<=2;m++){ if(a[k+m]!=null){s+=a[k+m];n++;} } return s/n; };
+  const P=[],B=[]; for(let k=0;k<N/2;k++){ P.push(10*Math.log10(E.ringPost[k]/E.ringN+1e-20)); B.push(10*Math.log10(E.quietAvg[k]+1e-20)); }
+  const k0=Math.round(fLo*N/sr), k1=Math.round(fHi*N/sr), ref=sm(P,k0);
+  let mx=-1e9,mn=1e9; for(let k=k0;k<=k1;k++){ const a=sm(P,k)-ref,b=sm(B,k)-ref; mx=Math.max(mx,a,b); mn=Math.min(mn,a,b); }
+  const y1=Math.ceil((mx+12)/10)*10, y0=Math.floor(mn/10)*10;
+  axisY(c,L,T,W,H,y0,y1,10,"상대 크기 (dB)");
+  const X=f=>L+(f-fLo)/(fHi-fLo)*W, Y=v=>T+H-(v-y0)/(y1-y0)*H;
+  [[B,"#98a2b3"],[P,"#dc2626"]].forEach(pr=>{ c.strokeStyle=pr[1]; c.lineWidth=1.6; c.beginPath();
+    for(let k=k0;k<=k1;k++){ const x=X(k*sr/N), y=Y(sm(pr[0],k)-ref); k===k0?c.moveTo(x,y):c.lineTo(x,y); } c.stroke(); });
+  R.peaks.forEach(p=>{ const k=Math.round(p.hz*N/sr), x=X(p.hz), y=Y(sm(P,k)-ref);
+    c.strokeStyle="#344054"; c.lineWidth=1; c.beginPath(); c.moveTo(x,y-4); c.lineTo(x,y-16); c.stroke();
+    c.fillStyle="#1d2939"; c.font="bold 14px 'Malgun Gothic',sans-serif"; c.textAlign="center"; c.fillText("약 "+kHz(p.hz)+"kHz",x,y-21); c.textAlign="left"; });
+  axisX(c,L,T,W,H,fLo/1000,fHi/1000,"소리 높이 (kHz)");
+}
+
+// ---- 기록 · 원음 · 보고서 ----
+function impStamp(d){ const z=n=>String(n).padStart(2,"0"); return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+" "+z(d.getHours())+":"+z(d.getMinutes()); }
+function impSaveRec(R,update){
+  const rec={t:impStamp(R.start),memo:R.memo,dur:+R.dur.toFixed(0),max:R.LAFmax!=null?+R.LAFmax.toFixed(1):null,leq:R.LAeq!=null?+R.LAeq.toFixed(1):null,
+    l90:R.L90!=null?+R.L90.toFixed(1):null,ring:R.ring.length,short:R.short.length,rate:+R.rate.toFixed(0),hz:R.hzMode?+(R.hzMode/1000).toFixed(1):null,cal:R.cal,wx:R.wx};
+  if(update && impRecs[0] && impRecs[0].t===rec.t) impRecs[0]=rec; else { impRecs.unshift(rec); if(impRecs.length>30) impRecs.pop(); }
+  try{ localStorage.setItem(IMP_LS,JSON.stringify(impRecs)); }catch(e){}
+  impRenderRecs();
+}
+function impRenderRecs(){
+  const el=$("#impRecList");
+  if(!impRecs.length){ el.innerHTML='<div class="note">저장된 충격음 측정이 없습니다.</div>'; $("#impRecClear").classList.add("hidden"); return; }
+  el.innerHTML=impRecs.map(r=>'<div class="rec"><div class="recmain"><div class="recdesc'+(r.memo?'':' empty')+'">'+(r.memo?esc(r.memo):"메모 없음")+'</div>'+
+    '<div class="recdata"><span class="rv">'+r.ring+'회</span><span class="rt">'+r.t+' · '+Math.round(r.dur/60*10)/10+'분 · 분당 '+r.rate+' · '+(r.hz!=null?r.hz+'kHz':'—')+
+    ' · 최대 '+(r.max!=null?r.max:'--')+'dB'+(r.wx?' · 바람 '+r.wx.ws.toFixed(1)+'m/s':'')+'</span></div></div></div>').join("");
+  $("#impRecClear").classList.remove("hidden");
+}
+$("#impRecClear").onclick=()=>{ if(confirm("충격음 기록을 모두 삭제할까요?")){ impRecs=[]; try{ localStorage.setItem(IMP_LS,"[]"); }catch(e){} impRenderRecs(); } };
+function impFileStamp(d){ const z=n=>String(n).padStart(2,"0"); return d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+"_"+z(d.getHours())+z(d.getMinutes()); }
+function impWav(){
+  const R=impR; if(!R){ toast("먼저 측정을 마치세요"); return; }
+  const E=R.E, n=E.n, sr=E.sr, buf=new ArrayBuffer(44), v=new DataView(buf);
+  const ws=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
+  ws(0,"RIFF"); v.setUint32(4,36+n*2,true); ws(8,"WAVE"); ws(12,"fmt "); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); ws(36,"data"); v.setUint32(40,n*2,true);
+  const parts=[buf]; for(let i=0;i<E.chunks.length;i++){ const c=E.chunks[i], left=n-i*E.CH; if(left<=0) break; parts.push(left>=E.CH?c:c.subarray(0,left)); }
+  const blob=new Blob(parts,{type:"audio/wav"}), fname="충격음_원음_"+impFileStamp(R.start)+".wav";
+  const file=new File([blob],fname,{type:"audio/wav"});
+  if(navigator.canShare && navigator.canShare({files:[file]})){ navigator.share({files:[file],title:"충격음 원음"}).catch(()=>{}); return; }
+  const url=URL.createObjectURL(blob), a=document.createElement("a"); a.href=url; a.download=fname; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),8000); toast("원음을 저장했습니다");
+}
+function impReportHTML(R){
+  const f1=v=>v==null?"--":v.toFixed(1), img=id=>'<img src="'+$(id).toDataURL("image/jpeg",0.9)+'">';
+  const no="IR-"+impFileStamp(R.start).replace("_","-");
+  const wx=R.wx?(R.wx.ws.toFixed(1)+"m/s · 순간 "+R.wx.wg.toFixed(1)+"m/s · "+R.wx.dir+"풍"):"조회 안 함";
+  const evRows=R.events.slice(0,60).map((e,i)=>'<tr><td class="c">'+(i+1)+'</td><td class="c">'+fmtT(e.t)+'</td><td class="c">'+(e.laf!=null?e.laf.toFixed(1):"--")+
+    '</td><td class="c">+'+e.h.toFixed(0)+'</td><td class="c">'+(e.ring?kHz(e.hz):"—")+'</td><td class="c">'+(e.ring?e.dur.toFixed(2):"—")+'</td><td class="c">'+(e.ring?'<span class="no">울림</span>':'<span class="gr">딸깍</span>')+'</td></tr>').join("");
+  const band=R.camBand?(R.camBand[0].toFixed(1)+"~"+R.camBand[1].toFixed(1)+"kHz"):"—";
+  return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>충격음 측정 리포트</title><style>'+
+  '*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}@page{size:A4;margin:14mm 13mm}'+
+  'body{font-family:"Malgun Gothic",sans-serif;color:#1D2939;margin:0;font-size:13.5px;line-height:1.6}'+
+  '.cover{page-break-after:always}.en{font-size:13px;color:#667085;letter-spacing:3px}.title{font-family:"Batang","Noto Serif KR",serif;font-size:36px;font-weight:700;color:#101828;margin-top:10px}'+
+  '.bar{width:90px;border-top:5px solid #0A6B5C;margin:16px auto}.sub{font-size:14px;color:#0A6B5C;font-weight:700}.foot{text-align:center;font-size:12px;color:#667085;border-top:1px solid #D0D5DD;padding-top:8px}'+
+  '.page{page-break-before:always}.cover+.page{page-break-before:auto}.h2{font-size:17px;font-weight:700;color:#0A6B5C;border-bottom:2px solid #0A6B5C;padding-bottom:4px;margin:13px 0 6px;page-break-after:avoid}'+
+  'table.kv{width:100%;border-collapse:collapse}table.kv th{width:24%;background:#E9ECEF;border:1px solid #D0D5DD;padding:7px 9px;font-size:13px;color:#344054;text-align:left;vertical-align:top}'+
+  'table.kv td{border:1px solid #D0D5DD;padding:6px 9px;font-size:13.5px;vertical-align:top}table.cards{width:100%;border-collapse:separate;border-spacing:6px}'+
+  'table.cards td{width:25%;text-align:center;padding:9px 6px;border-radius:6px}table.cards .l{font-size:13px;font-weight:700}table.cards .n{font-size:26px;font-weight:800;line-height:1.25}table.cards .s{font-size:12px}'+
+  'table.tbl{width:100%;border-collapse:collapse}table.tbl th{background:#E7F1EA;border:1px solid #D0D5DD;padding:5px;font-size:12px}table.tbl td{border:1px solid #D0D5DD;padding:4px 8px;font-size:12.5px}table.tbl td.c{text-align:center}'+
+  '.no{background:#FEE4E2;color:#B42318;font-weight:700;font-size:12px;padding:1px 7px}.gr{background:#F2F4F7;color:#475467;font-weight:700;font-size:12px;padding:1px 7px}'+
+  '.box{border:1px solid #D0D5DD;padding:10px 12px;font-size:13.5px;line-height:1.85}.item{border:1.5px solid #0A6B5C;margin-bottom:8px;page-break-inside:avoid}'+
+  '.ih{background:#E7F1EA;border-top:4px solid #0A6B5C;padding:6px 10px;color:#0A6B5C;font-size:14px;font-weight:700}.item img{display:block;width:calc(100% - 16px);margin:8px}'+
+  '.legal{text-align:center;font-size:12px;color:#667085;border-top:1px solid #E8ECF1;padding-top:6px;margin-top:8px}</style></head><body>'+
+  '<div class="cover"><table><tr><td style="width:70px"><img src="'+LOGO_URI+'" style="height:60px"></td><td style="font-size:16px;color:#0A6B5C"><b>청개구리샤시</b></td></tr></table>'+
+  '<div style="height:140px"></div><div style="text-align:center"><div class="en">IMPACT NOISE REPORT</div><div class="title">충격음 측정 리포트</div><div class="bar"></div><div class="sub">바람에 부딪히는 소리 · 금속 울림 측정</div></div>'+
+  '<div style="height:100px"></div><table class="kv"><tr><th>현장·조건</th><td><b>'+esc(R.memo||"—")+'</b></td></tr><tr><th>측정 일시</th><td>'+impStamp(R.start)+'</td></tr>'+
+  '<tr><th>측정 시간</th><td>'+fmtMS(R.dur)+' (분:초)</td></tr><tr><th>측정 시각 바람</th><td>'+wx+'</td></tr><tr><th>기기 보정</th><td>'+(R.cal===0?"보정 안 함 (dB 절대값은 참고용)":"보정함 (오프셋 "+R.cal.toFixed(1)+"dB)")+'</td></tr>'+
+  '<tr><th>측정 도구</th><td>청개구리샤시 소음측정기 v1.28 · 충격음측정기</td></tr><tr><th>리포트 번호</th><td>'+no+'</td></tr></table>'+
+  '<div style="height:110px"></div><div class="foot">청개구리샤시 · 전화 010-2322-0949 · frogsash.co.kr</div></div>'+
+  '<div class="page"><div class="h2">1. 측정 요약</div><table class="cards"><tr>'+
+  '<td style="background:#FEE4E2"><div class="l" style="color:#B42318">울림 충격음</div><div class="n" style="color:#B42318">'+R.ring.length+'회</div><div class="s" style="color:#B42318">1분에 약 '+R.rate.toFixed(0)+'회</div></td>'+
+  '<td style="background:#FEF0C7"><div class="l" style="color:#B54708">가장 강한 울림 높이</div><div class="n" style="color:#B54708">'+(R.hzMode?kHz(R.hzMode)+'kHz':'—')+'</div><div class="s" style="color:#B54708">울림 길이 중앙 '+(R.durMed!=null?R.durMed.toFixed(2)+'초':'—')+'</div></td>'+
+  '<td style="background:#E0EAFF"><div class="l" style="color:#175CD3">순간 최대</div><div class="n" style="color:#175CD3">'+f1(R.LAFmax)+'</div><div class="s" style="color:#175CD3">LAFmax dB(A)</div></td>'+
+  '<td style="background:#F2F4F7"><div class="l" style="color:#344054">평균 · 바탕</div><div class="n" style="color:#101828">'+f1(R.LAeq)+'</div><div class="s" style="color:#344054">LAeq · L90 '+f1(R.L90)+'</div></td></tr></table>'+
+  '<div class="h2">2. 측정 결과</div><div class="box">'+impVerdict(R)+'</div>'+
+  '<div class="h2">3. 측정값</div><table class="kv"><tr><th>순간 최대 (LAFmax)</th><td>'+f1(R.LAFmax)+' dB(A)</td></tr><tr><th>평균 (LAeq)</th><td>'+f1(R.LAeq)+' dB(A)</td></tr>'+
+  '<tr><th>바탕 소음 (L90)</th><td>'+f1(R.L90)+' dB(A)</td></tr><tr><th>충격음</th><td>울림 남음 '+R.ring.length+'회 · 울림 없는 짧은 소리 '+R.short.length+'회</td></tr>'+
+  '<tr><th>묶음</th><td>'+R.groups.length+'번 (한 번에 '+(R.groups.length?Math.min.apply(null,R.groups.map(g=>g.length))+'~'+Math.max.apply(null,R.groups.map(g=>g.length)):'—')+'회)</td></tr>'+
+  '<tr><th>바탕보다 큰 정도</th><td>울림 충격음이 바탕(L90)보다 중앙 '+(R.riseMed!=null?R.riseMed.toFixed(0):'--')+'dB · 최대 '+(R.riseMax!=null?R.riseMax.toFixed(0):'--')+'dB 큽니다.</td></tr>'+
+  '<tr><th>음향카메라 권장 대역</th><td>'+band+'</td></tr></table></div>'+
+  '<div class="page"><div class="h2">4. 소리 그림</div><div class="item"><div class="ih">① 소리 높이 지도</div>'+img("#ifMap")+'</div><div class="item"><div class="ih">② 순간 충격음 시간표</div>'+img("#ifTime")+'</div></div>'+
+  '<div class="page"><div class="item"><div class="ih">③ 가장 많이 부딪힌 구간 확대</div>'+img("#ifZoom")+'</div><div class="item"><div class="ih">④ 충격 뒤에 남는 울림의 높이</div>'+img("#ifRing")+'</div></div>'+
+  '<div class="page"><div class="h2">5. 충격음 목록'+(R.events.length>60?' (앞 60개)':'')+'</div><table class="tbl"><tr><th>#</th><th>시각</th><th>LAF dB</th><th>바탕+dB</th><th>울림 kHz</th><th>울림 초</th><th>구분</th></tr>'+evRows+'</table>'+
+  '<div class="h2">6. 측정 방법</div><table class="kv"><tr><th>레벨</th><td>A가중 · Fast(0.125초)로 LAFmax · LAeq · L90을 계산합니다.</td></tr>'+
+  '<tr><th>충격음</th><td>2~10kHz 소리가 평소보다 20dB 넘게 튄 순간입니다. 0.04초 안에 이어진 튐은 한 번으로 셉니다.</td></tr>'+
+  '<tr><th>울림 판정</th><td>충격 직후 가장 솟은 높이가 앞 0.5초보다 6dB 넘게 0.04초 이상 남으면 울림으로 봅니다.</td></tr>'+
+  '<tr><th>실내 기준</th><td>공동주택 실내 소음 45dB(A) 이하 · WHO 거실 35 · 침실 30dB(A). 보정한 기기에서만 비교합니다.</td></tr></table>'+
+  '<div class="legal">※ 태블릿·휴대폰 마이크로 잰 참고 자료입니다. 공인 시험이 아니며, 소리 나는 위치는 이 측정으로 알 수 없습니다.</div></div></body></html>';
+}
+function impPdf(){
+  const R=impR; if(!R){ toast("먼저 측정을 마치세요"); return; }
+  const html=impReportHTML(R);
+  let ifr=document.getElementById("__impFrame"); if(ifr) ifr.remove();
+  ifr=document.createElement("iframe"); ifr.id="__impFrame"; ifr.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
+  document.body.appendChild(ifr); const d=ifr.contentWindow.document; d.open(); d.write(html); d.close();
+  let printed=false; const go=()=>{ if(printed)return; printed=true; try{ ifr.contentWindow.focus(); ifr.contentWindow.print(); }catch(e){ toast("인쇄 대화상자를 열 수 없습니다"); } };
+  ifr.onload=()=>setTimeout(go,500); setTimeout(go,1200);
+}
+$("#impStart").onclick=impStartClick;
+$("#impStop").onclick=()=>impEnd(false);
+$("#impCancel").onclick=impCancel;
+$("#irWxBtn").onclick=impWeather;
+$("#irWav").onclick=impWav;
+$("#irPdf").onclick=impPdf;
+impRenderRecs();
 </script>
 </body>
 </html>
