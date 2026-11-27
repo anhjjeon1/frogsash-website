@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>청개구리샤시 · 소음측정기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<meta name="theme-color" content="#0a0e0c">
 <style>
 :root{
   --bg:#0e1512; --card:#161f1b; --card2:#1c2823; --line:#2a3833;
@@ -235,6 +237,90 @@ details>summary::before{content:"⚙ ";}
 .wxline{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--dim);padding:7px 2px 2px;min-height:30px}
 .wxline b{color:var(--txt)}
 .wxline button{margin-left:auto;flex:none;background:none;border:1px solid var(--line);color:var(--dim);border-radius:8px;padding:2px 10px;font-size:14px}
+
+/* =====================================================================
+   v1.38 디자인 — 계기판(Instrument) 스타일: 깊은 숯색 바탕, 숫자 우선, 상태색(초록·노랑·빨강)
+   기존 규칙 뒤에 두어 덮어씀 (요소 id·동작은 그대로)
+   ===================================================================== */
+:root{
+  --bg:#0a0e0c; --card:#111715; --card2:#0c1110; --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.12);
+  --txt:#eef5f1; --dim:#8a9b93; --accent:#34d399; --accent2:#10b981; --warn:#fbbf24; --bad:#f87171;
+  --ok:#34d399; --amber:#fbbf24; --red:#f87171; --imp:#fb923c;
+}
+html,body{background:radial-gradient(120% 60% at 50% -10%,#14211b 0%,var(--bg) 55%) fixed,var(--bg);
+  font-family:"Pretendard Variable",Pretendard,-apple-system,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;letter-spacing:-.15px}
+body{padding:0 10px 36px}
+header{position:sticky;top:0;z-index:50;margin:0 -10px;padding:12px 12px 10px;
+  background:rgba(10,14,12,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+header .logo{width:30px;height:30px;border-radius:9px;box-shadow:0 0 0 1px rgba(52,211,153,.35),0 4px 14px rgba(16,185,129,.35)}
+header h1{font-size:16.5px;font-weight:800}
+header .badge{background:rgba(255,255,255,.04);border-color:var(--line2);font-weight:700}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0)) ,var(--card);border:1px solid var(--line);
+  border-radius:18px;box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px rgba(0,0,0,.25);margin:10px 0}
+.sec-title{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--dim);letter-spacing:.6px;margin:20px 4px 4px}
+.sec-title::before{content:"";width:4px;height:12px;border-radius:2px;background:var(--accent)}
+#impactMode .sec-title::before{background:var(--imp)}
+
+/* 상단 선택: 하나의 세그먼트 컨트롤 */
+.modebar{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px;margin:10px 0 2px}
+.modebar button{border:none;background:transparent;border-radius:11px;padding:8px 6px 7px;transition:background .15s,color .15s}
+.modebar button.on{background:rgba(52,211,153,.14);color:#a7f3d0;box-shadow:0 0 0 1px rgba(52,211,153,.45) inset}
+.modebar button.on.imp{background:rgba(251,146,60,.15);color:#fed7aa;box-shadow:0 0 0 1px rgba(251,146,60,.5) inset}
+
+/* 입력칸 */
+.txtin,.descin,.umemo,input[type=number]{background:var(--card2)!important;border:1px solid var(--line2)!important;border-radius:11px;color:var(--txt);transition:border-color .15s,box-shadow .15s}
+.txtin:focus,.descin:focus,.umemo:focus,input[type=number]:focus{outline:none;border-color:var(--accent)!important;box-shadow:0 0 0 3px rgba(52,211,153,.18)}
+#impactMode .txtin:focus,#impactMode .umemo:focus{border-color:var(--imp)!important;box-shadow:0 0 0 3px rgba(251,146,60,.18)}
+
+/* 버튼 */
+button{letter-spacing:-.2px}
+.b-main,.b-wide{background:linear-gradient(180deg,#3ee0a5,#10b981);color:#04130c;border-radius:14px;font-weight:800;
+  box-shadow:0 8px 22px rgba(16,185,129,.28),0 1px 0 rgba(255,255,255,.35) inset}
+#impactMode .b-main,#impactMode .b-wide{background:linear-gradient(180deg,#fdba74,#f97316);color:#1c0a02;box-shadow:0 8px 22px rgba(249,115,22,.28),0 1px 0 rgba(255,255,255,.35) inset}
+#impStart{padding:15px 10px;font-size:17px}
+.b-sec{background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:14px}
+.b-ghost{border-radius:12px;border-color:var(--line2)}
+.seg{border-color:var(--line2);border-radius:11px;background:var(--card2)}
+.seg button.on{background:var(--accent);color:#04130c}
+#impactMode .seg button.on{background:var(--imp);color:#1c0a02}
+
+/* 소음측정기 쪽 */
+.phasebar button{border-radius:14px;border-color:var(--line2);background:var(--card)}
+.srcrow button{border-radius:10px;border-color:var(--line2);background:var(--card2)}
+.srcrow button.on{background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.6);color:#a7f3d0}
+.stats .s,.istats .s{background:var(--card2);border:1px solid var(--line);border-radius:13px}
+.stats .s .v,.istats .s .v{font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.istats .s.hot .v{color:#fdba74}
+canvas{background:var(--card2);border:1px solid var(--line)}
+.gauge-center .big{font-variant-numeric:tabular-nums}
+
+/* 충격음 계기판 */
+#impReadout{padding:16px 16px 14px!important;text-align:left}
+#impReadout .state{text-align:center;font-size:12.5px;letter-spacing:.4px}
+.ihero{display:flex;align-items:baseline;justify-content:center;gap:6px;margin:6px 0 10px}
+.ihv{font-size:64px;font-weight:800;line-height:1;letter-spacing:-2.5px;font-variant-numeric:tabular-nums;color:var(--txt);transition:color .2s}
+.ihv.g{color:var(--ok)} .ihv.y{color:var(--amber)} .ihv.r{color:var(--red)}
+.ihu{font-size:15px;font-weight:700;color:var(--dim)}
+.lvbar{position:relative;height:10px;border-radius:6px;background:linear-gradient(90deg,rgba(52,211,153,.18) 0 25%,rgba(251,191,36,.18) 25% 58%,rgba(248,113,113,.18) 58% 100%);overflow:visible}
+.lvbar i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:6px;transition:width .2s ease-out,background .2s}
+.lvbar b{position:absolute;top:-3px;width:3px;height:16px;border-radius:2px;background:#fff;opacity:0;transform:translateX(-1px);transition:left .2s}
+.lvscale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--dim);margin:4px 1px 12px;font-variant-numeric:tabular-nums}
+.istats.five{grid-template-columns:repeat(5,1fr);gap:6px}
+.istats.five .s{padding:7px 2px}
+.istats.five .s .k{font-size:10.5px}
+.istats.five .s .v{font-size:18px}
+
+/* 결과·사진·날씨 */
+.iverd{background:rgba(251,146,60,.07);border:1px solid rgba(251,146,60,.25);border-left:3px solid var(--imp);border-radius:13px}
+.uslot{background:var(--card2);border:1px solid var(--line);border-radius:14px}
+.uslot .upic{border:1.5px dashed rgba(251,146,60,.35);background:rgba(255,255,255,.015)}
+.uslot.best{border-color:var(--imp);box-shadow:0 0 0 1px rgba(251,146,60,.35)}
+.wxline{background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:7px 8px 7px 10px;margin-top:6px}
+.ifig{border:1px solid var(--line)}
+.rec{border-bottom-color:var(--line)}
+.toast{background:#18211d;border-color:var(--line2);border-radius:14px}
+.count{background:rgba(10,14,12,.94);border-radius:18px}
+#impactMode .count .n{color:var(--imp)}
 .hidden{display:none!important}
 </style>
 </head>
@@ -246,7 +332,7 @@ details>summary::before{content:"⚙ ";}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.37</div>
+  <div class="badge" id="verBadge">v1.38</div>
 </header>
 
 <div id="toast" class="toast"></div>
@@ -465,13 +551,15 @@ details>summary::before{content:"⚙ ";}
 
   <div class="card readout live" id="impReadout" style="padding:14px">
     <div class="state" id="impState">측정 대기</div>
-    <div class="istats" style="margin-top:10px">
+    <div class="ihero"><span class="ihv" id="impNow">--</span><span class="ihu">dB(A)</span></div>
+    <div class="lvbar"><i id="impBar"></i><b id="impPeak"></b></div>
+    <div class="lvscale"><span>30</span><span>45</span><span>60</span><span>75</span><span>90</span></div>
+    <div class="istats five">
       <div class="s"><div class="k">경과</div><div class="v" id="impEl">--</div></div>
-      <div class="s"><div class="k">지금</div><div class="v" id="impNow">--<small>dB</small></div></div>
-      <div class="s"><div class="k">최대</div><div class="v" id="impMax">--<small>dB</small></div></div>
+      <div class="s"><div class="k">최대</div><div class="v" id="impMax">--</div></div>
       <div class="s hot"><div class="k">충격음</div><div class="v" id="impCnt">--</div></div>
       <div class="s hot"><div class="k">1분당</div><div class="v" id="impRing">--</div></div>
-      <div class="s"><div class="k">남은 시간</div><div class="v" id="impLeft">--</div></div>
+      <div class="s"><div class="k">남은</div><div class="v" id="impLeft">--</div></div>
     </div>
     <div class="count" id="impCount">
       <div class="n" id="impCountN">5</div>
@@ -1584,7 +1672,13 @@ function impAttach(){
   impProc.onaudioprocess=e=>{ if(imp&&imp.running) impPush(imp.E,e.inputBuffer.getChannelData(0)); };
 }
 function impUiReset(){ ["#impEl","#impLeft","#impCnt","#impRing"].forEach(s=>$(s).textContent="--");
-  $("#impNow").innerHTML="--<small>dB</small>"; $("#impMax").innerHTML="--<small>dB</small>"; }
+  $("#impNow").textContent="--"; $("#impMax").textContent="--"; impBar(null,null); }
+// 레벨 막대: 30~90dB 구간, 45dB 아래 초록 · 65dB 아래 노랑 · 그 위 빨강, 흰 눈금 = 최대
+function impBar(L,mx){ const pct=v=>Math.max(0,Math.min(100,(v-30)/60*100)), b=$("#impBar"), k=$("#impPeak");
+  if(L==null){ b.style.width="0%"; k.style.left="0%"; k.style.opacity=0; $("#impNow").className="ihv"; return; }
+  b.style.width=pct(L)+"%"; b.style.background=L<45?"var(--ok)":(L<65?"var(--amber)":"var(--red)");
+  $("#impNow").className="ihv "+(L<45?"g":(L<65?"y":"r"));
+  if(mx!=null){ k.style.left=pct(mx)+"%"; k.style.opacity=1; } }
 function impStartClick(){
   if(!ac){ toast("먼저 마이크를 켜세요"); return; }
   if(impBusy()) return;
@@ -1606,8 +1700,9 @@ function impBegin(tk){
     let mx=null; for(let i=Math.max(0,(E._mxI||0));i<E.laf.length;i++){ const v=E.laf[i]; if(v!=null&&(mx===null||v>mx)) mx=v; }
     E._mxI=E.laf.length; if(mx!=null) E._mx=Math.max(E._mx==null?-1e9:E._mx,mx);
     $("#impEl").textContent=fmtMS(el); $("#impLeft").textContent=fmtMS(total-el);
-    if(last!=null) $("#impNow").innerHTML=last.toFixed(0)+"<small>dB</small>";
-    if(E._mx!=null) $("#impMax").innerHTML=E._mx.toFixed(0)+"<small>dB</small>";
+    if(last!=null) $("#impNow").textContent=last.toFixed(0);
+    if(E._mx!=null) $("#impMax").textContent=E._mx.toFixed(0);
+    if(last!=null) impBar(last,E._mx);
     $("#impCnt").textContent=E.events.length+E.pending.length+(E.cur?1:0);
     $("#impRing").textContent=el>=10?Math.round((E.events.length+E.pending.length)/(el/60)):"--";
     if(el>=total) impEnd(true);
@@ -1867,7 +1962,7 @@ function impReportHTML(R){
   '<tr><th>실내 기준</th><td>공동주택 실내 소음 45dB(A) 이하 · WHO 거실 35 · 침실 30dB(A). 보정한 기기에서만 비교합니다.</td></tr></table>'+
   '<div class="legal">※ 태블릿·휴대폰 마이크로 잰 참고 자료입니다. 공인 시험이 아니며, 소리 나는 위치는 이 측정으로 알 수 없습니다.</div></div>'+uReportHTML(7)+'</body></html>';
 }
-const METER_VER="v1.37";
+const METER_VER="v1.38";
 function impHead(title){
   return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+title+'</title><style>'+
   '*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}@page{size:A4;margin:14mm 13mm}'+
