@@ -325,6 +325,13 @@ canvas{background:var(--card2);border:1px solid var(--line)}
 #impactMode .count .n{color:var(--imp)}
 
 /* v1.41 — 전체 위아래 여백 축소(촘촘하게) */
+/* v1.43 — 초음파카메라 사진 칸 낮게 */
+.uslot .upic{aspect-ratio:16/9;font-size:20px}
+.uslot{padding:4px}
+.uslot .uh{margin-bottom:3px}
+.uslot .umemo{margin-top:3px;padding:4px 7px}
+#uAi{margin-top:8px!important}
+#uPdf{margin-top:6px!important}
 .modebar button{padding:9px 6px}
 #segImpMin button{padding:6px 12px}
 header{padding:9px 12px 8px}
@@ -369,7 +376,7 @@ details>summary{padding:2px 0}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.42</div>
+  <div class="badge" id="verBadge">v1.43</div>
 </header>
 
 <div id="toast" class="toast"></div>
@@ -612,9 +619,9 @@ details>summary{padding:2px 0}
   <button class="b-ghost hidden" id="impCancel" style="width:100%;margin-top:10px">측정 취소</button>
 
   <div class="sec-title">초음파카메라 사진</div>
-  <div class="card" style="padding:10px">
+  <div class="card" style="padding:8px">
     <div class="ugrid" id="uGrid"></div>
-    <div class="mini" style="margin-top:8px">피크 홀드 · 바람 셀 때 · 측정 결과의 권장 대역으로 찍은 사진</div>
+    <div class="mini" style="margin-top:5px">피크 홀드 · 바람 셀 때 · 측정 결과의 권장 대역으로 찍은 사진</div>
     <button class="b-main" id="uAi" style="width:100%;margin-top:10px">🤖 AI 판독</button>
     <button class="b-sec" id="uPdf" style="width:100%;margin-top:8px">📄 보고서 PDF</button>
     <div class="iverd hidden" id="uSum" style="margin-top:10px"></div>
@@ -2000,7 +2007,7 @@ function impReportHTML(R){
   '<tr><th>실내 기준</th><td>공동주택 실내 소음 45dB(A) 이하 · WHO 거실 35 · 침실 30dB(A). 보정한 기기에서만 비교합니다.</td></tr></table>'+
   '<div class="legal">※ 태블릿·휴대폰 마이크로 잰 참고 자료입니다. 공인 시험이 아니며, 소리 나는 위치는 이 측정으로 알 수 없습니다.</div></div>'+uReportHTML(7)+'</body></html>';
 }
-const METER_VER="v1.42";
+const METER_VER="v1.43";
 function impHead(title){
   return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+title+'</title><style>'+
   '*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}@page{size:A4;margin:14mm 13mm}'+
