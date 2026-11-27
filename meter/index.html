@@ -229,6 +229,11 @@ details>summary::before{content:"⚙ ";}
 .uslot .uok button.on.y{background:#123a24;border-color:var(--accent);color:#7fe0a8}
 .uslot .uok button.on.n{background:#3a1712;border-color:var(--bad);color:#f0a093}
 .uslot.best{border-color:#e0954a}
+/* v1.34 주소·위치 작은 글씨 + 날씨 한 줄 */
+.txtin.sm{font-size:13px;padding:9px 10px;border-radius:10px}
+.wxline{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--dim);padding:7px 2px 2px;min-height:30px}
+.wxline b{color:var(--txt)}
+.wxline button{margin-left:auto;flex:none;background:none;border:1px solid var(--line);color:var(--dim);border-radius:8px;padding:2px 10px;font-size:14px}
 .hidden{display:none!important}
 </style>
 </head>
@@ -240,7 +245,7 @@ details>summary::before{content:"⚙ ";}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.33</div>
+  <div class="badge" id="verBadge">v1.34</div>
 </header>
 
 <div id="toast" class="toast"></div>
@@ -450,10 +455,11 @@ details>summary::before{content:"⚙ ";}
       <div class="lab">측정 시간</div>
       <div class="seg" id="segImpMin"><button data-v="3">3분</button><button data-v="5">5분</button><button data-v="10">10분</button></div>
     </div>
-    <div style="display:flex;gap:6px;margin:6px 0 4px">
-      <input id="impAddr" class="txtin" type="text" maxlength="60" placeholder="현장 주소" style="flex:1.7;min-width:0">
-      <input id="impMemo" class="txtin" type="text" maxlength="40" placeholder="위치 (예: 거실 창)" style="flex:1;min-width:0">
+    <div style="display:flex;gap:6px;margin:6px 0 0">
+      <input id="impAddr" class="txtin sm" type="text" maxlength="60" placeholder="현장 주소" style="flex:1.7;min-width:0">
+      <input id="impMemo" class="txtin sm" type="text" maxlength="40" placeholder="위치 (예: 거실 창)" style="flex:1;min-width:0">
     </div>
+    <div class="wxline"><span id="wxTxt"></span><button id="wxBtn" title="날씨 다시 불러오기">↻</button></div>
   </div>
 
   <div class="card readout live" id="impReadout" style="padding:14px">
@@ -477,12 +483,6 @@ details>summary::before{content:"⚙ ";}
     <button class="b-sec hidden" id="impStop">측정 끝내기</button>
   </div>
   <button class="b-ghost hidden" id="impCancel" style="width:100%;margin-top:10px">측정 취소</button>
-
-  <div class="sec-title">외부 날씨 (측정 시각)</div>
-  <div class="card" style="padding:12px">
-    <div id="wxBox"></div>
-    <button class="b-ghost" id="wxBtn" style="width:100%;margin-top:8px">🌤️ 날씨 다시 불러오기</button>
-  </div>
 
   <div class="sec-title">초음파카메라 사진</div>
   <div class="card" style="padding:10px">
@@ -1690,26 +1690,25 @@ async function wxFetch(d){
 function wxStr(w){ if(!w) return "조회 안 됨";
   const f=v=>v==null?"--":(+v).toFixed(1);
   return f(w.temp)+"℃ · 습도 "+(w.rh==null?"--":Math.round(w.rh))+"% · 바람 "+f(w.ws)+"m/s (순간 "+f(w.wg)+") · "+w.dir+"풍"+(w.sky?" · "+w.sky:""); }
-function wxRender(){
-  const w=impWx, f=v=>v==null?"--":(+v).toFixed(1), box=$("#wxBox");
-  if(!w){ box.innerHTML='<div class="mini">측정이 끝나면 측정 시각의 날씨가 자동으로 들어갑니다. 주소가 없으면 기기 위치를 씁니다.</div>'; return; }
-  box.innerHTML='<div class="istats">'+
-    '<div class="s"><div class="k">기온</div><div class="v">'+f(w.temp)+'<small>℃</small></div></div>'+
-    '<div class="s"><div class="k">습도</div><div class="v">'+(w.rh==null?"--":Math.round(w.rh))+'<small>%</small></div></div>'+
-    '<div class="s"><div class="k">날씨</div><div class="v" style="font-size:18px">'+(w.sky||"--")+'</div></div>'+
-    '<div class="s hot"><div class="k">바람</div><div class="v">'+f(w.ws)+'<small>m/s</small></div></div>'+
-    '<div class="s hot"><div class="k">순간 최대</div><div class="v">'+f(w.wg)+'<small>m/s</small></div></div>'+
-    '<div class="s"><div class="k">풍향</div><div class="v" style="font-size:18px">'+w.dir+'</div></div></div>'+
-    '<div class="mini" style="margin-top:8px">기준 '+esc(w.t.slice(0,10))+' '+esc(w.hour)+' · '+esc(w.src)+' · 격자 계산값(바람은 지상 10m, 고층은 더 셀 수 있음)</div>'; }
+// 위치 칸 아래 한 줄: 온도 · 습도 · 풍속 (측정 전엔 지금, 측정 후엔 측정 시각 기준)
+function wxRender(msg){
+  const w=impWx, f=v=>v==null?"--":(+v).toFixed(1), el=$("#wxTxt");
+  if(msg){ el.innerHTML=msg; return; }
+  if(!w){ el.innerHTML="주소를 넣으면 날씨가 나옵니다"; return; }
+  el.innerHTML='🌤️ <b>'+f(w.temp)+'℃</b> · 습도 <b>'+(w.rh==null?"--":Math.round(w.rh))+'%</b> · 풍속 <b>'+f(w.ws)+'m/s</b> <span style="opacity:.7">('+esc(w.hour)+(impR&&impR.wx===w?' 측정':'')+')</span>'; }
 async function wxAuto(d,quiet){
-  $("#wxBox").innerHTML='<div class="mini">날씨 불러오는 중…</div>';
+  wxRender("날씨 불러오는 중…");
   try{ impWx=await wxFetch(d);
     if(impR && impR.start===d){ impR.wx=impWx; impSaveRec(impR,true); }
     wxRender(); if(!quiet) toast("날씨를 넣었습니다");
-  }catch(e){ wxRender(); toast(e.message); } }
+  }catch(e){ wxRender(quiet?"날씨를 못 가져왔습니다":null); if(!quiet) toast(e.message); } }
+function wxWhen(){ return impR?impR.start:(uPhotoTime||new Date()); }
+let wxDeb=null;
 $("#impAddr").value=cfg.impAddr||"";
-$("#impAddr").oninput=()=>{ cfg.impAddr=$("#impAddr").value; saveCfg(); };
-$("#wxBtn").onclick=()=>wxAuto(impR?impR.start:(uPhotoTime||new Date()),false);
+$("#impAddr").oninput=()=>{ cfg.impAddr=$("#impAddr").value; saveCfg();
+  clearTimeout(wxDeb); if(cfg.impAddr.trim().length>=4) wxDeb=setTimeout(()=>wxAuto(wxWhen(),true),1200); };
+$("#wxBtn").onclick=()=>wxAuto(wxWhen(),false);
+if((cfg.impAddr||"").trim().length>=4) setTimeout(()=>wxAuto(wxWhen(),true),300);
 
 // ---- 그림 (흰 바탕 — 보고서에도 그대로 씀) ----
 function cmap(v){ const st=[[0,0,4],[40,11,84],[101,21,110],[159,42,99],[212,72,66],[245,125,21],[250,193,39],[252,255,164]];
@@ -1867,7 +1866,7 @@ function impReportHTML(R){
   '<tr><th>실내 기준</th><td>공동주택 실내 소음 45dB(A) 이하 · WHO 거실 35 · 침실 30dB(A). 보정한 기기에서만 비교합니다.</td></tr></table>'+
   '<div class="legal">※ 태블릿·휴대폰 마이크로 잰 참고 자료입니다. 공인 시험이 아니며, 소리 나는 위치는 이 측정으로 알 수 없습니다.</div></div>'+uReportHTML(7)+'</body></html>';
 }
-const METER_VER="v1.33";
+const METER_VER="v1.34";
 function impHead(title){
   return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+title+'</title><style>'+
   '*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}@page{size:A4;margin:14mm 13mm}'+
