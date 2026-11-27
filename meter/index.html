@@ -280,6 +280,7 @@ button{letter-spacing:-.2px}
 #impStart{padding:11px 10px;font-size:16px}
 #impReset{flex:1;padding:11px 8px;font-size:15px}
 #impStart.hidden ~ #impReset{display:none}
+#impactMode .btns:has(#impStart.hidden) ~ #impFileBtn{display:none}
 .b-sec{background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:14px}
 .b-ghost{border-radius:12px;border-color:var(--line2)}
 .seg{border-color:var(--line2);border-radius:11px;background:var(--card2)}
@@ -376,7 +377,7 @@ details>summary{padding:2px 0}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.44</div>
+  <div class="badge" id="verBadge">v1.45</div>
 </header>
 
 <div id="toast" class="toast"></div>
@@ -617,6 +618,8 @@ details>summary{padding:2px 0}
     <button class="b-sec hidden" id="impStop">측정 끝내기</button>
   </div>
   <button class="b-ghost hidden" id="impCancel" style="width:100%;margin-top:10px">측정 취소</button>
+  <button class="b-ghost" id="impFileBtn" style="width:100%;margin-top:7px">📂 영상·녹음 파일로 분석</button>
+  <input type="file" id="impFile" accept="video/*,audio/*,.mp4,.m4a,.wav,.mp3,.aac,.3gp" class="hidden">
 
   <div class="sec-title">초음파카메라 사진</div>
   <div class="card" style="padding:8px">
@@ -1528,7 +1531,7 @@ const IMP_LS=LS+"_imp";
 let impRecs=[]; try{ impRecs=JSON.parse(localStorage.getItem(IMP_LS)||"[]"); }catch(e){ impRecs=[]; }
 if(![1,3,5].includes(cfg.impMin)) cfg.impMin=5;
 cfg.appMode="impact"; // 앱을 열면 항상 충격음측정기부터
-let imp=null, impProc=null, impSink=null, impUi=null, impR=null, impTok=0;
+let imp=null, impProc=null, impSink=null, impUi=null, impR=null, impTok=0, impFileBusy=false;
 
 function fftInPlace(re,im){ const n=re.length;
   for(let i=1,j=0;i<n;i++){ let bit=n>>1; for(;j&bit;bit>>=1) j^=bit; j^=bit;
@@ -1693,7 +1696,7 @@ function impFinish(E){
 function fmtT(t){ return Math.floor(t/60)+":"+String(Math.floor(t%60)).padStart(2,"0")+"."+Math.floor((t%1)*10); }
 function fmtMS(s){ s=Math.max(0,Math.round(s)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
 function kHz(h){ return h==null?"--":(h/1000).toFixed(1); }
-function impBusy(){ return !!(imp&&imp.running) || !!impUi; }
+function impBusy(){ return !!(imp&&imp.running) || !!impUi || impFileBusy; }
 function setAppMode(m){
   if(m!==cfg.appMode){
     if(m==="impact" && (mode==="settle"||mode==="measure"||mode==="gap")){ toast("소음 측정 중에는 바꿀 수 없습니다"); return; }
@@ -1782,7 +1785,8 @@ function impVerdict(R){
     out.push("충격음 "+R.events.length+"회가 있었지만 울림이 남는 것은 "+R.ring.length+"회입니다. 금속 울림으로 보기는 어렵습니다.");
   } else out.push("충격음이 검출되지 않았습니다. 바람이 센 날 다시 재 보세요.");
   out.push("마이크 하나로는 소리 나는 <b>위치</b>는 알 수 없습니다.");
-  if(R.cal===0) out.push("<span style='opacity:.8'>보정 전이라 dB 절대값은 참고용입니다.</span>");
+  if(R.file) out.push("<span style='opacity:.8'>파일 분석입니다. dB는 녹음 기기·압축에 따라 달라 참고값이고, 횟수·울림 높이는 그대로 쓸 수 있습니다.</span>");
+  else if(R.cal===0) out.push("<span style='opacity:.8'>보정 전이라 dB 절대값은 참고용입니다.</span>");
   else if(R.LAeq!=null) out.push("평균 "+R.LAeq.toFixed(1)+"dB(A)는 실내 소음 기준 45dB(A) "+(R.LAeq<=45?"이내":"초과")+"입니다(창 닫은 상태일 때).");
   return out.join("<br>");
 }
@@ -1837,12 +1841,14 @@ function wxRender(msg){
   if(msg){ el.innerHTML=msg; return; }
   if(!w){ el.innerHTML="주소를 넣으면 날씨가 나옵니다"; return; }
   el.innerHTML='🌤️ <b>'+f(w.temp)+'℃</b> · 습도 <b>'+(w.rh==null?"--":Math.round(w.rh))+'%</b> · 풍속 <b>'+f(w.ws)+'m/s</b> <span style="opacity:.7">('+esc(w.hour)+(impR&&impR.wx===w?' 측정':'')+')</span>'; }
+let wxTok=0;
 async function wxAuto(d,quiet){
+  const tk=++wxTok; // 늦게 도착한 예전 요청이 새 결과를 덮지 않게
   wxRender("날씨 불러오는 중…");
-  try{ impWx=await wxFetch(d);
+  try{ const w=await wxFetch(d); if(tk!==wxTok) return; impWx=w;
     if(impR && impR.start===d){ impR.wx=impWx; impSaveRec(impR,true); }
     wxRender(); if(!quiet) toast("날씨를 넣었습니다");
-  }catch(e){ wxRender(quiet?"날씨를 못 가져왔습니다":null); if(!quiet) toast(e.message); } }
+  }catch(e){ if(tk!==wxTok) return; wxRender(quiet?"날씨를 못 가져왔습니다":null); if(!quiet) toast(e.message); } }
 function wxWhen(){ return impR?impR.start:(uPhotoTime||new Date()); }
 let wxDeb=null;
 $("#impAddr").value=cfg.impAddr||"";
@@ -1944,7 +1950,7 @@ function impDrawRing(cv,R){
 // ---- 기록 · 원음 · 보고서 ----
 function impStamp(d){ const z=n=>String(n).padStart(2,"0"); return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+" "+z(d.getHours())+":"+z(d.getMinutes()); }
 function impSaveRec(R,update){
-  const rec={t:impStamp(R.start),memo:R.memo,addr:R.addr||"",dur:+R.dur.toFixed(0),max:R.LAFmax!=null?+R.LAFmax.toFixed(1):null,leq:R.LAeq!=null?+R.LAeq.toFixed(1):null,
+  const rec={t:impStamp(R.start),file:R.file||"",memo:R.memo||(R.file?"파일: "+R.file:""),addr:R.addr||"",dur:+R.dur.toFixed(0),max:R.LAFmax!=null?+R.LAFmax.toFixed(1):null,leq:R.LAeq!=null?+R.LAeq.toFixed(1):null,
     l90:R.L90!=null?+R.L90.toFixed(1):null,ring:R.ring.length,short:R.short.length,rate:+R.rate.toFixed(0),hz:R.hzMode?+(R.hzMode/1000).toFixed(1):null,cal:R.cal,wx:R.wx};
   if(update && impRecs[0] && impRecs[0].t===rec.t) impRecs[0]=rec; else { impRecs.unshift(rec); if(impRecs.length>30) impRecs.pop(); }
   try{ localStorage.setItem(IMP_LS,JSON.stringify(impRecs)); }catch(e){}
@@ -1985,7 +1991,7 @@ function impReportHTML(R){
   '<div style="height:140px"></div><div style="text-align:center"><div class="en">IMPACT NOISE REPORT</div><div class="title">충격음 측정 리포트</div><div class="bar"></div><div class="sub">바람에 부딪히는 소리 · 금속 울림 측정</div></div>'+
   '<div style="height:100px"></div><table class="kv"><tr><th>현장 주소</th><td><b>'+esc(addr||"—")+'</b></td></tr><tr><th>위치</th><td>'+esc(R.memo||"—")+'</td></tr><tr><th>측정 일시</th><td>'+impStamp(R.start)+'</td></tr>'+
   '<tr><th>측정 시간</th><td>'+fmtMS(R.dur)+' (분:초)</td></tr><tr><th>측정 시각 날씨</th><td>'+wx+(R.wx?'<br><span style="font-size:11.5px;color:#667085">'+esc(R.wx.src)+' · 격자 계산값(바람은 지상 10m)</span>':'')+'</td></tr><tr><th>기기 보정</th><td>'+(R.cal===0?"보정 안 함 (dB 절대값은 참고용)":"보정함 (오프셋 "+R.cal.toFixed(1)+"dB)")+'</td></tr>'+
-  '<tr><th>측정 도구</th><td>청개구리샤시 소음측정기 '+METER_VER+' · 충격음측정기</td></tr><tr><th>리포트 번호</th><td>'+no+'</td></tr></table>'+
+  '<tr><th>측정 도구</th><td>청개구리샤시 소음측정기 '+METER_VER+' · 충격음측정기'+(R.file?'<br><span style="font-size:11.5px;color:#667085">파일 분석: '+esc(R.file)+' · 녹화 시각 출처: '+esc(R.timeSrc||"")+'</span>':'')+'</td></tr><tr><th>리포트 번호</th><td>'+no+'</td></tr></table>'+
   '<div style="height:110px"></div><div class="foot">청개구리샤시 · 전화 010-2322-0949 · frogsash.co.kr</div></div>'+
   '<div class="page"><div class="h2">1. 측정 요약</div><table class="cards"><tr>'+
   '<td style="background:#FEE4E2"><div class="l" style="color:#B42318">울림 충격음</div><div class="n" style="color:#B42318">'+R.ring.length+'회</div><div class="s" style="color:#B42318">1분에 약 '+R.rate.toFixed(0)+'회</div></td>'+
@@ -2007,7 +2013,7 @@ function impReportHTML(R){
   '<tr><th>실내 기준</th><td>공동주택 실내 소음 45dB(A) 이하 · WHO 거실 35 · 침실 30dB(A). 보정한 기기에서만 비교합니다.</td></tr></table>'+
   '<div class="legal">※ 태블릿·휴대폰 마이크로 잰 참고 자료입니다. 공인 시험이 아니며, 소리 나는 위치는 이 측정으로 알 수 없습니다.</div></div>'+uReportHTML(7)+'</body></html>';
 }
-const METER_VER="v1.44";
+const METER_VER="v1.45";
 function impHead(title){
   return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+title+'</title><style>'+
   '*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}@page{size:A4;margin:14mm 13mm}'+
@@ -2150,6 +2156,56 @@ function uReportHTML(n0){
     (uSummary?'<div class="box" style="margin-top:8px"><b>AI 종합 (후보)</b><br>'+esc(uSummary.summary)+(uSummary.bandOk?'<br>카메라 대역과 권장 대역: '+esc(uSummary.bandOk):'')+'</div>':'')+
     '<div class="legal">※ 점 위치는 AI가 읽은 후보입니다. 확인됨은 측정자가 현장에서 맞다고 확인한 사진입니다.</div></div>';
 }
+// =====================================================================
+// v1.45 영상·녹음 파일로 분석 — 폰으로 찍은 영상(mp4)·녹음(m4a/wav/mp3)의 소리를 같은 엔진에 넣음
+//  · 녹화 시각: 파일 이름(폰 기본 이름) → 영상 안 촬영 시각(mvhd) → 파일 저장 시각 순서 → 그 시각 날씨
+//  · dB는 녹음 기기·압축에 따라 달라 참고값(보정 안 함으로 표시)
+// =====================================================================
+async function impFileTime(f){
+  const n=f.name||""; let m;
+  if((m=n.match(/(20\d\d)[-_.]?(\d\d)[-_.]?(\d\d)[ _T-]?(\d\d)[-_.:]?(\d\d)/))) return {d:new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5]),src:"파일 이름"};
+  try{
+    const parts=[f.slice(0,Math.min(f.size,4e6))]; if(f.size>4e6) parts.push(f.slice(Math.max(0,f.size-4e6)));
+    for(const p of parts){ const u=new Uint8Array(await p.arrayBuffer());
+      for(let i=4;i<u.length-24;i++){ if(u[i]===0x6d&&u[i+1]===0x76&&u[i+2]===0x68&&u[i+3]===0x64){
+        const v=u[i+4], dv=new DataView(u.buffer,u.byteOffset+i+8), sec=v===1?Number(dv.getBigUint64(0)):dv.getUint32(0);
+        if(sec>3.5e9){ const d=new Date((sec-2082844800)*1000); if(d.getFullYear()>2010&&d.getFullYear()<2100) return {d:d,src:"영상 안 촬영 시각"}; }
+        break; } } }
+  }catch(e){}
+  if(f.lastModified) return {d:new Date(f.lastModified),src:"파일 저장 시각(정확하지 않을 수 있음)"};
+  return {d:new Date(),src:"알 수 없어 지금 시각"};
+}
+async function impFileAnalyze(f){
+  if(!f||impBusy()) return;
+  if(f.size>400e6){ toast("파일이 너무 큽니다(400MB 이하)"); return; }
+  impFileBusy=true; impUiReset(); $("#impResult").classList.add("hidden");
+  const st=$("#impState"); st.textContent="파일 읽는 중… "+f.name;
+  try{
+    const tm=await impFileTime(f);
+    const ab=await f.arrayBuffer();
+    st.textContent="소리 꺼내는 중…";
+    let buf; try{ buf=await new OfflineAudioContext(1,1,48000).decodeAudioData(ab); }
+    catch(e){ throw new Error("이 파일의 소리를 읽을 수 없습니다(mp4·m4a·wav·mp3 권장)"); }
+    // 여러 채널이면 평균해 한 채널로, 15분 넘으면 앞 15분만
+    const sr=buf.sampleRate, nMax=Math.min(buf.length,sr*900);
+    let x=buf.getChannelData(0).subarray(0,nMax);
+    if(buf.numberOfChannels>1){ const y=new Float32Array(nMax); for(let c=0;c<buf.numberOfChannels;c++){ const d=buf.getChannelData(c); for(let i=0;i<nMax;i++) y[i]+=d[i]/buf.numberOfChannels; } x=y; }
+    if(buf.length>nMax) toast("앞 15분만 분석합니다");
+    if(nMax<sr*10) throw new Error("10초 넘는 소리가 있어야 분석할 수 있습니다");
+    const E=ImpEngine(sr,DEFAULT_CAL+FFT_SUM_DB), step=4096*24;
+    for(let i=0;i<nMax;i+=step){ const j=Math.min(nMax,i+step);
+      for(let k=i;k<j;k+=4096) impPush(E,x.subarray(k,Math.min(j,k+4096)));
+      st.textContent="분석 중… "+Math.round(j/nMax*100)+"%"; $("#impEl").textContent=fmtMS(j/sr);
+      await new Promise(r=>setTimeout(r,0)); }
+    const R=impFinish(E); R.E=E; R.start=tm.d; R.timeSrc=tm.src; R.file=f.name; R.cal=0;
+    R.memo=($("#impMemo").value||"").trim(); R.addr=(cfg.impAddr||"").trim(); R.wx=null; impR=R;
+    st.textContent="파일 분석 완료 · "+fmtMS(R.dur)+" · 녹화 "+impStamp(tm.d)+" ("+tm.src+")";
+    $("#impMax").textContent=R.LAFmax!=null?R.LAFmax.toFixed(0):"--"; $("#impCnt").textContent=R.events.length; $("#impRing").textContent=R.rate.toFixed(0);
+    impRender(R); impSaveRec(R); impFileBusy=false; wxAuto(R.start,true);
+  }catch(e){ impFileBusy=false; st.textContent="측정 대기"; toast(e.message||"파일 분석 실패"); }
+}
+$("#impFileBtn").onclick=()=>{ if(impBusy()) return; $("#impFile").value=""; $("#impFile").click(); };
+$("#impFile").onchange=()=>{ const f=$("#impFile").files[0]; if(f) impFileAnalyze(f); };
 $("#impStart").onclick=async()=>{ keepAwake(); if(await ensureMic()) impStartClick(); };
 // 초기화: 측정 결과·계기판만 비움(주소·위치·사진은 그대로), 날씨는 지금 기준으로 다시
 $("#impReset").onclick=()=>{ if(impBusy()) return;
