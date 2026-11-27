@@ -6,6 +6,10 @@
 <title>청개구리샤시 · 소음측정기</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <meta name="theme-color" content="#e4e7eb">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
 <style>
 :root{
   --bg:#0e1512; --card:#161f1b; --card2:#1c2823; --line:#2a3833;
@@ -256,6 +260,9 @@ header .logo{width:30px;height:30px;border-radius:9px;box-shadow:0 0 0 1px rgba(
 header h1{font-size:16.5px;font-weight:800}
 header .badge{background:rgba(255,255,255,.04);border-color:var(--line2);font-weight:700}
 #wlChip{color:#facc15;border-color:rgba(250,204,21,.45)}
+#wlChip{color:#a16207!important;border-color:rgba(161,98,7,.45)!important}
+#netChip{margin-left:auto;color:#b45309;border-color:rgba(180,83,9,.45)}
+#netChip:not(.hidden) ~ #wlChip,#netChip:not(.hidden) ~ #verBadge{margin-left:6px}
 #wlChip:not(.hidden) + #verBadge{margin-left:6px}
 .card{background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0)) ,var(--card);border:1px solid var(--line);
   border-radius:18px;box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px rgba(0,0,0,.25);margin:10px 0}
@@ -444,8 +451,9 @@ details>summary{padding:2px 0}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
+  <div class="badge hidden" id="netChip" title="인터넷 없음 — 날씨·AI 판독만 안 됩니다">📴 오프라인</div>
   <div class="badge hidden" id="wlChip" title="측정 중 화면이 꺼지지 않게 유지합니다">🔆 화면 유지</div>
-  <div class="badge" id="verBadge">v1.59</div>
+  <div class="badge" id="verBadge">v1.60</div>
 </header>
 
 <div id="toast" class="toast"></div>
@@ -2107,7 +2115,7 @@ function impReportHTML(R){
   '<tr><th>실내 기준</th><td>공동주택 실내 소음 45dB(A) 이하 · WHO 거실 35 · 침실 30dB(A). 보정한 기기에서만 비교합니다.</td></tr></table>'+
   '<div class="legal">※ 태블릿·휴대폰 마이크로 잰 참고 자료입니다. 공인 시험이 아니며, 소리 나는 위치는 이 측정으로 알 수 없습니다.</div></div>'+uReportHTML(7)+'</body></html>';
 }
-const METER_VER="v1.59";
+const METER_VER="v1.60";
 function impHead(title){
   return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+title+'</title><style>'+
   '*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}@page{size:A4;margin:14mm 13mm}'+
@@ -2305,6 +2313,12 @@ async function impFileAnalyze(f){
   }catch(e){ impFileBusy=false; st.textContent="측정 대기"; toast(e.message||"파일 분석 실패"); }
 }
 $("#impFileBtn").onclick=()=>{ if(impBusy()) return; keepAwake(); $("#impFile").value=""; $("#impFile").click(); };
+// v1.60 오프라인 열기 — 서비스워커 등록(한 번 열면 그 뒤로 인터넷 없이도 열림)
+if("serviceWorker" in navigator){ window.addEventListener("load",()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); }); }
+function netShow(){ const c=$("#netChip"); if(c) c.classList.toggle("hidden",navigator.onLine); }
+window.addEventListener("offline",()=>{ netShow(); toast("인터넷 없음 — 측정·영상 분석·보고서는 그대로 됩니다"); });
+window.addEventListener("online",()=>{ netShow(); try{ if(impR&&!impWx) wxAuto(impR.start,true); }catch(e){} });
+netShow();
 $("#impFile").onchange=()=>{ const f=$("#impFile").files[0]; if(f) impFileAnalyze(f); };
 $("#impStart").onclick=async()=>{ keepAwake(); if(await ensureMic()) impStartClick(); };
 // 초기화: 측정 결과·계기판만 비움(주소·위치·사진은 그대로), 날씨는 지금 기준으로 다시
