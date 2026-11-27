@@ -453,7 +453,7 @@ details>summary{padding:2px 0}
   <h1>청개구리샤시 · 소음측정기</h1>
   <div class="badge hidden" id="netChip" title="인터넷 없음 — 날씨·AI 판독만 안 됩니다">📴 오프라인</div>
   <div class="badge hidden" id="wlChip" title="측정 중 화면이 꺼지지 않게 유지합니다">🔆 화면 유지</div>
-  <div class="badge" id="verBadge">v1.60</div>
+  <div class="badge" id="verBadge">v1.61</div>
 </header>
 
 <div id="toast" class="toast"></div>
@@ -1700,9 +1700,14 @@ function impPush(E,buf){
 }
 function impEnv(E,db){
   const k=E.env.length, t=k*E.envN/E.sr; E.env.push(db);
+  // v1.61 완전 무음(영상 이음새·녹음 끊김, 2~10kHz가 -110dB 아래)은 '평소 소리' 계산에서 뺌
+  //  — 예전엔 무음에 기준이 바닥까지 내려가 다시 못 올라와, 그 뒤 충격음을 거의 못 셌음
+  if(db<-110){ if(E.cur && t-E.cur.last>0.04){ E.pending.push(E.cur); E.cur=null; } return; }
   if(E.base===null){ if(t<0.5) return; E.baseInit.push(db); if(E.baseInit.length<150) return;
     const s=E.baseInit.slice().sort((p,q)=>p-q); E.base=s[s.length>>1]; return; }
   if(db<E.base) E.base+=(db-E.base)*0.05; else if(db<E.base+10) E.base+=(db-E.base)*0.002;
+  // v1.61 기준이 실제 소리보다 너무 낮게 갇히면(1초 넘게 계속 기준+25dB 위) 최근 1초의 낮은 쪽(10%)으로 다시 맞춤
+  if(db>E.base+25){ E.hiRun=(E.hiRun||0)+1; if(E.hiRun>=500){ const w=E.env.slice(-500).filter(v=>v>=-110).sort((p,q)=>p-q); if(w.length>50) E.base=w[Math.floor(w.length*0.1)]; E.hiRun=0; } } else E.hiRun=0;
   const hot=db>E.base+20 && t>=1.0;
   if(E.cur && t-E.cur.last>0.04){ E.pending.push(E.cur); E.cur=null; }
   if(hot){
@@ -2115,7 +2120,7 @@ function impReportHTML(R){
   '<tr><th>실내 기준</th><td>공동주택 실내 소음 45dB(A) 이하 · WHO 거실 35 · 침실 30dB(A). 보정한 기기에서만 비교합니다.</td></tr></table>'+
   '<div class="legal">※ 태블릿·휴대폰 마이크로 잰 참고 자료입니다. 공인 시험이 아니며, 소리 나는 위치는 이 측정으로 알 수 없습니다.</div></div>'+uReportHTML(7)+'</body></html>';
 }
-const METER_VER="v1.60";
+const METER_VER="v1.61";
 function impHead(title){
   return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+title+'</title><style>'+
   '*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}@page{size:A4;margin:14mm 13mm}'+
