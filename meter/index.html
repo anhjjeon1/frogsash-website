@@ -325,6 +325,8 @@ canvas{background:var(--card2);border:1px solid var(--line)}
 #impactMode .count .n{color:var(--imp)}
 
 /* v1.41 — 전체 위아래 여백 축소(촘촘하게) */
+.modebar button{padding:9px 6px}
+#segImpMin button{padding:6px 12px}
 header{padding:9px 12px 8px}
 .card{margin:7px 0;padding:12px}
 .sec-title{margin:13px 4px 3px}
@@ -367,14 +369,14 @@ details>summary{padding:2px 0}
     <rect x="12" y="4" width="3.2" height="18" rx="1.4"/>
     <rect x="17" y="11" width="3.2" height="11" rx="1.4"/></svg></div>
   <h1>청개구리샤시 · 소음측정기</h1>
-  <div class="badge" id="verBadge">v1.41</div>
+  <div class="badge" id="verBadge">v1.42</div>
 </header>
 
 <div id="toast" class="toast"></div>
 
 <div class="modebar" id="modebar">
-  <button data-m="normal"><span class="chk"></span>소음측정기<span class="ms">평균 소음 · 수리 전·후</span></button>
-  <button data-m="impact" class="imp"><span class="chk"></span>충격음측정기<span class="ms">바람 금속소리 · 딸깍</span></button>
+  <button data-m="normal"><span class="chk"></span>소음측정기</button>
+  <button data-m="impact" class="imp"><span class="chk"></span>충격음측정기</button>
 </div>
 
 <div class="note err hidden" id="gateErr" style="margin:10px 4px 0"></div>
@@ -572,8 +574,8 @@ details>summary{padding:2px 0}
 
  <!-- v1.28 충격음측정기 -->
  <div id="impactMode" class="hidden">
-  <div class="card" style="padding:10px 14px">
-    <div class="set-row">
+  <div class="card" style="padding:8px 12px 10px">
+    <div class="set-row" style="padding:0">
       <div class="lab">측정 시간</div>
       <div class="seg" id="segImpMin"><button data-v="1">1분</button><button data-v="3">3분</button><button data-v="5">5분</button></div>
     </div>
@@ -1998,7 +2000,7 @@ function impReportHTML(R){
   '<tr><th>실내 기준</th><td>공동주택 실내 소음 45dB(A) 이하 · WHO 거실 35 · 침실 30dB(A). 보정한 기기에서만 비교합니다.</td></tr></table>'+
   '<div class="legal">※ 태블릿·휴대폰 마이크로 잰 참고 자료입니다. 공인 시험이 아니며, 소리 나는 위치는 이 측정으로 알 수 없습니다.</div></div>'+uReportHTML(7)+'</body></html>';
 }
-const METER_VER="v1.41";
+const METER_VER="v1.42";
 function impHead(title){
   return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+title+'</title><style>'+
   '*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}@page{size:A4;margin:14mm 13mm}'+
